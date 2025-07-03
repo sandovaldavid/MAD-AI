@@ -1,5 +1,19 @@
-import { ChangeDetectionStrategy, Component, input, output, computed, signal, effect } from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators, AbstractControl } from '@angular/forms';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    input,
+    output,
+    computed,
+    signal,
+    effect,
+} from '@angular/core';
+import {
+    ReactiveFormsModule,
+    FormGroup,
+    FormControl,
+    Validators,
+    AbstractControl,
+} from '@angular/forms';
 import { RegisterRequest } from '@domain/models/auth/auth.model';
 import { InputComponent } from '@shared/components/ui/input/input.component';
 import { Button } from '@shared/components/ui/button/button';
@@ -17,11 +31,11 @@ interface RegisterFormData {
 function passwordMatchValidator(control: AbstractControl) {
     const password = control.get('password');
     const confirmPassword = control.get('passwordConfirmation');
-    
+
     if (!password || !confirmPassword) {
         return null;
     }
-    
+
     return password.value === confirmPassword.value ? null : { passwordMismatch: true };
 }
 
@@ -35,42 +49,41 @@ function passwordMatchValidator(control: AbstractControl) {
 export class RegisterForm {
     // Inputs
     isLoading = input<boolean>(false);
-    errorMessage = input<string>('');
 
     // Outputs
     formSubmit = output<RegisterRequest>();
 
     // Form
-    protected readonly registerForm = new FormGroup({
-        username: new FormControl('', [
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(30),
-            Validators.pattern(/^[a-zA-Z0-9_]+$/)
-        ]),
-        email: new FormControl('', [
-            Validators.required,
-            Validators.email
-        ]),
-        firstName: new FormControl('', [
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(50)
-        ]),
-        lastName: new FormControl('', [
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(50)
-        ]),
-        password: new FormControl('', [
-            Validators.required,
-            Validators.minLength(8),
-            Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
-        ]),
-        passwordConfirmation: new FormControl('', [
-            Validators.required
-        ]),
-    }, { validators: passwordMatchValidator });
+    protected readonly registerForm = new FormGroup(
+        {
+            username: new FormControl('', [
+                Validators.required,
+                Validators.minLength(3),
+                Validators.maxLength(30),
+                Validators.pattern(/^[a-zA-Z0-9_]+$/),
+            ]),
+            email: new FormControl('', [Validators.required, Validators.email]),
+            firstName: new FormControl('', [
+                Validators.required,
+                Validators.minLength(2),
+                Validators.maxLength(50),
+            ]),
+            lastName: new FormControl('', [
+                Validators.required,
+                Validators.minLength(2),
+                Validators.maxLength(50),
+            ]),
+            password: new FormControl('', [
+                Validators.required,
+                Validators.minLength(8),
+                Validators.pattern(
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/
+                ),
+            ]),
+            passwordConfirmation: new FormControl('', [Validators.required]),
+        },
+        { validators: passwordMatchValidator }
+    );
 
     // Form state signal to trigger reactivity
     private readonly formStateSignal = signal(0);
@@ -78,7 +91,7 @@ export class RegisterForm {
     constructor() {
         // Subscribe to form status changes to update reactivity
         this.registerForm.statusChanges.subscribe(() => {
-            this.formStateSignal.update(val => val + 1);
+            this.formStateSignal.update((val) => val + 1);
         });
 
         // Handle form disabling based on isLoading state
@@ -202,11 +215,12 @@ export class RegisterForm {
     protected onSubmit(): void {
         if (this.registerForm.valid) {
             const formValue = this.registerForm.value as RegisterFormData;
-            
+
             const registerRequest: RegisterRequest = {
                 username: formValue.username,
                 email: formValue.email,
                 password: formValue.password,
+                password_confirm: formValue.passwordConfirmation,
                 first_name: formValue.firstName,
                 last_name: formValue.lastName,
             };
@@ -215,7 +229,7 @@ export class RegisterForm {
         } else {
             // Mark all fields as touched to show validation errors
             this.registerForm.markAllAsTouched();
-            this.formStateSignal.update(val => val + 1);
+            this.formStateSignal.update((val) => val + 1);
         }
     }
 }
