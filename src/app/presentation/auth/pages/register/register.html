@@ -10,10 +10,7 @@
 
         <!-- Register Form -->
         <div class="register-form-container">
-            <app-register-form
-                [isLoading]="isLoading()"
-                [errorMessage]="errorMessage()"
-                (formSubmit)="onRegisterSubmit($event)" />
+            <app-register-form [isLoading]="isLoading()" (formSubmit)="onRegisterSubmit($event)" />
         </div>
 
         <!-- Footer -->
