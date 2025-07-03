@@ -152,11 +152,8 @@ export class AuthService {
                 // User created successfully, now we need to login
                 this._isLoading.set(false);
 
-                // Navigate to login with a success message or auto-login
-                // For now, we'll navigate to login page
-                this.router.navigate(['/auth/login'], {
-                    queryParams: { message: 'Registration successful! Please sign in.' },
-                });
+                // Navigate to login page without message (notification is handled by the component)
+                this.router.navigate(['/auth/login']);
             }),
             catchError((error) => {
                 this._isLoading.set(false);
