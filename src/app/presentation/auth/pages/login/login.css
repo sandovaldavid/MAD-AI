@@ -1,7 +1,7 @@
 @reference '../../../../../styles.css';
 
 .login-page {
-    @apply min-h-screen flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 px-4 py-12;
+    @apply min-w-lg flex items-center justify-center bg-neutral-50 dark:bg-neutral-900 px-4 py-12;
 }
 
 .login-container {
