@@ -30,14 +30,49 @@ export class AuthService {
     private readonly _isLoading = signal<boolean>(false);
 
     // Computed properties
-    readonly isAuthenticated = computed(() => this._isAuthenticated());
+    readonly isAuthenticated = computed(() => {
+        // Si ya está autenticado, retorna el valor actual
+        if (this._isAuthenticated()) {
+            return true;
+        }
+
+        // Si no está autenticado, verifica si hay tokens almacenados
+        if (this.isBrowser) {
+            const token = this.getStoredToken();
+            const user = this.getStoredUser();
+
+            // Si hay tokens, actualiza el estado de autenticación
+            if (token && user) {
+                this._accessToken.set(token);
+                this._user.set(user);
+                this._isAuthenticated.set(true);
+                return true;
+            }
+        }
+
+        return false;
+    });
     readonly user = computed(() => this._user());
     readonly isLoading = computed(() => this._isLoading());
 
     constructor() {
-        // Defer initialization to avoid SSR issues
+        // Inicializamos inmediatamente si estamos en el navegador
         if (this.isBrowser) {
+            // Usando un timeout de 0 para asegurar que se ejecuta después de la inicialización del componente
+            // pero aún así lo más pronto posible en el ciclo de eventos de JavaScript
             setTimeout(() => this.initializeAuth(), 0);
+
+            // También añadimos un listener para el evento storage para sincronizar entre pestañas
+            window.addEventListener('storage', (event) => {
+                // Si los tokens cambian en otra pestaña, actualizamos el estado
+                if (
+                    event.key === 'access_token' ||
+                    event.key === 'refresh_token' ||
+                    event.key === 'user'
+                ) {
+                    this.initializeAuth();
+                }
+            });
         }
     }
 
@@ -49,20 +84,32 @@ export class AuthService {
     }
 
     private initializeAuth(): void {
-        // Only initialize auth in browser environment
+        // Solo inicializamos en entorno de navegador
         if (!this.isBrowser) {
             return;
         }
 
+        // Intentamos recuperar tokens y usuario del almacenamiento
         const token = this.getStoredToken();
         const refreshToken = this.getStoredRefreshToken();
         const user = this.getStoredUser();
 
-        if (token && refreshToken && user) {
+        // Si tenemos los datos necesarios para la autenticación
+        if (token && user) {
+            console.log('Initializing auth from storage');
+            // Actualizamos el estado de autenticación
             this._accessToken.set(token);
-            this._refreshToken.set(refreshToken);
+            if (refreshToken) {
+                this._refreshToken.set(refreshToken);
+            }
             this._user.set(user);
             this._isAuthenticated.set(true);
+        } else {
+            // Si no hay datos de autenticación válidos, aseguramos que el estado sea no autenticado
+            this._isAuthenticated.set(false);
+            this._user.set(null);
+            this._accessToken.set(null);
+            this._refreshToken.set(null);
         }
     }
 
@@ -104,11 +151,11 @@ export class AuthService {
             tap((response) => {
                 // User created successfully, now we need to login
                 this._isLoading.set(false);
-                
+
                 // Navigate to login with a success message or auto-login
                 // For now, we'll navigate to login page
-                this.router.navigate(['/auth/login'], { 
-                    queryParams: { message: 'Registration successful! Please sign in.' }
+                this.router.navigate(['/auth/login'], {
+                    queryParams: { message: 'Registration successful! Please sign in.' },
                 });
             }),
             catchError((error) => {
@@ -160,7 +207,23 @@ export class AuthService {
 
     // Token management
     getAccessToken(): string | null {
-        return this._accessToken();
+        // Primero intentamos obtener el token de la señal
+        const tokenFromSignal = this._accessToken();
+        if (tokenFromSignal) {
+            return tokenFromSignal;
+        }
+
+        // Si no está disponible en la señal, intentamos recuperarlo del almacenamiento
+        if (this.isBrowser) {
+            const storedToken = this.getStoredToken();
+            if (storedToken) {
+                // Actualizamos la señal con el token almacenado
+                this._accessToken.set(storedToken);
+                return storedToken;
+            }
+        }
+
+        return null;
     }
 
     private storeTokens(accessToken: string, refreshToken: string): void {
