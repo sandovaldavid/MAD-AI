@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authRoutes } from '@presentation/auth/auth.routes';
+import { securedRoutes } from '@presentation/secured/secured.routes';
+import { AuthGuard } from '@core/guards/auth.guard';
 
 export const routes: Routes = [
     {
@@ -9,19 +11,20 @@ export const routes: Routes = [
     },
     {
         path: 'auth',
+        loadComponent: () =>
+            import('@presentation/layouts/auth-layout/auth-layout').then(
+                (m) => m.AuthLayoutComponent
+            ),
         children: authRoutes,
     },
     {
-        path: 'dashboard',
+        path: '',
         loadComponent: () =>
-            import('@presentation/pages/dashboard/dashboard').then((m) => m.Dashboard),
-        title: 'Dashboard | MAD-AI',
-    },
-    {
-        path: 'test-components',
-        loadComponent: () =>
-            import('@presentation/test-components/test-components').then((m) => m.TestComponents),
-        title: 'Test Component | MAD-AI',
+            import('@presentation/layouts/main-layout/main-layout').then(
+                (m) => m.MainLayoutComponent
+            ),
+        canActivate: [AuthGuard],
+        children: securedRoutes,
     },
     {
         path: '**',
