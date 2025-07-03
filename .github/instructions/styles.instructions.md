@@ -8,17 +8,23 @@ Toda la aplicación debe usar exclusivamente los colores definidos en el archivo
 
 ## 🎯 Estilos con clases reutilizables
 
-Los estilos no deben estar definidos directamente con utilidades en cada componente. En su lugar, deben agruparse en clases definidas con `@apply` dentro del archivo y `/styles/utilities.css`. Esto permite una mejor mantenibilidad y reutilización de estilos.
+los estilos deben ser definidos en el componente dentro de su archivo .css correspondiente, utilizando la directiva `@apply` de Tailwind CSS. Esto permite agrupar utilidades de Tailwind en clases semánticas reutilizables, mejorando la legibilidad y mantenibilidad del código.
+
+Para poder usar los estilos definidos en los archivos .css deber hacer uina referencia al archivo `styles.css` en el archivo .css del componente. Por ejemplo:
+
+```css
+@import '../../../../../styles/colors.css';
+```
 
 Ejemplos:
 
 ```css
 .btn-primary {
-  @apply bg-primary-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors;
+    @apply bg-primary-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-primary-700 transition-colors;
 }
 
 .input-base {
-  @apply border border-gray-300 dark:border-gray-600 bg-white dark:bg-background text-text px-4 py-2 rounded-md focus:ring-2 focus:ring-primary-500;
+    @apply border border-gray-300 dark:border-gray-600 bg-white dark:bg-background text-text px-4 py-2 rounded-md focus:ring-2 focus:ring-primary-500;
 }
 ```
 
@@ -28,7 +34,7 @@ Estas clases deben usarse en lugar de repetir utilidades dentro del HTML.
 
 La implementación del **modo oscuro** debe activarse mediante la clase `.dark` en el HTML root. Todos los estilos y componentes deben:
 
-- Aplicar condicionales de Tailwind como `dark:bg-background`, `dark:text-text`
+-   Aplicar condicionales de Tailwind como `dark:bg-background`, `dark:text-text`
 
 Ejemplo:
 
@@ -40,9 +46,9 @@ Ejemplo:
 
 Todos los componentes deben garantizar:
 
-- Contraste mínimo de 4.5:1 entre texto y fondo
-- Uso de `focus:ring-*` para accesibilidad con teclado
-- Estados visuales bien definidos (`hover`, `active`, `disabled`)
+-   Contraste mínimo de 4.5:1 entre texto y fondo
+-   Uso de `focus:ring-*` para accesibilidad con teclado
+-   Estados visuales bien definidos (`hover`, `active`, `disabled`)
 
 Botones deshabilitados deben tener colores derivados de la paleta, pero con saturación o opacidad reducida. Evitar usar `opacity-50` si afecta la legibilidad del texto.
 
