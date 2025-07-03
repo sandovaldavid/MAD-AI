@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../env/environment';
+import { environment } from '@env/environment';
 import {
     LoginRequest,
     LoginResponse,
@@ -25,7 +25,7 @@ export class AuthApiClient {
     }
 
     register(request: RegisterRequest): Observable<RegisterResponse> {
-        return this.http.post<RegisterResponse>(`${environment.API_URL}/users/create/`, request);
+        return this.http.post<RegisterResponse>(`${this.baseUrl}/register/`, request);
     }
 
     logout(request: LogoutRequest): Observable<void> {
