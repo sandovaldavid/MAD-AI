@@ -1,13 +1,31 @@
 @reference '../../../../styles.css';
 
 .main-layout {
-    @apply min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900;
+    @apply min-h-screen flex bg-neutral-50 dark:bg-neutral-900;
 }
 
 .main-content {
-    @apply flex-grow flex flex-col;
+    @apply flex-grow flex flex-col ml-72 transition-all duration-300 ease-in-out;
 }
 
 .content-area {
-    @apply p-6;
+    @apply p-6 flex-grow;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        @apply ml-0;
+    }
+}
+
+/* When sidebar is collapsed */
+.main-layout:has(.sidebar-collapsed) .main-content {
+    @apply ml-16;
+}
+
+@media (max-width: 768px) {
+    .main-layout:has(.sidebar-collapsed) .main-content {
+        @apply ml-0;
+    }
 }
