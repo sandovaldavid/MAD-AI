@@ -13,7 +13,8 @@
             "@domain/*": ["src/app/domain/*"],
             "@infrastructure/*": ["src/app/infrastructure/*"],
             "@presentation/*": ["src/app/presentation/*"],
-            "@application/*": ["src/app/application/*"]
+            "@application/*": ["src/app/application/*"],
+            "@shared/*": ["src/app/shared/*"]
         },
     "strict": true,
     "noImplicitOverride": true,
