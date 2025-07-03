@@ -1,0 +1,13 @@
+@reference '../../../../styles.css';
+
+.main-layout {
+    @apply min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-900;
+}
+
+.main-content {
+    @apply flex-grow flex flex-col;
+}
+
+.content-area {
+    @apply p-6;
+}
