@@ -1,0 +1,12 @@
+<!-- Iterate through each position -->
+@for (position of positions; track position) {
+    <!-- Create container for each position -->
+    <div [class]="'notifications-container ' + getPositionClass(position)">
+        <!-- Show notifications for this position -->
+        @for (notification of notificationsByPosition().get(position); track notification.id) {
+            <div class="notification-wrapper">
+                <app-notification-item [notification]="notification" />
+            </div>
+        }
+    </div>
+}
