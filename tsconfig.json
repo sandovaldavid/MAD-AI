@@ -14,7 +14,8 @@
             "@infrastructure/*": ["src/app/infrastructure/*"],
             "@presentation/*": ["src/app/presentation/*"],
             "@application/*": ["src/app/application/*"],
-            "@shared/*": ["src/app/shared/*"]
+            "@shared/*": ["src/app/shared/*"],
+            "@env/*": ["src/env/*"],
         },
     "strict": true,
     "noImplicitOverride": true,
