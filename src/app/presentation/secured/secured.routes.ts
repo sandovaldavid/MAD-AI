@@ -8,6 +8,12 @@ export const securedRoutes: Routes = [
         title: 'Dashboard',
     },
     {
+        path: 'users',
+        loadChildren: () =>
+            import('@presentation/users-module/users-module.routes').then((m) => m.USER_MODULE_ROUTES),
+        title: 'Gestión de Usuarios',
+    },
+    {
         path: 'test-components',
         loadComponent: () =>
             import('@presentation/test-components/test-components').then((m) => m.TestComponents),
