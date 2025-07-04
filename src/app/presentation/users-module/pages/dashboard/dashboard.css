@@ -1,0 +1,30 @@
+@reference '../../../../../styles.css';
+
+.dashboard-container {
+    @apply p-6 max-w-7xl mx-auto;
+}
+
+.dashboard-header {
+    @apply mb-8;
+}
+
+.dashboard-title {
+    @apply text-3xl font-bold text-neutral-900 dark:text-white mb-2;
+}
+
+.dashboard-subtitle {
+    @apply text-neutral-600 dark:text-neutral-300 text-lg;
+}
+
+.dashboard-content {
+    @apply space-y-8;
+}
+
+.stats-section,
+.table-section {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6;
+}
+
+.section-title {
+    @apply text-xl font-semibold text-neutral-900 dark:text-white mb-6;
+}
