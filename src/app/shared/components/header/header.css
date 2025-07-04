@@ -36,13 +36,22 @@
     @apply w-5 h-5;
 }
 
+/* Header Content */
+.header-content {
+    @apply flex flex-col;
+}
+
+.page-title {
+    @apply text-xl font-semibold text-neutral-900 dark:text-white mb-1;
+}
+
 /* Breadcrumbs */
 .breadcrumb-nav {
     @apply flex items-center;
 }
 
 .breadcrumb-list {
-    @apply flex items-center gap-1 text-2xl;
+    @apply flex items-center gap-1 text-sm;
 }
 
 .breadcrumb-item {

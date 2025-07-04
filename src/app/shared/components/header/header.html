@@ -9,32 +9,10 @@
             <app-header-icon [name]="'menu'" [size]="20" class="sidebar-toggle-icon" />
         </button>
 
-        <!-- Breadcrumbs -->
-        <nav aria-label="Breadcrumb" class="breadcrumb-nav">
-            <ol class="breadcrumb-list">
-                @for (item of breadcrumbs(); track item.url) {
-                <li class="breadcrumb-item">
-                    @if (!item.isLast) {
-                    <button
-                        type="button"
-                        class="breadcrumb-link"
-                        (click)="navigateToBreadcrumb(item)"
-                        [attr.aria-label]="'Navigate to ' + item.label">
-                        {{ item.label }}
-                    </button>
-                    <app-header-icon
-                        [name]="'chevron-right'"
-                        [size]="16"
-                        class="breadcrumb-separator" />
-                    } @else {
-                    <span class="breadcrumb-current" [attr.aria-current]="'page'">
-                        {{ item.label }}
-                    </span>
-                    }
-                </li>
-                }
-            </ol>
-        </nav>
+        <!-- Page Title and Breadcrumbs -->
+        <div class="header-content">
+            <h1 class="page-title">{{ pageTitle() }}</h1>
+        </div>
     </div>
 
     <!-- Right section: Theme toggle, notifications, user menu -->
