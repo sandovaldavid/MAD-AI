@@ -2,12 +2,7 @@
 
 /* Base button styles */
 .btn-base {
-    @apply inline-flex items-center justify-center gap-2 
-        font-medium rounded-lg 
-        transition-all duration-200 ease-in-out 
-        focus:outline-none 
-        disabled:cursor-not-allowed 
-        select-none whitespace-nowrap;
+    @apply inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 ease-in-out focus:outline-none  disabled:cursor-not-allowed select-none whitespace-nowrap;
 }
 
 /* Focus styles - solo aparece con navegación por teclado */
@@ -35,10 +30,7 @@
 
 /* Primary variant */
 .btn-primary {
-    @apply bg-primary-500 text-white 
-        border border-primary-500
-        hover:bg-primary-600 hover:border-primary-600
-        active:bg-primary-700;
+    @apply bg-primary-500 text-white border border-primary-500 hover:bg-primary-600 hover:border-primary-600 active:bg-primary-700;
 }
 
 .btn-primary:focus-visible {
@@ -47,10 +39,7 @@
 
 /* Secondary variant */
 .btn-secondary {
-    @apply bg-secondary-500 text-white 
-        border border-secondary-500
-        hover:bg-secondary-600 hover:border-secondary-600
-        active:bg-secondary-700;
+    @apply bg-secondary-500 text-white border border-secondary-500 hover:bg-secondary-600 hover:border-secondary-600 active:bg-secondary-700;
 }
 
 .btn-secondary:focus-visible {
@@ -59,10 +48,7 @@
 
 /* Outline variant */
 .btn-outline {
-    @apply bg-transparent text-primary-600 dark:text-primary-400
-        border border-primary-500 
-        hover:bg-primary-50 dark:hover:bg-primary-950/20
-        active:bg-primary-100 dark:active:bg-primary-950/30;
+    @apply bg-transparent text-primary-600 dark:text-primary-400 border border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950/20 active:bg-primary-100 dark:active:bg-primary-950/30;
 }
 
 .btn-outline:focus-visible {
@@ -71,10 +57,7 @@
 
 /* Ghost variant */
 .btn-ghost {
-    @apply bg-transparent text-neutral-700 dark:text-neutral-300
-        border border-transparent
-        hover:bg-neutral-100 dark:hover:bg-neutral-800
-        active:bg-neutral-200 dark:active:bg-neutral-700;
+    @apply bg-transparent text-neutral-700 dark:text-neutral-300 border border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 active:bg-neutral-200 dark:active:bg-neutral-700;
 }
 
 .btn-ghost:focus-visible {
@@ -83,10 +66,7 @@
 
 /* Destructive variant */
 .btn-destructive {
-    @apply bg-error-500 text-white 
-        border border-error-500
-        hover:bg-error-600 hover:border-error-600
-        active:bg-error-700;
+    @apply bg-error-500 text-white border border-error-500 hover:bg-error-600 hover:border-error-600 active:bg-error-700;
 }
 
 .btn-destructive:focus-visible {
@@ -95,12 +75,7 @@
 
 /* Disabled state - sin focus ring */
 .btn-disabled {
-    @apply bg-neutral-300 dark:bg-neutral-700 
-        text-neutral-500 dark:text-neutral-400 
-        border-neutral-300 dark:border-neutral-700 
-        hover:bg-neutral-300 dark:hover:bg-neutral-700 
-        hover:border-neutral-300 dark:hover:border-neutral-700 
-        cursor-not-allowed;
+    @apply bg-neutral-300 dark:bg-neutral-700 text-neutral-500 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-700 cursor-not-allowed;
 }
 
 .btn-disabled:focus-visible {
@@ -153,4 +128,39 @@
 
 .dark .btn-destructive:focus-visible {
     @apply ring-offset-neutral-900;
+}
+
+/* Icon styles */
+.btn-base svg {
+    @apply flex-shrink-0;
+}
+
+/* Icon only button adjustments */
+.btn-icon-only {
+    @apply gap-0;
+}
+
+/* Spacing adjustments when icon is present */
+.btn-base:has(svg:first-child) {
+    @apply pl-3;
+}
+
+.btn-base:has(svg:last-child) {
+    @apply pr-3;
+}
+
+.btn-sm:has(svg:first-child) {
+    @apply pl-2;
+}
+
+.btn-sm:has(svg:last-child) {
+    @apply pr-2;
+}
+
+.btn-lg:has(svg:first-child) {
+    @apply pl-5;
+}
+
+.btn-lg:has(svg:last-child) {
+    @apply pr-5;
 }

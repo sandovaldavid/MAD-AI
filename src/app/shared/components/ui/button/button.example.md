@@ -50,6 +50,118 @@ import { Button } from '@/shared/components/ui/button';
 <app-button variant="destructive">Delete</app-button>
 ```
 
+## Uso con Iconos SVG
+
+### Icono a la izquierda (por defecto)
+```html
+<app-button 
+  variant="primary" 
+  iconPath="/assets/icons/icons.svg#plus">
+  Agregar Usuario
+</app-button>
+```
+
+### Icono a la derecha
+```html
+<app-button 
+  variant="outline" 
+  iconPath="/assets/icons/icons.svg#arrow-right"
+  iconPosition="right">
+  Siguiente
+</app-button>
+```
+
+### Solo icono
+```html
+<app-button 
+  variant="ghost" 
+  [iconOnly]="true"
+  iconPath="/assets/icons/icons.svg#settings"
+  size="sm">
+</app-button>
+```
+
+### Iconos con diferentes tamaños
+```html
+<!-- Pequeño -->
+<app-button 
+  size="sm" 
+  iconPath="/assets/icons/icons.svg#edit">
+  Editar
+</app-button>
+
+<!-- Mediano -->
+<app-button 
+  size="md" 
+  iconPath="/assets/icons/icons.svg#save">
+  Guardar
+</app-button>
+
+<!-- Grande -->
+<app-button 
+  size="lg" 
+  iconPath="/assets/icons/icons.svg#trash"
+  variant="destructive">
+  Eliminar
+</app-button>
+```
+
+### Ejemplos Prácticos
+
+#### Botones de acción
+```html
+<app-button 
+  variant="primary" 
+  iconPath="/assets/icons/icons.svg#user-plus">
+  Nuevo Usuario
+</app-button>
+
+<app-button 
+  variant="outline" 
+  iconPath="/assets/icons/icons.svg#search">
+  Buscar
+</app-button>
+
+<app-button 
+  variant="destructive" 
+  iconPath="/assets/icons/icons.svg#trash">
+  Eliminar
+</app-button>
+```
+
+#### Botones de navegación
+```html
+<app-button 
+  variant="ghost" 
+  iconPath="/assets/icons/icons.svg#arrow-left"
+  size="sm">
+  Atrás
+</app-button>
+
+<app-button 
+  variant="primary" 
+  iconPath="/assets/icons/icons.svg#arrow-right"
+  iconPosition="right">
+  Continuar
+</app-button>
+```
+
+#### Botones con estado
+```html
+<app-button 
+  variant="outline" 
+  iconPath="/assets/icons/icons.svg#check"
+  [disabled]="!isValid()">
+  Confirmar
+</app-button>
+
+<app-button 
+  variant="secondary" 
+  iconPath="/assets/icons/icons.svg#close">
+  Cancelar
+</app-button>
+```
+
 ## Tamaños
 
 ```html
@@ -117,6 +229,9 @@ import { Button } from '@/shared/components/ui/button';
 | `loading` | `boolean` | `false` | Si el botón muestra estado de carga |
 | `fullWidth` | `boolean` | `false` | Si el botón ocupa todo el ancho disponible |
 | `iconOnly` | `boolean` | `false` | Si el botón contiene solo un icono |
+| `iconPath` | `string` | `undefined` | Ruta al sprite SVG con formato `/path/to/icons.svg#icon-id` |
+| `iconPosition` | `IconPosition` | `'left'` | Posición del icono relativa al texto |
+| `iconSize` | `string` | `'16'` | Tamaño del icono en píxeles (se ajusta automáticamente por tamaño del botón) |
 
 ## Eventos
 
@@ -126,6 +241,62 @@ import { Button } from '@/shared/components/ui/button';
 
 ## Tipos TypeScript
 
+```typescript
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonType = 'button' | 'submit' | 'reset';
+type IconPosition = 'left' | 'right';
+```
+
+## Iconos Disponibles
+
+El archivo `/assets/icons/icons.svg` incluye los siguientes iconos:
+
+### Iconos de Usuario
+- `user` - Icono de usuario
+- `user-plus` - Agregar usuario
+
+### Iconos de Acción
+- `plus` - Agregar/Crear
+- `edit` - Editar
+- `trash` - Eliminar
+- `save` - Guardar
+
+### Iconos de Navegación
+- `arrow-left` - Flecha izquierda
+- `arrow-right` - Flecha derecha
+- `chevron-down` - Flecha hacia abajo
+
+### Iconos de Estado
+- `check` - Confirmación
+- `close` - Cerrar
+- `warning` - Advertencia
+- `info` - Información
+
+### Iconos de Configuración
+- `settings` - Configuración
+- `search` - Buscar
+
+## Ejemplos Avanzados
+
+### Formulario con Botones de Acción
+```html
+<div class="flex gap-2">
+  <app-button 
+    variant="outline" 
+    iconPath="/assets/icons/icons.svg#close"
+    (clicked)="cancel()">
+    Cancelar
+  </app-button>
+  
+  <app-button 
+    variant="primary" 
+    iconPath="/assets/icons/icons.svg#save"
+    [loading]="isSaving()"
+    type="submit">
+    Guardar
+  </app-button>
+</div>
 ```typescript
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
 export type ButtonSize = 'sm' | 'md' | 'lg';

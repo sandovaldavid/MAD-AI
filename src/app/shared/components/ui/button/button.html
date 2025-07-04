@@ -27,7 +27,25 @@
           repeatCount="indefinite"/>
       </circle>
     </svg>
-  }
+  } @else {
+    @if (hasIcon() && iconPosition() === 'left') {
+      <svg 
+        [class]="iconClasses()"
+        fill="currentColor" 
+        viewBox="0 0 24 24">
+        <use [attr.href]="iconPath()"></use>
+      </svg>
+    }
 
-  <ng-content></ng-content>
+    <ng-content></ng-content>
+
+    @if (hasIcon() && iconPosition() === 'right') {
+      <svg 
+        [class]="iconClasses()"
+        fill="currentColor" 
+        viewBox="0 0 24 24">
+        <use [attr.href]="iconPath()"></use>
+      </svg>
+    }
+  }
 </button>
