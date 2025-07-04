@@ -101,6 +101,9 @@ export class UserTable implements OnInit {
 
         this.getUsersUseCase.execute().subscribe({
             next: (users) => {
+                console.log('Users received:', users);
+                console.log('First user role_name:', users[0]?.role_name);
+                console.log('First user complete data:', users[0]);
                 this.users.set(users);
                 this.isLoading.set(false);
             },
