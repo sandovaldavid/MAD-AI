@@ -6,10 +6,12 @@
         <p class="loading-text">Cargando datos del usuario...</p>
     </div>
     } @else if (user()) {
-    <!-- Update Form -->
+    <!-- Form Header -->
     <div class="form-header">
-        <h1 class="form-title">Actualizar Usuario</h1>
-        <p class="form-subtitle">Edita los datos de {{ user()?.first_name }} {{ user()?.last_name }}</p>
+        <h1 class="form-title">Editar Usuario</h1>
+        <p class="form-subtitle">
+            Editando: {{ user()?.first_name }} {{ user()?.last_name }} ({{ user()?.username }})
+        </p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" class="update-user-form">
@@ -92,7 +94,11 @@
                 formControlName="role_id"
                 class="form-select">
                 <option value="">Mantener rol actual</option>
-                <!-- TODO: Add role options from API -->
+                @for (role of roles(); track role.id) {
+                    <option [value]="role.id">
+                        {{ role.name }} - {{ role.description }}
+                    </option>
+                }
             </select>
         </div>
 
