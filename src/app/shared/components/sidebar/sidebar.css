@@ -30,7 +30,7 @@
 }
 
 .toggle-button {
-    @apply p-1 rounded-md hover:bg-primary-800 transition-colors text-white focus:ring-2 focus:ring-primary-500 flex-shrink-0;
+    @apply p-1 rounded-md hover:bg-primary-800 transition-colors text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 flex-shrink-0;
 }
 
 .toggle-icon {
@@ -255,9 +255,9 @@
 }
 
 /* Focus states for accessibility */
-.menu-link:focus,
-.toggle-button:focus,
-.logout-button:focus {
+.menu-link:focus-visible,
+.toggle-button:focus-visible,
+.logout-button:focus-visible {
     @apply outline-none ring-2 ring-secondary-500 ring-offset-2 ring-offset-primary-900;
 }
 

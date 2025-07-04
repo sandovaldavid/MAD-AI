@@ -9,15 +9,6 @@
             <span class="logo-text">MAD AI</span>
             }
         </div>
-        <button
-            type="button"
-            (click)="toggleSidebar()"
-            class="toggle-button"
-            [attr.aria-label]="isCollapsed() ? 'Expandir sidebar' : 'Colapsar sidebar'">
-            <span class="toggle-icon">
-                <app-icon [name]="isCollapsed() ? 'arrow-right' : 'arrow-left'" />
-            </span>
-        </button>
     </div>
 
     <!-- Navigation Menu -->
@@ -71,35 +62,6 @@
 
     <!-- Footer -->
     <div class="sidebar-footer">
-        @if (user()) {
-        <div class="user-info">
-            <div class="user-avatar">
-                {{ user()?.first_name?.charAt(0) }}{{ user()?.last_name?.charAt(0) }}
-            </div>
-            @if (!isCollapsed()) {
-            <div class="user-details">
-                <div class="user-name">{{ user()?.first_name }} {{ user()?.last_name }}</div>
-                <div class="user-role">{{ user()?.role_name || 'Usuario' }}</div>
-            </div>
-            }
-        </div>
-        }
-
-        <div class="footer-actions">
-            <button
-                type="button"
-                (click)="onLogout()"
-                class="logout-button"
-                [attr.title]="isCollapsed() ? 'Cerrar sesión' : null">
-                <span class="logout-icon">
-                    <app-icon name="logout" />
-                </span>
-                @if (!isCollapsed()) {
-                <span class="logout-text">Cerrar sesión</span>
-                }
-            </button>
-        </div>
-
         @if (!isCollapsed()) {
         <div class="version-info">
             <span class="version">v3.0</span>

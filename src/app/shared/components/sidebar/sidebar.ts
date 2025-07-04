@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+import { SidebarService } from '@core/services/sidebar.service';
 import { IconComponent } from './icon/icon';
 
 interface MenuItem {
@@ -25,9 +26,10 @@ interface MenuSection {
 export class Sidebar {
     private readonly router = inject(Router);
     private readonly authService = inject(AuthService);
+    private readonly sidebarService = inject(SidebarService);
 
-    // State signals
-    protected readonly isCollapsed = signal(false);
+    // State signals - use service for collapsed state
+    protected readonly isCollapsed = this.sidebarService.isCollapsed;
     protected readonly hoveredItem = signal<string | null>(null);
 
     // Computed properties
@@ -73,7 +75,7 @@ export class Sidebar {
     ];
 
     protected toggleSidebar(): void {
-        this.isCollapsed.update((collapsed) => !collapsed);
+        this.sidebarService.toggle();
     }
 
     protected onItemHover(itemLabel: string | null): void {
