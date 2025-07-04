@@ -1,0 +1,157 @@
+@reference '../../../../../styles.css';
+
+.detail-user-container {
+    @apply max-w-4xl mx-auto p-6 space-y-6;
+}
+
+.page-header {
+    @apply flex items-center justify-between mb-6;
+}
+
+.header-left {
+    @apply flex items-center space-x-4;
+}
+
+.back-btn {
+    @apply flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors;
+}
+
+.page-title {
+    @apply text-2xl font-bold text-black dark:text-white;
+}
+
+.header-actions {
+    @apply flex space-x-3;
+}
+
+.edit-btn {
+    @apply flex items-center space-x-2 bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors;
+}
+
+/* Loading State */
+.loading-container {
+    @apply flex flex-col items-center justify-center py-12 space-y-4;
+}
+
+.loading-spinner {
+    @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin;
+}
+
+.loading-text {
+    @apply text-gray-600 dark:text-gray-300;
+}
+
+/* Error State */
+.error-container {
+    @apply flex flex-col items-center justify-center py-12 space-y-4 text-center;
+}
+
+.error-icon {
+    @apply text-red-500;
+}
+
+.error-text {
+    @apply text-gray-600 dark:text-gray-300 text-lg;
+}
+
+.retry-btn {
+    @apply bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors;
+}
+
+/* User Details */
+.user-details {
+    @apply space-y-6;
+}
+
+.user-card {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6;
+}
+
+.user-avatar-section {
+    @apply flex items-center space-x-6;
+}
+
+.user-avatar-large {
+    @apply w-20 h-20 rounded-full bg-primary-500 text-white text-xl font-bold flex items-center justify-center;
+}
+
+.user-basic-info {
+    @apply flex-1 space-y-2;
+}
+
+.user-full-name {
+    @apply text-2xl font-bold text-black dark:text-white;
+}
+
+.user-username {
+    @apply text-gray-600 dark:text-gray-300 text-lg;
+}
+
+/* Information Sections */
+.info-sections {
+    @apply space-y-6;
+}
+
+.info-section {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6;
+}
+
+.section-title {
+    @apply text-lg font-semibold text-black dark:text-white mb-4 border-b border-gray-200 dark:border-gray-700 pb-2;
+}
+
+.info-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.info-item {
+    @apply space-y-1;
+}
+
+.info-label {
+    @apply block text-sm font-medium text-gray-600 dark:text-gray-300;
+}
+
+.info-value {
+    @apply block text-black dark:text-white font-medium;
+}
+
+/* Status Badges */
+.status-badge-active {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.status-badge-inactive {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+.role-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+}
+
+.no-role {
+    @apply text-gray-500 dark:text-gray-400 italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .detail-user-container {
+        @apply p-4;
+    }
+
+    .page-header {
+        @apply flex-col items-start space-y-4;
+    }
+
+    .header-left {
+        @apply flex-col items-start space-y-2 space-x-0;
+    }
+
+    .user-avatar-section {
+        @apply flex-col items-center space-y-4 space-x-0 text-center;
+    }
+
+    .info-grid {
+        @apply grid-cols-1;
+    }
+}
