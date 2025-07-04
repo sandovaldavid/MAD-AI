@@ -2,30 +2,51 @@
 
 .main-layout {
     @apply min-h-screen flex bg-neutral-50 dark:bg-neutral-900;
+    /* CSS Custom Properties para el ancho del sidebar */
+    --sidebar-width: 288px; /* 18rem = 288px (ml-72) */
+    --header-height: 64px;
 }
 
 .main-content {
-    @apply flex-grow flex flex-col ml-72 transition-all duration-300 ease-in-out;
+    @apply flex-grow flex flex-col transition-all duration-300 ease-in-out;
+    margin-left: var(--sidebar-width);
+}
+
+.header-wrapper {
+    @apply fixed top-0 z-30 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700;
+    left: var(--sidebar-width);
+    right: 0;
+    height: var(--header-height);
+    transition: left 0.3s ease-in-out;
 }
 
 .content-area {
     @apply p-6 flex-grow;
+    margin-top: var(--header-height);
+}
+
+/* When sidebar is collapsed */
+.main-layout.sidebar-collapsed {
+    --sidebar-width: 64px; /* 4rem = 64px (ml-16) */
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .main-layout {
+        --sidebar-width: 0px;
+    }
+
     .main-content {
         @apply ml-0;
     }
-}
 
-/* When sidebar is collapsed */
-.main-layout:has(.sidebar-collapsed) .main-content {
-    @apply ml-16;
+    .header-wrapper {
+        left: 0;
+    }
 }
 
 @media (max-width: 768px) {
-    .main-layout:has(.sidebar-collapsed) .main-content {
-        @apply ml-0;
+    .main-layout.sidebar-collapsed {
+        --sidebar-width: 0px;
     }
 }

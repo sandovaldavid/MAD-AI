@@ -1,8 +1,10 @@
-<div class="main-layout">
+<div [class]="layoutClasses()">
     <app-sidebar />
 
     <div class="main-content">
-        <app-header />
+        <div class="header-wrapper">
+            <app-header />
+        </div>
         <div class="content-area">
             <router-outlet />
         </div>
