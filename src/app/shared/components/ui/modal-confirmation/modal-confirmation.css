@@ -1,7 +1,7 @@
 @reference '../../../../../styles.css';
 
 .modal-overlay {
-    @apply fixed inset-0 z-50 flex items-center justify-center bg-black opacity-50 backdrop-blur-sm;
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm;
 }
 
 .modal-container {
@@ -29,7 +29,7 @@
 }
 
 .btn-base {
-    @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-90 disabled:cursor-not-allowed;
 }
 
 .btn-primary {
@@ -45,7 +45,7 @@
 }
 
 .btn-loading {
-    @apply opacity-50 cursor-not-allowed;
+    @apply opacity-90 cursor-not-allowed;
 }
 
 .loading-spinner {
