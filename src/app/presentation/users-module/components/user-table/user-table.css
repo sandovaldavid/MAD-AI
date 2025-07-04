@@ -40,9 +40,18 @@
 
 /* Search */
 .search-container {
-    @apply relative;
+    @apply relative w-64;
 }
 
+.search-input-component {
+    @apply w-full;
+}
+
+.search-input-component app-input {
+    @apply w-full;
+}
+
+/* Legacy search styles - keeping for potential compatibility */
 .search-input {
     @apply w-64 pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
 }

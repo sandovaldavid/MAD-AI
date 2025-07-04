@@ -25,19 +25,14 @@
 
             <!-- Search input -->
             <div class="search-container">
-                <input
-                    type="text"
-                    placeholder="Buscar usuarios..."
-                    class="search-input"
-                    (input)="onSearchChange($event)"
-                    [value]="searchQuery()" />
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <app-input
+                    [placeholder]="'Buscar usuarios...'"
+                    [size]="'md'"
+                    [type]="'search'"
+                    [ngModel]="searchQuery()"
+                    (ngModelChange)="onSearchChange($event)"
+                    class="search-input-component">
+                </app-input>
             </div>
 
             <!-- Refresh button -->

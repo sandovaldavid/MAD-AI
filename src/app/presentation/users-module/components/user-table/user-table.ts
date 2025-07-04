@@ -7,17 +7,19 @@ import {
     computed,
 } from '@angular/core';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case';
 import { DeleteUserUseCase } from '@application/use-cases/user/delete-user.use-case';
 import { UpdateUserUseCase } from '@application/use-cases/user/update-user.use-case';
 import { UserListModel } from '@domain/models/user/user-list.model';
 import { NotificationService } from '@core/services/notification.service';
 import { ModalConfirmation } from '@shared/components/ui/modal-confirmation/modal-confirmation';
+import { InputComponent } from '@shared/components/ui/input/input.component';
 import { DatePipe } from '@angular/common';
 
 @Component({
     selector: 'app-user-table',
-    imports: [DatePipe, ModalConfirmation],
+    imports: [DatePipe, ModalConfirmation, InputComponent, FormsModule],
     templateUrl: './user-table.html',
     styleUrl: './user-table.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -130,9 +132,8 @@ export class UserTable implements OnInit {
         }
     }
 
-    protected onSearchChange(event: Event): void {
-        const target = event.target as HTMLInputElement;
-        this.searchQuery.set(target.value);
+    protected onSearchChange(value: string): void {
+        this.searchQuery.set(value);
     }
 
     protected getStatusBadgeClass(isActive: boolean): string {
