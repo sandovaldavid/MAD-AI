@@ -15,26 +15,27 @@ export class UserRepositoryImpl implements UserRepository {
 
     getUsers(): Observable<UserListModel[]> {
         return this.userApi.getUsers().pipe(
-            map(users => users.map(user => ({
-                id: user.id,
-                username: user.username,
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                full_name: user.full_name,
-                status: user.status,
-                is_email_confirmed: user.is_email_confirmed,
-                profile_completed: user.profile_completed,
-                email_notifications_enabled: user.email_notifications_enabled,
-                system_notifications_enabled: user.system_notifications_enabled,
-                task_notifications_enabled: user.task_notifications_enabled,
-                is_active: user.is_active,
-                created_at: user.created_at,
-                updated_at: user.updated_at,
-                role_id: user.role_id,
-                role_name: user.role_name,
-                last_activity_at: user.last_activity_at
-            })))
+            map(users => {
+                console.log('Raw API response:', users);
+                console.log('First user raw data:', users[0]);
+                console.log('First user role_name from API:', users[0]?.role_name);
+                
+                const mappedUsers = users.map(user => ({
+                    id: user.id,
+                    username: user.username,
+                    email: user.email,
+                    first_name: user.first_name,
+                    last_name: user.last_name,
+                    is_active: user.is_active,
+                    role_name: user.role_name,
+                    created_at: user.created_at
+                }));
+                
+                console.log('Mapped users:', mappedUsers);
+                console.log('First mapped user role_name:', mappedUsers[0]?.role_name);
+                
+                return mappedUsers;
+            })
         );
     }
 
@@ -46,6 +47,10 @@ export class UserRepositoryImpl implements UserRepository {
                 email: user.email,
                 first_name: user.first_name,
                 last_name: user.last_name,
+                is_active: user.is_active,
+                role_name: user.role_name || null,
+                created_at: user.created_at,
+                // Campos adicionales del detalle
                 full_name: user.full_name,
                 status: user.status,
                 is_email_confirmed: user.is_email_confirmed,
@@ -53,11 +58,8 @@ export class UserRepositoryImpl implements UserRepository {
                 email_notifications_enabled: user.email_notifications_enabled,
                 system_notifications_enabled: user.system_notifications_enabled,
                 task_notifications_enabled: user.task_notifications_enabled,
-                is_active: user.is_active,
-                created_at: user.created_at,
                 updated_at: user.updated_at,
                 role_id: user.role_id,
-                role_name: user.role_name,
                 last_activity_at: user.last_activity_at
             }))
         );
@@ -96,6 +98,10 @@ export class UserRepositoryImpl implements UserRepository {
                 email: response.email,
                 first_name: response.first_name,
                 last_name: response.last_name,
+                is_active: response.is_active,
+                role_name: response.role_name || null,
+                created_at: response.created_at,
+                // Campos adicionales del detalle
                 full_name: response.full_name,
                 status: response.status,
                 is_email_confirmed: response.is_email_confirmed,
@@ -103,11 +109,8 @@ export class UserRepositoryImpl implements UserRepository {
                 email_notifications_enabled: response.email_notifications_enabled,
                 system_notifications_enabled: response.system_notifications_enabled,
                 task_notifications_enabled: response.task_notifications_enabled,
-                is_active: response.is_active,
-                created_at: response.created_at,
                 updated_at: response.updated_at,
                 role_id: response.role_id,
-                role_name: response.role_name,
                 last_activity_at: response.last_activity_at
             }))
         );
@@ -121,6 +124,10 @@ export class UserRepositoryImpl implements UserRepository {
                 email: response.email,
                 first_name: response.first_name,
                 last_name: response.last_name,
+                is_active: response.is_active,
+                role_name: response.role_name || null,
+                created_at: response.created_at,
+                // Campos adicionales del detalle
                 full_name: response.full_name,
                 status: response.status,
                 is_email_confirmed: response.is_email_confirmed,
@@ -128,11 +135,8 @@ export class UserRepositoryImpl implements UserRepository {
                 email_notifications_enabled: response.email_notifications_enabled,
                 system_notifications_enabled: response.system_notifications_enabled,
                 task_notifications_enabled: response.task_notifications_enabled,
-                is_active: response.is_active,
-                created_at: response.created_at,
                 updated_at: response.updated_at,
                 role_id: response.role_id,
-                role_name: response.role_name,
                 last_activity_at: response.last_activity_at
             }))
         );
