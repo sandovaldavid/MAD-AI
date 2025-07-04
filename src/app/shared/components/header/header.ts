@@ -88,8 +88,7 @@ export class HeaderComponent {
                 const target = event.target as Element;
                 if (
                     !target.closest('.user-menu-container') &&
-                    !target.closest('.notification-container') &&
-                    !target.closest('.search-container')
+                    !target.closest('.notification-container')
                 ) {
                     this.closeAllDropdowns();
                 }

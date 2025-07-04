@@ -70,16 +70,6 @@
     @apply px-2 py-1 font-medium text-neutral-900 dark:text-white;
 }
 
-/* Search */
-.search-container {
-    @apply flex items-center justify-center w-full max-w-md mx-auto relative;
-    transition: all 0.3s ease-in-out;
-}
-
-.search-container.search-expanded {
-    @apply w-full;
-}
-
 .search-trigger {
     @apply flex items-center justify-center w-10 h-10 rounded-lg text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-white transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900;
 }
@@ -292,10 +282,6 @@
 
     .header-left {
         @apply justify-start;
-    }
-
-    .search-container {
-        @apply max-w-none;
     }
 }
 
