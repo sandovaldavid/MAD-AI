@@ -1,0 +1,123 @@
+<div class="update-user-container">
+    @if (isLoadingUser()) {
+    <!-- Loading State -->
+    <div class="loading-container">
+        <div class="loading-spinner-large"></div>
+        <p class="loading-text">Cargando datos del usuario...</p>
+    </div>
+    } @else if (user()) {
+    <!-- Update Form -->
+    <div class="form-header">
+        <h1 class="form-title">Actualizar Usuario</h1>
+        <p class="form-subtitle">Edita los datos de {{ user()?.first_name }} {{ user()?.last_name }}</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="update-user-form">
+        <!-- First Name Field -->
+        <div class="form-group">
+            <label for="first_name" class="form-label">
+                Nombre *
+            </label>
+            <input
+                id="first_name"
+                type="text"
+                formControlName="first_name"
+                class="form-input"
+                [class.form-input-error]="getFieldError('first_name')"
+                placeholder="Nombre del usuario">
+            @if (getFieldError('first_name')) {
+                <span class="form-error">{{ getFieldError('first_name') }}</span>
+            }
+        </div>
+
+        <!-- Last Name Field -->
+        <div class="form-group">
+            <label for="last_name" class="form-label">
+                Apellido *
+            </label>
+            <input
+                id="last_name"
+                type="text"
+                formControlName="last_name"
+                class="form-input"
+                [class.form-input-error]="getFieldError('last_name')"
+                placeholder="Apellido del usuario">
+            @if (getFieldError('last_name')) {
+                <span class="form-error">{{ getFieldError('last_name') }}</span>
+            }
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+            <label for="email" class="form-label">
+                Email *
+            </label>
+            <input
+                id="email"
+                type="email"
+                formControlName="email"
+                class="form-input"
+                [class.form-input-error]="getFieldError('email')"
+                placeholder="usuario@ejemplo.com">
+            @if (getFieldError('email')) {
+                <span class="form-error">{{ getFieldError('email') }}</span>
+            }
+        </div>
+
+        <!-- Active Status Field -->
+        <div class="form-group">
+            <label class="form-label">Estado del Usuario</label>
+            <div class="toggle-container">
+                <label for="is_active" class="toggle-label">
+                    <input
+                        id="is_active"
+                        type="checkbox"
+                        formControlName="is_active"
+                        class="toggle-input">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text">
+                        {{ form.get('is_active')?.value ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Role Field (Optional) -->
+        <div class="form-group">
+            <label for="role_id" class="form-label">
+                Rol (Opcional)
+            </label>
+            <select
+                id="role_id"
+                formControlName="role_id"
+                class="form-select">
+                <option value="">Mantener rol actual</option>
+                <!-- TODO: Add role options from API -->
+            </select>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="isLoading()"
+                (click)="onCancel()">
+                Cancelar
+            </button>
+            
+            <button
+                type="submit"
+                class="btn-primary"
+                [disabled]="isLoading() || form.invalid">
+                @if (isLoading()) {
+                    <span class="loading-spinner"></span>
+                    Actualizando...
+                } @else {
+                    Actualizar Usuario
+                }
+            </button>
+        </div>
+    </form>
+    }
+</div>
