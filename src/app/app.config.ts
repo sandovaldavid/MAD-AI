@@ -25,6 +25,7 @@ import { NotificationRepository } from '@domain/repositories/notification.reposi
 import { NotificationRepositoryImpl } from '@infrastructure/repositories/notification.repository.impl';
 import { NOTIFICATION_REPOSITORY_TOKEN } from '@infrastructure/tokens/notification.providers';
 import { USER_PROVIDERS } from '@infrastructure/tokens/user.providers';
+import { ROLE_PROVIDERS } from '@infrastructure/tokens/role.providers';
 import { TitleService } from '@core/services/title.service';
 import { AuthService } from '@core/services/auth.service';
 
@@ -74,6 +75,7 @@ export const appConfig: ApplicationConfig = {
         provideClientHydration(withEventReplay()),
         provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
         ...USER_PROVIDERS,
+        ...ROLE_PROVIDERS,
         {
             provide: AuthRepository,
             useClass: AuthRepositoryImpl,
