@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthRepository } from '@domain/repositories/auth.repository';
+import { AuthRepository, ResetPasswordResponse } from '@domain/repositories/auth.repository';
 import {
     LoginRequest,
     LoginResponse,
@@ -41,5 +41,17 @@ export class AuthRepositoryImpl extends AuthRepository {
 
     confirmEmail(token: string): Observable<{ access_token: string }> {
         return this.authApiClient.confirmEmail(token);
+    }
+
+    requestPasswordReset(email: string): Observable<ResetPasswordResponse> {
+        return this.authApiClient.requestPasswordReset(email);
+    }
+
+    confirmPasswordReset(
+        token: string,
+        newPassword: string,
+        newPasswordConfirm: string
+    ): Observable<ResetPasswordResponse> {
+        return this.authApiClient.confirmPasswordReset(token, newPassword, newPasswordConfirm);
     }
 }
