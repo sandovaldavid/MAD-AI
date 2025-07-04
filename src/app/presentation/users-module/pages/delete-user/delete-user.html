@@ -1,0 +1,78 @@
+<div class="delete-user-container">
+    @if (isLoadingUser()) {
+    <!-- Loading State -->
+    <div class="loading-container">
+        <div class="loading-spinner-large"></div>
+        <p class="loading-text">Cargando datos del usuario...</p>
+    </div>
+    } @else if (user()) {
+    <!-- User Info Card -->
+    <div class="user-info-card">
+        <div class="user-info-header">
+            <div class="user-avatar">
+                {{ user()?.first_name?.charAt(0) }}{{ user()?.last_name?.charAt(0) }}
+            </div>
+            <div class="user-details">
+                <h2 class="user-name">{{ user()?.first_name }} {{ user()?.last_name }}</h2>
+                <p class="user-username">&#64;{{ user()?.username }}</p>
+                <p class="user-email">{{ user()?.email }}</p>
+                <span class="user-status" [class]="user()?.is_active ? 'status-active' : 'status-inactive'">
+                    {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
+                </span>
+            </div>
+        </div>
+
+        <div class="warning-section">
+            <div class="warning-icon">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <div class="warning-content">
+                <h3 class="warning-title">¡Atención!</h3>
+                <p class="warning-text">
+                    Esta acción eliminará permanentemente este usuario y todos sus datos asociados. 
+                    Esta operación no se puede deshacer.
+                </p>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="isLoading()"
+                (click)="onCancelDelete()">
+                Cancelar
+            </button>
+            
+            <button
+                type="button"
+                class="btn-danger"
+                [disabled]="isLoading()"
+                (click)="onConfirmDelete()">
+                @if (isLoading()) {
+                    <span class="loading-spinner"></span>
+                    Eliminando...
+                } @else {
+                    Eliminar Usuario
+                }
+            </button>
+        </div>
+    </div>
+    }
+
+    <!-- Confirmation Modal -->
+    <app-modal-confirmation
+        [isOpen]="showConfirmModal()"
+        [title]="getConfirmationTitle()"
+        [message]="getConfirmationMessage()"
+        [confirmText]="'Eliminar'"
+        [cancelText]="'Cancelar'"
+        [confirmButtonClass]="'btn-danger'"
+        [isLoading]="isLoading()"
+        (confirm)="onConfirmDelete()"
+        (cancel)="onCancelDelete()">
+    </app-modal-confirmation>
+</div>

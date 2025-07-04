@@ -1,0 +1,99 @@
+@reference '../../../../../styles.css';
+
+.delete-user-container {
+    @apply max-w-2xl mx-auto p-6;
+}
+
+.loading-container {
+    @apply flex flex-col items-center justify-center py-12;
+}
+
+.loading-spinner-large {
+    @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4;
+}
+
+.loading-text {
+    @apply text-neutral-600 dark:text-neutral-300;
+}
+
+.user-info-card {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 space-y-6;
+}
+
+.user-info-header {
+    @apply flex items-start space-x-4 pb-6 border-b border-neutral-200 dark:border-neutral-700;
+}
+
+.user-avatar {
+    @apply w-16 h-16 bg-primary-500 text-white rounded-full flex items-center justify-center text-xl font-bold;
+}
+
+.user-details {
+    @apply flex-1;
+}
+
+.user-name {
+    @apply text-2xl font-bold text-neutral-900 dark:text-white mb-1;
+}
+
+.user-username {
+    @apply text-neutral-600 dark:text-neutral-400 mb-1;
+}
+
+.user-email {
+    @apply text-neutral-600 dark:text-neutral-400 mb-3;
+}
+
+.user-status {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+}
+
+.status-inactive {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+}
+
+.warning-section {
+    @apply flex items-start space-x-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4;
+}
+
+.warning-icon {
+    @apply text-yellow-600 dark:text-yellow-400 flex-shrink-0;
+}
+
+.warning-content {
+    @apply flex-1;
+}
+
+.warning-title {
+    @apply text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2;
+}
+
+.warning-text {
+    @apply text-yellow-700 dark:text-yellow-300 leading-relaxed;
+}
+
+.form-actions {
+    @apply flex flex-col sm:flex-row gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    @apply px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center;
+}
+
+.btn-secondary {
+    @apply bg-neutral-200 text-neutral-800 hover:bg-neutral-300 focus:ring-neutral-500 dark:bg-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700;
+}
+
+.btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
+}
+
+.loading-spinner {
+    @apply inline-block w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin;
+}
