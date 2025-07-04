@@ -1,0 +1,40 @@
+@if (isOpen()) {
+<div class="modal-overlay" (click)="onBackdropClick($event)">
+    <div class="modal-container">
+        <!-- Header -->
+        <div class="modal-header">
+            <h3 class="modal-title">{{ title() }}</h3>
+        </div>
+
+        <!-- Content -->
+        <div class="modal-content">
+            <p class="modal-message">{{ message() }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions">
+            <button
+                type="button"
+                class="btn-base btn-secondary"
+                [class.btn-loading]="isLoading()"
+                [disabled]="isLoading()"
+                (click)="onCancel()">
+                {{ cancelText() }}
+            </button>
+            
+            <button
+                type="button"
+                class="btn-base"
+                [class]="confirmButtonClass()"
+                [class.btn-loading]="isLoading()"
+                [disabled]="isLoading()"
+                (click)="onConfirm()">
+                @if (isLoading()) {
+                    <span class="loading-spinner"></span>
+                }
+                {{ confirmText() }}
+            </button>
+        </div>
+    </div>
+</div>
+}
