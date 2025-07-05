@@ -142,6 +142,57 @@ export class UserRepositoryImpl implements UserRepository {
         );
     }
 
+    activateUser(id: number): Observable<UserListModel> {
+        return this.userApi.activateUser(id).pipe(
+            map(response => ({
+                id: response.id,
+                username: response.username,
+                email: response.email,
+                first_name: response.first_name,
+                last_name: response.last_name,
+                is_active: response.is_active,
+                role_name: response.role_name || null,
+                created_at: response.created_at,
+                full_name: response.full_name,
+                status: response.status,
+                is_email_confirmed: response.is_email_confirmed,
+                profile_completed: response.profile_completed,
+                email_notifications_enabled: response.email_notifications_enabled,
+                system_notifications_enabled: response.system_notifications_enabled,
+                task_notifications_enabled: response.task_notifications_enabled,
+                updated_at: response.updated_at,
+                role_id: response.role_id,
+                last_activity_at: response.last_activity_at
+            }))
+        );
+    }
+
+    deactivateUser(id: number, reason?: string): Observable<UserListModel> {
+        return this.userApi.deactivateUser(id, reason).pipe(
+            map(response => ({
+                id: response.id,
+                username: response.username,
+                email: response.email,
+                first_name: response.first_name,
+                last_name: response.last_name,
+                is_active: response.is_active,
+                role_name: response.role_name || null,
+                created_at: response.created_at,
+                // Campos adicionales del detalle
+                full_name: response.full_name,
+                status: response.status,
+                is_email_confirmed: response.is_email_confirmed,
+                profile_completed: response.profile_completed,
+                email_notifications_enabled: response.email_notifications_enabled,
+                system_notifications_enabled: response.system_notifications_enabled,
+                task_notifications_enabled: response.task_notifications_enabled,
+                updated_at: response.updated_at,
+                role_id: response.role_id,
+                last_activity_at: response.last_activity_at
+            }))
+        );
+    }
+
     deleteUser(id: number): Observable<void> {
         return this.userApi.deleteUser(id);
     }
