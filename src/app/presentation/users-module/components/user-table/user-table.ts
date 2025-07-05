@@ -16,10 +16,11 @@ import { NotificationService } from '@core/services/notification.service';
 import { ModalConfirmation } from '@shared/components/ui/modal-confirmation/modal-confirmation';
 import { InputComponent } from '@shared/components/ui/input/input.component';
 import { DatePipe } from '@angular/common';
+import { Button } from '@shared/components/ui/button/button';
 
 @Component({
     selector: 'app-user-table',
-    imports: [DatePipe, ModalConfirmation, InputComponent, FormsModule],
+    imports: [DatePipe, ModalConfirmation, InputComponent, FormsModule, Button],
     templateUrl: './user-table.html',
     styleUrl: './user-table.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -176,7 +177,9 @@ export class UserTable implements OnInit {
 
         this.deleteUserUseCase.execute(user.id).subscribe({
             next: () => {
-                this.notificationService.success('Usuario eliminado', `${user.username} ha sido eliminado exitosamente`).subscribe();
+                this.notificationService
+                    .success('Usuario eliminado', `${user.username} ha sido eliminado exitosamente`)
+                    .subscribe();
                 this.showDeleteModal.set(false);
                 this.selectedUser.set(null);
                 this.isProcessing.set(false);
@@ -184,9 +187,11 @@ export class UserTable implements OnInit {
             },
             error: (error) => {
                 console.error('Error deleting user:', error);
-                this.notificationService.error('Error', 'Error al eliminar el usuario. Por favor, intenta nuevamente.').subscribe();
+                this.notificationService
+                    .error('Error', 'Error al eliminar el usuario. Por favor, intenta nuevamente.')
+                    .subscribe();
                 this.isProcessing.set(false);
-            }
+            },
         });
     }
 
@@ -205,7 +210,12 @@ export class UserTable implements OnInit {
         this.updateUserUseCase.execute(user.id, { is_active: newStatus }).subscribe({
             next: () => {
                 const statusText = newStatus ? 'activado' : 'desactivado';
-                this.notificationService.success('Estado actualizado', `${user.username} ha sido ${statusText} exitosamente`).subscribe();
+                this.notificationService
+                    .success(
+                        'Estado actualizado',
+                        `${user.username} ha sido ${statusText} exitosamente`
+                    )
+                    .subscribe();
                 this.showToggleModal.set(false);
                 this.selectedUser.set(null);
                 this.isProcessing.set(false);
@@ -213,9 +223,14 @@ export class UserTable implements OnInit {
             },
             error: (error) => {
                 console.error('Error updating user status:', error);
-                this.notificationService.error('Error', 'Error al actualizar el estado del usuario. Por favor, intenta nuevamente.').subscribe();
+                this.notificationService
+                    .error(
+                        'Error',
+                        'Error al actualizar el estado del usuario. Por favor, intenta nuevamente.'
+                    )
+                    .subscribe();
                 this.isProcessing.set(false);
-            }
+            },
         });
     }
 
