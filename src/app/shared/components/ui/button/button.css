@@ -135,6 +135,43 @@
     @apply flex-shrink-0;
 }
 
+/* Icon slot styles */
+.btn-base [icon-left],
+.btn-base [icon-right] {
+    @apply flex-shrink-0 fill-current;
+}
+
+/* Icon sizes based on button size */
+.btn-sm [icon-left],
+.btn-sm [icon-right] {
+    @apply w-4 h-4;
+}
+
+.btn-md [icon-left],
+.btn-md [icon-right] {
+    @apply w-5 h-5;
+}
+
+.btn-lg [icon-left],
+.btn-lg [icon-right] {
+    @apply w-6 h-6;
+}
+
+/* Icon positioning */
+.btn-base [icon-left] {
+    @apply -ml-1 mr-2;
+}
+
+.btn-base [icon-right] {
+    @apply ml-2 -mr-1;
+}
+
+/* Icon only button - remove margins when only icon */
+.btn-icon-only [icon-left],
+.btn-icon-only [icon-right] {
+    @apply m-0;
+}
+
 /* Icon only button adjustments */
 .btn-icon-only {
     @apply gap-0;

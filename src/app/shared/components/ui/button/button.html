@@ -1,51 +1,35 @@
-<button
-  [type]="type()"
-  [disabled]="isDisabled()"
-  [class]="buttonClasses()"
-  (click)="onClick()">
-  
-  @if (loading()) {
+<button [type]="type()" [disabled]="isDisabled()" [class]="buttonClasses()" (click)="onClick()">
+    @if (loading()) {
     <svg class="btn-loading-icon" viewBox="0 0 24 24" fill="none">
-      <circle 
-        cx="12" 
-        cy="12" 
-        r="10" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-dasharray="31.416" 
-        stroke-dashoffset="31.416">
-        <animate 
-          attributeName="stroke-dasharray" 
-          dur="2s" 
-          values="0 31.416;15.708 15.708;0 31.416" 
-          repeatCount="indefinite"/>
-        <animate 
-          attributeName="stroke-dashoffset" 
-          dur="2s" 
-          values="0;-15.708;-31.416" 
-          repeatCount="indefinite"/>
-      </circle>
+        <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-dasharray="31.416"
+            stroke-dashoffset="31.416">
+            <animate
+                attributeName="stroke-dasharray"
+                dur="2s"
+                values="0 31.416;15.708 15.708;0 31.416"
+                repeatCount="indefinite" />
+            <animate
+                attributeName="stroke-dashoffset"
+                dur="2s"
+                values="0;-15.708;-31.416"
+                repeatCount="indefinite" />
+        </circle>
     </svg>
-  } @else {
-    @if (hasIcon() && iconPosition() === 'left') {
-      <svg 
-        [class]="iconClasses()"
-        fill="currentColor" 
-        viewBox="0 0 24 24">
-        <use [attr.href]="iconPath()"></use>
-      </svg>
-    }
+    } @else {
+    <!-- Icon izquierdo usando ng-content slot -->
+    <ng-content select="[icon-left]"></ng-content>
 
+    <!-- Contenido principal del botón -->
     <ng-content></ng-content>
 
-    @if (hasIcon() && iconPosition() === 'right') {
-      <svg 
-        [class]="iconClasses()"
-        fill="currentColor" 
-        viewBox="0 0 24 24">
-        <use [attr.href]="iconPath()"></use>
-      </svg>
+    <!-- Icon derecho usando ng-content slot -->
+    <ng-content select="[icon-right]"></ng-content>
     }
-  }
 </button>

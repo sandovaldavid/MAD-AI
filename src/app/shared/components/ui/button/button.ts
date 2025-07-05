@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import type { ButtonVariant, ButtonSize, ButtonType, IconPosition } from '@domain/ui/button';
+import type { ButtonVariant, ButtonSize, ButtonType } from '@domain/ui/button';
 
 @Component({
     selector: 'app-button',
@@ -16,11 +16,6 @@ export class Button {
     loading = input<boolean>(false);
     fullWidth = input<boolean>(false);
     iconOnly = input<boolean>(false);
-    
-    // Icon properties
-    iconPath = input<string>();
-    iconPosition = input<IconPosition>('left');
-    iconSize = input<string>('16');
 
     // Outputs using the new signal-based API
     clicked = output<void>();
@@ -56,19 +51,6 @@ export class Button {
 
     protected readonly isDisabled = computed(() => {
         return this.disabled() || this.loading();
-    });
-
-    protected readonly hasIcon = computed(() => {
-        return !!this.iconPath();
-    });
-
-    protected readonly iconClasses = computed(() => {
-        const sizeMap = {
-            sm: 'w-4 h-4',
-            md: 'w-5 h-5',
-            lg: 'w-6 h-6'
-        };
-        return sizeMap[this.size()];
     });
 
     // Event handlers
