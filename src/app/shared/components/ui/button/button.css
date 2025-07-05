@@ -64,6 +64,31 @@
     @apply ring-neutral-500;
 }
 
+/* Ensure host text color classes override default ghost colors */
+.btn-ghost[class*='text-']:not(.btn-disabled) {
+    /* Override default ghost text color when host has text-* classes */
+    color: revert-layer;
+}
+
+/* Ensure host hover states work properly on ghost buttons */
+.btn-ghost:not(.btn-disabled) {
+    /* Allow host hover: classes to take precedence */
+    transition: all 0.2s ease-in-out;
+}
+
+/* Ghost variant with custom colors - can be overridden with CSS variables */
+.btn-ghost.btn-custom-color {
+    color: var(--btn-icon-color, currentColor);
+}
+
+.btn-ghost.btn-custom-color svg {
+    color: var(--btn-icon-color, currentColor);
+}
+
+.btn-ghost.btn-custom-color svg * {
+    stroke: var(--btn-icon-color, currentColor);
+}
+
 /* Destructive variant */
 .btn-destructive {
     @apply bg-error-500 text-white border border-error-500 hover:bg-error-600 hover:border-error-600 active:bg-error-700;
@@ -133,15 +158,53 @@
 /* Icon styles */
 .btn-base svg {
     @apply flex-shrink-0;
+    color: currentColor; /* Ensure SVGs inherit the button's text color */
 }
 
-/* Icon slot styles */
+/* Force currentColor inheritance for all SVG elements */
+.btn-base svg * {
+    stroke: currentColor;
+    fill: currentColor;
+}
+
+/* Override for stroke-only icons (most of our icons) */
+.btn-base svg[fill='none'] * {
+    fill: none;
+    stroke: currentColor;
+}
+
+/* Icon sizes for internal icons using font-size for em-based sizing */
+.btn-sm {
+    font-size: 1rem; /* Base font size for small buttons */
+}
+
+.btn-sm svg {
+    font-size: 1rem; /* 16px equivalent for small icons */
+}
+
+.btn-md {
+    font-size: 1rem; /* Base font size for medium buttons */
+}
+
+.btn-md svg {
+    font-size: 1.25rem; /* 20px equivalent for medium icons */
+}
+
+.btn-lg {
+    font-size: 1.125rem; /* Base font size for large buttons */
+}
+
+.btn-lg svg {
+    font-size: 1.5rem; /* 24px equivalent for large icons */
+}
+
+/* Icon slot styles (for backwards compatibility) */
 .btn-base [icon-left],
 .btn-base [icon-right] {
     @apply flex-shrink-0 fill-current;
 }
 
-/* Icon sizes based on button size */
+/* Icon sizes based on button size for slots */
 .btn-sm [icon-left],
 .btn-sm [icon-right] {
     @apply w-4 h-4;
@@ -177,27 +240,32 @@
     @apply gap-0;
 }
 
-/* Spacing adjustments when icon is present */
-.btn-base:has(svg:first-child) {
+/* Icon only button - remove gaps for internal icons */
+.btn-icon-only svg {
+    @apply m-0;
+}
+
+/* Spacing adjustments when icon is present (backwards compatibility) */
+.btn-base:has([icon-left]) {
     @apply pl-3;
 }
 
-.btn-base:has(svg:last-child) {
+.btn-base:has([icon-right]) {
     @apply pr-3;
 }
 
-.btn-sm:has(svg:first-child) {
+.btn-sm:has([icon-left]) {
     @apply pl-2;
 }
 
-.btn-sm:has(svg:last-child) {
+.btn-sm:has([icon-right]) {
     @apply pr-2;
 }
 
-.btn-lg:has(svg:first-child) {
+.btn-lg:has([icon-left]) {
     @apply pl-5;
 }
 
-.btn-lg:has(svg:last-child) {
+.btn-lg:has([icon-right]) {
     @apply pr-5;
 }
