@@ -10,5 +10,7 @@ export interface UserRepository {
     getUserStats(): Observable<UserStatsModel>;
     createUser(user: CreateUserModel): Observable<UserListModel>;
     updateUser(id: number, user: UpdateUserModel): Observable<UserListModel>;
+    activateUser(id: number): Observable<UserListModel>;
+    deactivateUser(id: number, reason?: string): Observable<UserListModel>;
     deleteUser(id: number): Observable<void>;
 }
