@@ -30,6 +30,15 @@ export class UserApiClient {
         return this.http.put<UserResponseDto>(`${this.baseUrl}/${id}/update/`, user);
     }
 
+    activateUser(id: number): Observable<UserResponseDto> {
+        return this.http.put<UserResponseDto>(`${this.baseUrl}/${id}/activate/`, {});
+    }
+
+    deactivateUser(id: number, reason?: string): Observable<UserResponseDto> {
+        const body = reason ? { reason } : {};
+        return this.http.delete<UserResponseDto>(`${this.baseUrl}/${id}/deactivate/`, { body });
+    }
+
     deleteUser(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}/`);
     }
