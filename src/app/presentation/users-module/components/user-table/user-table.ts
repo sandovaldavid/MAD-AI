@@ -10,7 +10,8 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case';
 import { DeleteUserUseCase } from '@application/use-cases/user/delete-user.use-case';
-import { UpdateUserUseCase } from '@application/use-cases/user/update-user.use-case';
+import { ActivateUserUseCase } from '@application/use-cases/user/activate-user.use-case';
+import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-user.use-case';
 import { UserListModel } from '@domain/models/user/user-list.model';
 import { NotificationService } from '@core/services/notification.service';
 import { ModalConfirmation } from '@shared/components/ui/modal-confirmation/modal-confirmation';
@@ -28,7 +29,8 @@ import { Button } from '@shared/components/ui/button/button';
 export class UserTable implements OnInit {
     private readonly getUsersUseCase = inject(GetUsersUseCase);
     private readonly deleteUserUseCase = inject(DeleteUserUseCase);
-    private readonly updateUserUseCase = inject(UpdateUserUseCase);
+    private readonly activateUserUseCase = inject(ActivateUserUseCase);
+    private readonly deactivateUserUseCase = inject(DeactivateUserUseCase);
     private readonly router = inject(Router);
     private readonly notificationService = inject(NotificationService);
 
@@ -66,7 +68,7 @@ export class UserTable implements OnInit {
         const column = this.sortColumn();
         const direction = this.sortDirection();
 
-        return filtered.sort((a, b) => {
+        const sorted = filtered.sort((a, b) => {
             let valueA = a[column];
             let valueB = b[column];
 
@@ -84,6 +86,8 @@ export class UserTable implements OnInit {
                 return stringB.localeCompare(stringA);
             }
         });
+
+        return sorted;
     });
 
     protected readonly totalUsers = computed(() => this.users().length);
@@ -180,10 +184,13 @@ export class UserTable implements OnInit {
                 this.notificationService
                     .success('Usuario eliminado', `${user.username} ha sido eliminado exitosamente`)
                     .subscribe();
+
+                // Reload the entire list to ensure consistency
+                this.loadUsers();
+
                 this.showDeleteModal.set(false);
                 this.selectedUser.set(null);
                 this.isProcessing.set(false);
-                this.loadUsers(); // Refresh the list
             },
             error: (error) => {
                 console.error('Error deleting user:', error);
@@ -204,11 +211,31 @@ export class UserTable implements OnInit {
         const user = this.selectedUser();
         if (!user || this.isProcessing()) return;
 
+        console.log('🚀 Starting toggle status for user:', {
+            userId: user.id,
+            currentStatus: user.is_active,
+            username: user.username,
+        });
+
         this.isProcessing.set(true);
         const newStatus = !user.is_active;
 
-        this.updateUserUseCase.execute(user.id, { is_active: newStatus }).subscribe({
-            next: () => {
+        console.log(`📋 Will ${newStatus ? 'activate' : 'deactivate'} user ${user.id}`);
+
+        // Use the appropriate use case based on the desired status
+        const useCase = newStatus
+            ? this.activateUserUseCase.execute(user.id)
+            : this.deactivateUserUseCase.execute(user.id);
+
+        useCase.subscribe({
+            next: (updatedUser: UserListModel) => {
+                console.log('✅ Received updated user from API:', {
+                    userId: updatedUser.id,
+                    newStatus: updatedUser.is_active,
+                    expectedStatus: newStatus,
+                    fullUser: updatedUser,
+                });
+
                 const statusText = newStatus ? 'activado' : 'desactivado';
                 this.notificationService
                     .success(
@@ -216,13 +243,18 @@ export class UserTable implements OnInit {
                         `${user.username} ha sido ${statusText} exitosamente`
                     )
                     .subscribe();
+
+                // SIMPLIFIED APPROACH: Always reload the entire list
+                // This ensures the UI always reflects the correct state
+                console.log('🔄 Reloading all users to ensure UI consistency...');
+                this.loadUsers();
+
                 this.showToggleModal.set(false);
                 this.selectedUser.set(null);
                 this.isProcessing.set(false);
-                this.loadUsers(); // Refresh the list
             },
-            error: (error) => {
-                console.error('Error updating user status:', error);
+            error: (error: any) => {
+                console.error('❌ Error updating user status:', error);
                 this.notificationService
                     .error(
                         'Error',
@@ -234,6 +266,7 @@ export class UserTable implements OnInit {
         });
     }
 
+    // Simplified version that always reloads - use for testing if local update fails
     protected onCancelModal(): void {
         if (!this.isProcessing()) {
             this.showDeleteModal.set(false);
