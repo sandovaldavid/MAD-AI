@@ -1,0 +1,144 @@
+@reference '../../../../../styles.css';
+
+/* Container */
+.select-container {
+    @apply relative w-full;
+}
+
+/* Label */
+.select-label {
+    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1;
+}
+
+.select-label.required::after {
+    @apply content-['*'] text-red-500 ml-1;
+}
+
+/* Select input */
+.select-input {
+    @apply relative w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded-lg transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
+}
+
+.select-input:hover {
+    @apply border-neutral-400 dark:border-neutral-500;
+}
+
+/* Size variants */
+.select-sm {
+    @apply px-3 py-2 text-sm;
+}
+
+.select-md {
+    @apply px-4 py-2.5 text-base;
+}
+
+.select-lg {
+    @apply px-4 py-3 text-lg;
+}
+
+/* Variant styles */
+.select-default {
+    @apply border-neutral-300 dark:border-neutral-600;
+}
+
+.select-error {
+    @apply border-red-500 dark:border-red-400 focus:ring-red-500 focus:border-red-500;
+}
+
+.select-success {
+    @apply border-green-500 dark:border-green-400 focus:ring-green-500 focus:border-green-500;
+}
+
+/* Disabled state */
+.select-disabled {
+    @apply bg-neutral-50 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 cursor-not-allowed;
+}
+
+/* Select display */
+.select-display {
+    @apply flex items-center justify-between w-full;
+}
+
+.select-value {
+    @apply flex-1 text-left text-neutral-900 dark:text-white;
+}
+
+.select-placeholder {
+    @apply text-neutral-500 dark:text-neutral-400;
+}
+
+.select-arrow {
+    @apply w-5 h-5 text-neutral-400 dark:text-neutral-500 transition-transform duration-200 flex-shrink-0 ml-2;
+}
+
+.select-arrow.open {
+    @apply transform rotate-180;
+}
+
+/* Dropdown */
+.select-dropdown {
+    @apply absolute top-full left-0 right-0 mt-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto;
+    animation: dropdown-appear 0.15s ease-out;
+}
+
+@keyframes dropdown-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Options */
+.select-option {
+    @apply px-4 py-2.5 text-sm text-neutral-900 dark:text-white cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors duration-150;
+}
+
+.select-option:first-child {
+    @apply rounded-t-lg;
+}
+
+.select-option:last-child {
+    @apply rounded-b-lg;
+}
+
+.select-option.selected {
+    @apply bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300;
+}
+
+.select-option.disabled {
+    @apply text-neutral-400 dark:text-neutral-500 cursor-not-allowed hover:bg-transparent;
+}
+
+.select-option-content {
+    @apply flex items-center justify-between;
+}
+
+.select-option-check {
+    @apply w-4 h-4 text-primary-600 dark:text-primary-400;
+}
+
+/* Helper text */
+.select-helper {
+    @apply mt-1 text-xs text-neutral-500 dark:text-neutral-400;
+}
+
+/* Error message */
+.select-error-message {
+    @apply mt-1 text-xs text-red-600 dark:text-red-400;
+}
+
+/* Multi-select badge */
+.select-multi-badge {
+    @apply inline-flex items-center px-2 py-1 text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 rounded;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .select-dropdown {
+        @apply max-h-48;
+    }
+}
