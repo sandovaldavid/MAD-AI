@@ -242,6 +242,19 @@
                     </td>
                 </tr>
                 }
+
+                <!-- Empty rows to maintain minimum table height (only when there are users) -->
+                @for (emptyRow of emptyRows(); track $index) {
+                <tr class="empty-row">
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                    <td class="table-cell">&nbsp;</td>
+                </tr>
+                }
             </tbody>
         </table>
     </div>

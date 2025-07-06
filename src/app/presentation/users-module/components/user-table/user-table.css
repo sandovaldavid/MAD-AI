@@ -44,11 +44,11 @@
 
 /* Role Filter */
 .role-filter-container {
-    @apply flex-shrink-0 mx-2;
+    @apply mx-2 min-w-40;
 }
 
 .role-filter-container app-select {
-    @apply w-48;
+    @apply w-full;
 }
 
 /* Legacy search styles - keeping for potential compatibility */
@@ -138,6 +138,16 @@
 
 .table-row:not(:last-child) {
     @apply border-b border-neutral-200 dark:border-neutral-700;
+}
+
+/* Empty rows for minimum table height */
+.empty-row {
+    @apply bg-white dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700;
+    height: 73px; /* Match the height of a regular table row */
+}
+
+.empty-row .table-cell {
+    @apply px-6 py-4;
 }
 
 .table-cell {

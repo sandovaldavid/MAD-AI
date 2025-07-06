@@ -136,6 +136,21 @@ export class UserTable implements OnInit {
         return role?.label || '';
     });
 
+    // Generate empty rows to maintain minimum table height
+    protected readonly emptyRows = computed(() => {
+        const currentUsers = this.filteredAndSortedUsers();
+        const minRows = 4;
+
+        // Only generate empty rows if there are users but less than minRows
+        // Don't generate empty rows when there are no users (to preserve empty state)
+        if (currentUsers.length === 0) {
+            return [];
+        }
+
+        const emptyRowsCount = Math.max(0, minRows - currentUsers.length);
+        return Array(emptyRowsCount).fill(null);
+    });
+
     ngOnInit(): void {
         this.loadUsers();
         this.loadRoles();
