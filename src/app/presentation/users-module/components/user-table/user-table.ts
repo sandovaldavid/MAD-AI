@@ -12,16 +12,20 @@ import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case'
 import { DeleteUserUseCase } from '@application/use-cases/user/delete-user.use-case';
 import { ActivateUserUseCase } from '@application/use-cases/user/activate-user.use-case';
 import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-user.use-case';
+import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
 import { UserListModel } from '@domain/models/user/user-list.model';
+import { RoleListModel } from '@domain/models/role/role-list.model';
 import { NotificationService } from '@core/services/notification.service';
 import { ModalConfirmation } from '@shared/components/ui/modal-confirmation/modal-confirmation';
 import { InputComponent } from '@shared/components/ui/input/input.component';
+import { SelectComponent } from '@shared/components/ui/select/select.component';
 import { DatePipe } from '@angular/common';
 import { Button } from '@shared/components/ui/button/button';
+import type { SelectOption } from '@domain/ui/select';
 
 @Component({
     selector: 'app-user-table',
-    imports: [DatePipe, ModalConfirmation, InputComponent, FormsModule, Button],
+    imports: [DatePipe, ModalConfirmation, InputComponent, SelectComponent, FormsModule, Button],
     templateUrl: './user-table.html',
     styleUrl: './user-table.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,15 +35,19 @@ export class UserTable implements OnInit {
     private readonly deleteUserUseCase = inject(DeleteUserUseCase);
     private readonly activateUserUseCase = inject(ActivateUserUseCase);
     private readonly deactivateUserUseCase = inject(DeactivateUserUseCase);
+    private readonly getRolesUseCase = inject(GetRolesUseCase);
     private readonly router = inject(Router);
     private readonly notificationService = inject(NotificationService);
 
     protected readonly users = signal<UserListModel[]>([]);
+    protected readonly roles = signal<RoleListModel[]>([]);
     protected readonly isLoading = signal(true);
+    protected readonly isLoadingRoles = signal(true);
     protected readonly error = signal<string | null>(null);
     protected readonly sortColumn = signal<keyof UserListModel>('username');
     protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
     protected readonly searchQuery = signal('');
+    protected readonly selectedRoleId = signal<string>('');
 
     // Modal states
     protected readonly showDeleteModal = signal(false);
@@ -48,6 +56,19 @@ export class UserTable implements OnInit {
     protected readonly isProcessing = signal(false);
 
     // Computed values
+    protected readonly roleOptions = computed<SelectOption[]>(() => {
+        const options: SelectOption[] = [{ value: '', label: 'Todos los roles' }];
+
+        return options.concat(
+            this.roles()
+                .filter((role) => role.is_active)
+                .map((role) => ({
+                    value: role.id.toString(),
+                    label: role.name,
+                }))
+        );
+    });
+
     protected readonly filteredAndSortedUsers = computed(() => {
         let filtered = this.users();
 
@@ -62,6 +83,16 @@ export class UserTable implements OnInit {
                     user.last_name.toLowerCase().includes(query) ||
                     (user.role_name && user.role_name.toLowerCase().includes(query))
             );
+        }
+
+        // Apply role filter
+        const selectedRoleId = this.selectedRoleId();
+        if (selectedRoleId) {
+            filtered = filtered.filter((user) => {
+                // Find the role for this user
+                const userRole = this.roles().find((role) => role.name === user.role_name);
+                return userRole?.id.toString() === selectedRoleId;
+            });
         }
 
         // Apply sorting
@@ -98,8 +129,16 @@ export class UserTable implements OnInit {
         () => this.users().filter((user) => !user.is_active).length
     );
 
+    protected readonly selectedRoleName = computed(() => {
+        const selectedRoleId = this.selectedRoleId();
+        if (!selectedRoleId) return '';
+        const role = this.roleOptions().find((r) => r.value === selectedRoleId);
+        return role?.label || '';
+    });
+
     ngOnInit(): void {
         this.loadUsers();
+        this.loadRoles();
     }
 
     private loadUsers(): void {
@@ -122,8 +161,24 @@ export class UserTable implements OnInit {
         });
     }
 
+    private loadRoles(): void {
+        this.isLoadingRoles.set(true);
+
+        this.getRolesUseCase.execute().subscribe({
+            next: (roles) => {
+                this.roles.set(roles);
+                this.isLoadingRoles.set(false);
+            },
+            error: (err) => {
+                console.error('Error loading roles:', err);
+                this.isLoadingRoles.set(false);
+            },
+        });
+    }
+
     protected refresh(): void {
         this.loadUsers();
+        this.loadRoles();
     }
 
     protected sort(column: keyof UserListModel): void {
@@ -139,6 +194,10 @@ export class UserTable implements OnInit {
 
     protected onSearchChange(value: string): void {
         this.searchQuery.set(value);
+    }
+
+    protected onRoleFilterChange(value: string | number | (string | number)[]): void {
+        this.selectedRoleId.set(Array.isArray(value) ? '' : String(value));
     }
 
     protected getStatusBadgeClass(isActive: boolean): string {

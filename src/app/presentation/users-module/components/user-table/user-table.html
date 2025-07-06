@@ -2,7 +2,6 @@
     <!-- Header with search and stats -->
     <div class="table-header">
         <div class="header-left">
-            <h3 class="table-title">Lista de Usuarios</h3>
             <div class="stats-summary">
                 <span class="stat-item">Total: {{ totalUsers() }}</span>
                 <span class="stat-item">Activos: {{ activeUsers() }}</span>
@@ -15,6 +14,18 @@
             <app-button variant="primary" size="md" icon="plus" (clicked)="navigateToCreate()">
                 Crear Usuario
             </app-button>
+
+            <!-- Role filter -->
+            <div class="role-filter-container">
+                <app-select
+                    [placeholder]="'Filtrar por rol'"
+                    [size]="'md'"
+                    [options]="roleOptions()"
+                    [ngModel]="selectedRoleId()"
+                    (valueChange)="onRoleFilterChange($event)"
+                    [disabledInput]="isLoadingRoles()">
+                </app-select>
+            </div>
 
             <!-- Search input -->
             <div class="search-container">
@@ -221,9 +232,11 @@
                             <div class="empty-icon">👥</div>
                             <p class="empty-title">No se encontraron usuarios</p>
                             <p class="empty-description">
-                                @if (searchQuery()) { No hay usuarios que coincidan con "{{
+                                @if (searchQuery() || selectedRoleId()) { No hay usuarios que
+                                coincidan con los filtros aplicados @if (searchQuery()) { : "{{
                                     searchQuery()
-                                }}" } @else { No hay usuarios registrados en el sistema }
+                                }}" } @if (selectedRoleId()) { y rol "{{ selectedRoleName() }}" } }
+                                @else { No hay usuarios registrados en el sistema }
                             </p>
                         </div>
                     </td>
@@ -238,7 +251,10 @@
     <div class="table-footer">
         <p class="results-count">
             Mostrando {{ filteredAndSortedUsers().length }} de {{ totalUsers() }} usuarios @if
-            (searchQuery()) { para "{{ searchQuery() }}" }
+            (searchQuery() || selectedRoleId()) { para @if (searchQuery()) { "{{ searchQuery() }}" }
+            @if (searchQuery() && selectedRoleId()) { y } @if (selectedRoleId()) { rol "{{
+                selectedRoleName()
+            }}" } }
         </p>
     </div>
     } }

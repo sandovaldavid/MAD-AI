@@ -31,7 +31,7 @@
 
 /* Search */
 .search-container {
-    @apply relative w-64;
+    @apply flex-1 max-w-md mx-2;
 }
 
 .search-input-component {
@@ -40,6 +40,15 @@
 
 .search-input-component app-input {
     @apply w-full;
+}
+
+/* Role Filter */
+.role-filter-container {
+    @apply flex-shrink-0 mx-2;
+}
+
+.role-filter-container app-select {
+    @apply w-48;
 }
 
 /* Legacy search styles - keeping for potential compatibility */
