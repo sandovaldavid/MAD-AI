@@ -1,7 +1,7 @@
 @reference '../../../../../styles.css';
 
 .user-table-container {
-    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700;
+    @apply bg-primary-200 dark:bg-primary-700 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700;
 }
 
 /* Header */
@@ -52,9 +52,6 @@
 }
 
 /* Legacy search styles - keeping for potential compatibility */
-.search-input {
-    @apply w-64 pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
-}
 
 .search-icon {
     @apply absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-neutral-400 dark:text-neutral-500;
@@ -92,15 +89,15 @@
 }
 
 .table-header-row {
-    @apply bg-neutral-50 dark:bg-neutral-700;
+    @apply bg-primary-300 dark:bg-primary-800;
 }
 
 .table-header-cell {
-    @apply px-6 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider;
+    @apply px-6 py-3 text-left text-xs font-medium text-black dark:text-neutral-400 uppercase tracking-wider;
 }
 
 .table-header-cell.sortable {
-    @apply cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors;
+    @apply cursor-pointer hover:bg-primary-400 dark:hover:bg-neutral-600 transition-colors;
 }
 
 .header-content {
@@ -108,7 +105,7 @@
 }
 
 .sort-icon {
-    @apply w-4 h-4 text-neutral-400 dark:text-neutral-500 transition-transform;
+    @apply w-4 h-4 text-black dark:text-neutral-500 transition-transform;
 }
 
 .sort-icon.sort-asc {
@@ -125,15 +122,15 @@
 
 /* New sort indicator */
 .sort-indicator {
-    @apply text-neutral-400 dark:text-neutral-500 text-sm font-bold transition-colors;
+    @apply text-black dark:text-neutral-700 text-sm font-bold transition-colors;
 }
 
 .header-content:hover .sort-indicator {
-    @apply text-primary-500;
+    @apply text-primary-900;
 }
 
 .table-row {
-    @apply bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors;
+    @apply bg-primary-200 dark:bg-primary-700 hover:bg-primary-300 dark:hover:bg-primary-800 transition-colors;
 }
 
 .table-row:not(:last-child) {
@@ -242,7 +239,7 @@
 
 /* Table footer */
 .table-footer {
-    @apply px-6 py-3 bg-neutral-50 dark:bg-neutral-700 border-t border-neutral-200 dark:border-neutral-600;
+    @apply px-6 py-3 bg-primary-200 dark:bg-primary-700 border-t border-neutral-500 dark:border-neutral-600;
 }
 
 .results-count {
@@ -257,10 +254,6 @@
 
     .header-right {
         @apply w-full justify-between;
-    }
-
-    .search-input {
-        @apply w-full;
     }
 
     .stats-summary {
