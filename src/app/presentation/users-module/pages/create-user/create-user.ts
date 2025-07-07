@@ -1,11 +1,11 @@
 import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { CreateUserUseCase } from '../../../../application/use-cases/user/create-user.use-case';
-import { GetRolesUseCase } from '../../../../application/use-cases/role/get-roles.use-case';
-import { CreateUserModel } from '../../../../domain/models/user/create-user.model';
-import { RoleListModel } from '../../../../domain/models/role/role-list.model';
-import { NotificationService } from '../../../../core/services/notification.service';
+import { CreateUserUseCase } from '@application/use-cases/user/create-user.use-case';
+import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
+import { CreateUserModel } from '@domain/models/user/create-user.model';
+import { RoleListModel } from '@domain/models/role/role-list.model';
+import { NotificationService } from '@core/services/notification.service';
 
 @Component({
     selector: 'app-create-user',
