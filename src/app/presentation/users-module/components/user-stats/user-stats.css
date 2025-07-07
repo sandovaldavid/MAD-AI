@@ -13,7 +13,7 @@
 }
 
 .stat-card:nth-child(3) {
-    @apply bg-tertiary-300 dark:bg-tertiary-500 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
+    @apply bg-tertiary-200 dark:bg-tertiary-400 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
 }
 
 .stat-header {
