@@ -4,8 +4,16 @@
     @apply grid grid-cols-1 md:grid-cols-3 gap-6;
 }
 
-.stat-card {
-    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
+.stat-card:nth-child(1) {
+    @apply bg-primary-200 dark:bg-primary-400 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
+}
+
+.stat-card:nth-child(2) {
+    @apply bg-secondary-200 dark:bg-secondary-400 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
+}
+
+.stat-card:nth-child(3) {
+    @apply bg-tertiary-300 dark:bg-tertiary-500 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-colors hover:shadow-md;
 }
 
 .stat-header {
@@ -13,7 +21,7 @@
 }
 
 .stat-title {
-    @apply text-neutral-600 dark:text-neutral-300 text-sm font-medium;
+    @apply text-neutral-600 dark:text-neutral-100 text-sm font-medium;
 }
 
 .stat-value {
