@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, signal, OnInit, inject } from '@angular/core';
 import { GetUserStatsUseCase } from '../../../../application/use-cases/user/get-user-stats.use-case';
 import { UserStatsModel } from '../../../../domain/models/user/user-stats.model';
+import { Button} from '@shared/components/ui/button/button';
 
 @Component({
   selector: 'app-user-stats',
-  imports: [],
+  imports: [Button],
   templateUrl: './user-stats.html',
   styleUrl: './user-stats.css',
   changeDetection: ChangeDetectionStrategy.OnPush
