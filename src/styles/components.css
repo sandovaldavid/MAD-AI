@@ -19,9 +19,9 @@
 }
 
 .section-dashboard {
-    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6;
+    @apply bg-primary-100 dark:bg-primary-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6;
 }
 
 .section-title {
-    @apply text-xl font-semibold text-primary-800 dark:text-primary-200 mb-6;
+    @apply text-xl font-extrabold text-primary-800 dark:text-primary-200 mb-6;
 }
