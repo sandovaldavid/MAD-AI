@@ -1,0 +1,9 @@
+@reference '../../../../../styles.css';
+
+:host {
+    @apply inline-flex items-center justify-center;
+}
+
+svg {
+    @apply transition-colors duration-200;
+}
