@@ -1,88 +1,85 @@
 @if (isLoading()) {
-  <!-- Loading State -->
-  <div class="loading-container">
+<!-- Loading State -->
+<div class="loading-container">
     <div class="loading-card">
-      <div class="loading-skeleton loading-title"></div>
-      <div class="loading-skeleton loading-value"></div>
+        <div class="loading-skeleton loading-title"></div>
+        <div class="loading-skeleton loading-value"></div>
     </div>
     <div class="loading-card">
-      <div class="loading-skeleton loading-title"></div>
-      <div class="loading-skeleton loading-value"></div>
+        <div class="loading-skeleton loading-title"></div>
+        <div class="loading-skeleton loading-value"></div>
     </div>
     <div class="loading-card">
-      <div class="loading-skeleton loading-title"></div>
-      <div class="loading-skeleton loading-value"></div>
+        <div class="loading-skeleton loading-title"></div>
+        <div class="loading-skeleton loading-value"></div>
     </div>
-  </div>
+</div>
 } @else if (error()) {
-  <!-- Error State -->
-  <div class="error-container">
+<!-- Error State -->
+<div class="error-container">
     <p class="error-text">{{ error() }}</p>
-    <app-button 
-      variant="destructive" 
-      size="sm" 
-      icon="refresh" 
-      (clicked)="refresh()" 
-      class="mt-3">
-      Reintentar
+    <app-button variant="destructive" size="sm" icon="refresh" (clicked)="refresh()" class="mt-3">
+        Reintentar
     </app-button>
-  </div>
+</div>
 } @else if (userStats()) {
-  <!-- Stats Display -->
-  <div class="stats-container">
+<!-- Stats Display -->
+<div class="stats-container">
     <!-- Total Users -->
     <div class="stat-card">
-      <div class="stat-header">
-        <div>
-          <p class="stat-title">Total de Usuarios</p>
-          <p class="stat-value">{{ userStats()!.total_users }}</p>
+        <div class="stat-header">
+            <div>
+                <p class="stat-title">Total de Usuarios</p>
+                <p class="stat-value">{{ userStats()!.total_users }}</p>
+            </div>
+            <div class="stat-icon stat-icon-total">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                        d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                </svg>
+            </div>
         </div>
-        <div class="stat-icon stat-icon-total">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-          </svg>
-        </div>
-      </div>
     </div>
 
     <!-- Active Users -->
     <div class="stat-card">
-      <div class="stat-header">
-        <div>
-          <p class="stat-title">Usuarios Activos</p>
-          <p class="stat-value">{{ userStats()!.active_users }}</p>
+        <div class="stat-header">
+            <div>
+                <p class="stat-title">Usuarios Activos</p>
+                <p class="stat-value">{{ userStats()!.active_users }}</p>
+            </div>
+            <div class="stat-icon stat-icon-active">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L8.053 10.5a.75.75 0 00-1.06 1.061l2.182 2.182a.75.75 0 001.137-.089l4-5.5z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
         </div>
-        <div class="stat-icon stat-icon-active">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L8.053 10.5a.75.75 0 00-1.06 1.061l2.182 2.182a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-      </div>
     </div>
 
     <!-- Inactive Users -->
     <div class="stat-card">
-      <div class="stat-header">
-        <div>
-          <p class="stat-title">Usuarios Inactivos</p>
-          <p class="stat-value">{{ userStats()!.inactive_users }}</p>
+        <div class="stat-header">
+            <div>
+                <p class="stat-title">Usuarios Inactivos</p>
+                <p class="stat-value">{{ userStats()!.inactive_users }}</p>
+            </div>
+            <div class="stat-icon stat-icon-inactive">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
         </div>
-        <div class="stat-icon stat-icon-inactive">
-          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- Refresh Button -->
-  <div class="mt-6 flex justify-end">
-    <app-button 
-      variant="primary" 
-      icon="refresh" 
-      (clicked)="refresh()">
-      Actualizar
-    </app-button>
-  </div>
+<!-- Refresh Button -->
+<div class="mt-6 flex justify-end">
+    <app-button variant="primary" icon="refresh" (clicked)="refresh()"> Actualizar </app-button>
+</div>
 }
