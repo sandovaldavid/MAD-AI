@@ -2,29 +2,20 @@
     <!-- Header -->
     <div class="page-header">
         <div class="header-left">
-            <button (click)="goBack()" class="back-btn">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M15 19l-7-7 7-7" />
-                </svg>
+            <app-button
+                variant="ghost"
+                size="sm"
+                (clicked)="goBack()"
+                icon="arrow-left"
+                customClass="text-neutral-600 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400">
                 Volver a la lista
-            </button>
+            </app-button>
         </div>
         @if (user() && !isLoading()) {
         <div class="header-actions">
-            <button (click)="navigateToEdit()" class="edit-btn">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
+            <app-button variant="primary" size="sm" icon="edit" (clicked)="navigateToEdit()">
                 Editar Usuario
-            </button>
+            </app-button>
         </div>
         }
     </div>
@@ -38,17 +29,9 @@
     } @else if (error()) {
     <!-- Error State -->
     <div class="error-container">
-        <div class="error-icon">
-            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-        </div>
+        <icon-info size="48" customClass="text-error-500 dark:text-error-400" />
         <p class="error-text">{{ error() }}</p>
-        <button (click)="goBack()" class="retry-btn">Volver a la lista</button>
+        <app-button variant="primary" (clicked)="goBack()"> Volver a la lista </app-button>
     </div>
     } @else if (user()) {
     <!-- User Details -->
@@ -57,15 +40,27 @@
         <div class="user-card">
             <div class="user-avatar-section">
                 <div class="user-avatar-large">
-                    {{ user()!.first_name.charAt(0).toUpperCase()
-                    }}{{ user()!.last_name.charAt(0).toUpperCase() }}
+                    {{ getUserInitials(user()!.full_name || '') }}
                 </div>
                 <div class="user-basic-info">
-                    <h2 class="user-full-name">{{ user()!.full_name }}</h2>
-                    <p class="user-username">{{ user()!.username }}</p>
-                    <span [class]="getStatusBadgeClass(user()!.is_active)">
-                        {{ getStatusText(user()!.is_active) }}
-                    </span>
+                    <h1 class="user-full-name">{{ user()!.full_name }}</h1>
+                    <p class="user-username">{{ '@' + user()!.username }}</p>
+                    <div class="flex items-center space-x-4 mt-3">
+                        <span [class]="getStatusBadgeClass(user()!.is_active)">
+                            @if (user()!.is_active) {
+                            <icon-check-circle size="16" customClass="mr-1" />
+                            } @else {
+                            <icon-x-circle size="16" customClass="mr-1" />
+                            }
+                            {{ getStatusText(user()!.is_active) }}
+                        </span>
+                        @if (user()!.role_name) {
+                        <span class="role-badge">
+                            <icon-shield size="16" customClass="mr-1" />
+                            {{ user()!.role_name }}
+                        </span>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -74,131 +69,282 @@
         <div class="info-sections">
             <!-- Contact Information -->
             <div class="info-section">
-                <h3 class="section-title">Información de Contacto</h3>
+                <div class="section-header">
+                    <icon-email size="20" customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Información de Contacto</h3>
+                </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label class="info-label">Email</label>
-                        <span class="info-value">{{ user()!.email }}</span>
+                        <icon-email
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Email</label>
+                            <span class="info-value">{{ user()!.email }}</span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Nombre de Usuario</label>
-                        <span class="info-value">{{ user()!.username }}</span>
+                        <icon-user
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Nombre de Usuario</label>
+                            <span class="info-value">{{ user()!.username }}</span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Email Confirmado</label>
-                        <span [class]="user()!.is_email_confirmed ? 'status-badge-active' : 'status-badge-inactive'">
-                            {{ user()!.is_email_confirmed ? 'Sí' : 'No' }}
-                        </span>
+                        @if (user()!.is_email_confirmed) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Email Confirmado</label>
+                            <span
+                                [class]="
+                                    user()!.is_email_confirmed
+                                        ? 'status-badge-active'
+                                        : 'status-badge-inactive'
+                                ">
+                                {{ user()!.is_email_confirmed ? 'Sí' : 'No' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Personal Information -->
             <div class="info-section">
-                <h3 class="section-title">Información Personal</h3>
+                <div class="section-header">
+                    <icon-id-badge size="20" customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Información Personal</h3>
+                </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label class="info-label">Nombre</label>
-                        <span class="info-value">{{ user()!.first_name }}</span>
+                        <icon-user
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Nombre</label>
+                            <span class="info-value">{{ user()!.first_name }}</span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Apellido</label>
-                        <span class="info-value">{{ user()!.last_name }}</span>
+                        <icon-user
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Apellido</label>
+                            <span class="info-value">{{ user()!.last_name }}</span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Nombre Completo</label>
-                        <span class="info-value">{{ user()!.full_name }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">Estado</label>
-                        <span class="info-value">{{ user()!.status }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">Perfil Completado</label>
-                        <span [class]="user()!.profile_completed ? 'status-badge-active' : 'status-badge-inactive'">
-                            {{ user()!.profile_completed ? 'Sí' : 'No' }}
-                        </span>
+                        @if (user()!.profile_completed) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Perfil Completado</label>
+                            <span
+                                [class]="
+                                    user()!.profile_completed
+                                        ? 'status-badge-active'
+                                        : 'status-badge-inactive'
+                                ">
+                                {{ user()!.profile_completed ? 'Sí' : 'No' }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Role and Status -->
             <div class="info-section">
-                <h3 class="section-title">Rol y Estado</h3>
+                <div class="section-header">
+                    <icon-shield size="20" customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Rol y Estado</h3>
+                </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label class="info-label">Rol</label>
-                        @if (user()!.role_name) {
-                        <span class="role-badge">{{ user()!.role_name }}</span>
+                        <icon-shield
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Rol</label>
+                            @if (user()!.role_name) {
+                            <span class="role-badge">{{ user()!.role_name }}</span>
+                            } @else {
+                            <span class="no-role">Sin rol asignado</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        @if (user()!.is_active) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
                         } @else {
-                        <span class="no-role">Sin rol asignado</span>
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
                         }
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">ID de Rol</label>
-                        <span class="info-value">{{ user()!.role_id || 'Sin asignar' }}</span>
-                    </div>
-                    <div class="info-item">
-                        <label class="info-label">Estado de la Cuenta</label>
-                        <span [class]="getStatusBadgeClass(user()!.is_active)">
-                            {{ getStatusText(user()!.is_active) }}
-                        </span>
+                        <div class="info-content">
+                            <label class="info-label">Estado de la Cuenta</label>
+                            <span [class]="getStatusBadgeClass(user()!.is_active)">
+                                {{ getStatusText(user()!.is_active) }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Notification Settings -->
             <div class="info-section">
-                <h3 class="section-title">Configuración de Notificaciones</h3>
+                <div class="section-header">
+                    <icon-bell size="20" customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Configuración de Notificaciones</h3>
+                </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label class="info-label">Notificaciones por Email</label>
-                        <span [class]="user()!.email_notifications_enabled ? 'status-badge-active' : 'status-badge-inactive'">
-                            {{ user()!.email_notifications_enabled ? 'Habilitadas' : 'Deshabilitadas' }}
-                        </span>
+                        @if (user()!.email_notifications_enabled) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Notificaciones por Email</label>
+                            <span
+                                [class]="
+                                    user()!.email_notifications_enabled
+                                        ? 'status-badge-active'
+                                        : 'status-badge-inactive'
+                                ">
+                                {{
+                                    user()!.email_notifications_enabled
+                                        ? 'Habilitadas'
+                                        : 'Deshabilitadas'
+                                }}
+                            </span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Notificaciones del Sistema</label>
-                        <span [class]="user()!.system_notifications_enabled ? 'status-badge-active' : 'status-badge-inactive'">
-                            {{ user()!.system_notifications_enabled ? 'Habilitadas' : 'Deshabilitadas' }}
-                        </span>
+                        @if (user()!.system_notifications_enabled) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Notificaciones del Sistema</label>
+                            <span
+                                [class]="
+                                    user()!.system_notifications_enabled
+                                        ? 'status-badge-active'
+                                        : 'status-badge-inactive'
+                                ">
+                                {{
+                                    user()!.system_notifications_enabled
+                                        ? 'Habilitadas'
+                                        : 'Deshabilitadas'
+                                }}
+                            </span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Notificaciones de Tareas</label>
-                        <span [class]="user()!.task_notifications_enabled ? 'status-badge-active' : 'status-badge-inactive'">
-                            {{ user()!.task_notifications_enabled ? 'Habilitadas' : 'Deshabilitadas' }}
-                        </span>
+                        @if (user()!.task_notifications_enabled) {
+                        <icon-check-circle
+                            size="16"
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle
+                            size="16"
+                            customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Notificaciones de Tareas</label>
+                            <span
+                                [class]="
+                                    user()!.task_notifications_enabled
+                                        ? 'status-badge-active'
+                                        : 'status-badge-inactive'
+                                ">
+                                {{
+                                    user()!.task_notifications_enabled
+                                        ? 'Habilitadas'
+                                        : 'Deshabilitadas'
+                                }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Account Information -->
-            <div class="info-section">
-                <h3 class="section-title">Información de la Cuenta</h3>
+            <div class="info-section full-width-section">
+                <div class="section-header">
+                    <icon-calendar size="20" customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Información de la Cuenta</h3>
+                </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label class="info-label">Fecha de Registro</label>
-                        <span class="info-value">{{
-                            user()!.created_at | date : 'dd/MM/yyyy HH:mm'
-                        }}</span>
+                        <icon-calendar
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Fecha de Registro</label>
+                            <span class="info-value">{{
+                                user()!.created_at | date : 'dd/MM/yyyy HH:mm'
+                            }}</span>
+                        </div>
                     </div>
                     <div class="info-item">
-                        <label class="info-label">Última Actualización</label>
-                        <span class="info-value">{{
-                            user()!.updated_at | date : 'dd/MM/yyyy HH:mm'
-                        }}</span>
+                        <icon-clock
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Última Actualización</label>
+                            <span class="info-value">{{
+                                user()!.updated_at | date : 'dd/MM/yyyy HH:mm'
+                            }}</span>
+                        </div>
                     </div>
                     @if (user()!.last_activity_at) {
                     <div class="info-item">
-                        <label class="info-label">Última Actividad</label>
-                        <span class="info-value">{{
-                            user()!.last_activity_at | date : 'dd/MM/yyyy HH:mm'
-                        }}</span>
+                        <icon-clock
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Última Actividad</label>
+                            <span class="info-value">{{
+                                user()!.last_activity_at | date : 'dd/MM/yyyy HH:mm'
+                            }}</span>
+                        </div>
                     </div>
                     }
                     <div class="info-item">
-                        <label class="info-label">ID de Usuario</label>
-                        <span class="info-value">#{{ user()!.id }}</span>
+                        <icon-id-badge
+                            size="16"
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">ID de Usuario</label>
+                            <span class="info-value">#{{ user()!.id }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,17 +353,9 @@
     } @else {
     <!-- No User Found -->
     <div class="error-container">
-        <div class="error-icon">
-            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-        </div>
+        <icon-user size="48" customClass="text-neutral-400 dark:text-neutral-600" />
         <p class="error-text">Usuario no encontrado</p>
-        <button (click)="goBack()" class="retry-btn">Volver a la lista</button>
+        <app-button variant="primary" (clicked)="goBack()"> Volver a la lista </app-button>
     </div>
     }
 </div>

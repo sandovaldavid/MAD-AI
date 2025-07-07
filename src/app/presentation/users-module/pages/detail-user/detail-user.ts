@@ -4,10 +4,34 @@ import { GetUserByIdUseCase } from '@application/use-cases/user/get-user-by-id.u
 import { UserListModel } from '@domain/models/user/user-list.model';
 import { DatePipe } from '@angular/common';
 import { TitleService } from '@core/services/title.service';
+import { Button } from '@shared/components/ui/button/button';
+import { UserIcon } from '../../icons/user.icon/user.icon';
+import { EmailIcon } from '../../icons/email.icon/email.icon';
+import { InfoIcon } from '../../icons/info.icon/info.icon';
+import { ShieldIcon } from '../../icons/shield.icon/shield.icon';
+import { BellIcon } from '../../icons/bell.icon/bell.icon';
+import { CalendarIcon } from '../../icons/calendar.icon/calendar.icon';
+import { CheckCircleIcon } from '../../icons/check-circle.icon/check-circle.icon';
+import { XCircleIcon } from '../../icons/x-circle.icon/x-circle.icon';
+import { ClockIcon } from '../../icons/clock.icon/clock.icon';
+import { IdBadgeIcon } from '../../icons/id-badge.icon/id-badge.icon';
 
 @Component({
     selector: 'app-detail-user',
-    imports: [DatePipe],
+    imports: [
+        DatePipe,
+        Button,
+        UserIcon,
+        EmailIcon,
+        InfoIcon,
+        ShieldIcon,
+        BellIcon,
+        CalendarIcon,
+        CheckCircleIcon,
+        XCircleIcon,
+        ClockIcon,
+        IdBadgeIcon,
+    ],
     templateUrl: './detail-user.html',
     styleUrl: './detail-user.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,9 +61,7 @@ export class DetailUser {
         effect(() => {
             const userData = this.user();
             if (userData) {
-                this.titleService.setTitle(
-                    `Perfil de ${userData.full_name}`
-                );
+                this.titleService.setTitle(`Perfil de ${userData.full_name}`);
             }
         });
     }
@@ -78,5 +100,14 @@ export class DetailUser {
 
     protected getStatusText(isActive: boolean): string {
         return isActive ? 'Activo' : 'Inactivo';
+    }
+
+    protected getUserInitials(fullName: string): string {
+        return fullName
+            .split(' ')
+            .map((name) => name.charAt(0))
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
     }
 }
