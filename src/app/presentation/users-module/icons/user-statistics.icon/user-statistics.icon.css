@@ -1,0 +1,9 @@
+@reference '../../../../../styles.css';
+
+:host {
+    @apply inline-flex;
+}
+
+svg {
+    @apply transition-colors duration-200;
+}
