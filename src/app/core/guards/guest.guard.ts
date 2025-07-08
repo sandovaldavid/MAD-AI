@@ -5,7 +5,7 @@ import { AuthService } from '@core/services/auth.service';
 @Injectable({
     providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class GuestGuard implements CanActivate {
     private readonly authService = inject(AuthService);
     private readonly router = inject(Router);
 
@@ -14,10 +14,12 @@ export class AuthGuard implements CanActivate {
         await this.authService.waitForInitialization();
 
         if (this.authService.isAuthenticated()) {
-            return true;
+            // Si está autenticado, redirige al dashboard
+            this.router.navigate(['/dashboard']);
+            return false;
         }
 
-        this.router.navigate(['/auth/login']);
-        return false;
+        // Si no está autenticado, permite el acceso a la ruta
+        return true;
     }
 }

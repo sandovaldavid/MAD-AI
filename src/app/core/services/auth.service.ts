@@ -5,7 +5,7 @@ import { UserInfo, LoginRequest, RegisterRequest } from '@domain/models/auth/aut
 import { LoginUseCase } from '@application/use-cases/auth/login.use-case';
 import { RegisterUseCase } from '@application/use-cases/auth/register.use-case';
 import { LogoutUseCase } from '@application/use-cases/auth/logout.use-case';
-import { Observable, tap, catchError, throwError, map } from 'rxjs';
+import { Observable, tap, catchError, throwError, map, BehaviorSubject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -16,6 +16,10 @@ export class AuthService {
     private readonly registerUseCase = inject(RegisterUseCase);
     private readonly logoutUseCase = inject(LogoutUseCase);
     private readonly platformId = inject(PLATFORM_ID);
+
+    // Subject to track initialization status
+    private readonly _initializationSubject = new BehaviorSubject<boolean>(false);
+    private _initializationPromise: Promise<void> | null = null;
 
     // Check if we're in browser environment
     private get isBrowser(): boolean {
@@ -30,50 +34,36 @@ export class AuthService {
     private readonly _isLoading = signal<boolean>(false);
 
     // Computed properties
-    readonly isAuthenticated = computed(() => {
-        // Si ya está autenticado, retorna el valor actual
-        if (this._isAuthenticated()) {
-            return true;
-        }
-
-        // Si no está autenticado, verifica si hay tokens almacenados
-        if (this.isBrowser) {
-            const token = this.getStoredToken();
-            const user = this.getStoredUser();
-
-            // Si hay tokens, actualiza el estado de autenticación
-            if (token && user) {
-                this._accessToken.set(token);
-                this._user.set(user);
-                this._isAuthenticated.set(true);
-                return true;
-            }
-        }
-
-        return false;
-    });
+    readonly isAuthenticated = computed(() => this._isAuthenticated());
     readonly user = computed(() => this._user());
     readonly isLoading = computed(() => this._isLoading());
 
     constructor() {
         // Inicializamos inmediatamente si estamos en el navegador
         if (this.isBrowser) {
-            // Usando un timeout de 0 para asegurar que se ejecuta después de la inicialización del componente
-            // pero aún así lo más pronto posible en el ciclo de eventos de JavaScript
-            setTimeout(() => this.initializeAuth(), 0);
-
-            // También añadimos un listener para el evento storage para sincronizar entre pestañas
-            window.addEventListener('storage', (event) => {
-                // Si los tokens cambian en otra pestaña, actualizamos el estado
-                if (
-                    event.key === 'access_token' ||
-                    event.key === 'refresh_token' ||
-                    event.key === 'user'
-                ) {
-                    this.initializeAuth();
-                }
-            });
+            // Creamos una promesa para la inicialización
+            this._initializationPromise = this.performInitialization();
+        } else {
+            // Si no estamos en el navegador, marcamos como inicializado inmediatamente
+            this._initializationSubject.next(true);
         }
+    }
+
+    private async performInitialization(): Promise<void> {
+        // Realizamos la inicialización de forma síncrona
+        this.initializeAuth();
+        this._initializationSubject.next(true);
+
+        // Listener para el evento storage para sincronizar entre pestañas
+        window.addEventListener('storage', (event) => {
+            if (
+                event.key === 'access_token' ||
+                event.key === 'refresh_token' ||
+                event.key === 'user'
+            ) {
+                this.initializeAuth();
+            }
+        });
     }
 
     // Public method to manually initialize if needed
@@ -81,6 +71,26 @@ export class AuthService {
         if (this.isBrowser) {
             this.initializeAuth();
         }
+    }
+
+    // Method to wait for initialization completion
+    public async waitForInitialization(): Promise<void> {
+        if (this._initializationPromise) {
+            await this._initializationPromise;
+        }
+        // Si ya está inicializado, resolvemos inmediatamente
+        if (this._initializationSubject.value) {
+            return Promise.resolve();
+        }
+        // Si no, esperamos a que se complete
+        return new Promise<void>((resolve) => {
+            const subscription = this._initializationSubject.subscribe((initialized) => {
+                if (initialized) {
+                    subscription.unsubscribe();
+                    resolve();
+                }
+            });
+        });
     }
 
     private initializeAuth(): void {
