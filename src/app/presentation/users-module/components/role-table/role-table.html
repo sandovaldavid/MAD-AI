@@ -239,19 +239,6 @@
     </div>
     } }
 
-    <!-- Delete Confirmation Modal -->
-    <app-modal-confirmation
-        [isOpen]="showDeleteModal()"
-        [title]="getDeleteModalTitle()"
-        [message]="getDeleteModalMessage()"
-        [confirmText]="'Eliminar'"
-        [cancelText]="'Cancelar'"
-        [confirmButtonClass]="'btn-danger'"
-        [isLoading]="isProcessing()"
-        (confirm)="onConfirmDelete()"
-        (cancel)="onCancelModal()">
-    </app-modal-confirmation>
-
     <!-- Toggle Status Confirmation Modal -->
     <app-modal-confirmation
         [isOpen]="showToggleModal()"
