@@ -117,7 +117,7 @@ export class DeleteRole {
         this.deleteRoleUseCase.execute(role.id).subscribe({
             next: () => {
                 this.notificationService.success('Éxito', 'Rol eliminado exitosamente');
-                this.router.navigate(['/admin/users/roles']);
+                this.router.navigate(['/users/roles']);
             },
             error: (error) => {
                 console.error('Error deleting role:', error);
