@@ -1,0 +1,56 @@
+@reference '../../../../../styles.css';
+
+.roles-page {
+    @apply min-h-screen bg-neutral-50 dark:bg-neutral-900;
+}
+
+.page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+}
+
+/* Page Header */
+.page-header {
+    @apply mb-8;
+}
+
+.header-content {
+    @apply space-y-2 flex justify-between items-center;
+}
+
+.page-title {
+    @apply text-2xl font-bold text-neutral-900 dark:text-white;
+}
+
+.page-description {
+    @apply text-neutral-600 dark:text-neutral-400 text-base;
+}
+
+/* Content Section */
+.content-section {
+    @apply space-y-6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-container {
+        @apply px-4 py-4;
+    }
+
+    .page-title {
+        @apply text-xl;
+    }
+
+    .page-description {
+        @apply text-sm;
+    }
+}
+
+@media (max-width: 640px) {
+    .page-header {
+        @apply mb-6;
+    }
+
+    .page-container {
+        @apply px-3;
+    }
+}
