@@ -47,6 +47,7 @@
             <app-button
                 variant="outline"
                 size="md"
+                icon="x"
                 [disabled]="isLoading()"
                 (clicked)="onCancelDelete()">
                 Cancelar
@@ -55,6 +56,7 @@
             <app-button
                 variant="destructive"
                 size="md"
+                icon="trash"
                 [disabled]="isLoading()"
                 [loading]="isLoading()"
                 (clicked)="onConfirmDelete()">
