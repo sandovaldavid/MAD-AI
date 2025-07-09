@@ -339,6 +339,6 @@ export class RoleTable implements OnInit {
 
     protected getToggleButtonClass(): string {
         const role = this.selectedRole();
-        return role?.is_active ? 'btn-warning' : 'btn-success';
+        return role?.is_active ? 'btn-danger' : 'btn-primary';
     }
 }
