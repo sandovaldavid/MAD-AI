@@ -1,0 +1,254 @@
+<div class="update-role-page">
+    <div class="page-container">
+        <!-- Loading State -->
+        @if (isLoading()) {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Cargando datos del rol...</p>
+        </div>
+        }
+
+        <!-- Error State -->
+        @else if (error()) {
+        <div class="error-container">
+            <div class="error-content">
+                <icon-x-circle size="48" customClass="text-error-500 mb-4" />
+                <h2 class="error-title">Error al cargar el rol</h2>
+                <p class="error-message">{{ error() }}</p>
+                <div class="error-actions">
+                    <app-button variant="outline" size="md" icon="refresh" (clicked)="refresh()">
+                        Reintentar
+                    </app-button>
+                    <app-button variant="ghost" size="md" icon="arrow-left" (clicked)="goBack()">
+                        Volver a Roles
+                    </app-button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Update Form -->
+        @else if (role()) {
+        <form [formGroup]="updateForm" (ngSubmit)="onSubmit()" class="form-container">
+            <!-- Form Header -->
+            <div class="form-header">
+                <div class="header-content">
+                    <div class="header-info">
+                        <icon-shield
+                            size="24"
+                            customClass="text-primary-600 dark:text-primary-400" />
+                        <div>
+                            <h1 class="form-title">Editar Rol</h1>
+                            <p class="form-subtitle">
+                                Modifica la información y permisos del rol
+                                <strong>{{ role()!.name }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <span
+                            class="current-status {{
+                                getStatusClass(updateForm.get('is_active')?.value)
+                            }}">
+                            <icon-check-circle
+                                size="16"
+                                customClass="{{
+                                    updateForm.get('is_active')?.value
+                                        ? 'text-successful-600'
+                                        : 'text-error-600'
+                                }}" />
+                            {{ getStatusText(updateForm.get('is_active')?.value) }}
+                        </span>
+                        <app-button
+                            variant="ghost"
+                            size="sm"
+                            icon="arrow-left"
+                            (clicked)="navigateToDetail()">
+                            Ver Detalles
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-content">
+                <div class="form-sections">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-info
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Información Básica</h3>
+                                <p class="section-description">
+                                    Configura el nombre y descripción del rol
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-input
+                                    type="text"
+                                    label="Nombre del Rol"
+                                    placeholder="Ingresa el nombre del rol"
+                                    helperText="Nombre descriptivo del rol (1-100 caracteres)"
+                                    [errorMessage]="
+                                        updateForm.get('name')?.errors?.['required']
+                                            ? 'El nombre es requerido'
+                                            : updateForm.get('name')?.errors?.['minlength']
+                                                ? 'El nombre debe tener al menos 1 carácter'
+                                                : updateForm.get('name')?.errors?.['maxlength']
+                                                    ? 'El nombre no puede exceder 100 caracteres'
+                                                    : ''
+                                    "
+                                    formControlName="name" />
+                            </div>
+
+                            <div class="form-field">
+                                <app-input
+                                    type="text"
+                                    label="Descripción"
+                                    placeholder="Describe las responsabilidades del rol"
+                                    helperText="Descripción detallada de las funciones del rol"
+                                    [errorMessage]="
+                                        updateForm.get('description')?.errors?.['required']
+                                            ? 'La descripción es requerida'
+                                            : ''
+                                    "
+                                    formControlName="description" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Access Configuration Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-settings
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Configuración de Acceso</h3>
+                                <p class="section-description">
+                                    Define el nivel de acceso y permisos especiales
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-select
+                                    label="Nivel de Acceso"
+                                    placeholder="Selecciona el nivel de acceso"
+                                    helperText="Nivel de privilegios (1 es el más alto)"
+                                    [options]="accessLevelOptions"
+                                    [errorMessage]="
+                                        updateForm.get('access_level')?.errors?.['required']
+                                            ? 'El nivel de acceso es requerido'
+                                            : ''
+                                    "
+                                    formControlName="access_level">
+                                </app-select>
+
+                                @if (updateForm.get('access_level')?.value) {
+                                <div class="mt-2">
+                                    <span
+                                        class="access-level-preview {{
+                                            getAccessLevelBadgeClass(
+                                                updateForm.get('access_level')?.value
+                                            )
+                                        }}">
+                                        <icon-shield size="16" />
+                                        {{
+                                            getAccessLevelLabel(
+                                                updateForm.get('access_level')?.value
+                                            )
+                                        }}
+                                    </span>
+                                </div>
+                                }
+                            </div>
+
+                            <div class="form-field">
+                                <app-slide-toggle
+                                    label="Estado del Rol"
+                                    description="Determina si el rol está disponible para asignación"
+                                    formControlName="is_active" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permissions Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-settings
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Permisos Especiales</h3>
+                                <p class="section-description">
+                                    Configura permisos adicionales para este rol
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-slide-toggle
+                                    label="Puede Liderar Proyectos"
+                                    description="Permite a los usuarios con este rol liderar y gestionar proyectos"
+                                    formControlName="can_lead_projects" />
+                            </div>
+
+                            <div class="form-field">
+                                <app-slide-toggle
+                                    label="Único por Equipo"
+                                    description="Solo un usuario por equipo puede tener este rol"
+                                    formControlName="is_unique_per_team" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <div class="actions-content">
+                    <div class="primary-actions">
+                        <app-button
+                            type="submit"
+                            variant="primary"
+                            size="md"
+                            icon="save"
+                            [disabled]="!formIsValid() || !hasChanges() || isUpdating()"
+                            [loading]="isUpdating()">
+                            @if (isUpdating()) { Actualizando... } @else { Guardar Cambios }
+                        </app-button>
+                        <app-button
+                            type="button"
+                            variant="outline"
+                            size="md"
+                            icon="refresh"
+                            [disabled]="!hasChanges() || isUpdating()"
+                            (clicked)="refresh()">
+                            Restablecer
+                        </app-button>
+                    </div>
+                    <div class="secondary-actions">
+                        <app-button
+                            variant="ghost"
+                            type="button"
+                            size="md"
+                            icon="x"
+                            class="bg-error-500 rounded-xl text-white hover:text-error-600"
+                            (clicked)="goBack()">
+                            Cancelar
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        }
+    </div>
+</div>
