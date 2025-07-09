@@ -104,7 +104,7 @@ export class UpdateUser {
         effect(() => {
             const userData = this.user();
             if (userData) {
-                this.titleService.setTitle(`Editar ${userData.first_name} ${userData.last_name}`);
+                this.titleService.setTitle(`Editar Usuario: ${userData.first_name} ${userData.last_name}`);
             }
         });
     }

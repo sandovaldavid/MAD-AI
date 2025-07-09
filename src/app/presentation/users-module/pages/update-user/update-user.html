@@ -178,21 +178,21 @@
             <!-- Form Actions -->
             <div class="form-actions">
                 <app-button
+                    variant="ghost"
                     type="button"
-                    variant="secondary"
-                    size="lg"
-                    iconName="arrow-left"
-                    (click)="onCancel()"
-                    [disabled]="isLoading()"
-                    class="cancel-button">
+                    size="md"
+                    icon="x"
+                    class="bg-error-500 rounded-xl text-white hover:text-error-600"
+                    (clicked)="onCancel()"
+                    [disabled]="isLoading()">
                     Cancelar
                 </app-button>
 
                 <app-button
                     type="submit"
                     variant="primary"
-                    size="lg"
-                    iconName="save"
+                    size="md"
+                    icon="save"
                     [disabled]="isLoading() || form.invalid"
                     [loading]="isLoading()"
                     class="save-button">
