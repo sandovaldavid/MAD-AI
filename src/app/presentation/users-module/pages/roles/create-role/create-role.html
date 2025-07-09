@@ -1,0 +1,200 @@
+<div class="create-role-page">
+    <div class="page-container">
+        <!-- Create Form -->
+        <form [formGroup]="createForm" (ngSubmit)="onSubmit()" class="form-container">
+            <!-- Form Header -->
+            <div class="form-header">
+                <div class="header-content">
+                    <div class="header-info">
+                        <icon-shield
+                            size="24"
+                            customClass="text-primary-600 dark:text-primary-400" />
+                        <div>
+                            <h1 class="form-title">Crear Nuevo Rol</h1>
+                            <p class="form-subtitle">
+                                Define un nuevo rol con sus permisos y características
+                            </p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <app-button
+                            variant="ghost"
+                            size="sm"
+                            icon="arrow-left"
+                            (clicked)="goBack()">
+                            Volver a Roles
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-content">
+                <div class="form-sections">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-info
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Información Básica</h3>
+                                <p class="section-description">
+                                    Define el nombre y descripción del nuevo rol
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-input
+                                    type="text"
+                                    label="Nombre del Rol"
+                                    placeholder="Ingresa el nombre del rol"
+                                    helperText="Nombre descriptivo del rol (1-100 caracteres)"
+                                    [errorMessage]="getFieldErrorMessage('name')"
+                                    formControlName="name" />
+                            </div>
+
+                            <div class="form-field field-full-width">
+                                <app-input
+                                    type="text"
+                                    label="Descripción"
+                                    placeholder="Describe las responsabilidades del rol"
+                                    helperText="Descripción detallada de las funciones del rol"
+                                    [errorMessage]="getFieldErrorMessage('description')"
+                                    formControlName="description" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Access Configuration Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-settings
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Configuración de Acceso</h3>
+                                <p class="section-description">
+                                    Define el nivel de acceso y permisos especiales
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-select
+                                    label="Nivel de Acceso"
+                                    placeholder="Selecciona el nivel de acceso"
+                                    helperText="Nivel de privilegios (1 es el más alto)"
+                                    [options]="accessLevelOptions"
+                                    [errorMessage]="getFieldErrorMessage('access_level')"
+                                    formControlName="access_level">
+                                </app-select>
+
+                                @if (selectedAccessLevel()) {
+                                <div class="mt-2">
+                                    <span
+                                        class="access-level-preview {{
+                                            getAccessLevelBadgeClass(selectedAccessLevel())
+                                        }}">
+                                        <icon-shield size="16" />
+                                        {{ getAccessLevelLabel(selectedAccessLevel()) }}
+                                    </span>
+                                </div>
+                                }
+                            </div>
+
+                            <div class="form-field">
+                                <!-- Empty space for layout -->
+                            </div>
+                        </div>
+
+                        <!-- Helper Info -->
+                        <div class="helper-info">
+                            <h4 class="helper-title">
+                                <icon-info size="16" customClass="inline mr-1" />
+                                Niveles de Acceso
+                            </h4>
+                            <p class="helper-text">
+                                <strong>Administrador (1):</strong> Acceso completo al sistema.
+                                <strong>Project Manager (2):</strong> Gestión de proyectos y
+                                equipos. <strong>Team Lead (3):</strong> Liderazgo de equipos
+                                técnicos. <strong>Developer (4):</strong> Desarrollo y contribución.
+                                <strong>User (5):</strong> Acceso básico de usuario.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Permissions Section -->
+                    <div class="form-section">
+                        <div class="section-header">
+                            <icon-settings
+                                size="20"
+                                customClass="text-primary-600 dark:text-primary-400" />
+                            <div>
+                                <h3 class="section-title">Permisos Especiales</h3>
+                                <p class="section-description">
+                                    Configura permisos adicionales para este rol
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <app-slide-toggle
+                                    label="Puede Liderar Proyectos"
+                                    description="Permite a los usuarios con este rol liderar y gestionar proyectos"
+                                    formControlName="can_lead_projects" />
+                            </div>
+
+                            <div class="form-field">
+                                <app-slide-toggle
+                                    label="Único por Equipo"
+                                    description="Solo un usuario por equipo puede tener este rol"
+                                    formControlName="is_unique_per_team" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <div class="actions-content">
+                    <div class="primary-actions">
+                        <app-button
+                            type="submit"
+                            variant="primary"
+                            size="md"
+                            icon="save"
+                            [disabled]="!formIsValid() || isCreating()"
+                            [loading]="isCreating()">
+                            @if (isCreating()) { Creando Rol... } @else { Crear Rol }
+                        </app-button>
+                        <app-button
+                            type="button"
+                            variant="outline"
+                            size="md"
+                            icon="refresh"
+                            [disabled]="isCreating()"
+                            (clicked)="resetForm()">
+                            Limpiar Formulario
+                        </app-button>
+                    </div>
+                    <div class="secondary-actions">
+                        <app-button
+                            type="button"
+                            variant="ghost"
+                            size="md"
+                            icon="arrow-left"
+                            (clicked)="goBack()">
+                            Cancelar
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
