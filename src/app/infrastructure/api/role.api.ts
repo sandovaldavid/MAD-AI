@@ -37,4 +37,8 @@ export class RoleApiService {
     createRole(request: CreateRoleRequestDto): Observable<CreateRoleResponseDto> {
         return this.http.post<CreateRoleResponseDto>(`${this.baseUrl}/create/`, request);
     }
+
+    deleteRole(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}/delete/`);
+    }
 }

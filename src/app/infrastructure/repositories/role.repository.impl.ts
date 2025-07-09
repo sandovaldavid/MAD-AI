@@ -64,6 +64,10 @@ export class RoleRepositoryImpl implements RoleRepository {
         return this.roleApi.createRole(dto).pipe(map(this.mapCreateRoleResponseToModel));
     }
 
+    deleteRole(id: number): Observable<void> {
+        return this.roleApi.deleteRole(id);
+    }
+
     private mapRoleResponseToModel(dto: RoleResponseDto): RoleListModel {
         return {
             id: dto.id,

@@ -11,4 +11,5 @@ export abstract class RoleRepository {
     abstract assignRole(assignRoleModel: AssignRoleModel): Observable<void>;
     abstract updateRole(id: number, updateRoleModel: UpdateRoleModel): Observable<RoleModel>;
     abstract createRole(createRoleModel: CreateRoleModel): Observable<RoleModel>;
+    abstract deleteRole(id: number): Observable<void>;
 }
