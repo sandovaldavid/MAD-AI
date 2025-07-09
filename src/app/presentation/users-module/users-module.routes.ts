@@ -31,6 +31,11 @@ export const USER_MODULE_ROUTES: Routes = [
         title: 'Editar Usuario',
     },
     {
+        path: ':id/delete',
+        loadComponent: () => import('./pages/delete-user/delete-user').then((c) => c.DeleteUser),
+        title: 'Desactivar Usuario',
+    },
+    {
         path: '**',
         redirectTo: '',
     },
