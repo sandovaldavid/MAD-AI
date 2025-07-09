@@ -1,0 +1,29 @@
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="dashboard-welcome">¡Bienvenido a MAD-AI!</p>
+        <div class="user-info">
+            <h2 class="user-info-title">Información del Usuario</h2>
+            <div class="user-detail">
+                <strong>Nombre:</strong> {{ user()?.first_name }} {{ user()?.last_name }}
+            </div>
+            <div class="user-detail"><strong>Usuario:</strong> {{ user()?.username }}</div>
+            <div class="user-detail"><strong>Email:</strong> {{ user()?.email }}</div>
+            <div class="user-detail">
+                <strong>Rol:</strong> {{ user()?.role_name || 'Sin rol asignado' }}
+            </div>
+            <div class="user-detail">
+                <strong>Estado:</strong>
+                <span [class]="user()?.is_active ? 'text-successful-600' : 'text-error-600'">
+                    {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
+                </span>
+            </div>
+        </div>
+
+        <div class="logout-button">
+            <app-button variant="secondary" size="md" (clicked)="onLogout()">
+                Cerrar Sesión
+            </app-button>
+        </div>
+    </div>
+</div>
