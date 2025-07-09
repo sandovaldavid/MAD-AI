@@ -17,6 +17,10 @@ export const USER_MODULE_ROUTES: Routes = [
         title: 'Crear Usuario',
     },
     {
+        path: 'roles',
+        loadChildren: () => import('./pages/roles/roles.routes').then((r) => r.ROLES_ROUTES),
+    },
+    {
         path: ':id',
         loadComponent: () => import('./pages/detail-user/detail-user').then((c) => c.DetailUser),
         title: 'Perfil de Usuario',
