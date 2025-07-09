@@ -1,9 +1,22 @@
 <div class="dashboard-container">
     <div class="dashboard-content">
+        <div class="w-full flex justify-end items-center mb-4">
+            <app-button
+                variant="primary"
+                size="sm"
+                (clicked)="goRoles()"
+                icon="arrow-right"
+                iconPosition="right"
+                customClass="text-neutral-600 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400">
+                Administrar Roles
+            </app-button>
+        </div>
         <!-- User Statistics -->
         <section class="section-dashboard">
             <div class="flex gap-1">
-                <icon-user-statistics size="30" customClass="text-primary-800 dark:text-primary-200" />
+                <icon-user-statistics
+                    size="30"
+                    customClass="text-primary-800 dark:text-primary-200" />
                 <h2 class="section-title">Estadísticas de Usuarios</h2>
             </div>
             <app-user-stats></app-user-stats>
