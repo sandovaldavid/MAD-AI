@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../env/environment';
+import { environment } from '@env/environment';
 import { RoleResponseDto } from '../dto/role/role-response.dto';
+import { RoleDetailResponseDto } from '../dto/role/role-detail-response.dto';
 import { AssignRoleRequestDto } from '../dto/role/assign-role-request.dto';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class RoleApiService {
     private readonly baseUrl = `${environment.API_URL}/auth/roles`;
@@ -15,6 +16,10 @@ export class RoleApiService {
 
     getRoles(): Observable<RoleResponseDto[]> {
         return this.http.get<RoleResponseDto[]>(`${this.baseUrl}/`);
+    }
+
+    getRoleById(id: number): Observable<RoleDetailResponseDto> {
+        return this.http.get<RoleDetailResponseDto>(`${this.baseUrl}/${id}/`);
     }
 
     assignRole(request: AssignRoleRequestDto): Observable<void> {
