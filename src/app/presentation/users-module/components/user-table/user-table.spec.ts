@@ -5,7 +5,6 @@ import { Button } from '@shared/components/ui/button/button';
 import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case';
 import { ActivateUserUseCase } from '@application/use-cases/user/activate-user.use-case';
 import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-user.use-case';
-import { DeleteUserUseCase } from '@application/use-cases/user/delete-user.use-case';
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
 import { NotificationService } from '@core/services/notification.service';
 import { Router } from '@angular/router';
@@ -21,7 +20,6 @@ describe('UserTable', () => {
     let mockGetUsersUseCase: jasmine.SpyObj<GetUsersUseCase>;
     let mockActivateUserUseCase: jasmine.SpyObj<ActivateUserUseCase>;
     let mockDeactivateUserUseCase: jasmine.SpyObj<DeactivateUserUseCase>;
-    let mockDeleteUserUseCase: jasmine.SpyObj<DeleteUserUseCase>;
     let mockGetRolesUseCase: jasmine.SpyObj<GetRolesUseCase>;
     let mockNotificationService: jasmine.SpyObj<NotificationService>;
     let mockRouter: jasmine.SpyObj<Router>;
@@ -78,7 +76,6 @@ describe('UserTable', () => {
         const getUsersUseCaseSpy = jasmine.createSpyObj('GetUsersUseCase', ['execute']);
         const activateUserUseCaseSpy = jasmine.createSpyObj('ActivateUserUseCase', ['execute']);
         const deactivateUserUseCaseSpy = jasmine.createSpyObj('DeactivateUserUseCase', ['execute']);
-        const deleteUserUseCaseSpy = jasmine.createSpyObj('DeleteUserUseCase', ['execute']);
         const getRolesUseCaseSpy = jasmine.createSpyObj('GetRolesUseCase', ['execute']);
         const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
             'success',
@@ -92,7 +89,6 @@ describe('UserTable', () => {
                 { provide: GetUsersUseCase, useValue: getUsersUseCaseSpy },
                 { provide: ActivateUserUseCase, useValue: activateUserUseCaseSpy },
                 { provide: DeactivateUserUseCase, useValue: deactivateUserUseCaseSpy },
-                { provide: DeleteUserUseCase, useValue: deleteUserUseCaseSpy },
                 { provide: GetRolesUseCase, useValue: getRolesUseCaseSpy },
                 { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: Router, useValue: routerSpy },
@@ -109,9 +105,6 @@ describe('UserTable', () => {
         mockDeactivateUserUseCase = TestBed.inject(
             DeactivateUserUseCase
         ) as jasmine.SpyObj<DeactivateUserUseCase>;
-        mockDeleteUserUseCase = TestBed.inject(
-            DeleteUserUseCase
-        ) as jasmine.SpyObj<DeleteUserUseCase>;
         mockGetRolesUseCase = TestBed.inject(GetRolesUseCase) as jasmine.SpyObj<GetRolesUseCase>;
         mockNotificationService = TestBed.inject(
             NotificationService
@@ -192,28 +185,6 @@ describe('UserTable', () => {
 
         // Verify error handling
         expect(mockNotificationService.error).toHaveBeenCalled();
-    });
-
-    it('should delete user and update local state', () => {
-        // Setup
-        fixture.detectChanges();
-        const userToDelete = mockUsers[0];
-
-        mockDeleteUserUseCase.execute.and.returnValue(of(undefined));
-
-        // Execute
-        component['selectedUser'].set(userToDelete);
-        component['onConfirmDelete']();
-
-        // Verify
-        expect(mockDeleteUserUseCase.execute).toHaveBeenCalledWith(1);
-        expect(mockNotificationService.success).toHaveBeenCalled();
-
-        // Check that user was removed from local state
-        const currentUsers = component['users']();
-        const deletedUser = currentUsers.find((u) => u.id === 1);
-        expect(deletedUser).toBeUndefined();
-        expect(currentUsers.length).toBe(1);
     });
 
     it('should display user table with new icon system', () => {
@@ -328,5 +299,15 @@ describe('UserTable', () => {
         const compiled = fixture.nativeElement;
         const roleFilter = compiled.querySelector('.role-filter-container app-select');
         expect(roleFilter).toBeTruthy();
+    });
+
+    it('should navigate to deactivate page when deactivate button is clicked', () => {
+        fixture.detectChanges();
+
+        // Execute
+        component['navigateToDelete'](1);
+
+        // Verify
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/users', 1, 'delete']);
     });
 });

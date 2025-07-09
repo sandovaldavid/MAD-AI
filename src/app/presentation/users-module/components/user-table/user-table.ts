@@ -9,7 +9,7 @@ import {
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case';
-import { DeleteUserUseCase } from '@application/use-cases/user/delete-user.use-case';
+
 import { ActivateUserUseCase } from '@application/use-cases/user/activate-user.use-case';
 import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-user.use-case';
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
@@ -32,7 +32,6 @@ import type { SelectOption } from '@domain/ui/select';
 })
 export class UserTable implements OnInit {
     private readonly getUsersUseCase = inject(GetUsersUseCase);
-    private readonly deleteUserUseCase = inject(DeleteUserUseCase);
     private readonly activateUserUseCase = inject(ActivateUserUseCase);
     private readonly deactivateUserUseCase = inject(DeactivateUserUseCase);
     private readonly getRolesUseCase = inject(GetRolesUseCase);
@@ -50,7 +49,6 @@ export class UserTable implements OnInit {
     protected readonly selectedRoleId = signal<string>('');
 
     // Modal states
-    protected readonly showDeleteModal = signal(false);
     protected readonly showToggleModal = signal(false);
     protected readonly selectedUser = signal<UserListModel | null>(null);
     protected readonly isProcessing = signal(false);
@@ -242,38 +240,10 @@ export class UserTable implements OnInit {
     }
 
     // CRUD operations
-    protected confirmDeleteUser(user: UserListModel): void {
-        this.selectedUser.set(user);
-        this.showDeleteModal.set(true);
-    }
-
-    protected onConfirmDelete(): void {
-        const user = this.selectedUser();
-        if (!user || this.isProcessing()) return;
-
-        this.isProcessing.set(true);
-
-        this.deleteUserUseCase.execute(user.id).subscribe({
-            next: () => {
-                this.notificationService
-                    .success('Usuario eliminado', `${user.username} ha sido eliminado exitosamente`)
-                    .subscribe();
-
-                // Reload the entire list to ensure consistency
-                this.loadUsers();
-
-                this.showDeleteModal.set(false);
-                this.selectedUser.set(null);
-                this.isProcessing.set(false);
-            },
-            error: (error) => {
-                console.error('Error deleting user:', error);
-                this.notificationService
-                    .error('Error', 'Error al eliminar el usuario. Por favor, intenta nuevamente.')
-                    .subscribe();
-                this.isProcessing.set(false);
-            },
-        });
+    protected navigateToDelete(userId: number): void {
+        console.log('⚠️ navigateToDelete called with userId:', userId);
+        console.log('🧭 About to navigate to deactivate page:', ['/users', userId, 'delete']);
+        this.router.navigate(['/users', userId, 'delete']);
     }
 
     protected confirmToggleUserStatus(user: UserListModel): void {
@@ -343,25 +313,12 @@ export class UserTable implements OnInit {
     // Simplified version that always reloads - use for testing if local update fails
     protected onCancelModal(): void {
         if (!this.isProcessing()) {
-            this.showDeleteModal.set(false);
             this.showToggleModal.set(false);
             this.selectedUser.set(null);
         }
     }
 
     // Modal content getters
-    protected getDeleteModalTitle(): string {
-        return 'Eliminar Usuario';
-    }
-
-    protected getDeleteModalMessage(): string {
-        const user = this.selectedUser();
-        if (user) {
-            return `¿Estás seguro de que deseas eliminar a ${user.first_name} ${user.last_name} (${user.username})? Esta acción no se puede deshacer.`;
-        }
-        return '¿Estás seguro de que deseas eliminar este usuario?';
-    }
-
     protected getToggleModalTitle(): string {
         const user = this.selectedUser();
         const action = user?.is_active ? 'Desactivar' : 'Activar';

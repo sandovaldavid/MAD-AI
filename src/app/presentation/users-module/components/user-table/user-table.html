@@ -216,11 +216,12 @@
 
                             <app-button
                                 variant="ghost"
-                                class="text-red-700 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400"
+                                class="text-orange-700 hover:text-orange-800 dark:text-orange-500 dark:hover:text-orange-400"
                                 size="sm"
-                                icon="trash"
+                                icon="x-circle"
                                 [iconOnly]="true"
-                                (clicked)="confirmDeleteUser(user)">
+                                title="Desactivar usuario"
+                                (clicked)="navigateToDelete(user.id)">
                             </app-button>
                         </div>
                     </td>
@@ -271,19 +272,6 @@
         </p>
     </div>
     } }
-
-    <!-- Delete Confirmation Modal -->
-    <app-modal-confirmation
-        [isOpen]="showDeleteModal()"
-        [title]="getDeleteModalTitle()"
-        [message]="getDeleteModalMessage()"
-        [confirmText]="'Eliminar'"
-        [cancelText]="'Cancelar'"
-        [confirmButtonClass]="'btn-danger'"
-        [isLoading]="isProcessing()"
-        (confirm)="onConfirmDelete()"
-        (cancel)="onCancelModal()">
-    </app-modal-confirmation>
 
     <!-- Toggle Status Confirmation Modal -->
     <app-modal-confirmation
