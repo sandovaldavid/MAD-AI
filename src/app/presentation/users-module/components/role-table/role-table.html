@@ -18,7 +18,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="header-right">
             <!-- Search -->
             <div class="search-container">
@@ -31,7 +31,7 @@
                     (ngModelChange)="onSearchChange($event)">
                 </app-input>
             </div>
-            
+
             <!-- Access Level Filter -->
             <div class="access-level-filter-container">
                 <app-select
@@ -42,16 +42,12 @@
                     (valueChange)="onAccessLevelFilterChange($event)">
                 </app-select>
             </div>
-            
+
             <!-- Actions -->
-            <app-button
-                variant="primary"
-                size="md"
-                icon="plus"
-                (clicked)="navigateToCreate()">
+            <app-button variant="primary" size="md" icon="plus" (clicked)="navigateToCreate()">
                 Nuevo Rol
             </app-button>
-            
+
             <app-button
                 variant="ghost"
                 size="md"
@@ -121,34 +117,39 @@
                             <div class="role-name">{{ role.name }}</div>
                         </div>
                     </td>
-                    
+
                     <!-- Description -->
                     <td class="table-cell">
                         <div class="role-description">{{ role.description }}</div>
                     </td>
-                    
+
                     <!-- Access Level -->
                     <td class="table-cell">
-                        <span class="access-level-badge {{ getAccessLevelBadgeClass(role.access_level) }}">
+                        <span
+                            class="access-level-badge {{
+                                getAccessLevelBadgeClass(role.access_level)
+                            }}">
                             {{ getAccessLevelLabel(role.access_level) }}
                         </span>
                     </td>
-                    
+
                     <!-- User Count -->
                     <td class="table-cell">
                         <div class="user-count">
                             <span class="count-number">{{ role.user_count }}</span>
-                            <span class="count-label">usuario{{ role.user_count !== 1 ? 's' : '' }}</span>
+                            <span class="count-label"
+                                >usuario{{ role.user_count !== 1 ? 's' : '' }}</span
+                            >
                         </div>
                     </td>
-                    
+
                     <!-- Status -->
                     <td class="table-cell">
                         <span class="status-badge {{ getStatusBadgeClass(role.is_active) }}">
                             {{ getStatusText(role.is_active) }}
                         </span>
                     </td>
-                    
+
                     <!-- Actions -->
                     <td class="table-cell">
                         <div class="action-buttons">
@@ -160,7 +161,7 @@
                                 (clicked)="navigateToView(role.id)"
                                 title="Ver detalles">
                             </app-button>
-                            
+
                             <app-button
                                 variant="ghost"
                                 size="sm"
@@ -169,7 +170,7 @@
                                 (clicked)="navigateToEdit(role.id)"
                                 title="Editar rol">
                             </app-button>
-                            
+
                             <app-button
                                 variant="ghost"
                                 size="sm"
@@ -178,14 +179,14 @@
                                 (clicked)="confirmToggleRoleStatus(role)"
                                 [title]="role.is_active ? 'Desactivar rol' : 'Activar rol'">
                             </app-button>
-                            
+
                             @if (role.user_count === 0) {
                             <app-button
                                 variant="ghost"
                                 size="sm"
                                 icon="trash"
                                 [iconOnly]="true"
-                                (clicked)="confirmDeleteRole(role)"
+                                (clicked)="navigateToDelete(role.id)"
                                 title="Eliminar rol">
                             </app-button>
                             }
@@ -198,18 +199,23 @@
                     <td colspan="6" class="empty-state">
                         <div class="empty-content">
                             <p class="empty-message">
-                                @if (searchQuery() || selectedAccessLevel()) {
-                                No se encontraron roles que coincidan con los filtros aplicados.
-                                } @else {
-                                No hay roles registrados en el sistema.
-                                }
+                                @if (searchQuery() || selectedAccessLevel()) { No se encontraron
+                                roles que coincidan con los filtros aplicados. } @else { No hay
+                                roles registrados en el sistema. }
                             </p>
                             @if (searchQuery() || selectedAccessLevel()) {
-                            <app-button variant="outline" size="sm" (clicked)="searchQuery.set(''); selectedAccessLevel.set('')">
+                            <app-button
+                                variant="outline"
+                                size="sm"
+                                (clicked)="searchQuery.set(''); selectedAccessLevel.set('')">
                                 Limpiar filtros
                             </app-button>
                             } @else {
-                            <app-button variant="primary" size="sm" icon="plus" (clicked)="navigateToCreate()">
+                            <app-button
+                                variant="primary"
+                                size="sm"
+                                icon="plus"
+                                (clicked)="navigateToCreate()">
                                 Crear primer rol
                             </app-button>
                             }
@@ -225,17 +231,13 @@
     @if (filteredAndSortedRoles().length > 0) {
     <div class="results-info">
         <p class="results-text">
-            Mostrando {{ filteredCount() }} de {{ totalRoles() }} roles
-            @if (searchQuery()) { 
-                · Búsqueda: "{{ searchQuery() }}"
-            }
-            @if (selectedAccessLevel()) { 
-                · Nivel: "{{ selectedAccessLevelName() }}"
-            }
+            Mostrando {{ filteredCount() }} de {{ totalRoles() }} roles @if (searchQuery()) { ·
+            Búsqueda: "{{ searchQuery() }}" } @if (selectedAccessLevel()) { · Nivel: "{{
+                selectedAccessLevelName()
+            }}" }
         </p>
     </div>
-    }
-    }
+    } }
 
     <!-- Delete Confirmation Modal -->
     <app-modal-confirmation
