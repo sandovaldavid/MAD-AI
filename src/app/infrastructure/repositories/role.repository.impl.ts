@@ -6,12 +6,15 @@ import { RoleListModel } from '@domain/models/role/role-list.model';
 import { RoleModel } from '@domain/models/role/role.model';
 import { AssignRoleModel } from '@domain/models/role/assign-role.model';
 import { UpdateRoleModel } from '@domain/models/role/update-role.model';
+import { CreateRoleModel } from '@domain/models/role/create-role.model';
 import { RoleApiService } from '../api/role.api';
 import { RoleResponseDto } from '../dto/role/role-response.dto';
 import { RoleDetailResponseDto } from '../dto/role/role-detail-response.dto';
 import { AssignRoleRequestDto } from '../dto/role/assign-role-request.dto';
 import { UpdateRoleRequestDto } from '../dto/role/update-role-request.dto';
 import { UpdateRoleResponseDto } from '../dto/role/update-role-response.dto';
+import { CreateRoleRequestDto } from '../dto/role/create-role-request.dto';
+import { CreateRoleResponseDto } from '../dto/role/create-role-response.dto';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 
 @Injectable({
@@ -49,6 +52,18 @@ export class RoleRepositoryImpl implements RoleRepository {
         return this.roleApi.updateRole(id, dto).pipe(map(this.mapUpdateRoleResponseToModel));
     }
 
+    createRole(createRoleModel: CreateRoleModel): Observable<RoleModel> {
+        const dto: CreateRoleRequestDto = {
+            name: createRoleModel.name,
+            description: createRoleModel.description,
+            access_level: createRoleModel.access_level,
+            can_lead_projects: createRoleModel.can_lead_projects ?? false,
+            is_unique_per_team: createRoleModel.is_unique_per_team ?? false,
+            created_by_user_id: createRoleModel.created_by_user_id,
+        };
+        return this.roleApi.createRole(dto).pipe(map(this.mapCreateRoleResponseToModel));
+    }
+
     private mapRoleResponseToModel(dto: RoleResponseDto): RoleListModel {
         return {
             id: dto.id,
@@ -75,6 +90,20 @@ export class RoleRepositoryImpl implements RoleRepository {
     }
 
     private mapUpdateRoleResponseToModel(dto: UpdateRoleResponseDto): RoleModel {
+        return {
+            id: dto.id,
+            name: dto.name,
+            description: dto.description,
+            access_level: dto.access_level as RoleAccessLevel,
+            can_lead_projects: dto.can_lead_projects,
+            is_unique_per_team: dto.is_unique_per_team,
+            is_active: dto.is_active,
+            created_at: dto.created_at,
+            user_count: dto.user_count,
+        };
+    }
+
+    private mapCreateRoleResponseToModel(dto: CreateRoleResponseDto): RoleModel {
         return {
             id: dto.id,
             name: dto.name,

@@ -7,6 +7,8 @@ import { RoleDetailResponseDto } from '../dto/role/role-detail-response.dto';
 import { AssignRoleRequestDto } from '../dto/role/assign-role-request.dto';
 import { UpdateRoleRequestDto } from '../dto/role/update-role-request.dto';
 import { UpdateRoleResponseDto } from '../dto/role/update-role-response.dto';
+import { CreateRoleRequestDto } from '../dto/role/create-role-request.dto';
+import { CreateRoleResponseDto } from '../dto/role/create-role-response.dto';
 
 @Injectable({
     providedIn: 'root',
@@ -30,5 +32,9 @@ export class RoleApiService {
 
     updateRole(id: number, request: UpdateRoleRequestDto): Observable<UpdateRoleResponseDto> {
         return this.http.put<UpdateRoleResponseDto>(`${this.baseUrl}/${id}/update/`, request);
+    }
+
+    createRole(request: CreateRoleRequestDto): Observable<CreateRoleResponseDto> {
+        return this.http.post<CreateRoleResponseDto>(`${this.baseUrl}/create/`, request);
     }
 }
