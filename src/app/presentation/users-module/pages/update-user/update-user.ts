@@ -1,4 +1,11 @@
-import { Component, ChangeDetectionStrategy, signal, inject, effect } from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    signal,
+    inject,
+    effect,
+    computed,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UpdateUserUseCase } from '@application/use-cases/user/update-user.use-case';
@@ -9,11 +16,27 @@ import { UserListModel } from '@domain/models/user/user-list.model';
 import { RoleListModel } from '@domain/models/role/role-list.model';
 import { NotificationService } from '@core/services/notification.service';
 import { TitleService } from '@core/services/title.service';
+import { InputComponent } from '@shared/components/ui/input/input.component';
+import { SelectComponent } from '@shared/components/ui/select/select.component';
+import { Button } from '@shared/components/ui/button/button';
+import { SlideToggleComponent } from '@shared/components/ui/slide-toggle/slide-toggle.component';
+import { UserIcon } from '../../icons/user.icon/user.icon';
+import { ShieldIcon } from '../../icons/shield.icon/shield.icon';
+import { BellIcon } from '../../icons/bell.icon/bell.icon';
 import { forkJoin } from 'rxjs';
 
 @Component({
     selector: 'app-update-user',
-    imports: [ReactiveFormsModule],
+    imports: [
+        ReactiveFormsModule,
+        InputComponent,
+        SelectComponent,
+        Button,
+        SlideToggleComponent,
+        UserIcon,
+        ShieldIcon,
+        BellIcon,
+    ],
     templateUrl: './update-user.html',
     styleUrl: './update-user.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +58,20 @@ export class UpdateUser {
     private readonly userId = signal<number | null>(null);
     protected readonly form: FormGroup;
 
+    // Computed properties for better performance
+    protected readonly roleOptions = computed(() =>
+        this.roles().map((role) => ({
+            value: role.id,
+            label: role.name,
+            disabled: !role.is_active,
+        }))
+    );
+
+    protected readonly userFullName = computed(() => {
+        const userData = this.user();
+        return userData ? `${userData.first_name} ${userData.last_name}` : '';
+    });
+
     constructor() {
         this.form = this.formBuilder.group({
             first_name: [
@@ -48,6 +85,10 @@ export class UpdateUser {
             email: ['', [Validators.required, Validators.email]],
             role_id: [null],
             is_active: [true],
+            status: [''],
+            email_notifications_enabled: [true],
+            system_notifications_enabled: [true],
+            task_notifications_enabled: [true],
         });
 
         // Get userId from route params on initialization
@@ -73,11 +114,11 @@ export class UpdateUser {
 
         forkJoin({
             user: this.getUserByIdUseCase.execute(id),
-            roles: this.getRolesUseCase.execute()
+            roles: this.getRolesUseCase.execute(),
         }).subscribe({
             next: ({ user, roles }) => {
                 this.user.set(user);
-                this.roles.set(roles.filter(role => role.is_active));
+                this.roles.set(roles.filter((role) => role.is_active));
                 this.populateForm(user);
                 this.isLoadingUser.set(false);
             },
@@ -117,6 +158,10 @@ export class UpdateUser {
             email: user.email,
             is_active: user.is_active,
             role_id: user.role_id,
+            status: user.status || '',
+            email_notifications_enabled: user.email_notifications_enabled ?? true,
+            system_notifications_enabled: user.system_notifications_enabled ?? true,
+            task_notifications_enabled: user.task_notifications_enabled ?? true,
         });
     }
 
@@ -149,6 +194,22 @@ export class UpdateUser {
             }
             if (formValue.role_id && formValue.role_id !== currentUser?.role_id) {
                 userData.role_id = formValue.role_id;
+            }
+            if (formValue.status !== currentUser?.status) {
+                userData.status = formValue.status;
+            }
+            if (
+                formValue.email_notifications_enabled !== currentUser?.email_notifications_enabled
+            ) {
+                userData.email_notifications_enabled = formValue.email_notifications_enabled;
+            }
+            if (
+                formValue.system_notifications_enabled !== currentUser?.system_notifications_enabled
+            ) {
+                userData.system_notifications_enabled = formValue.system_notifications_enabled;
+            }
+            if (formValue.task_notifications_enabled !== currentUser?.task_notifications_enabled) {
+                userData.task_notifications_enabled = formValue.task_notifications_enabled;
             }
 
             if (Object.keys(userData).length > 0) {
@@ -212,6 +273,10 @@ export class UpdateUser {
             first_name: 'Nombre',
             last_name: 'Apellido',
             email: 'Email',
+            status: 'Estado',
+            email_notifications_enabled: 'Notificaciones por email',
+            system_notifications_enabled: 'Notificaciones del sistema',
+            task_notifications_enabled: 'Notificaciones de tareas',
         };
 
         return labels[fieldName] || fieldName;

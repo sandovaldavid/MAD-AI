@@ -2,128 +2,204 @@
     @if (isLoadingUser()) {
     <!-- Loading State -->
     <div class="loading-container">
-        <div class="loading-spinner-large"></div>
+        <div class="loading-spinner"></div>
         <p class="loading-text">Cargando datos del usuario...</p>
     </div>
     } @else if (user()) {
-    <!-- Form Header -->
-    <div class="form-header">
-        <h1 class="form-title">Editar Usuario</h1>
-        <p class="form-subtitle">
-            Editando: {{ user()?.first_name }} {{ user()?.last_name }} ({{ user()?.username }})
-        </p>
-    </div>
-
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="update-user-form">
-        <!-- First Name Field -->
-        <div class="form-group">
-            <label for="first_name" class="form-label">
-                Nombre *
-            </label>
-            <input
-                id="first_name"
-                type="text"
-                formControlName="first_name"
-                class="form-input"
-                [class.form-input-error]="getFieldError('first_name')"
-                placeholder="Nombre del usuario">
-            @if (getFieldError('first_name')) {
-                <span class="form-error">{{ getFieldError('first_name') }}</span>
-            }
-        </div>
-
-        <!-- Last Name Field -->
-        <div class="form-group">
-            <label for="last_name" class="form-label">
-                Apellido *
-            </label>
-            <input
-                id="last_name"
-                type="text"
-                formControlName="last_name"
-                class="form-input"
-                [class.form-input-error]="getFieldError('last_name')"
-                placeholder="Apellido del usuario">
-            @if (getFieldError('last_name')) {
-                <span class="form-error">{{ getFieldError('last_name') }}</span>
-            }
-        </div>
-
-        <!-- Email Field -->
-        <div class="form-group">
-            <label for="email" class="form-label">
-                Email *
-            </label>
-            <input
-                id="email"
-                type="email"
-                formControlName="email"
-                class="form-input"
-                [class.form-input-error]="getFieldError('email')"
-                placeholder="usuario@ejemplo.com">
-            @if (getFieldError('email')) {
-                <span class="form-error">{{ getFieldError('email') }}</span>
-            }
-        </div>
-
-        <!-- Active Status Field -->
-        <div class="form-group">
-            <label class="form-label">Estado del Usuario</label>
-            <div class="toggle-container">
-                <label for="is_active" class="toggle-label">
-                    <input
-                        id="is_active"
-                        type="checkbox"
-                        formControlName="is_active"
-                        class="toggle-input">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text">
-                        {{ form.get('is_active')?.value ? 'Activo' : 'Inactivo' }}
-                    </span>
-                </label>
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <app-button
+                variant="ghost"
+                size="sm"
+                iconName="arrow-left"
+                (click)="onCancel()"
+                ariaLabel="Volver a la lista de usuarios"
+                class="back-button">
+            </app-button>
+            <div class="header-info">
+                <h1 class="page-title">Editar Usuario</h1>
+                <p class="page-subtitle">
+                    Editando: <span class="user-name">{{ userFullName() }}</span>
+                    <span class="user-username"> ({{ user()?.username }})</span>
+                </p>
             </div>
         </div>
+    </div>
 
-        <!-- Role Field (Optional) -->
-        <div class="form-group">
-            <label for="role_id" class="form-label">
-                Rol (Opcional)
-            </label>
-            <select
-                id="role_id"
-                formControlName="role_id"
-                class="form-select">
-                <option value="">Mantener rol actual</option>
-                @for (role of roles(); track role.id) {
-                    <option [value]="role.id">
-                        {{ role.name }} - {{ role.description }}
-                    </option>
-                }
-            </select>
-        </div>
+    <!-- Form Card -->
+    <div class="form-card">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="update-user-form">
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <icon-user size="24" customClass="text-primary-500" />
+                    </div>
+                    <div class="section-title-container">
+                        <h2 class="section-title">Información Personal</h2>
+                        <p class="section-description">Datos básicos del usuario</p>
+                    </div>
+                </div>
 
-        <!-- Form Actions -->
-        <div class="form-actions">
-            <button
-                type="button"
-                class="btn-secondary"
-                [disabled]="isLoading()"
-                (click)="onCancel()">
-                Cancelar
-            </button>
-            
-            <button
-                type="submit"
-                class="btn-primary"
-                [disabled]="isLoading() || form.invalid">
-                @if (isLoading()) {
-                    <span class="loading-spinner"></span>
-                    Actualizando...
-                } @else {
-                    Actualizar Usuario
-                }
-            </button>
-        </div>
-    </form>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <app-input
+                            formControlName="first_name"
+                            label="Nombre"
+                            placeholder="Nombre del usuario"
+                            [required]="true"
+                            [errorMessage]="getFieldError('first_name') || ''"
+                            [variant]="getFieldError('first_name') ? 'error' : 'default'">
+                        </app-input>
+                    </div>
+                    <div class="form-field">
+                        <app-input
+                            formControlName="last_name"
+                            label="Apellido"
+                            placeholder="Apellido del usuario"
+                            [required]="true"
+                            [errorMessage]="getFieldError('last_name') || ''"
+                            [variant]="getFieldError('last_name') ? 'error' : 'default'">
+                        </app-input>
+                    </div>
+                    <div class="form-field form-field-full">
+                        <app-input
+                            formControlName="email"
+                            type="email"
+                            label="Email"
+                            placeholder="usuario@ejemplo.com"
+                            [required]="true"
+                            [errorMessage]="getFieldError('email') || ''"
+                            [variant]="getFieldError('email') ? 'error' : 'default'">
+                        </app-input>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role & Permissions Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <icon-shield size="24" customClass="text-success-500" />
+                    </div>
+                    <div class="section-title-container">
+                        <h2 class="section-title">Rol y Permisos</h2>
+                        <p class="section-description">Configuración de acceso y estado</p>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-field">
+                        <app-select
+                            formControlName="role_id"
+                            label="Rol"
+                            placeholder="Seleccionar rol"
+                            [options]="roleOptions()">
+                        </app-select>
+                    </div>
+                    <div class="form-field">
+                        <div class="toggle-field">
+                            <app-slide-toggle
+                                formControlName="is_active"
+                                label="Estado de la Cuenta"
+                                description="Activar o desactivar la cuenta del usuario"
+                                variant="success"
+                                size="md"
+                                labelPosition="left">
+                            </app-slide-toggle>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="form-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <icon-bell size="24" customClass="text-warning-500" />
+                    </div>
+                    <div class="section-title-container">
+                        <h2 class="section-title">Configuración de Notificaciones</h2>
+                        <p class="section-description">
+                            Gestiona qué notificaciones recibirá el usuario
+                        </p>
+                    </div>
+                </div>
+
+                <div class="notifications-grid">
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-content">
+                                <app-slide-toggle
+                                    formControlName="email_notifications_enabled"
+                                    label="Notificaciones por Email"
+                                    description="Recibir notificaciones importantes por correo electrónico"
+                                    variant="default"
+                                    size="md"
+                                    labelPosition="left">
+                                </app-slide-toggle>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-content">
+                                <app-slide-toggle
+                                    formControlName="system_notifications_enabled"
+                                    label="Notificaciones del Sistema"
+                                    description="Recibir alertas y actualizaciones del sistema"
+                                    variant="success"
+                                    size="md"
+                                    labelPosition="left">
+                                </app-slide-toggle>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-content">
+                                <app-slide-toggle
+                                    formControlName="task_notifications_enabled"
+                                    label="Notificaciones de Tareas"
+                                    description="Recibir notificaciones sobre asignación y cambios en tareas"
+                                    variant="warning"
+                                    size="md"
+                                    labelPosition="left">
+                                </app-slide-toggle>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <app-button
+                    type="button"
+                    variant="secondary"
+                    size="lg"
+                    iconName="arrow-left"
+                    (click)="onCancel()"
+                    [disabled]="isLoading()"
+                    class="cancel-button">
+                    Cancelar
+                </app-button>
+
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    iconName="save"
+                    [disabled]="isLoading() || form.invalid"
+                    [loading]="isLoading()"
+                    class="save-button">
+                    {{ isLoading() ? 'Guardando...' : 'Guardar Cambios' }}
+                </app-button>
+            </div>
+        </form>
+    </div>
     }
 </div>

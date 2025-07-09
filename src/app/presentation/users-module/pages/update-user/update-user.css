@@ -1,52 +1,222 @@
 @reference '../../../../../styles.css';
 
+/* Main container */
 .update-user-container {
-    @apply max-w-2xl mx-auto p-6;
+    @apply max-w-4xl mx-auto p-6 space-y-6;
 }
 
+/* Loading state */
 .loading-container {
-    @apply flex flex-col items-center justify-center py-12;
+    @apply flex flex-col items-center justify-center py-16;
 }
 
-.loading-spinner-large {
-    @apply w-8 h-8 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4;
+.loading-spinner {
+    @apply w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4;
 }
 
 .loading-text {
-    @apply text-neutral-600 dark:text-neutral-300;
+    @apply text-neutral-600 dark:text-neutral-400 text-lg;
 }
 
-.form-header {
-    @apply mb-8 text-center;
+/* Page header */
+.page-header {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-6;
 }
 
-.form-title {
-    @apply text-3xl font-bold text-neutral-900 dark:text-white mb-2;
+.header-content {
+    @apply flex items-center gap-4;
 }
 
-.form-subtitle {
-    @apply text-neutral-600 dark:text-neutral-300 text-lg;
+.back-button {
+    @apply shrink-0;
+}
+
+.header-info {
+    @apply flex-1;
+}
+
+.page-title {
+    @apply text-2xl font-bold text-neutral-900 dark:text-white mb-2;
+}
+
+.page-subtitle {
+    @apply text-neutral-600 dark:text-neutral-400 text-base;
+}
+
+.user-name {
+    @apply font-semibold text-primary-600 dark:text-primary-400;
+}
+
+.user-username {
+    @apply text-neutral-500 dark:text-neutral-500;
+}
+
+/* Form card */
+.form-card {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden;
 }
 
 .update-user-form {
-    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 space-y-6;
+    @apply p-6 space-y-8;
 }
 
-.form-group {
+/* Form sections */
+.form-section {
+    @apply space-y-6;
+}
+
+.form-section:not(:last-child) {
+    @apply border-b border-neutral-200 dark:border-neutral-700 pb-8;
+}
+
+.section-header {
+    @apply flex items-start gap-4 mb-6;
+}
+
+.section-icon {
+    @apply flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg flex items-center justify-center;
+}
+
+.section-title-container {
+    @apply flex-1;
+}
+
+.section-title {
+    @apply text-xl font-semibold text-neutral-900 dark:text-white mb-1;
+}
+
+.section-description {
+    @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+/* Form grid */
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.form-field {
     @apply space-y-2;
 }
 
-.form-label {
-    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300;
+.form-field-full {
+    @apply md:col-span-2;
 }
 
-.form-input,
-.form-select {
-    @apply w-full px-4 py-3 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
+/* Toggle field */
+.toggle-field {
+    @apply bg-neutral-50 dark:bg-neutral-900/50 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700;
 }
 
-.form-input-error {
-    @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+/* Status input styling */
+.status-input {
+    @apply relative;
+}
+
+.status-input::after {
+    @apply absolute top-0 right-0 w-2 h-2 bg-successful-500 rounded-full;
+    content: '';
+}
+
+/* Notifications grid */
+.notifications-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.notification-card {
+    @apply bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900/50 dark:to-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02];
+}
+
+.notification-header {
+    @apply flex items-start gap-3;
+}
+
+.notification-content {
+    @apply flex-1;
+}
+
+/* Form actions */
+.form-actions {
+    @apply flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.cancel-button {
+    @apply sm:w-auto;
+}
+
+.save-button {
+    @apply sm:w-auto;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .update-user-container {
+        @apply p-4;
+    }
+
+    .page-header {
+        @apply p-4;
+    }
+
+    .header-content {
+        @apply flex-col items-start gap-3;
+    }
+
+    .page-title {
+        @apply text-xl;
+    }
+
+    .update-user-form {
+        @apply p-4;
+    }
+
+    .form-grid {
+        @apply grid-cols-1;
+    }
+
+    .notifications-grid {
+        @apply grid-cols-1;
+    }
+
+    .section-header {
+        @apply flex-col gap-3;
+    }
+
+    .section-icon {
+        @apply w-10 h-10;
+    }
+}
+
+/* Animation improvements */
+.form-section {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects */
+
+/* Loading state overlay */
+.update-user-form:has(.save-button[loading]) {
+    @apply pointer-events-none opacity-75;
+}
+
+/* Success state indicators */
+.form-field:has(input:valid) {
+    @apply relative;
+}
+
+.form-field:has(input:valid)::after {
+    @apply absolute top-0 right-0 w-2 h-2 bg-successful-500 rounded-full;
+    content: '';
 }
 
 .form-error {
