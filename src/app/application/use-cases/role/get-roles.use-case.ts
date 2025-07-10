@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { RoleRepository } from '../../../domain/repositories/role.repository';
-import { RoleListModel } from '../../../domain/models/role/role-list.model';
+import { RoleRepository } from '@domain/repositories/role.repository';
+import { RoleEntity } from '@domain/entities/role.entity';
+import { ROLE_REPOSITORY_TOKEN } from '@infrastructure/tokens/role.providers';
 
 @Injectable({
     providedIn: 'root'
 })
 export class GetRolesUseCase {
-    constructor(private readonly roleRepository: RoleRepository) {}
+    private readonly roleRepository: RoleRepository = inject(ROLE_REPOSITORY_TOKEN);
 
-    execute(): Observable<RoleListModel[]> {
+    execute(): Observable<RoleEntity[]> {
         return this.roleRepository.getRoles();
     }
 }
