@@ -1,0 +1,278 @@
+@reference '../../../../../styles.css';
+
+/* Main container */
+.update-user-container {
+    @apply max-w-4xl mx-auto p-6 space-y-6;
+}
+
+/* Loading state */
+.loading-container {
+    @apply flex flex-col items-center justify-center py-16;
+}
+
+.loading-spinner {
+    @apply w-12 h-12 border-4 border-primary-200 border-t-primary-500 rounded-full animate-spin mb-4;
+}
+
+.loading-text {
+    @apply text-neutral-600 dark:text-neutral-400 text-lg;
+}
+
+/* Page header */
+.page-header {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 mb-6;
+}
+
+.header-content {
+    @apply flex items-center gap-4;
+}
+
+.back-button {
+    @apply shrink-0;
+}
+
+.header-info {
+    @apply flex-1;
+}
+
+.page-title {
+    @apply text-2xl font-bold text-neutral-900 dark:text-white mb-2;
+}
+
+.page-subtitle {
+    @apply text-neutral-600 dark:text-neutral-400 text-base;
+}
+
+.user-name {
+    @apply font-semibold text-primary-600 dark:text-primary-400;
+}
+
+.user-username {
+    @apply text-neutral-500 dark:text-neutral-500;
+}
+
+/* Form card */
+.form-card {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden;
+}
+
+.update-user-form {
+    @apply p-6 space-y-8;
+}
+
+/* Form sections */
+.form-section {
+    @apply space-y-6;
+}
+
+.form-section:not(:last-child) {
+    @apply border-b border-neutral-200 dark:border-neutral-700 pb-8;
+}
+
+.section-header {
+    @apply flex items-start gap-4 mb-6;
+}
+
+.section-icon {
+    @apply flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 rounded-lg flex items-center justify-center;
+}
+
+.section-title-container {
+    @apply flex-1;
+}
+
+.section-title {
+    @apply text-xl font-semibold text-neutral-900 dark:text-white mb-1;
+}
+
+.section-description {
+    @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+/* Form grid */
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.form-field {
+    @apply space-y-2;
+}
+
+.form-field-full {
+    @apply md:col-span-2;
+}
+
+/* Toggle field */
+.toggle-field {
+    @apply bg-neutral-50 dark:bg-neutral-900/50 rounded-lg p-4 border border-neutral-200 dark:border-neutral-700;
+}
+
+/* Status input styling */
+.status-input {
+    @apply relative;
+}
+
+.status-input::after {
+    @apply absolute top-0 right-0 w-2 h-2 bg-successful-500 rounded-full;
+    content: '';
+}
+
+/* Notifications grid */
+.notifications-grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4;
+}
+
+.notification-card {
+    @apply bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-neutral-900/50 dark:to-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02];
+}
+
+.notification-header {
+    @apply flex items-start gap-3;
+}
+
+.notification-content {
+    @apply flex-1;
+}
+
+/* Form actions */
+.form-actions {
+    @apply flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.cancel-button {
+    @apply sm:w-auto;
+}
+
+.save-button {
+    @apply sm:w-auto;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .update-user-container {
+        @apply p-4;
+    }
+
+    .page-header {
+        @apply p-4;
+    }
+
+    .header-content {
+        @apply flex-col items-start gap-3;
+    }
+
+    .page-title {
+        @apply text-xl;
+    }
+
+    .update-user-form {
+        @apply p-4;
+    }
+
+    .form-grid {
+        @apply grid-cols-1;
+    }
+
+    .notifications-grid {
+        @apply grid-cols-1;
+    }
+
+    .section-header {
+        @apply flex-col gap-3;
+    }
+
+    .section-icon {
+        @apply w-10 h-10;
+    }
+}
+
+/* Animation improvements */
+.form-section {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects */
+
+/* Loading state overlay */
+.update-user-form:has(.save-button[loading]) {
+    @apply pointer-events-none opacity-75;
+}
+
+/* Success state indicators */
+.form-field:has(input:valid) {
+    @apply relative;
+}
+
+.form-field:has(input:valid)::after {
+    @apply absolute top-0 right-0 w-2 h-2 bg-successful-500 rounded-full;
+    content: '';
+}
+
+.form-error {
+    @apply text-red-600 dark:text-red-400 text-sm;
+}
+
+.toggle-container {
+    @apply mt-2;
+}
+
+.toggle-label {
+    @apply flex items-center cursor-pointer;
+}
+
+.toggle-input {
+    @apply sr-only;
+}
+
+.toggle-slider {
+    @apply relative w-12 h-6 bg-neutral-300 dark:bg-neutral-600 rounded-full transition-colors duration-200 ease-in-out;
+}
+
+.toggle-input:checked + .toggle-slider {
+    @apply bg-primary-500;
+}
+
+.toggle-slider::before {
+    content: '';
+    @apply absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out;
+}
+
+.toggle-input:checked + .toggle-slider::before {
+    @apply transform translate-x-6;
+}
+
+.toggle-text {
+    @apply ml-3 text-sm font-medium text-neutral-700 dark:text-neutral-300;
+}
+
+.form-actions {
+    @apply flex flex-col sm:flex-row gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.btn-primary,
+.btn-secondary {
+    @apply px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center;
+}
+
+.btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+}
+
+.btn-secondary {
+    @apply bg-neutral-200 text-neutral-800 hover:bg-neutral-300 focus:ring-neutral-500 dark:bg-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700;
+}
+
+.loading-spinner {
+    @apply inline-block w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin;
+}

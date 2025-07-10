@@ -1,0 +1,239 @@
+<!-- Main Page Container -->
+<div class="delete-role-page">
+    <div class="page-container">
+        <!-- Loading State -->
+        @if (isLoading()) {
+        <div class="loading-container">
+            <div class="loading-spinner" aria-label="Cargando"></div>
+            <p class="loading-text">Cargando información del rol...</p>
+        </div>
+        }
+
+        <!-- Error State -->
+        @else if (error() && !role()) {
+        <div class="error-container">
+            <div class="error-content">
+                <div class="flex justify-center mb-4">
+                    <icon-x-circle class="w-16 h-16 text-error-500" />
+                </div>
+                <h2 class="error-title">Error al cargar el rol</h2>
+                <p class="error-message">{{ error() }}</p>
+                <div class="error-actions">
+                    <app-button variant="secondary" size="md" (click)="onRetry()">
+                        Reintentar
+                    </app-button>
+                    <app-button variant="outline" size="md" (click)="onCancel()">
+                        Volver a Roles
+                    </app-button>
+                </div>
+            </div>
+        </div>
+        }
+
+        <!-- Delete Confirmation -->
+        @else if (role()) {
+        <div class="delete-container">
+            <!-- Header -->
+            <div class="delete-header">
+                <div class="header-content">
+                    <div class="header-info">
+                        <div class="flex items-center space-x-3">
+                            <icon-trash class="w-6 h-6 text-error-600 dark:text-error-400" />
+                            <div>
+                                <h1 class="delete-title">Confirmar Eliminación</h1>
+                                <p class="delete-subtitle">Esta acción no se puede deshacer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <app-button
+                            variant="ghost"
+                            size="sm"
+                            (click)="onCancel()"
+                            class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200">
+                            <icon-x class="w-4 h-4" />
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="delete-content">
+                <!-- Warning Section -->
+                <div class="warning-section">
+                    <div class="warning-header">
+                        <icon-x-circle class="w-5 h-5 text-warning-600 dark:text-warning-400" />
+                        <h3 class="warning-title">¡Advertencia!</h3>
+                    </div>
+                    <p class="warning-text">
+                        Estás a punto de eliminar permanentemente este rol. Esta acción eliminará:
+                    </p>
+                    <ul
+                        class="text-sm text-warning-700 dark:text-warning-300 mt-2 ml-6 list-disc space-y-1">
+                        <li>Toda la información del rol</li>
+                        <li>Las asignaciones de usuarios a este rol</li>
+                        <li>Los permisos asociados al rol</li>
+                    </ul>
+                </div>
+
+                <!-- Role Information -->
+                <div class="role-info-section">
+                    <h3 class="role-info-title">Información del Rol</h3>
+                    <div class="role-info-grid">
+                        <!-- Role Name -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <icon-id-badge
+                                    class="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Nombre</p>
+                                <p class="info-value">{{ role()!.name }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                @if (role()!.is_active) {
+                                <icon-check-circle
+                                    class="w-5 h-5 text-successful-600 dark:text-successful-400" />
+                                } @else {
+                                <icon-x-circle class="w-5 h-5 text-error-600 dark:text-error-400" />
+                                }
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Estado</p>
+                                <span
+                                    [class]="
+                                        role()!.is_active
+                                            ? 'status-badge status-active'
+                                            : 'status-badge status-inactive'
+                                    ">
+                                    {{ role()!.is_active ? 'Activo' : 'Inactivo' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Access Level -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <icon-shield class="w-5 h-5 text-info-600 dark:text-info-400" />
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Nivel de Acceso</p>
+                                <span
+                                    [class]="
+                                        'access-level-badge ' +
+                                        getAccessLevelInfo(role()!.access_level).class
+                                    ">
+                                    <span>{{
+                                        getAccessLevelInfo(role()!.access_level).label
+                                    }}</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- User Count -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <icon-user-list
+                                    class="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Usuarios Asignados</p>
+                                <p class="info-value">{{ role()!.user_count }} usuario(s)</p>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="info-item sm:col-span-2">
+                            <div class="info-icon">
+                                <icon-info class="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Descripción</p>
+                                <p class="info-value">{{ role()!.description }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Created Date -->
+                        <div class="info-item sm:col-span-2">
+                            <div class="info-icon">
+                                <icon-calendar
+                                    class="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+                            </div>
+                            <div class="info-content">
+                                <p class="info-label">Fecha de Creación</p>
+                                <p class="info-value">{{ formatDate(role()!.created_at) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="danger-zone">
+                    <h4 class="danger-title">Confirmación Requerida</h4>
+                    <p class="danger-text">
+                        Para confirmar la eliminación, escribe el nombre exacto del rol:
+                        <strong>{{ role()!.name }}</strong>
+                    </p>
+
+                    <div class="space-y-2">
+                        <label
+                            for="confirmationInput"
+                            class="block text-sm font-medium text-error-800 dark:text-error-200">
+                            Confirmar nombre del rol
+                        </label>
+                        <input
+                            id="confirmationInput"
+                            type="text"
+                            [value]="confirmationText()"
+                            (input)="onConfirmationTextChange($event)"
+                            placeholder="Escribe el nombre del rol aquí"
+                            class="w-full px-3 py-2 border border-error-300 dark:border-error-600 rounded-lg focus:ring-2 focus:ring-error-500 focus:border-error-500 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder-neutral-500 dark:placeholder-neutral-400" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="delete-actions">
+                <div class="actions-content">
+                    <div class="primary-actions">
+                        <app-button
+                            variant="destructive"
+                            size="md"
+                            [disabled]="!isConfirmationValid() || isDeleting()"
+                            [loading]="isDeleting()"
+                            (click)="onConfirmDelete()">
+                            @if (isDeleting()) { Eliminando... } @else {
+                            <icon-trash class="w-4 h-4 mr-2" />
+                            Eliminar Rol }
+                        </app-button>
+                    </div>
+                    <div class="secondary-actions">
+                        <app-button
+                            variant="outline"
+                            size="md"
+                            [disabled]="isDeleting()"
+                            (click)="onViewDetails()">
+                            Ver Detalles
+                        </app-button>
+
+                        <app-button
+                            variant="ghost"
+                            type="button"
+                            size="md"
+                            icon="x"
+                            class="bg-error-500 rounded-xl text-white hover:text-error-600"
+                            [disabled]="isDeleting()"
+                            (clicked)="onCancel()">
+                            Cancelar
+                        </app-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>

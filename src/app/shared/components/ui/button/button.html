@@ -1,33 +1,76 @@
-<button
-  [type]="type()"
-  [disabled]="isDisabled()"
-  [class]="buttonClasses()"
-  (click)="onClick()">
-  
-  @if (loading()) {
-    <svg class="btn-loading-icon" viewBox="0 0 24 24" fill="none">
-      <circle 
-        cx="12" 
-        cy="12" 
-        r="10" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-dasharray="31.416" 
-        stroke-dashoffset="31.416">
-        <animate 
-          attributeName="stroke-dasharray" 
-          dur="2s" 
-          values="0 31.416;15.708 15.708;0 31.416" 
-          repeatCount="indefinite"/>
-        <animate 
-          attributeName="stroke-dashoffset" 
-          dur="2s" 
-          values="0;-15.708;-31.416" 
-          repeatCount="indefinite"/>
-      </circle>
+<button [type]="type()" [disabled]="isDisabled()" [class]="buttonClasses()" (click)="onClick()">
+    @if (loading()) {
+    <svg class="btn-loading-icon" viewBox="0 0 24 24" fill="none" width="1em" height="1em">
+        <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-dasharray="31.416"
+            stroke-dashoffset="31.416">
+            <animate
+                attributeName="stroke-dasharray"
+                dur="2s"
+                values="0 31.416;15.708 15.708;0 31.416"
+                repeatCount="indefinite" />
+            <animate
+                attributeName="stroke-dashoffset"
+                dur="2s"
+                values="0;-15.708;-31.416"
+                repeatCount="indefinite" />
+        </circle>
     </svg>
-  }
+    } @else {
+    <!-- Icono izquierdo -->
+    @if (hasIcon() && iconPosition() === 'left') {
+    <ng-container [ngSwitch]="icon()">
+        <icon-plus *ngSwitchCase="'plus'"></icon-plus>
+        <icon-edit *ngSwitchCase="'edit'"></icon-edit>
+        <icon-delete *ngSwitchCase="'delete'"></icon-delete>
+        <icon-refresh *ngSwitchCase="'refresh'"></icon-refresh>
+        <icon-save *ngSwitchCase="'save'"></icon-save>
+        <icon-arrow-left *ngSwitchCase="'arrow-left'"></icon-arrow-left>
+        <icon-arrow-right *ngSwitchCase="'arrow-right'"></icon-arrow-right>
+        <icon-download *ngSwitchCase="'download'"></icon-download>
+        <icon-upload *ngSwitchCase="'upload'"></icon-upload>
+        <icon-search *ngSwitchCase="'search'"></icon-search>
+        <icon-x *ngSwitchCase="'x'"></icon-x>
+        <icon-check *ngSwitchCase="'check'"></icon-check>
+        <icon-eye *ngSwitchCase="'eye'"></icon-eye>
+        <icon-check-circle *ngSwitchCase="'check-circle'"></icon-check-circle>
+        <icon-x-circle *ngSwitchCase="'x-circle'"></icon-x-circle>
+        <icon-trash *ngSwitchCase="'trash'"></icon-trash>
+        <icon-users *ngSwitchCase="'users'"></icon-users>
+    </ng-container>
+    }
 
-  <ng-content></ng-content>
+    <!-- Contenido principal del botón -->
+    @if (hasContent()) {
+    <ng-content></ng-content>
+    }
+
+    <!-- Icono derecho -->
+    @if (hasIcon() && iconPosition() === 'right') {
+    <ng-container [ngSwitch]="icon()">
+        <icon-plus *ngSwitchCase="'plus'"></icon-plus>
+        <icon-edit *ngSwitchCase="'edit'"></icon-edit>
+        <icon-delete *ngSwitchCase="'delete'"></icon-delete>
+        <icon-refresh *ngSwitchCase="'refresh'"></icon-refresh>
+        <icon-save *ngSwitchCase="'save'"></icon-save>
+        <icon-arrow-left *ngSwitchCase="'arrow-left'"></icon-arrow-left>
+        <icon-arrow-right *ngSwitchCase="'arrow-right'"></icon-arrow-right>
+        <icon-download *ngSwitchCase="'download'"></icon-download>
+        <icon-upload *ngSwitchCase="'upload'"></icon-upload>
+        <icon-search *ngSwitchCase="'search'"></icon-search>
+        <icon-x *ngSwitchCase="'x'"></icon-x>
+        <icon-check *ngSwitchCase="'check'"></icon-check>
+        <icon-eye *ngSwitchCase="'eye'"></icon-eye>
+        <icon-check-circle *ngSwitchCase="'check-circle'"></icon-check-circle>
+        <icon-x-circle *ngSwitchCase="'x-circle'"></icon-x-circle>
+        <icon-trash *ngSwitchCase="'trash'"></icon-trash>
+        <icon-users *ngSwitchCase="'users'"></icon-users>
+    </ng-container>
+    } }
 </button>

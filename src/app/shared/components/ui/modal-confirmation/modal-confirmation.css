@@ -1,0 +1,53 @@
+@reference '../../../../../styles.css';
+
+.modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/10 backdrop-blur-sm;
+}
+
+.modal-container {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 p-6 max-w-md w-full mx-4;
+}
+
+.modal-header {
+    @apply mb-4;
+}
+
+.modal-title {
+    @apply text-xl font-semibold text-neutral-900 dark:text-white;
+}
+
+.modal-content {
+    @apply mb-6;
+}
+
+.modal-message {
+    @apply text-neutral-600 dark:text-neutral-300 leading-relaxed;
+}
+
+.modal-actions {
+    @apply flex flex-col sm:flex-row gap-3 sm:justify-end;
+}
+
+.btn-base {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-90 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+}
+
+.btn-secondary {
+    @apply bg-neutral-200 text-neutral-800 hover:bg-neutral-300 focus:ring-neutral-500 dark:bg-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700;
+}
+
+.btn-danger {
+    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
+}
+
+.btn-loading {
+    @apply opacity-90 cursor-not-allowed;
+}
+
+.loading-spinner {
+    @apply inline-block w-4 h-4 mr-2 border-2 border-current border-t-transparent rounded-full animate-spin;
+}

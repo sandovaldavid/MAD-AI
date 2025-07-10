@@ -24,7 +24,7 @@
 
 /* Base input styles */
 .input-base {
-    @apply w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 rounded-lg transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-neutral-400 dark:hover:border-neutral-500;
+    @apply w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 rounded-lg transition-all duration-200 ease-in-out focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/30 hover:border-neutral-400 dark:hover:border-neutral-500;
 }
 
 /* Size variations */
@@ -42,12 +42,12 @@
 
 /* Error state */
 .input-error {
-    @apply border-error-500 dark:border-error-400 bg-error-50 dark:bg-error-950/10 focus:ring-error-500 focus:border-error-500;
+    @apply border-error-500 dark:border-error-400 bg-error-50 dark:bg-error-950/10 focus:border-error-500 focus:ring-1 focus:ring-error-500/30;
 }
 
 /* Success state */
 .input-success {
-    @apply border-successful-500 dark:border-successful-400 bg-successful-50 dark:bg-successful-950/10 focus:ring-successful-500 focus:border-successful-500;
+    @apply border-successful-500 dark:border-successful-400 bg-successful-50 dark:bg-successful-950/10 focus:border-successful-500 focus:ring-1 focus:ring-successful-500/30;
 }
 
 /* Disabled state */
@@ -57,7 +57,7 @@
 
 /* Readonly state */
 .input-readonly {
-    @apply bg-neutral-50 dark:bg-neutral-800 cursor-default focus:ring-1 focus:ring-neutral-300 dark:focus:ring-neutral-600;
+    @apply bg-neutral-50 dark:bg-neutral-800 cursor-default focus:border-neutral-400 dark:focus:border-neutral-500 focus:ring-1 focus:ring-neutral-300/30 dark:focus:ring-neutral-600/30;
 }
 
 /* Message styles */

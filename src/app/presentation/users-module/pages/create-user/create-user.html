@@ -1,0 +1,111 @@
+<div class="create-user-container">
+    <div class="form-header">
+        <h1 class="form-title">Crear Nuevo Usuario</h1>
+        <p class="form-subtitle">Completa los datos para crear un nuevo usuario en el sistema</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="create-user-form">
+        <!-- Username Field -->
+        <div class="form-group">
+            <label for="username" class="form-label"> Nombre de Usuario * </label>
+            <input
+                id="username"
+                type="text"
+                formControlName="username"
+                class="form-input"
+                [class.form-input-error]="getFieldError('username')"
+                placeholder="Ingresa el nombre de usuario" />
+            @if (getFieldError('username')) {
+            <span class="form-error">{{ getFieldError('username') }}</span>
+            }
+        </div>
+
+        <!-- Email Field -->
+        <div class="form-group">
+            <label for="email" class="form-label"> Email * </label>
+            <input
+                id="email"
+                type="email"
+                formControlName="email"
+                class="form-input"
+                [class.form-input-error]="getFieldError('email')"
+                placeholder="usuario@ejemplo.com" />
+            @if (getFieldError('email')) {
+            <span class="form-error">{{ getFieldError('email') }}</span>
+            }
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+            <label for="password" class="form-label"> Contraseña * </label>
+            <input
+                id="password"
+                type="password"
+                formControlName="password"
+                class="form-input"
+                [class.form-input-error]="getFieldError('password')"
+                placeholder="Ingresa una contraseña segura" />
+            @if (getFieldError('password')) {
+            <span class="form-error">{{ getFieldError('password') }}</span>
+            }
+        </div>
+
+        <!-- First Name Field -->
+        <div class="form-group">
+            <label for="first_name" class="form-label"> Nombre * </label>
+            <input
+                id="first_name"
+                type="text"
+                formControlName="first_name"
+                class="form-input"
+                [class.form-input-error]="getFieldError('first_name')"
+                placeholder="Nombre del usuario" />
+            @if (getFieldError('first_name')) {
+            <span class="form-error">{{ getFieldError('first_name') }}</span>
+            }
+        </div>
+
+        <!-- Last Name Field -->
+        <div class="form-group">
+            <label for="last_name" class="form-label"> Apellido * </label>
+            <input
+                id="last_name"
+                type="text"
+                formControlName="last_name"
+                class="form-input"
+                [class.form-input-error]="getFieldError('last_name')"
+                placeholder="Apellido del usuario" />
+            @if (getFieldError('last_name')) {
+            <span class="form-error">{{ getFieldError('last_name') }}</span>
+            }
+        </div>
+
+        <!-- Role Field (Optional) -->
+        <div class="form-group">
+            <label for="role_id" class="form-label"> Rol (Opcional) </label>
+            <select id="role_id" formControlName="role_id" class="form-select">
+                <option value="">Selecciona un rol</option>
+                @for (role of roles(); track role.id) {
+                <option [value]="role.id">{{ role.name }} - {{ role.description }}</option>
+                }
+            </select>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button
+                type="button"
+                class="btn-secondary"
+                [disabled]="isLoading()"
+                (click)="onCancel()">
+                Cancelar
+            </button>
+
+            <button type="submit" class="btn-primary" [disabled]="isLoading() || form.invalid">
+                @if (isLoading()) {
+                <span class="loading-spinner"></span>
+                Creando... } @else { Crear Usuario }
+            </button>
+        </div>
+    </form>
+</div>

@@ -24,7 +24,7 @@ Ejemplos:
 }
 
 .input-base {
-    @apply border border-gray-300 dark:border-gray-600 bg-white dark:bg-background text-text px-4 py-2 rounded-md focus:ring-2 focus:ring-primary-500;
+    @apply border border-gray-300 dark:border-gray-600 bg-white dark:bg-background px-4 py-2 rounded-md focus:ring-2 focus:ring-primary-500;
 }
 ```
 
@@ -34,7 +34,7 @@ Estas clases deben usarse en lugar de repetir utilidades dentro del HTML.
 
 La implementación del **modo oscuro** debe activarse mediante la clase `.dark` en el HTML root. Todos los estilos y componentes deben:
 
--   Aplicar condicionales de Tailwind como `dark:bg-background`, `dark:text-text`
+-   Aplicar condicionales de Tailwind como `dark:bg-background`, `dark:text-dark`
 
 Ejemplo:
 

@@ -1,0 +1,73 @@
+@reference '../../../../../styles.css';
+
+.stats-container {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.stat-card:nth-child(1) {
+    @apply bg-primary-50 dark:bg-primary-600 rounded-lg shadow-sm border border-primary-200 dark:border-primary-300 p-6 transition-colors hover:shadow-md;
+}
+
+.stat-card:nth-child(2) {
+    @apply bg-secondary-50 dark:bg-secondary-600 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-300 p-6 transition-colors hover:shadow-md;
+}
+
+.stat-card:nth-child(3) {
+    @apply bg-tertiary-50 dark:bg-tertiary-600 rounded-lg shadow-sm border border-tertiary-200 dark:border-tertiary-300 p-6 transition-colors hover:shadow-md;
+}
+
+.stat-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.stat-title {
+    @apply text-neutral-600 dark:text-neutral-300 text-sm font-medium;
+}
+
+.stat-value {
+    @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100;
+}
+
+.stat-icon {
+    @apply w-8 h-8 rounded-full flex items-center justify-center;
+}
+
+.stat-icon-total {
+    @apply bg-primary-50 dark:bg-primary-900 text-primary-600 dark:text-primary-300;
+}
+
+.stat-icon-active {
+    @apply bg-successful-50 dark:bg-successful-900 text-successful-600 dark:text-successful-300;
+}
+
+.stat-icon-inactive {
+    @apply bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-300;
+}
+
+.loading-container {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-6;
+}
+
+.loading-card {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 animate-pulse;
+}
+
+.loading-skeleton {
+    @apply bg-neutral-200 dark:bg-neutral-700 rounded;
+}
+
+.loading-title {
+    @apply h-4 w-20 mb-4;
+}
+
+.loading-value {
+    @apply h-8 w-16;
+}
+
+.error-container {
+    @apply bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-700 rounded-lg p-4;
+}
+
+.error-text {
+    @apply text-error-700 dark:text-error-300 text-sm;
+}

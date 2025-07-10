@@ -33,10 +33,10 @@ export class InputComponent implements ControlValueAccessor {
     disabledInput = input<boolean>(false);
     required = input<boolean>(false);
     readonly = input<boolean>(false);
-    
+
     // Internal writeable signal for disabled state
     private _disabledState = signal<boolean>(false);
-    
+
     // Computed disabled state combining both sources
     disabled = computed(() => this.disabledInput() || this._disabledState());
     size = input<InputSize>('md');
@@ -78,16 +78,19 @@ export class InputComponent implements ControlValueAccessor {
             md: 'input-md',
             lg: 'input-lg',
         };
-        const variantClasses = {
-            default: '',
-            error: 'input-error',
-            success: 'input-success',
-        };
+
+        // Determine variant class based on state
+        let variantClass = '';
+        if (this.hasError()) {
+            variantClass = 'input-error';
+        } else if (this.variant() === 'success') {
+            variantClass = 'input-success';
+        }
 
         return [
             baseClasses,
             sizeClasses[this.size()],
-            variantClasses[this.variant()],
+            variantClass,
             this.disabled() ? 'input-disabled' : '',
             this.readonly() ? 'input-readonly' : '',
         ]

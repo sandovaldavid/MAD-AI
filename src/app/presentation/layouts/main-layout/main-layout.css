@@ -13,7 +13,7 @@
 }
 
 .header-wrapper {
-    @apply fixed top-0 z-30 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700;
+    @apply fixed top-0 z-30 bg-linear-60 from-primary-900 from-80% to-primary-600 to-35% border-b border-primary-800;
     left: var(--sidebar-width);
     right: 0;
     height: var(--header-height);
@@ -23,6 +23,7 @@
 .content-area {
     @apply p-6 flex-grow;
     margin-top: var(--header-height);
+    @apply bg-primary-50 dark:bg-primary-950;
 }
 
 /* When sidebar is collapsed */

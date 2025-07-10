@@ -1,0 +1,13 @@
+@reference '../../../../../styles.css';
+
+.toggle-icon {
+    @apply transition-colors duration-200;
+}
+
+.toggle-icon.active {
+    @apply text-primary-500;
+}
+
+.toggle-icon.inactive {
+    @apply text-neutral-400;
+}
