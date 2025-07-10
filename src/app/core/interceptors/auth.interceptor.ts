@@ -21,8 +21,17 @@ export const advancedAuthInterceptor: HttpInterceptorFn = (
     const tokenService = inject(TokenService);
     const router = inject(Router);
 
-    // No interceptar requests de auth para evitar loops infinitos
-    if (req.url.includes('/auth/')) {
+    // No interceptar solo las rutas de auth específicas que no necesitan token
+    // Estas rutas NO necesitan token: login, register, refresh-token, reset-password
+    const authRoutesWithoutToken = [
+        '/auth/login/',
+        '/auth/register/',
+        '/auth/refresh-token/',
+        '/auth/reset-password/',
+        '/auth/confirm-email/',
+    ];
+
+    if (authRoutesWithoutToken.some((route) => req.url.includes(route))) {
         return next(req);
     }
 
