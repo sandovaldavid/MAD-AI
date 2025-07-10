@@ -8,7 +8,7 @@ import { USER_REPOSITORY_TOKEN } from '@infrastructure/tokens/user.providers';
     providedIn: 'root'
 })
 export class GetUserStatsUseCase {
-    private readonly userRepository = inject(USER_REPOSITORY_TOKEN);
+    private readonly userRepository: UserRepository = inject(USER_REPOSITORY_TOKEN);
 
     execute(): Observable<UserStatsModel> {
         return this.userRepository.getUserStats();
