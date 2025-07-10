@@ -14,7 +14,7 @@
 }
 
 .header-content {
-    @apply space-y-2 flex justify-between items-center;
+    @apply flex justify-between items-start space-y-2;
 }
 
 .page-title {
@@ -34,6 +34,10 @@
 @media (max-width: 768px) {
     .page-container {
         @apply px-4 py-4;
+    }
+
+    .header-content {
+        @apply flex-col items-start space-y-4;
     }
 
     .page-title {
