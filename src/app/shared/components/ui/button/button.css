@@ -1,0 +1,156 @@
+@reference '../../../../../styles.css';
+
+/* Base button styles */
+.btn-base {
+    @apply inline-flex items-center justify-center gap-2 
+        font-medium rounded-lg 
+        transition-all duration-200 ease-in-out 
+        focus:outline-none 
+        disabled:cursor-not-allowed 
+        select-none whitespace-nowrap;
+}
+
+/* Focus styles - solo aparece con navegación por teclado */
+.btn-base:focus-visible {
+    @apply ring-2 ring-offset-2;
+}
+
+/* Evitar focus ring en click con mouse */
+.btn-base:focus:not(:focus-visible) {
+    @apply ring-0 ring-offset-0;
+}
+
+/* Size variations */
+.btn-sm {
+    @apply px-3 py-1.5 text-sm;
+}
+
+.btn-md {
+    @apply px-4 py-2 text-base;
+}
+
+.btn-lg {
+    @apply px-6 py-3 text-lg;
+}
+
+/* Primary variant */
+.btn-primary {
+    @apply bg-primary-500 text-white 
+        border border-primary-500
+        hover:bg-primary-600 hover:border-primary-600
+        active:bg-primary-700;
+}
+
+.btn-primary:focus-visible {
+    @apply ring-primary-500;
+}
+
+/* Secondary variant */
+.btn-secondary {
+    @apply bg-secondary-500 text-white 
+        border border-secondary-500
+        hover:bg-secondary-600 hover:border-secondary-600
+        active:bg-secondary-700;
+}
+
+.btn-secondary:focus-visible {
+    @apply ring-secondary-500;
+}
+
+/* Outline variant */
+.btn-outline {
+    @apply bg-transparent text-primary-600 dark:text-primary-400
+        border border-primary-500 
+        hover:bg-primary-50 dark:hover:bg-primary-950/20
+        active:bg-primary-100 dark:active:bg-primary-950/30;
+}
+
+.btn-outline:focus-visible {
+    @apply ring-primary-500;
+}
+
+/* Ghost variant */
+.btn-ghost {
+    @apply bg-transparent text-neutral-700 dark:text-neutral-300
+        border border-transparent
+        hover:bg-neutral-100 dark:hover:bg-neutral-800
+        active:bg-neutral-200 dark:active:bg-neutral-700;
+}
+
+.btn-ghost:focus-visible {
+    @apply ring-neutral-500;
+}
+
+/* Destructive variant */
+.btn-destructive {
+    @apply bg-error-500 text-white 
+        border border-error-500
+        hover:bg-error-600 hover:border-error-600
+        active:bg-error-700;
+}
+
+.btn-destructive:focus-visible {
+    @apply ring-error-500;
+}
+
+/* Disabled state - sin focus ring */
+.btn-disabled {
+    @apply bg-neutral-300 dark:bg-neutral-700 
+        text-neutral-500 dark:text-neutral-400 
+        border-neutral-300 dark:border-neutral-700 
+        hover:bg-neutral-300 dark:hover:bg-neutral-700 
+        hover:border-neutral-300 dark:hover:border-neutral-700 
+        cursor-not-allowed;
+}
+
+.btn-disabled:focus-visible {
+    @apply ring-0 ring-offset-0;
+}
+
+/* Loading state */
+.btn-loading {
+    @apply cursor-wait;
+}
+
+.btn-loading-icon {
+    @apply w-4 h-4 animate-spin;
+}
+
+/* Full width */
+.btn-full-width {
+    @apply w-full;
+}
+
+/* Icon only */
+.btn-icon-only.btn-sm {
+    @apply p-1.5;
+}
+
+.btn-icon-only.btn-md {
+    @apply p-2;
+}
+
+.btn-icon-only.btn-lg {
+    @apply p-3;
+}
+
+/* Dark mode adjustments para focus-visible */
+.dark .btn-primary:focus-visible {
+    @apply ring-offset-neutral-900;
+}
+
+.dark .btn-secondary:focus-visible {
+    @apply ring-offset-neutral-900;
+}
+
+.dark .btn-outline:focus-visible {
+    @apply ring-offset-neutral-900;
+}
+
+.dark .btn-ghost:focus-visible {
+    @apply ring-offset-neutral-900;
+}
+
+.dark .btn-destructive:focus-visible {
+    @apply ring-offset-neutral-900;
+}

@@ -1,0 +1,24 @@
+<div class="register-page">
+    <div class="register-container">
+        <!-- Header -->
+        <div class="register-header">
+            <h1 class="register-title">Create Account</h1>
+            <p class="register-subtitle">
+                Join us and start managing your projects with AI assistance
+            </p>
+        </div>
+
+        <!-- Register Form -->
+        <div class="register-form-container">
+            <app-register-form [isLoading]="isLoading()" (formSubmit)="onRegisterSubmit($event)" />
+        </div>
+
+        <!-- Footer -->
+        <div class="register-footer">
+            <p class="text-center text-gray-600 dark:text-gray-400">
+                Already have an account?
+                <a routerLink="/auth/login" class="login-link"> Sign in here </a>
+            </p>
+        </div>
+    </div>
+</div>

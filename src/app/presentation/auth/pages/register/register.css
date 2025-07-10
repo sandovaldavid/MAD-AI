@@ -1,0 +1,33 @@
+@reference '../../../../../styles.css';
+
+.register-page {
+    @apply min-h-screen flex items-center justify-center bg-gray-50 dark:bg-primary-950 px-4 py-12;
+}
+
+.register-container {
+    @apply w-full max-w-md space-y-8;
+}
+
+.register-header {
+    @apply text-center;
+}
+
+.register-title {
+    @apply text-3xl font-bold text-gray-900 dark:text-gray-200;
+}
+
+.register-subtitle {
+    @apply mt-2 text-sm text-gray-600 dark:text-gray-400;
+}
+
+.register-form-container {
+    @apply bg-white dark:bg-gray-800 shadow-lg rounded-lg px-8 py-6;
+}
+
+.register-footer {
+    @apply mt-6;
+}
+
+.login-link {
+    @apply font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 transition-colors;
+}

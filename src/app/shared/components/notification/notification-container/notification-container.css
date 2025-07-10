@@ -1,0 +1,54 @@
+@reference '../../../../../styles.css';
+
+.notifications-container {
+    @apply fixed z-50 pointer-events-none;
+    @apply flex flex-col items-end gap-2;
+    @apply p-4 max-w-md;
+}
+
+.notifications-top-left {
+    @apply top-0 left-0;
+}
+
+.notifications-top-center {
+    @apply top-0 left-1/2 transform -translate-x-1/2;
+}
+
+.notifications-top-right {
+    @apply top-0 right-0;
+}
+
+.notifications-bottom-left {
+    @apply bottom-0 left-0;
+}
+
+.notifications-bottom-center {
+    @apply bottom-0 left-1/2 transform -translate-x-1/2;
+}
+
+.notifications-bottom-right {
+    @apply bottom-0 right-0;
+}
+
+.notification-wrapper {
+    @apply pointer-events-auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .notifications-container {
+        @apply p-2 max-w-full w-full;
+    }
+    
+    .notifications-top-left,
+    .notifications-top-center,
+    .notifications-top-right {
+        @apply left-0 right-0 transform-none;
+    }
+    
+    .notifications-bottom-left,
+    .notifications-bottom-center,
+    .notifications-bottom-right {
+        @apply left-0 right-0 transform-none;
+    }
+}

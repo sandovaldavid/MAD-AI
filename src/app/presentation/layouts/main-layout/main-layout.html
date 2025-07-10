@@ -1,0 +1,14 @@
+<div [class]="layoutClasses()">
+    <app-sidebar />
+
+    <div class="main-content">
+        <div class="header-wrapper">
+            <app-header />
+        </div>
+        <div class="content-area">
+            <router-outlet />
+        </div>
+    </div>
+
+    <app-notification-container />
+</div>

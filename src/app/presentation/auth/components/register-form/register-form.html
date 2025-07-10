@@ -1,0 +1,93 @@
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6" novalidate>
+    <!-- First Name and Last Name Row -->
+    <div class="name-row">
+        <app-input
+            type="text"
+            placeholder="First Name"
+            formControlName="firstName"
+            [errorMessage]="firstNameError()"
+            autocomplete="given-name"
+            aria-label="First Name"
+            [required]="true" />
+
+        <app-input
+            type="text"
+            placeholder="Last Name"
+            formControlName="lastName"
+            [errorMessage]="lastNameError()"
+            autocomplete="family-name"
+            aria-label="Last Name"
+            [required]="true" />
+    </div>
+
+    <!-- Username -->
+    <div>
+        <app-input
+            type="text"
+            placeholder="Username"
+            formControlName="username"
+            [errorMessage]="usernameError()"
+            autocomplete="username"
+            aria-label="Username"
+            [required]="true" />
+    </div>
+
+    <!-- Email -->
+    <div>
+        <app-input
+            type="email"
+            placeholder="Email"
+            formControlName="email"
+            [errorMessage]="emailError()"
+            autocomplete="email"
+            aria-label="Email"
+            [required]="true" />
+    </div>
+
+    <!-- Password -->
+    <div>
+        <app-input
+            type="password"
+            placeholder="Password"
+            formControlName="password"
+            [errorMessage]="passwordError()"
+            autocomplete="new-password"
+            aria-label="Password"
+            [required]="true" />
+    </div>
+
+    <!-- Password Confirmation -->
+    <div>
+        <app-input
+            type="password"
+            placeholder="Confirm Password"
+            formControlName="passwordConfirmation"
+            [errorMessage]="passwordConfirmationError()"
+            autocomplete="new-password"
+            aria-label="Confirm Password"
+            [required]="true" />
+    </div>
+
+    <!-- Password Requirements -->
+    <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+        <p class="font-medium mb-2">Password requirements:</p>
+        <ul class="space-y-1 text-xs">
+            <li>• At least 8 characters long</li>
+            <li>• Contains uppercase and lowercase letters</li>
+            <li>• Contains at least one number</li>
+            <li>• Contains at least one special character ($!%*?&)</li>
+        </ul>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex justify-end items-center">
+        <app-button
+            type="submit"
+            variant="primary"
+            size="lg"
+            [disabled]="!isFormValid()"
+            [loading]="isLoading()">
+            Create Account
+        </app-button>
+    </div>
+</form>

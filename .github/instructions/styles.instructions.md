@@ -13,7 +13,7 @@ los estilos deben ser definidos en el componente dentro de su archivo .css corre
 Para poder usar los estilos definidos en los archivos .css deber hacer uina referencia al archivo `styles.css` en el archivo .css del componente. Por ejemplo:
 
 ```css
-@import '../../../../../styles/colors.css';
+@reference '../../../../../styles.css';
 ```
 
 Ejemplos:

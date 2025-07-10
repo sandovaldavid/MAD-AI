@@ -1,0 +1,59 @@
+@reference '../../../../../styles.css';
+
+.notification-item {
+    @apply flex max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden transition-all duration-300;
+    @apply border-l-4;
+    @apply mb-4;
+}
+
+.notification-success {
+    @apply border-successful-500 bg-successful-50 dark:bg-successful-950;
+}
+
+.notification-error {
+    @apply border-error-500 bg-error-50 dark:bg-error-950;
+}
+
+.notification-warning {
+    @apply border-warning-500 bg-warning-50 dark:bg-warning-950;
+}
+
+.notification-info {
+    @apply border-info-500 bg-info-50 dark:bg-info-950;
+}
+
+.notification-icon {
+    @apply flex items-center justify-center w-12;
+}
+
+.notification-success .notification-icon {
+    @apply text-successful-500;
+}
+
+.notification-error .notification-icon {
+    @apply text-error-500;
+}
+
+.notification-warning .notification-icon {
+    @apply text-warning-500;
+}
+
+.notification-info .notification-icon {
+    @apply text-info-500;
+}
+
+.notification-content {
+    @apply flex-1 p-4 pr-2;
+}
+
+.notification-title {
+    @apply font-bold text-gray-900 dark:text-gray-100;
+}
+
+.notification-message {
+    @apply text-sm text-gray-700 dark:text-gray-300 mt-1;
+}
+
+.notification-close {
+    @apply flex items-center p-2 text-gray-400 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-200 cursor-pointer;
+}

@@ -1,0 +1,72 @@
+<aside [class]="'sidebar ' + sidebarClasses()">
+    <!-- Header -->
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <app-icon name="logo" />
+            </div>
+            @if (!isCollapsed()) {
+            <span class="logo-text">MAD AI</span>
+            }
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        @for (section of menuSections; track $index) {
+        <div class="menu-section">
+            @if (section.title && !isCollapsed()) {
+            <div class="section-title">{{ section.title }}</div>
+            }
+
+            <ul class="menu-items">
+                @for (item of section.items; track item.route) {
+                <li class="menu-item">
+                    <a
+                        [routerLink]="item.route"
+                        routerLinkActive="active"
+                        class="menu-link"
+                        (mouseenter)="onItemHover(item.label)"
+                        (mouseleave)="onItemHover(null)"
+                        [attr.title]="isCollapsed() ? item.label : null">
+                        <span class="menu-icon">
+                            <app-icon [name]="item.icon" />
+                        </span>
+
+                        @if (!isCollapsed()) {
+                        <span class="menu-label">{{ item.label }}</span>
+                        @if (item.badge && item.badge > 0) {
+                        <span class="menu-badge">{{ item.badge }}</span>
+                        } } @else {
+                        <!-- Badge for collapsed mode -->
+                        @if (item.badge && item.badge > 0) {
+                        <span class="menu-badge">{{ item.badge }}</span>
+                        } }
+                    </a>
+
+                    <!-- Tooltip for collapsed state -->
+                    @if (isCollapsed() && hoveredItem() === item.label) {
+                    <div class="tooltip">
+                        {{ item.label }}
+                        @if (item.badge && item.badge > 0) {
+                        <span class="tooltip-badge">{{ item.badge }}</span>
+                        }
+                    </div>
+                    }
+                </li>
+                }
+            </ul>
+        </div>
+        }
+    </nav>
+
+    <!-- Footer -->
+    <div class="sidebar-footer">
+        @if (!isCollapsed()) {
+        <div class="version-info">
+            <span class="version">v3.0</span>
+            <a href="#" class="help-link">Ayuda</a>
+        </div>
+        }
+    </div>
+</aside>

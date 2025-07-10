@@ -1,0 +1,183 @@
+<header class="header-container">
+    <!-- Left section: Sidebar toggle and breadcrumbs -->
+    <div class="header-left">
+        <button
+            type="button"
+            class="sidebar-toggle-btn"
+            (click)="toggleSidebar()"
+            [attr.aria-label]="'Toggle sidebar'">
+            <app-header-icon [name]="'menu'" [size]="20" class="sidebar-toggle-icon" />
+        </button>
+
+        <!-- Breadcrumbs -->
+        <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb-list">
+                @for (item of breadcrumbs(); track item.url) {
+                <li class="breadcrumb-item">
+                    @if (!item.isLast) {
+                    <button
+                        type="button"
+                        class="breadcrumb-link"
+                        (click)="navigateToBreadcrumb(item)"
+                        [attr.aria-label]="'Navigate to ' + item.label">
+                        {{ item.label }}
+                    </button>
+                    <app-header-icon
+                        [name]="'chevron-right'"
+                        [size]="16"
+                        class="breadcrumb-separator" />
+                    } @else {
+                    <span class="breadcrumb-current" [attr.aria-current]="'page'">
+                        {{ item.label }}
+                    </span>
+                    }
+                </li>
+                }
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Right section: Theme toggle, notifications, user menu -->
+    <div class="header-right">
+        <!-- Theme toggle -->
+        <button
+            type="button"
+            class="theme-toggle-btn"
+            (click)="toggleTheme()"
+            [attr.aria-label]="'Toggle ' + (isDarkMode() ? 'light' : 'dark') + ' mode'">
+            <app-header-icon
+                [name]="isDarkMode() ? 'sun' : 'moon'"
+                [size]="20"
+                class="theme-icon" />
+        </button>
+
+        <!-- Notifications -->
+        <div class="notification-container">
+            <button
+                type="button"
+                class="notification-btn"
+                (click)="toggleNotifications()"
+                [attr.aria-label]="
+                    'Open notifications' +
+                    (notificationCount() > 0 ? '. ' + notificationCount() + ' unread' : '')
+                "
+                [attr.aria-expanded]="isNotificationsOpen()">
+                <app-header-icon [name]="'bell'" [size]="20" class="notification-icon" />
+                @if (notificationCount() > 0) {
+                <span class="notification-badge" [attr.aria-hidden]="true">
+                    {{ notificationCount() > 99 ? '99+' : notificationCount() }}
+                </span>
+                }
+            </button>
+
+            <!-- Notifications dropdown -->
+            @if (isNotificationsOpen()) {
+            <div class="notification-dropdown" role="dialog" [attr.aria-label]="'Notifications'">
+                <div class="notification-header">
+                    <h3 class="notification-title">Notifications</h3>
+                    @if (notificationCount() > 0) {
+                    <button
+                        type="button"
+                        class="mark-all-read-btn"
+                        (click)="markAllAsRead()"
+                        [attr.aria-label]="'Mark all as read'">
+                        Mark all as read
+                    </button>
+                    }
+                </div>
+
+                <div class="notification-list">
+                    @if (notificationCount() === 0) {
+                    <div class="no-notifications">
+                        <app-header-icon
+                            [name]="'bell-slash'"
+                            [size]="24"
+                            class="no-notifications-icon" />
+                        <p>No new notifications</p>
+                    </div>
+                    } @else {
+                    <!-- Placeholder for actual notifications -->
+                    <div class="notification-item">
+                        <div class="notification-content">
+                            <p class="notification-text">Sample notification</p>
+                            <span class="notification-time">2 minutes ago</span>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+
+        <!-- User menu -->
+        <div class="user-menu-container">
+            <button
+                type="button"
+                class="user-menu-btn"
+                (click)="toggleUserMenu()"
+                [attr.aria-label]="'Open user menu for ' + userDisplayName()"
+                [attr.aria-expanded]="isUserMenuOpen()">
+                <div class="user-avatar">
+                    <span class="user-initials" [attr.aria-hidden]="true">
+                        {{ userInitials() }}
+                    </span>
+                </div>
+                <app-header-icon
+                    [name]="'chevron-down'"
+                    [size]="16"
+                    class="user-menu-arrow"
+                    [class.user-menu-arrow-rotated]="isUserMenuOpen()" />
+            </button>
+
+            <!-- User dropdown -->
+            @if (isUserMenuOpen()) {
+            <div class="user-dropdown" role="dialog" [attr.aria-label]="'User menu'">
+                <div class="user-info">
+                    <div class="user-avatar-large">
+                        <span class="user-initials-large" [attr.aria-hidden]="true">
+                            {{ userInitials() }}
+                        </span>
+                    </div>
+                    <div class="user-details">
+                        <p class="user-name">{{ userDisplayName() }}</p>
+                        <p class="user-email">{{ userEmail() }}</p>
+                    </div>
+                </div>
+
+                <div class="user-menu-divider"></div>
+
+                <nav class="user-menu-nav" role="menu">
+                    <button
+                        type="button"
+                        class="user-menu-item"
+                        (click)="navigateToProfile()"
+                        role="menuitem">
+                        <app-header-icon [name]="'user'" [size]="16" class="user-menu-icon" />
+                        Profile
+                    </button>
+
+                    <button
+                        type="button"
+                        class="user-menu-item"
+                        (click)="navigateToSettings()"
+                        role="menuitem">
+                        <app-header-icon [name]="'settings'" [size]="16" class="user-menu-icon" />
+                        Settings
+                    </button>
+
+                    <div class="user-menu-divider"></div>
+
+                    <button
+                        type="button"
+                        class="user-menu-item user-menu-logout"
+                        (click)="handleLogout()"
+                        role="menuitem">
+                        <app-header-icon [name]="'logout'" [size]="16" class="user-menu-icon" />
+                        Sign out
+                    </button>
+                </nav>
+            </div>
+            }
+        </div>
+    </div>
+</header>
