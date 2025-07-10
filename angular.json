@@ -3,7 +3,7 @@
     "version": 1,
     "newProjectRoot": "projects",
     "projects": {
-        "MAD-AI-NEW": {
+        "MAD-AI": {
             "projectType": "application",
             "schematics": {},
             "root": "",
@@ -39,28 +39,38 @@
                                 },
                                 {
                                     "type": "anyComponentStyle",
-                                    "maximumWarning": "4kB",
-                                    "maximumError": "8kB"
+                                    "maximumWarning": "500kB",
+                                    "maximumError": "1MB"
                                 }
                             ],
-                            "outputHashing": "all"
+                            "outputHashing": "all",
+                            "optimization": true,
+                            "outputMode": "static"
                         },
                         "development": {
                             "optimization": false,
                             "extractLicenses": false,
-                            "sourceMap": true
+                            "sourceMap": true,
+                            "outputMode": "static",
+                            "server": false,
+                            "ssr": false
                         }
                     },
                     "defaultConfiguration": "production"
                 },
                 "serve": {
                     "builder": "@angular/build:dev-server",
+                    "options": {
+                        "buildTarget": "MAD-AI:build:development",
+                        "host": "0.0.0.0",
+                        "port": 4200
+                    },
                     "configurations": {
                         "production": {
-                            "buildTarget": "MAD-AI-NEW:build:production"
+                            "buildTarget": "MAD-AI:build:production"
                         },
                         "development": {
-                            "buildTarget": "MAD-AI-NEW:build:development"
+                            "buildTarget": "MAD-AI:build:development"
                         }
                     },
                     "defaultConfiguration": "development"
@@ -71,7 +81,6 @@
                 "test": {
                     "builder": "@angular/build:karma",
                     "options": {
-                        "polyfills": ["zone.js", "zone.js/testing"],
                         "tsConfig": "tsconfig.spec.json",
                         "assets": [
                             {
