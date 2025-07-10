@@ -12,10 +12,10 @@
             <app-button
                 variant="ghost"
                 size="sm"
-                iconName="arrow-left"
-                (click)="onCancel()"
-                ariaLabel="Volver a la lista de usuarios"
+                icon="arrow-left"
+                (clicked)="onCancel()"
                 class="back-button">
+                Volver
             </app-button>
             <div class="header-info">
                 <h1 class="page-title">Editar Usuario</h1>
@@ -45,22 +45,22 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <app-input
-                            formControlName="first_name"
+                            formControlName="firstName"
                             label="Nombre"
                             placeholder="Nombre del usuario"
                             [required]="true"
-                            [errorMessage]="getFieldError('first_name') || ''"
-                            [variant]="getFieldError('first_name') ? 'error' : 'default'">
+                            [errorMessage]="getFieldError('firstName') || ''"
+                            [variant]="getFieldError('firstName') ? 'error' : 'default'">
                         </app-input>
                     </div>
                     <div class="form-field">
                         <app-input
-                            formControlName="last_name"
+                            formControlName="lastName"
                             label="Apellido"
                             placeholder="Apellido del usuario"
                             [required]="true"
-                            [errorMessage]="getFieldError('last_name') || ''"
-                            [variant]="getFieldError('last_name') ? 'error' : 'default'">
+                            [errorMessage]="getFieldError('lastName') || ''"
+                            [variant]="getFieldError('lastName') ? 'error' : 'default'">
                         </app-input>
                     </div>
                     <div class="form-field form-field-full">
@@ -92,7 +92,7 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <app-select
-                            formControlName="role_id"
+                            formControlName="roleId"
                             label="Rol"
                             placeholder="Seleccionar rol"
                             [options]="roleOptions()">
@@ -101,7 +101,7 @@
                     <div class="form-field">
                         <div class="toggle-field">
                             <app-slide-toggle
-                                formControlName="is_active"
+                                formControlName="isActive"
                                 label="Estado de la Cuenta"
                                 description="Activar o desactivar la cuenta del usuario"
                                 variant="success"
@@ -132,7 +132,7 @@
                         <div class="notification-header">
                             <div class="notification-content">
                                 <app-slide-toggle
-                                    formControlName="email_notifications_enabled"
+                                    formControlName="emailNotificationsEnabled"
                                     label="Notificaciones por Email"
                                     description="Recibir notificaciones importantes por correo electrónico"
                                     variant="default"
@@ -147,7 +147,7 @@
                         <div class="notification-header">
                             <div class="notification-content">
                                 <app-slide-toggle
-                                    formControlName="system_notifications_enabled"
+                                    formControlName="systemNotificationsEnabled"
                                     label="Notificaciones del Sistema"
                                     description="Recibir alertas y actualizaciones del sistema"
                                     variant="success"
@@ -162,7 +162,7 @@
                         <div class="notification-header">
                             <div class="notification-content">
                                 <app-slide-toggle
-                                    formControlName="task_notifications_enabled"
+                                    formControlName="taskNotificationsEnabled"
                                     label="Notificaciones de Tareas"
                                     description="Recibir notificaciones sobre asignación y cambios en tareas"
                                     variant="warning"
@@ -182,7 +182,6 @@
                     type="button"
                     size="md"
                     icon="x"
-                    class="bg-error-500 rounded-xl text-white hover:text-error-600"
                     (clicked)="onCancel()"
                     [disabled]="isLoading()">
                     Cancelar
