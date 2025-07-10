@@ -1,21 +1,58 @@
 import { Observable } from 'rxjs';
 import { UserEntity } from '../entities/user.entity';
-import { CreateUserModel } from '../models/user/create-user.model';
-import { UpdateUserModel } from '../models/user/update-user.model';
-import { UserStatsModel } from '../models/user/user-stats.model';
+import {
+    CreateUserData,
+    DeactivateUserData,
+    UpdateUserData,
+    UserStats,
+} from '../models/user/user.dto';
 
 /**
  * Repository interface for User-related operations
  * Following the Clean Architecture pattern
- * Returns UserEntity objects instead of models
+ *
+ * In Clean Architecture, the domain layer defines interfaces (contracts)
+ * that the outer layers must implement. This ensures that the domain layer
+ * doesn't depend on external concerns.
  */
 export abstract class UserRepository {
+    /**
+     * Get all users
+     */
     abstract getUsers(): Observable<UserEntity[]>;
+
+    /**
+     * Get a specific user by ID
+     */
     abstract getUserById(id: number): Observable<UserEntity>;
-    abstract getUserStats(): Observable<UserStatsModel>;
-    abstract createUser(user: CreateUserModel): Observable<UserEntity>;
-    abstract updateUser(id: number, user: UpdateUserModel): Observable<UserEntity>;
+
+    /**
+     * Get user statistics
+     */
+    abstract getUserStats(): Observable<UserStats>;
+
+    /**
+     * Create a new user
+     */
+    abstract createUser(userData: CreateUserData): Observable<UserEntity>;
+
+    /**
+     * Update an existing user
+     */
+    abstract updateUser(id: number, userData: UpdateUserData): Observable<UserEntity>;
+
+    /**
+     * Activate a user
+     */
     abstract activateUser(id: number): Observable<UserEntity>;
-    abstract deactivateUser(id: number, reason?: string): Observable<UserEntity>;
+
+    /**
+     * Deactivate a user
+     */
+    abstract deactivateUser(id: number, data?: DeactivateUserData): Observable<UserEntity>;
+
+    /**
+     * Delete a user
+     */
     abstract deleteUser(id: number): Observable<void>;
 }
