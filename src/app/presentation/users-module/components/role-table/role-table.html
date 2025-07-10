@@ -87,22 +87,22 @@
                         </div>
                     </th>
                     <th class="table-header-cell">Descripción</th>
-                    <th class="table-header-cell sortable" (click)="sort('access_level')">
+                    <th class="table-header-cell sortable" (click)="sort('accessLevel')">
                         <div class="sort-header">
                             <span>Nivel de Acceso</span>
-                            <span class="sort-icon {{ getSortIcon('access_level') }}"></span>
+                            <span class="sort-icon {{ getSortIcon('accessLevel') }}"></span>
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('user_count')">
+                    <th class="table-header-cell sortable" (click)="sort('userCount')">
                         <div class="sort-header">
                             <span>Usuarios</span>
-                            <span class="sort-icon {{ getSortIcon('user_count') }}"></span>
+                            <span class="sort-icon {{ getSortIcon('userCount') }}"></span>
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('is_active')">
+                    <th class="table-header-cell sortable" (click)="sort('isActive')">
                         <div class="sort-header">
                             <span>Estado</span>
-                            <span class="sort-icon {{ getSortIcon('is_active') }}"></span>
+                            <span class="sort-icon {{ getSortIcon('isActive') }}"></span>
                         </div>
                     </th>
                     <th class="table-header-cell">Acciones</th>
@@ -127,26 +127,26 @@
                     <td class="table-cell">
                         <span
                             class="access-level-badge {{
-                                getAccessLevelBadgeClass(role.access_level)
+                                getAccessLevelBadgeClass(role.accessLevel)
                             }}">
-                            {{ getAccessLevelLabel(role.access_level) }}
+                            {{ getAccessLevelLabel(role.accessLevel) }}
                         </span>
                     </td>
 
                     <!-- User Count -->
                     <td class="table-cell">
                         <div class="user-count">
-                            <span class="count-number">{{ role.user_count }}</span>
+                            <span class="count-number">{{ role.userCount }}</span>
                             <span class="count-label"
-                                >usuario{{ role.user_count !== 1 ? 's' : '' }}</span
+                                >usuario{{ role.userCount !== 1 ? 's' : '' }}</span
                             >
                         </div>
                     </td>
 
                     <!-- Status -->
                     <td class="table-cell">
-                        <span class="status-badge {{ getStatusBadgeClass(role.is_active) }}">
-                            {{ getStatusText(role.is_active) }}
+                        <span class="status-badge {{ getStatusBadgeClass(role.isActive) }}">
+                            {{ getStatusText(role.isActive) }}
                         </span>
                     </td>
 
@@ -174,13 +174,13 @@
                             <app-button
                                 variant="ghost"
                                 size="sm"
-                                [icon]="role.is_active ? 'x-circle' : 'check-circle'"
+                                [icon]="role.isActive ? 'x-circle' : 'check-circle'"
                                 [iconOnly]="true"
                                 (clicked)="confirmToggleRoleStatus(role)"
-                                [title]="role.is_active ? 'Desactivar rol' : 'Activar rol'">
+                                [title]="role.isActive ? 'Desactivar rol' : 'Activar rol'">
                             </app-button>
 
-                            @if (role.user_count === 0) {
+                            @if (role.userCount === 0) {
                             <app-button
                                 variant="ghost"
                                 size="sm"

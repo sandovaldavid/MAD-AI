@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { TitleService } from '@core/services/title.service';
 import { RoleTable } from '../../components/role-table/role-table';
-import { Button } from '@/app/shared/components/ui/button/button';
-import { Router } from '@angular/router';
+import { Button } from '@shared/components/ui/button/button';
 
 @Component({
     selector: 'app-roles',
@@ -19,7 +20,7 @@ export class Roles implements OnInit {
         this.titleService.setTitle('Gestión de Roles');
     }
 
-    protected goBack(): void {
+    goBack(): void {
         this.router.navigate(['/users']);
     }
 }

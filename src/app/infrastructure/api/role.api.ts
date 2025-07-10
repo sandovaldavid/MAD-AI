@@ -29,6 +29,10 @@ export class RoleApiService {
     assignRole(request: AssignRoleRequestDto): Observable<void> {
         return this.http.post<void>(`${this.baseUrl}/assign/`, request);
     }
+    
+    unassignRole(request: { user_id: number }): Observable<void> {
+        return this.http.post<void>(`${this.baseUrl}/unassign/`, request);
+    }
 
     updateRole(id: number, request: UpdateRoleRequestDto): Observable<UpdateRoleResponseDto> {
         return this.http.put<UpdateRoleResponseDto>(`${this.baseUrl}/${id}/update/`, request);

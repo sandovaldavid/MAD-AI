@@ -11,7 +11,8 @@ import { FormsModule } from '@angular/forms';
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
 import { DeleteRoleUseCase } from '@application/use-cases/role/delete-role.use-case';
 import { UpdateRoleUseCase } from '@application/use-cases/role/update-role.use-case';
-import { RoleListModel } from '@domain/models/role/role-list.model';
+import { RoleEntity } from '@domain/entities/role.entity';
+import { UpdateRoleData } from '@domain/models/role/role.dto';
 import { RoleAccessLevel, ROLE_ACCESS_LEVEL_LABELS } from '@domain/enums/role-access-level.enum';
 import { SelectOption } from '@domain/ui/select';
 import { NotificationService } from '@core/services/notification.service';
@@ -35,10 +36,10 @@ export class RoleTable implements OnInit {
     private readonly notificationService = inject(NotificationService);
 
     // Signals for state management
-    protected readonly roles = signal<RoleListModel[]>([]);
+    protected readonly roles = signal<RoleEntity[]>([]);
     protected readonly isLoading = signal(true);
     protected readonly error = signal<string | null>(null);
-    protected readonly sortColumn = signal<keyof RoleListModel>('name');
+    protected readonly sortColumn = signal<keyof RoleEntity>('name');
     protected readonly sortDirection = signal<'asc' | 'desc'>('asc');
     protected readonly searchQuery = signal('');
     protected readonly selectedAccessLevel = signal<string>('');
@@ -46,7 +47,7 @@ export class RoleTable implements OnInit {
     // Modal states
     protected readonly showDeleteModal = signal(false);
     protected readonly showToggleModal = signal(false);
-    protected readonly selectedRole = signal<RoleListModel | null>(null);
+    protected readonly selectedRole = signal<RoleEntity | null>(null);
     protected readonly isProcessing = signal(false);
 
     // Computed values
@@ -77,7 +78,7 @@ export class RoleTable implements OnInit {
         // Apply access level filter
         const accessLevel = this.selectedAccessLevel();
         if (accessLevel) {
-            filtered = filtered.filter((role) => role.access_level.toString() === accessLevel);
+            filtered = filtered.filter((role) => role.accessLevel.toString() === accessLevel);
         }
 
         // Apply sorting
@@ -102,10 +103,10 @@ export class RoleTable implements OnInit {
 
     protected readonly totalRoles = computed(() => this.roles().length);
     protected readonly activeRoles = computed(
-        () => this.roles().filter((role) => role.is_active).length
+        () => this.roles().filter((role) => role.isActive).length
     );
     protected readonly inactiveRoles = computed(
-        () => this.roles().filter((role) => !role.is_active).length
+        () => this.roles().filter((role) => !role.isActive).length
     );
     protected readonly filteredCount = computed(() => this.filteredAndSortedRoles().length);
 
@@ -141,13 +142,27 @@ export class RoleTable implements OnInit {
         this.loadRoles();
     }
 
-    protected sort(column: keyof RoleListModel): void {
-        if (this.sortColumn() === column) {
+    protected sort(column: string): void {
+        const entityColumn = this.mapToEntityProperty(column);
+        if (this.sortColumn() === entityColumn) {
             this.sortDirection.set(this.sortDirection() === 'asc' ? 'desc' : 'asc');
         } else {
-            this.sortColumn.set(column);
+            this.sortColumn.set(entityColumn as keyof RoleEntity);
             this.sortDirection.set('asc');
         }
+    }
+
+    /**
+     * Maps legacy column names to entity properties
+     */
+    private mapToEntityProperty(column: string): keyof RoleEntity {
+        const propertyMap: Record<string, keyof RoleEntity> = {
+            access_level: 'accessLevel',
+            user_count: 'userCount',
+            is_active: 'isActive',
+        };
+
+        return (column in propertyMap ? propertyMap[column] : column) as keyof RoleEntity;
     }
 
     protected onSearchChange(value: string): void {
@@ -182,8 +197,9 @@ export class RoleTable implements OnInit {
         return isActive ? 'Activo' : 'Inactivo';
     }
 
-    protected getSortIcon(column: keyof RoleListModel): string {
-        if (this.sortColumn() !== column) return 'sort-unsorted';
+    protected getSortIcon(column: string): string {
+        const entityColumn = this.mapToEntityProperty(column);
+        if (this.sortColumn() !== entityColumn) return 'sort-unsorted';
         return this.sortDirection() === 'asc' ? 'sort-asc' : 'sort-desc';
     }
 
@@ -205,7 +221,7 @@ export class RoleTable implements OnInit {
     }
 
     // CRUD operations
-    protected confirmDeleteRole(role: RoleListModel): void {
+    protected confirmDeleteRole(role: RoleEntity): void {
         this.selectedRole.set(role);
         this.showDeleteModal.set(true);
     }
@@ -248,7 +264,7 @@ export class RoleTable implements OnInit {
         });
     }
 
-    protected confirmToggleRoleStatus(role: RoleListModel): void {
+    protected confirmToggleRoleStatus(role: RoleEntity): void {
         this.selectedRole.set(role);
         this.showToggleModal.set(true);
     }
@@ -260,26 +276,33 @@ export class RoleTable implements OnInit {
         this.isProcessing.set(true);
 
         // Prepare the update data with only the fields we want to change
-        const updateData = {
+        const updateData: UpdateRoleData = {
             name: role.name,
             description: role.description,
-            access_level: role.access_level,
-            can_lead_projects: false, // We don't have this info in the list model, so use default
-            is_unique_per_team: false, // We don't have this info in the list model, so use default
-            is_active: !role.is_active, // Toggle the current status
+            accessLevel: role.accessLevel,
+            canLeadProjects: role.canLeadProjects,
+            isUniquePerTeam: role.isUniquePerTeam,
+            isActive: !role.isActive, // Toggle the current status
         };
 
         this.updateRoleUseCase.execute(role.id, updateData).subscribe({
             next: (updatedRole) => {
-                const action = updatedRole.is_active ? 'activado' : 'desactivado';
+                const action = updatedRole.isActive ? 'activado' : 'desactivado';
                 this.notificationService
                     .success('Éxito', `El rol "${role.name}" ha sido ${action} exitosamente`)
                     .subscribe();
 
                 // Update the role in the local list
-                const updatedRoles = this.roles().map((r) =>
-                    r.id === role.id ? { ...r, is_active: updatedRole.is_active } : r
-                );
+                const updatedRoles = this.roles().map((r) => {
+                    if (r.id === role.id) {
+                        // Create a new RoleEntity with updated isActive property
+                        return new RoleEntity({
+                            ...r,
+                            isActive: updatedRole.isActive,
+                        });
+                    }
+                    return r;
+                });
                 this.roles.set(updatedRoles);
 
                 this.isProcessing.set(false);
@@ -287,7 +310,7 @@ export class RoleTable implements OnInit {
             },
             error: (error) => {
                 console.error('Error updating role status:', error);
-                const action = role.is_active ? 'desactivar' : 'activar';
+                const action = role.isActive ? 'desactivar' : 'activar';
                 this.notificationService
                     .error('Error', `Ocurrió un error al ${action} el rol`)
                     .subscribe();
@@ -313,20 +336,20 @@ export class RoleTable implements OnInit {
     protected getDeleteModalMessage(): string {
         const role = this.selectedRole();
         if (role) {
-            return `¿Estás seguro de que deseas eliminar el rol "${role.name}"? Esta acción no se puede deshacer y afectará a ${role.user_count} usuario(s).`;
+            return `¿Estás seguro de que deseas eliminar el rol "${role.name}"? Esta acción no se puede deshacer y afectará a ${role.userCount} usuario(s).`;
         }
         return '¿Estás seguro de que deseas eliminar este rol? Esta acción no se puede deshacer.';
     }
 
     protected getToggleModalTitle(): string {
         const role = this.selectedRole();
-        return role?.is_active ? 'Desactivar Rol' : 'Activar Rol';
+        return role?.isActive ? 'Desactivar Rol' : 'Activar Rol';
     }
 
     protected getToggleModalMessage(): string {
         const role = this.selectedRole();
         if (role) {
-            const action = role.is_active ? 'desactivar' : 'activar';
+            const action = role.isActive ? 'desactivar' : 'activar';
             return `¿Estás seguro de que deseas ${action} el rol "${role.name}"?`;
         }
         return '';
@@ -334,11 +357,11 @@ export class RoleTable implements OnInit {
 
     protected getToggleConfirmText(): string {
         const role = this.selectedRole();
-        return role?.is_active ? 'Desactivar' : 'Activar';
+        return role?.isActive ? 'Desactivar' : 'Activar';
     }
 
     protected getToggleButtonClass(): string {
         const role = this.selectedRole();
-        return role?.is_active ? 'btn-danger' : 'btn-primary';
+        return role?.isActive ? 'btn-danger' : 'btn-primary';
     }
 }

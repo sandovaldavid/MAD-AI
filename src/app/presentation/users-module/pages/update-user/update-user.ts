@@ -11,9 +11,10 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { UpdateUserUseCase } from '@application/use-cases/user/update-user.use-case';
 import { GetUserByIdUseCase } from '@application/use-cases/user/get-user-by-id.use-case';
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
-import { UpdateUserModel } from '@domain/models/user/update-user.model';
-import { UserListModel } from '@domain/models/user/user-list.model';
-import { RoleListModel } from '@domain/models/role/role-list.model';
+import { UpdateUserData } from '@domain/models/user/user.dto';
+import { UserEntity } from '@domain/entities/user.entity';
+import { RoleEntity } from '@domain/entities/role.entity';
+import { UserStatus, USER_STATUS_LABELS } from '@domain/enums/user_status.enum';
 import { NotificationService } from '@core/services/notification.service';
 import { TitleService } from '@core/services/title.service';
 import { InputComponent } from '@shared/components/ui/input/input.component';
@@ -53,42 +54,42 @@ export class UpdateUser {
 
     protected readonly isLoading = signal(false);
     protected readonly isLoadingUser = signal(true);
-    protected readonly user = signal<UserListModel | null>(null);
-    protected readonly roles = signal<RoleListModel[]>([]);
+    protected readonly user = signal<UserEntity | null>(null);
+    protected readonly roles = signal<RoleEntity[]>([]);
     private readonly userId = signal<number | null>(null);
-    protected readonly form: FormGroup;
+    public readonly form: FormGroup;
 
     // Computed properties for better performance
     protected readonly roleOptions = computed(() =>
         this.roles().map((role) => ({
             value: role.id,
             label: role.name,
-            disabled: !role.is_active,
+            disabled: !role.isActive,
         }))
     );
 
     protected readonly userFullName = computed(() => {
         const userData = this.user();
-        return userData ? `${userData.first_name} ${userData.last_name}` : '';
+        return userData ? userData.fullName : '';
     });
 
     constructor() {
         this.form = this.formBuilder.group({
-            first_name: [
+            firstName: [
                 '',
                 [Validators.required, Validators.minLength(1), Validators.maxLength(150)],
             ],
-            last_name: [
+            lastName: [
                 '',
                 [Validators.required, Validators.minLength(1), Validators.maxLength(150)],
             ],
             email: ['', [Validators.required, Validators.email]],
-            role_id: [null],
-            is_active: [true],
-            status: [''],
-            email_notifications_enabled: [true],
-            system_notifications_enabled: [true],
-            task_notifications_enabled: [true],
+            roleId: [null],
+            isActive: [true],
+            status: [UserStatus.ACTIVE],
+            emailNotificationsEnabled: [true],
+            systemNotificationsEnabled: [true],
+            taskNotificationsEnabled: [true],
         });
 
         // Get userId from route params on initialization
@@ -104,7 +105,7 @@ export class UpdateUser {
         effect(() => {
             const userData = this.user();
             if (userData) {
-                this.titleService.setTitle(`Editar Usuario: ${userData.first_name} ${userData.last_name}`);
+                this.titleService.setTitle(`Editar Usuario: ${userData.fullName}`);
             }
         });
     }
@@ -118,7 +119,7 @@ export class UpdateUser {
         }).subscribe({
             next: ({ user, roles }) => {
                 this.user.set(user);
-                this.roles.set(roles.filter((role) => role.is_active));
+                this.roles.set(roles.filter((role) => role.isActive));
                 this.populateForm(user);
                 this.isLoadingUser.set(false);
             },
@@ -151,17 +152,17 @@ export class UpdateUser {
         });
     }
 
-    private populateForm(user: UserListModel): void {
+    private populateForm(user: UserEntity): void {
         this.form.patchValue({
-            first_name: user.first_name,
-            last_name: user.last_name,
+            firstName: user.firstName,
+            lastName: user.lastName,
             email: user.email,
-            is_active: user.is_active,
-            role_id: user.role_id,
-            status: user.status || '',
-            email_notifications_enabled: user.email_notifications_enabled ?? true,
-            system_notifications_enabled: user.system_notifications_enabled ?? true,
-            task_notifications_enabled: user.task_notifications_enabled ?? true,
+            isActive: user.isActive,
+            roleId: user.roleId,
+            status: user.status,
+            emailNotificationsEnabled: user.emailNotificationsEnabled,
+            systemNotificationsEnabled: user.systemNotificationsEnabled,
+            taskNotificationsEnabled: user.taskNotificationsEnabled,
         });
     }
 
@@ -175,41 +176,41 @@ export class UpdateUser {
 
             this.isLoading.set(true);
 
-            const userData: UpdateUserModel = {};
+            const userData: UpdateUserData = {};
             const formValue = this.form.value;
             const currentUser = this.user();
 
             // Only include changed fields
-            if (formValue.first_name !== currentUser?.first_name) {
-                userData.first_name = formValue.first_name;
+            if (formValue.firstName !== currentUser?.firstName) {
+                userData.firstName = formValue.firstName;
             }
-            if (formValue.last_name !== currentUser?.last_name) {
-                userData.last_name = formValue.last_name;
+            if (formValue.lastName !== currentUser?.lastName) {
+                userData.lastName = formValue.lastName;
             }
             if (formValue.email !== currentUser?.email) {
                 userData.email = formValue.email;
             }
-            if (formValue.is_active !== currentUser?.is_active) {
-                userData.is_active = formValue.is_active;
+            if (formValue.isActive !== currentUser?.isActive) {
+                userData.isActive = formValue.isActive;
             }
-            if (formValue.role_id && formValue.role_id !== currentUser?.role_id) {
-                userData.role_id = formValue.role_id;
+            if (formValue.roleId && formValue.roleId !== currentUser?.roleId) {
+                userData.roleId = formValue.roleId;
             }
             if (formValue.status !== currentUser?.status) {
                 userData.status = formValue.status;
             }
             if (
-                formValue.email_notifications_enabled !== currentUser?.email_notifications_enabled
+                formValue.emailNotificationsEnabled !== currentUser?.emailNotificationsEnabled
             ) {
-                userData.email_notifications_enabled = formValue.email_notifications_enabled;
+                userData.emailNotificationsEnabled = formValue.emailNotificationsEnabled;
             }
             if (
-                formValue.system_notifications_enabled !== currentUser?.system_notifications_enabled
+                formValue.systemNotificationsEnabled !== currentUser?.systemNotificationsEnabled
             ) {
-                userData.system_notifications_enabled = formValue.system_notifications_enabled;
+                userData.systemNotificationsEnabled = formValue.systemNotificationsEnabled;
             }
-            if (formValue.task_notifications_enabled !== currentUser?.task_notifications_enabled) {
-                userData.task_notifications_enabled = formValue.task_notifications_enabled;
+            if (formValue.taskNotificationsEnabled !== currentUser?.taskNotificationsEnabled) {
+                userData.taskNotificationsEnabled = formValue.taskNotificationsEnabled;
             }
 
             if (Object.keys(userData).length > 0) {
@@ -270,13 +271,13 @@ export class UpdateUser {
 
     private getFieldLabel(fieldName: string): string {
         const labels: { [key: string]: string } = {
-            first_name: 'Nombre',
-            last_name: 'Apellido',
+            firstName: 'Nombre',
+            lastName: 'Apellido',
             email: 'Email',
             status: 'Estado',
-            email_notifications_enabled: 'Notificaciones por email',
-            system_notifications_enabled: 'Notificaciones del sistema',
-            task_notifications_enabled: 'Notificaciones de tareas',
+            emailNotificationsEnabled: 'Notificaciones por email',
+            systemNotificationsEnabled: 'Notificaciones del sistema',
+            taskNotificationsEnabled: 'Notificaciones de tareas',
         };
 
         return labels[fieldName] || fieldName;
@@ -286,5 +287,12 @@ export class UpdateUser {
         Object.keys(this.form.controls).forEach((key) => {
             this.form.get(key)?.markAsTouched();
         });
+    }
+
+    protected getUserStatusOptions() {
+        return Object.values(UserStatus).map(status => ({
+            value: status,
+            label: USER_STATUS_LABELS[status]
+        }));
     }
 }

@@ -16,10 +16,10 @@
                 <h2 class="error-title">Error al cargar el rol</h2>
                 <p class="error-message">{{ error() }}</p>
                 <div class="error-actions">
-                    <app-button variant="outline" size="md" icon="refresh" (clicked)="refresh()">
+                    <app-button variant="outline" size="md" icon="refresh" (click)="refresh()">
                         Reintentar
                     </app-button>
-                    <app-button variant="ghost" size="md" icon="arrow-left" (clicked)="goBack()">
+                    <app-button variant="ghost" size="md" icon="arrow-left" (click)="goBack()">
                         Volver a Roles
                     </app-button>
                 </div>
@@ -47,23 +47,21 @@
                     </div>
                     <div class="header-actions">
                         <span
-                            class="current-status {{
-                                getStatusClass(updateForm.get('is_active')?.value)
-                            }}">
+                            class="current-status {{ updateForm.get('isActive')?.value ? 'status-active' : 'status-inactive' }}">
                             <icon-check-circle
                                 size="16"
                                 customClass="{{
-                                    updateForm.get('is_active')?.value
+                                    updateForm.get('isActive')?.value
                                         ? 'text-successful-600'
                                         : 'text-error-600'
                                 }}" />
-                            {{ getStatusText(updateForm.get('is_active')?.value) }}
+                            {{ updateForm.get('isActive')?.value ? 'Activo' : 'Inactivo' }}
                         </span>
                         <app-button
                             variant="ghost"
                             size="sm"
                             icon="arrow-left"
-                            (clicked)="navigateToDetail()">
+                            (click)="navigateToDetail()">
                             Ver Detalles
                         </app-button>
                     </div>
@@ -144,27 +142,18 @@
                                     helperText="Nivel de privilegios (1 es el más alto)"
                                     [options]="accessLevelOptions"
                                     [errorMessage]="
-                                        updateForm.get('access_level')?.errors?.['required']
+                                        updateForm.get('accessLevel')?.errors?.['required']
                                             ? 'El nivel de acceso es requerido'
                                             : ''
                                     "
-                                    formControlName="access_level">
+                                    formControlName="accessLevel">
                                 </app-select>
 
-                                @if (updateForm.get('access_level')?.value) {
+                                @if (updateForm.get('accessLevel')?.value && roleAccessInfo()) {
                                 <div class="mt-2">
-                                    <span
-                                        class="access-level-preview {{
-                                            getAccessLevelBadgeClass(
-                                                updateForm.get('access_level')?.value
-                                            )
-                                        }}">
+                                    <span class="access-level-preview {{ roleAccessInfo()!.class }}">
                                         <icon-shield size="16" />
-                                        {{
-                                            getAccessLevelLabel(
-                                                updateForm.get('access_level')?.value
-                                            )
-                                        }}
+                                        {{ roleAccessInfo()!.label }}
                                     </span>
                                 </div>
                                 }
@@ -174,7 +163,7 @@
                                 <app-slide-toggle
                                     label="Estado del Rol"
                                     description="Determina si el rol está disponible para asignación"
-                                    formControlName="is_active" />
+                                    formControlName="isActive" />
                             </div>
                         </div>
                     </div>
@@ -198,14 +187,14 @@
                                 <app-slide-toggle
                                     label="Puede Liderar Proyectos"
                                     description="Permite a los usuarios con este rol liderar y gestionar proyectos"
-                                    formControlName="can_lead_projects" />
+                                    formControlName="canLeadProjects" />
                             </div>
 
                             <div class="form-field">
                                 <app-slide-toggle
                                     label="Único por Equipo"
                                     description="Solo un usuario por equipo puede tener este rol"
-                                    formControlName="is_unique_per_team" />
+                                    formControlName="isUniquePerTeam" />
                             </div>
                         </div>
                     </div>
@@ -231,7 +220,7 @@
                             size="md"
                             icon="refresh"
                             [disabled]="!hasChanges() || isUpdating()"
-                            (clicked)="refresh()">
+                            (click)="refresh()">
                             Restablecer
                         </app-button>
                     </div>
@@ -242,7 +231,7 @@
                             size="md"
                             icon="x"
                             class="bg-error-500 rounded-xl text-white hover:text-error-600"
-                            (clicked)="goBack()">
+                            (click)="goBack()">
                             Cancelar
                         </app-button>
                     </div>

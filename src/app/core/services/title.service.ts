@@ -2,7 +2,13 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
-import { BreadcrumbService } from './breadcrumb.service';
+import { BreadcrumbService, BreadcrumbItem } from './breadcrumb.service';
+
+interface RouteData {
+    title?: string;
+    breadcrumb?: string;
+    breadcrumbIcon?: string;
+}
 
 @Injectable({
     providedIn: 'root',
@@ -22,77 +28,129 @@ export class TitleService {
     // Señal pública de solo lectura
     readonly currentTitle = this._currentTitle.asReadonly();
 
+    // Flag para evitar múltiples inicializaciones
+    private isInitialized = false;
+
+    constructor() {
+        this.initializeRouteListener();
+    }
+
     /**
-     * Inicializa el servicio y comienza a escuchar los eventos de navegación
-     * para actualizar el título automáticamente
+     * Configura la escucha de eventos del enrutador para actualizar el título y los breadcrumbs
      */
-    initialize(): void {
+    private initializeRouteListener(): void {
+        if (this.isInitialized) return;
+        this.isInitialized = true;
+
         this.router.events
             .pipe(
                 filter((event) => event instanceof NavigationEnd),
-                map(() => {
-                    // Obtiene la ruta activa más profunda
-                    let route = this.activatedRoute;
-                    while (route.firstChild) {
-                        route = route.firstChild;
-                    }
-                    return route;
-                }),
-                filter((route) => route.outlet === 'primary')
+                map(() => this.getDeepestActiveRoute())
             )
             .subscribe((route) => {
-                // Obtener el título
-                const routeData = route.snapshot.data;
-                const routeTitle = route.snapshot.title;
-                let title = routeData['title'] || routeTitle || '';
-
-                // Si no hay título en la ruta actual, buscar en rutas padre
-                if (!title) {
-                    let currentRoute = route;
-                    while (currentRoute.parent && !title) {
-                        currentRoute = currentRoute.parent;
-                        const parentData = currentRoute.snapshot.data;
-                        const parentTitle = currentRoute.snapshot.title;
-                        title = parentData['title'] || parentTitle || '';
-                    }
-                }
-
-                // Fallback basado en la URL si no se encuentra título
-                if (!title) {
-                    const url = this.router.url;
-                    if (url.startsWith('/users')) {
-                        title = 'Dashboard de Usuarios';
-                    } else if (url.startsWith('/dashboard')) {
-                        title = 'Dashboard';
-                    } else {
-                        title = 'MAD-AI';
-                    }
-                }
-
-                // Si el título ya incluye el sufijo, extraemos solo la parte principal
-                const mainTitle = title.includes(this.suffix)
-                    ? title.replace(this.suffix, '')
-                    : title;
-
-                // Actualizamos la señal con el título principal
-                this._currentTitle.set(mainTitle);
-
-                // Actualizamos el título del navegador con el sufijo
-                this.setFullTitle(mainTitle);
-
-                // Actualizar breadcrumbs basándose en la ruta actual
+                const title = this.extractTitleFromRoute(route);
+                this.updateTitle(title);
                 this.updateBreadcrumbs(route);
             });
+    }
+
+    /**
+     * Obtiene la ruta activa más profunda
+     */
+    private getDeepestActiveRoute(): ActivatedRoute {
+        let route = this.activatedRoute;
+        while (route.firstChild) {
+            route = route.firstChild;
+        }
+        return route;
+    }
+
+    /**
+     * Extrae el título de los datos de la ruta o lo genera a partir de la URL
+     */
+    private extractTitleFromRoute(route: ActivatedRoute): string {
+        // Primero intenta con la ruta actual
+        let title = this.getTitleFromRoute(route);
+
+        // Si no se encuentra, recorre hacia arriba en el árbol de rutas
+        if (!title) {
+            let currentRoute = route.parent;
+            while (currentRoute && !title) {
+                title = this.getTitleFromRoute(currentRoute);
+                currentRoute = currentRoute.parent;
+            }
+        }
+
+        // Si aún no hay título, genera uno a partir de la URL
+        if (!title) {
+            title = this.generateTitleFromUrl();
+        }
+
+        return title;
+    }
+
+    /**
+     * Obtiene el título de los datos de la ruta
+     */
+    private getTitleFromRoute(route: ActivatedRoute): string {
+        if (route && route.snapshot) {
+            const routeData = route.snapshot.data as RouteData;
+            return routeData?.title || route.snapshot.title || '';
+        }
+        return '';
+    }
+
+    /**
+     * Genera un título basado en la URL actual
+     */
+    private generateTitleFromUrl(): string {
+        const url = this.router.url;
+
+        if (url.startsWith('/users')) {
+            return 'Dashboard de Usuarios';
+        } else if (url.startsWith('/dashboard')) {
+            return 'Dashboard';
+        }
+
+        return 'MAD-AI';
+    }
+
+    /**
+     * Actualiza el título tanto en la señal como en el navegador
+     */
+    private updateTitle(title: string): void {
+        // Limpia el título si ya tiene el sufijo
+        const cleanTitle = title.includes(this.suffix) ? title.replace(this.suffix, '') : title;
+
+        this._currentTitle.set(cleanTitle);
+        this.setDocumentTitle(cleanTitle);
+    }
+
+    /**
+     * Establece el título del documento con el sufijo
+     */
+    private setDocumentTitle(title: string): void {
+        const fullTitle = title.includes(this.suffix) ? title : `${title}${this.suffix}`;
+        this.titleService.setTitle(fullTitle);
     }
 
     /**
      * Actualiza los breadcrumbs basándose en la ruta actual
      */
     private updateBreadcrumbs(route: ActivatedRoute): void {
-        const breadcrumbs = [];
+        // Genera los breadcrumbs basados en la jerarquía de rutas
+        const breadcrumbs = this.generateBreadcrumbs(route);
+        this.breadcrumbService.setBreadcrumbs(breadcrumbs);
+    }
+
+    /**
+     * Genera los breadcrumbs a partir de la jerarquía de rutas
+     */
+    private generateBreadcrumbs(route: ActivatedRoute): BreadcrumbItem[] {
+        const breadcrumbs: BreadcrumbItem[] = [];
         const url = this.router.url;
 
-        // Breadcrumbs específicos para módulos
+        // Breadcrumbs base para módulos principales
         if (url.startsWith('/users')) {
             breadcrumbs.push({
                 label: 'Dashboard de Usuarios',
@@ -105,24 +163,15 @@ export class TitleService {
             });
         }
 
-        this.breadcrumbService.setBreadcrumbs(breadcrumbs);
+        // Avanzado: Podría agregar lógica para extraer breadcrumbs de los datos de la ruta
+
+        return breadcrumbs;
     }
 
     /**
      * Establece manualmente un título para la página actual
      */
     setTitle(title: string): void {
-        this._currentTitle.set(title);
-        this.setFullTitle(title);
-    }
-
-    /**
-     * Actualiza el título del navegador con el sufijo
-     */
-    private setFullTitle(title: string): void {
-        // Solo agregamos el sufijo si no está ya presente
-        const fullTitle = title.includes(this.suffix) ? title : title + this.suffix;
-
-        this.titleService.setTitle(fullTitle);
+        this.updateTitle(title);
     }
 }

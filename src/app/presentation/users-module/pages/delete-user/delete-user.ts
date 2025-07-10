@@ -1,8 +1,8 @@
 import { Component, ChangeDetectionStrategy, signal, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-user.use-case';
-import { GetUsersUseCase } from '@application/use-cases/user/get-users.use-case';
-import { UserListModel } from '@domain/models/user/user-list.model';
+import { GetUserByIdUseCase } from '@application/use-cases/user/get-user-by-id.use-case';
+import { UserEntity } from '@domain/entities/user.entity';
 import { NotificationService } from '@core/services/notification.service';
 import { Button } from '@shared/components/ui/button/button';
 
@@ -15,14 +15,14 @@ import { Button } from '@shared/components/ui/button/button';
 })
 export class DeleteUser implements OnInit {
     private readonly deactivateUserUseCase = inject(DeactivateUserUseCase);
-    private readonly getUsersUseCase = inject(GetUsersUseCase);
+    private readonly getUserByIdUseCase = inject(GetUserByIdUseCase);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly notificationService = inject(NotificationService);
 
     protected readonly isLoading = signal(false);
     protected readonly isLoadingUser = signal(true);
-    protected readonly user = signal<UserListModel | null>(null);
+    protected readonly user = signal<UserEntity | null>(null);
     private userId: number = 0;
 
     ngOnInit(): void {
@@ -40,15 +40,9 @@ export class DeleteUser implements OnInit {
     private loadUser(): void {
         this.isLoadingUser.set(true);
 
-        this.getUsersUseCase.execute().subscribe({
-            next: (users) => {
-                const foundUser = users.find((u) => u.id === this.userId);
-                if (foundUser) {
-                    this.user.set(foundUser);
-                } else {
-                    this.notificationService.error('Error', 'Usuario no encontrado').subscribe();
-                    this.router.navigate(['/users']);
-                }
+        this.getUserByIdUseCase.execute(this.userId).subscribe({
+            next: (user) => {
+                this.user.set(user);
                 this.isLoadingUser.set(false);
             },
             error: (error) => {

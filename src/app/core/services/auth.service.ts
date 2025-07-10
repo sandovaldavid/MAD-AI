@@ -5,7 +5,8 @@ import { UserInfo, LoginRequest, RegisterRequest } from '@domain/models/auth/aut
 import { LoginUseCase } from '@application/use-cases/auth/login.use-case';
 import { RegisterUseCase } from '@application/use-cases/auth/register.use-case';
 import { LogoutUseCase } from '@application/use-cases/auth/logout.use-case';
-import { Observable, tap, catchError, throwError, map, BehaviorSubject } from 'rxjs';
+import { TokenService } from '@core/services/token.service';
+import { Observable, tap, catchError, throwError, map } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -15,11 +16,8 @@ export class AuthService {
     private readonly loginUseCase = inject(LoginUseCase);
     private readonly registerUseCase = inject(RegisterUseCase);
     private readonly logoutUseCase = inject(LogoutUseCase);
+    private readonly tokenService = inject(TokenService);
     private readonly platformId = inject(PLATFORM_ID);
-
-    // Subject to track initialization status
-    private readonly _initializationSubject = new BehaviorSubject<boolean>(false);
-    private _initializationPromise: Promise<void> | null = null;
 
     // Check if we're in browser environment
     private get isBrowser(): boolean {
@@ -29,8 +27,6 @@ export class AuthService {
     // Signals for reactive state management
     private readonly _isAuthenticated = signal<boolean>(false);
     private readonly _user = signal<UserInfo | null>(null);
-    private readonly _accessToken = signal<string | null>(null);
-    private readonly _refreshToken = signal<string | null>(null);
     private readonly _isLoading = signal<boolean>(false);
 
     // Computed properties
@@ -39,88 +35,31 @@ export class AuthService {
     readonly isLoading = computed(() => this._isLoading());
 
     constructor() {
-        // Inicializamos inmediatamente si estamos en el navegador
+        // Inicialización síncrona inmediata
+        this.updateAuthState();
+
+        // Listener para sincronización entre pestañas
         if (this.isBrowser) {
-            // Creamos una promesa para la inicialización
-            this._initializationPromise = this.performInitialization();
-        } else {
-            // Si no estamos en el navegador, marcamos como inicializado inmediatamente
-            this._initializationSubject.next(true);
-        }
-    }
-
-    private async performInitialization(): Promise<void> {
-        // Realizamos la inicialización de forma síncrona
-        this.initializeAuth();
-        this._initializationSubject.next(true);
-
-        // Listener para el evento storage para sincronizar entre pestañas
-        window.addEventListener('storage', (event) => {
-            if (
-                event.key === 'access_token' ||
-                event.key === 'refresh_token' ||
-                event.key === 'user'
-            ) {
-                this.initializeAuth();
-            }
-        });
-    }
-
-    // Public method to manually initialize if needed
-    public initialize(): void {
-        if (this.isBrowser) {
-            this.initializeAuth();
-        }
-    }
-
-    // Method to wait for initialization completion
-    public async waitForInitialization(): Promise<void> {
-        if (this._initializationPromise) {
-            await this._initializationPromise;
-        }
-        // Si ya está inicializado, resolvemos inmediatamente
-        if (this._initializationSubject.value) {
-            return Promise.resolve();
-        }
-        // Si no, esperamos a que se complete
-        return new Promise<void>((resolve) => {
-            const subscription = this._initializationSubject.subscribe((initialized) => {
-                if (initialized) {
-                    subscription.unsubscribe();
-                    resolve();
-                }
+            window.addEventListener('storage', () => {
+                this.updateAuthState();
             });
-        });
+        }
     }
 
-    private initializeAuth(): void {
-        // Solo inicializamos en entorno de navegador
+    /**
+     * Actualiza el estado de autenticación basándose en TokenService
+     * Método privado usado para sincronización interna
+     */
+    private updateAuthState(): void {
         if (!this.isBrowser) {
             return;
         }
 
-        // Intentamos recuperar tokens y usuario del almacenamiento
-        const token = this.getStoredToken();
-        const refreshToken = this.getStoredRefreshToken();
-        const user = this.getStoredUser();
+        const isAuthenticated = this.tokenService.isAuthenticated();
+        const userData = this.tokenService.getUserData();
 
-        // Si tenemos los datos necesarios para la autenticación
-        if (token && user) {
-            console.log('Initializing auth from storage');
-            // Actualizamos el estado de autenticación
-            this._accessToken.set(token);
-            if (refreshToken) {
-                this._refreshToken.set(refreshToken);
-            }
-            this._user.set(user);
-            this._isAuthenticated.set(true);
-        } else {
-            // Si no hay datos de autenticación válidos, aseguramos que el estado sea no autenticado
-            this._isAuthenticated.set(false);
-            this._user.set(null);
-            this._accessToken.set(null);
-            this._refreshToken.set(null);
-        }
+        this._isAuthenticated.set(isAuthenticated);
+        this._user.set(isAuthenticated ? userData : null);
     }
 
     login(loginData: LoginRequest): Observable<void> {
@@ -128,29 +67,30 @@ export class AuthService {
 
         return this.loginUseCase.execute(loginData).pipe(
             tap((response) => {
-                this._accessToken.set(response.access_token);
-                this._refreshToken.set(response.refresh_token);
-                this._user.set(response.user);
-                this._isAuthenticated.set(true);
-
-                // Store in localStorage if remember_me is true
+                // Guardar tokens usando TokenService
                 if (loginData.remember_me) {
-                    this.storeTokens(response.access_token, response.refresh_token);
-                    this.storeUser(response.user);
+                    this.tokenService.saveTokens(response.access_token, response.refresh_token);
+                    this.tokenService.saveUserData(response.user);
                 } else {
-                    // Store in sessionStorage for session-based auth
-                    this.storeTokensSession(response.access_token, response.refresh_token);
-                    this.storeUserSession(response.user);
+                    this.tokenService.saveTokensSession(
+                        response.access_token,
+                        response.refresh_token
+                    );
+                    this.tokenService.saveUserDataSession(response.user);
                 }
 
+                // Actualizar señales
+                this._user.set(response.user);
+                this._isAuthenticated.set(true);
                 this._isLoading.set(false);
+
                 this.router.navigate(['/dashboard']);
             }),
             catchError((error) => {
                 this._isLoading.set(false);
                 return throwError(() => error);
             }),
-            map(() => void 0) // Convert to void
+            map(() => void 0)
         );
     }
 
@@ -158,23 +98,20 @@ export class AuthService {
         this._isLoading.set(true);
 
         return this.registerUseCase.execute(registerData).pipe(
-            tap((response) => {
-                // User created successfully, now we need to login
+            tap(() => {
                 this._isLoading.set(false);
-
-                // Navigate to login page without message (notification is handled by the component)
                 this.router.navigate(['/auth/login']);
             }),
             catchError((error) => {
                 this._isLoading.set(false);
                 return throwError(() => error);
             }),
-            map(() => void 0) // Convert to void
+            map(() => void 0)
         );
     }
 
     logout(): Observable<void> {
-        const refreshToken = this._refreshToken();
+        const refreshToken = this.tokenService.getRefreshToken();
         if (!refreshToken) {
             this.clearAuthData();
             this.router.navigate(['/auth/login']);
@@ -202,94 +139,6 @@ export class AuthService {
     private clearAuthData(): void {
         this._isAuthenticated.set(false);
         this._user.set(null);
-        this._accessToken.set(null);
-        this._refreshToken.set(null);
-
-        // Clear both localStorage and sessionStorage
-        this.clearStoredTokens();
-        this.clearStoredUser();
-        this.clearSessionTokens();
-        this.clearSessionUser();
-    }
-
-    // Token management
-    getAccessToken(): string | null {
-        // Primero intentamos obtener el token de la señal
-        const tokenFromSignal = this._accessToken();
-        if (tokenFromSignal) {
-            return tokenFromSignal;
-        }
-
-        // Si no está disponible en la señal, intentamos recuperarlo del almacenamiento
-        if (this.isBrowser) {
-            const storedToken = this.getStoredToken();
-            if (storedToken) {
-                // Actualizamos la señal con el token almacenado
-                this._accessToken.set(storedToken);
-                return storedToken;
-            }
-        }
-
-        return null;
-    }
-
-    private storeTokens(accessToken: string, refreshToken: string): void {
-        if (!this.isBrowser) return;
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
-    }
-
-    private storeTokensSession(accessToken: string, refreshToken: string): void {
-        if (!this.isBrowser) return;
-        sessionStorage.setItem('access_token', accessToken);
-        sessionStorage.setItem('refresh_token', refreshToken);
-    }
-
-    private storeUser(user: UserInfo): void {
-        if (!this.isBrowser) return;
-        localStorage.setItem('user', JSON.stringify(user));
-    }
-
-    private storeUserSession(user: UserInfo): void {
-        if (!this.isBrowser) return;
-        sessionStorage.setItem('user', JSON.stringify(user));
-    }
-
-    private getStoredToken(): string | null {
-        if (!this.isBrowser) return null;
-        return localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-    }
-
-    private getStoredRefreshToken(): string | null {
-        if (!this.isBrowser) return null;
-        return localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
-    }
-
-    private getStoredUser(): UserInfo | null {
-        if (!this.isBrowser) return null;
-        const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
-        return userData ? JSON.parse(userData) : null;
-    }
-
-    private clearStoredTokens(): void {
-        if (!this.isBrowser) return;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-    }
-
-    private clearStoredUser(): void {
-        if (!this.isBrowser) return;
-        localStorage.removeItem('user');
-    }
-
-    private clearSessionTokens(): void {
-        if (!this.isBrowser) return;
-        sessionStorage.removeItem('access_token');
-        sessionStorage.removeItem('refresh_token');
-    }
-
-    private clearSessionUser(): void {
-        if (!this.isBrowser) return;
-        sessionStorage.removeItem('user');
+        this.tokenService.clearTokens();
     }
 }

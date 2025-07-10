@@ -1,7 +1,14 @@
-import { Component, ChangeDetectionStrategy, signal, inject, effect } from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    signal,
+    inject,
+    effect,
+    computed,
+} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GetRoleByIdUseCase } from '@application/use-cases/role/get-role-by-id.use-case';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel, ROLE_ACCESS_LEVEL_LABELS } from '@domain/enums/role-access-level.enum';
 import { TitleService } from '@core/services/title.service';
 import { Button } from '@shared/components/ui/button/button';
@@ -38,29 +45,80 @@ export class DetailRole {
     private readonly titleService = inject(TitleService);
 
     // Signals for state management
-    protected readonly role = signal<RoleModel | null>(null);
-    protected readonly isLoading = signal(true);
-    protected readonly error = signal<string | null>(null);
-    protected readonly roleId = signal<number | null>(null);
+    readonly role = signal<RoleEntity | null>(null);
+    readonly isLoading = signal(true);
+    readonly error = signal<string | null>(null);
+    readonly roleId = signal<number | null>(null);
+
+    // Computed properties for better performance
+    readonly roleAccessInfo = computed(() => {
+        const roleData = this.role();
+        if (!roleData) return null;
+
+        return {
+            label: ROLE_ACCESS_LEVEL_LABELS[roleData.accessLevel] || 'Desconocido',
+            class: `access-level-${roleData.accessLevel}`,
+            level: roleData.accessLevel,
+        };
+    });
+
+    readonly formattedCreatedAt = computed(() => {
+        const roleData = this.role();
+        if (!roleData?.createdAt) return '';
+
+        try {
+            return roleData.createdAt.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        } catch {
+            return '';
+        }
+    });
+
+    readonly accessLevelDescription = computed(() => {
+        const roleData = this.role();
+        if (!roleData) return '';
+
+        const descriptions = {
+            [RoleAccessLevel.ADMINISTRATOR]:
+                'Acceso total al sistema y configuraciones administrativas',
+            [RoleAccessLevel.PROJECT_MANAGER]: 'Gestión de proyectos y equipos de trabajo',
+            [RoleAccessLevel.TEAM_LEAD]: 'Liderazgo de equipos y supervisión de desarrolladores',
+            [RoleAccessLevel.DEVELOPER]: 'Desarrollo y colaboración en proyectos',
+            [RoleAccessLevel.USER]: 'Acceso básico de usuario final',
+        };
+
+        return descriptions[roleData.accessLevel] || 'Permisos no definidos';
+    });
 
     constructor() {
+        // Set initial title
+        this.titleService.setTitle('Detalles del Rol');
+
         // Extract role ID from route parameters
-        effect(() => {
-            const id = this.route.snapshot.paramMap.get('id');
-            if (id) {
-                const roleId = parseInt(id, 10);
-                if (!isNaN(roleId)) {
-                    this.roleId.set(roleId);
-                    this.loadRole(roleId);
+        effect(
+            () => {
+                const id = this.route.snapshot.paramMap.get('id');
+                if (id) {
+                    const roleId = parseInt(id, 10);
+                    if (!isNaN(roleId)) {
+                        this.roleId.set(roleId);
+                        this.loadRole(roleId);
+                    } else {
+                        this.error.set('ID de rol inválido');
+                        this.isLoading.set(false);
+                    }
                 } else {
-                    this.error.set('ID de rol inválido');
+                    this.error.set('ID de rol no encontrado');
                     this.isLoading.set(false);
                 }
-            } else {
-                this.error.set('ID de rol no encontrado');
-                this.isLoading.set(false);
-            }
-        });
+            },
+            { allowSignalWrites: true }
+        );
 
         // Update title when role is loaded
         effect(() => {
@@ -88,53 +146,19 @@ export class DetailRole {
         });
     }
 
-    // Helper methods
-    protected getAccessLevelLabel(level: RoleAccessLevel): string {
-        return ROLE_ACCESS_LEVEL_LABELS[level] || 'Desconocido';
-    }
-
-    protected getAccessLevelBadgeClass(level: RoleAccessLevel): string {
-        const badgeClasses = {
-            [RoleAccessLevel.ADMINISTRATOR]: 'access-level-admin',
-            [RoleAccessLevel.PROJECT_MANAGER]: 'access-level-pm',
-            [RoleAccessLevel.TEAM_LEAD]: 'access-level-lead',
-            [RoleAccessLevel.DEVELOPER]: 'access-level-dev',
-            [RoleAccessLevel.USER]: 'access-level-user',
-        };
-        return badgeClasses[level] || 'access-level-default';
-    }
-
-    protected getStatusBadgeClass(isActive: boolean): string {
-        return isActive ? 'status-badge-active' : 'status-badge-inactive';
-    }
-
-    protected getStatusText(isActive: boolean): string {
-        return isActive ? 'Activo' : 'Inactivo';
-    }
-
-    protected formatDate(dateString: string): string {
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
-    }
-
     // Navigation methods
-    protected goBack(): void {
+    goBack(): void {
         this.router.navigate(['/users/roles']);
     }
 
-    protected navigateToEdit(): void {
+    navigateToEdit(): void {
         const id = this.roleId();
         if (id) {
             this.router.navigate(['/users/roles', id, 'edit']);
         }
     }
 
-    protected refresh(): void {
+    refresh(): void {
         const id = this.roleId();
         if (id) {
             this.loadRole(id);

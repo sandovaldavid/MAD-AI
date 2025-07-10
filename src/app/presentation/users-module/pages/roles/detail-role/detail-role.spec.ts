@@ -4,7 +4,7 @@ import { of, throwError } from 'rxjs';
 import { DetailRole } from './detail-role';
 import { GetRoleByIdUseCase } from '@application/use-cases/role/get-role-by-id.use-case';
 import { TitleService } from '@core/services/title.service';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 
 describe('DetailRole', () => {
@@ -15,17 +15,17 @@ describe('DetailRole', () => {
     let mockRouter: jasmine.SpyObj<Router>;
     let mockActivatedRoute: any;
 
-    const mockRole: RoleModel = {
+    const mockRole = new RoleEntity({
         id: 1,
         name: 'Administrator',
         description: 'Full system access',
-        access_level: RoleAccessLevel.ADMINISTRATOR,
-        can_lead_projects: true,
-        is_unique_per_team: false,
-        is_active: true,
-        created_at: '2024-01-01T00:00:00Z',
-        user_count: 2,
-    };
+        accessLevel: RoleAccessLevel.ADMINISTRATOR,
+        canLeadProjects: true,
+        isUniquePerTeam: false,
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        userCount: 2,
+    });
 
     beforeEach(async () => {
         const getRoleByIdUseCaseSpy = jasmine.createSpyObj('GetRoleByIdUseCase', ['execute']);
@@ -71,9 +71,9 @@ describe('DetailRole', () => {
         fixture.detectChanges();
 
         expect(mockGetRoleByIdUseCase.execute).toHaveBeenCalledWith(1);
-        expect(component['role']()).toEqual(mockRole);
-        expect(component['isLoading']()).toBe(false);
-        expect(component['error']()).toBeNull();
+        expect(component.role()).toEqual(mockRole);
+        expect(component.isLoading()).toBe(false);
+        expect(component.error()).toBeNull();
     });
 
     it('should set title when role is loaded', () => {
@@ -87,9 +87,9 @@ describe('DetailRole', () => {
 
         fixture.detectChanges();
 
-        expect(component['error']()).toBe('Error al cargar los detalles del rol');
-        expect(component['isLoading']()).toBe(false);
-        expect(component['role']()).toBeNull();
+        expect(component.error()).toBe('Error al cargar los detalles del rol');
+        expect(component.isLoading()).toBe(false);
+        expect(component.role()).toBeNull();
     });
 
     it('should handle invalid role ID', () => {
@@ -97,8 +97,8 @@ describe('DetailRole', () => {
 
         fixture.detectChanges();
 
-        expect(component['error']()).toBe('ID de rol inválido');
-        expect(component['isLoading']()).toBe(false);
+        expect(component.error()).toBe('ID de rol inválido');
+        expect(component.isLoading()).toBe(false);
     });
 
     it('should handle missing role ID', () => {
@@ -106,19 +106,19 @@ describe('DetailRole', () => {
 
         fixture.detectChanges();
 
-        expect(component['error']()).toBe('ID de rol no encontrado');
-        expect(component['isLoading']()).toBe(false);
+        expect(component.error()).toBe('ID de rol no encontrado');
+        expect(component.isLoading()).toBe(false);
     });
 
     it('should navigate back to roles list', () => {
-        component['goBack']();
+        component.goBack();
 
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles']);
     });
 
     it('should navigate to edit role', () => {
         fixture.detectChanges(); // Load the role first
-        component['navigateToEdit']();
+        component.navigateToEdit();
 
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles', 1, 'edit']);
     });
@@ -127,34 +127,34 @@ describe('DetailRole', () => {
         fixture.detectChanges(); // Initial load
         mockGetRoleByIdUseCase.execute.calls.reset();
 
-        component['refresh']();
+        component.refresh();
 
         expect(mockGetRoleByIdUseCase.execute).toHaveBeenCalledWith(1);
     });
 
-    it('should get correct access level label', () => {
-        const label = component['getAccessLevelLabel'](RoleAccessLevel.ADMINISTRATOR);
-        expect(label).toBe('Administrator');
+    it('should compute role access info correctly', () => {
+        fixture.detectChanges();
+
+        const accessInfo = component.roleAccessInfo();
+        expect(accessInfo).toBeTruthy();
+        expect(accessInfo!.label).toBe('Administrator');
+        expect(accessInfo!.level).toBe(RoleAccessLevel.ADMINISTRATOR);
+        expect(accessInfo!.class).toBe('access-level-1');
     });
 
-    it('should get correct access level badge class', () => {
-        const badgeClass = component['getAccessLevelBadgeClass'](RoleAccessLevel.ADMINISTRATOR);
-        expect(badgeClass).toBe('access-level-admin');
-    });
+    it('should compute formatted created date correctly', () => {
+        fixture.detectChanges();
 
-    it('should get correct status badge class', () => {
-        expect(component['getStatusBadgeClass'](true)).toBe('status-badge-active');
-        expect(component['getStatusBadgeClass'](false)).toBe('status-badge-inactive');
-    });
-
-    it('should get correct status text', () => {
-        expect(component['getStatusText'](true)).toBe('Activo');
-        expect(component['getStatusText'](false)).toBe('Inactivo');
-    });
-
-    it('should format date correctly', () => {
-        const formattedDate = component['formatDate']('2024-01-01T12:00:00Z');
+        const formattedDate = component.formattedCreatedAt();
+        expect(formattedDate).toBeTruthy();
+        expect(typeof formattedDate).toBe('string');
         expect(formattedDate).toContain('2024');
-        expect(formattedDate).toContain('enero'); // Spanish month name
+    });
+
+    it('should compute access level description correctly', () => {
+        fixture.detectChanges();
+
+        const description = component.accessLevelDescription();
+        expect(description).toBe('Acceso total al sistema y configuraciones administrativas');
     });
 });

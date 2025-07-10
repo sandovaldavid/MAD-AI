@@ -8,11 +8,12 @@ import { DeactivateUserUseCase } from '@application/use-cases/user/deactivate-us
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
 import { NotificationService } from '@core/services/notification.service';
 import { Router } from '@angular/router';
-import { UserListModel } from '@domain/models/user/user-list.model';
-import { RoleListModel } from '@domain/models/role/role-list.model';
+import { UserEntity } from '@domain/entities/user.entity';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { NotificationEntity } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification.enum';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
+import { UserStatus } from '@domain/enums/user_status.enum';
 
 describe('UserTable', () => {
     let component: UserTable;
@@ -24,46 +25,48 @@ describe('UserTable', () => {
     let mockNotificationService: jasmine.SpyObj<NotificationService>;
     let mockRouter: jasmine.SpyObj<Router>;
 
-    const mockUsers: UserListModel[] = [
-        {
+    const mockUsers: UserEntity[] = [
+        new UserEntity({
             id: 1,
             username: 'user1',
             email: 'user1@test.com',
-            first_name: 'John',
-            last_name: 'Doe',
-            is_active: true,
-            role_name: 'Admin',
-            created_at: '2024-01-01T00:00:00Z',
-        },
-        {
+            firstName: 'John',
+            lastName: 'Doe',
+            isActive: true,
+            roleName: 'Admin',
+            createdAt: new Date('2024-01-01T00:00:00Z'),
+            status: UserStatus.ACTIVE,
+        }),
+        new UserEntity({
             id: 2,
             username: 'user2',
             email: 'user2@test.com',
-            first_name: 'Jane',
-            last_name: 'Smith',
-            is_active: false,
-            role_name: 'User',
-            created_at: '2024-01-02T00:00:00Z',
-        },
+            firstName: 'Jane',
+            lastName: 'Smith',
+            isActive: false,
+            roleName: 'User',
+            createdAt: new Date('2024-01-02T00:00:00Z'),
+            status: UserStatus.INACTIVE,
+        }),
     ];
 
-    const mockRoles: RoleListModel[] = [
-        {
+    const mockRoles: RoleEntity[] = [
+        new RoleEntity({
             id: 1,
             name: 'Admin',
             description: 'Administrator role',
-            access_level: RoleAccessLevel.ADMINISTRATOR,
-            is_active: true,
-            user_count: 1,
-        },
-        {
+            accessLevel: RoleAccessLevel.ADMINISTRATOR,
+            isActive: true,
+            userCount: 1,
+        }),
+        new RoleEntity({
             id: 2,
             name: 'User',
             description: 'Regular user role',
-            access_level: RoleAccessLevel.USER,
-            is_active: true,
-            user_count: 1,
-        },
+            accessLevel: RoleAccessLevel.USER,
+            isActive: true,
+            userCount: 1,
+        }),
     ];
 
     const mockNotification = new NotificationEntity({
@@ -132,7 +135,11 @@ describe('UserTable', () => {
         // Setup
         fixture.detectChanges();
         const userToUpdate = mockUsers[1]; // inactive user
-        const updatedUser = { ...userToUpdate, is_active: true };
+        const updatedUser = new UserEntity({
+            ...userToUpdate,
+            isActive: true,
+            status: UserStatus.ACTIVE,
+        });
 
         mockActivateUserUseCase.execute.and.returnValue(of(updatedUser));
 
@@ -147,14 +154,18 @@ describe('UserTable', () => {
         // Check that local state was updated
         const currentUsers = component['users']();
         const updatedUserInState = currentUsers.find((u) => u.id === 2);
-        expect(updatedUserInState?.is_active).toBe(true);
+        expect(updatedUserInState?.isActive).toBe(true);
     });
 
     it('should deactivate active user and update local state', () => {
         // Setup
         fixture.detectChanges();
         const userToUpdate = mockUsers[0]; // active user
-        const updatedUser = { ...userToUpdate, is_active: false };
+        const updatedUser = new UserEntity({
+            ...userToUpdate,
+            isActive: false,
+            status: UserStatus.INACTIVE,
+        });
 
         mockDeactivateUserUseCase.execute.and.returnValue(of(updatedUser));
 
@@ -169,7 +180,7 @@ describe('UserTable', () => {
         // Check that local state was updated
         const currentUsers = component['users']();
         const updatedUserInState = currentUsers.find((u) => u.id === 1);
-        expect(updatedUserInState?.is_active).toBe(false);
+        expect(updatedUserInState?.isActive).toBe(false);
     });
 
     it('should handle toggle status error', () => {
@@ -217,13 +228,13 @@ describe('UserTable', () => {
         component['searchQuery'].set('john');
         const filtered = component['filteredAndSortedUsers']();
         expect(filtered.length).toBe(1);
-        expect(filtered[0].first_name).toBe('John');
+        expect(filtered[0].firstName).toBe('John');
 
         // Test sorting
         component['searchQuery'].set('');
-        component['sort']('first_name');
+        component['sort']('firstName');
         const sorted = component['filteredAndSortedUsers']();
-        expect(sorted[0].first_name).toBe('Jane'); // Jane comes before John alphabetically
+        expect(sorted[0].firstName).toBe('Jane'); // Jane comes before John alphabetically
     });
 
     it('should compute user statistics correctly', () => {
@@ -259,7 +270,7 @@ describe('UserTable', () => {
         const filteredUsers = component['filteredAndSortedUsers']();
 
         expect(filteredUsers.length).toBe(1);
-        expect(filteredUsers[0].role_name).toBe('Admin');
+        expect(filteredUsers[0].roleName).toBe('Admin');
     });
 
     it('should show all users when no role filter is selected', () => {
@@ -282,7 +293,7 @@ describe('UserTable', () => {
 
         expect(filteredUsers.length).toBe(1);
         expect(filteredUsers[0].username).toBe('user1');
-        expect(filteredUsers[0].role_name).toBe('Admin');
+        expect(filteredUsers[0].roleName).toBe('Admin');
     });
 
     it('should display correct selected role name', () => {

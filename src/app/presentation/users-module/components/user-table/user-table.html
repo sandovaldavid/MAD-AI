@@ -88,48 +88,48 @@
                             }
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('first_name')">
+                    <th class="table-header-cell sortable" (click)="sort('firstName')">
                         <div class="header-content">
                             <span>Nombre</span>
-                            @if (getSortIcon('first_name') === 'sort-asc') {
+                            @if (getSortIcon('firstName') === 'sort-asc') {
                             <span class="sort-indicator">↑</span>
-                            } @else if (getSortIcon('first_name') === 'sort-desc') {
+                            } @else if (getSortIcon('firstName') === 'sort-desc') {
                             <span class="sort-indicator">↓</span>
                             } @else {
                             <span class="sort-indicator">↕</span>
                             }
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('role_name')">
+                    <th class="table-header-cell sortable" (click)="sort('roleName')">
                         <div class="header-content">
                             <span>Rol</span>
-                            @if (getSortIcon('role_name') === 'sort-asc') {
+                            @if (getSortIcon('roleName') === 'sort-asc') {
                             <span class="sort-indicator">↑</span>
-                            } @else if (getSortIcon('role_name') === 'sort-desc') {
+                            } @else if (getSortIcon('roleName') === 'sort-desc') {
                             <span class="sort-indicator">↓</span>
                             } @else {
                             <span class="sort-indicator">↕</span>
                             }
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('is_active')">
+                    <th class="table-header-cell sortable" (click)="sort('isActive')">
                         <div class="header-content">
                             <span>Estado</span>
-                            @if (getSortIcon('is_active') === 'sort-asc') {
+                            @if (getSortIcon('isActive') === 'sort-asc') {
                             <span class="sort-indicator">↑</span>
-                            } @else if (getSortIcon('is_active') === 'sort-desc') {
+                            } @else if (getSortIcon('isActive') === 'sort-desc') {
                             <span class="sort-indicator">↓</span>
                             } @else {
                             <span class="sort-indicator">↕</span>
                             }
                         </div>
                     </th>
-                    <th class="table-header-cell sortable" (click)="sort('created_at')">
+                    <th class="table-header-cell sortable" (click)="sort('createdAt')">
                         <div class="header-content">
                             <span>Fecha de Registro</span>
-                            @if (getSortIcon('created_at') === 'sort-asc') {
+                            @if (getSortIcon('createdAt') === 'sort-asc') {
                             <span class="sort-indicator">↑</span>
-                            } @else if (getSortIcon('created_at') === 'sort-desc') {
+                            } @else if (getSortIcon('createdAt') === 'sort-desc') {
                             <span class="sort-indicator">↓</span>
                             } @else {
                             <span class="sort-indicator">↕</span>
@@ -145,8 +145,8 @@
                     <td class="table-cell">
                         <div class="user-info">
                             <div class="user-avatar">
-                                {{ user.first_name.charAt(0).toUpperCase()
-                                }}{{ user.last_name.charAt(0).toUpperCase() }}
+                                {{ user.firstName.charAt(0).toUpperCase()
+                                }}{{ user.lastName.charAt(0).toUpperCase() }}
                             </div>
                             <div class="user-details">
                                 <div class="username">{{ user.username }}</div>
@@ -157,22 +157,22 @@
                         <span class="email">{{ user.email }}</span>
                     </td>
                     <td class="table-cell">
-                        <span class="full-name">{{ user.first_name }} {{ user.last_name }}</span>
+                        <span class="full-name">{{ user.firstName }} {{ user.lastName }}</span>
                     </td>
                     <td class="table-cell">
-                        @if (user.role_name) {
-                        <span class="role-badge">{{ user.role_name }}</span>
+                        @if (user.roleName) {
+                        <span class="role-badge">{{ user.roleName }}</span>
                         } @else {
                         <span class="no-role">Sin rol</span>
                         }
                     </td>
                     <td class="table-cell">
-                        <span [class]="getStatusBadgeClass(user.is_active)">
-                            {{ getStatusText(user.is_active) }}
+                        <span [class]="getStatusBadgeClass(user.isActive)">
+                            {{ getStatusText(user.isActive) }}
                         </span>
                     </td>
                     <td class="table-cell">
-                        <span class="date">{{ user.created_at | date : 'dd/MM/yyyy' }}</span>
+                        <span class="date">{{ user.createdAt | date : 'dd/MM/yyyy' }}</span>
                     </td>
                     <td class="table-cell">
                         <div class="action-buttons">
@@ -194,7 +194,7 @@
                                 (clicked)="navigateToEdit(user.id)">
                             </app-button>
 
-                            @if (user.is_active) {
+                            @if (user.isActive) {
                             <app-button
                                 variant="ghost"
                                 class="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"

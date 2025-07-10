@@ -136,15 +136,26 @@
 
 /* Form actions */
 .form-actions {
-    @apply flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-neutral-200 dark:border-neutral-700;
+    @apply flex flex-col sm:flex-row gap-4 pt-6 border-t border-neutral-200 dark:border-neutral-700;
 }
 
-.cancel-button {
-    @apply sm:w-auto;
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+    @apply px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center;
 }
 
-.save-button {
-    @apply sm:w-auto;
+.form-actions .btn-primary {
+    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+}
+
+.form-actions .btn-secondary {
+    @apply bg-neutral-200 text-neutral-800 hover:bg-neutral-300 focus:ring-neutral-500 dark:bg-neutral-600 dark:text-neutral-200 dark:hover:bg-neutral-700;
+}
+
+/* Cancel button specific styles */
+.form-actions app-button[variant="ghost"] {
+    @apply bg-error-50 text-error-600 border border-error-200 hover:bg-error-100 hover:text-error-700 
+           dark:bg-error-900/20 dark:text-error-400 dark:border-error-800 dark:hover:bg-error-900/30;
 }
 
 /* Responsive improvements */

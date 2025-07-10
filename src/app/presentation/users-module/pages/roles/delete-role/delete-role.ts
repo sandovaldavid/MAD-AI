@@ -1,8 +1,15 @@
-import { Component, ChangeDetectionStrategy, signal, inject, effect } from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    signal,
+    inject,
+    effect,
+    computed,
+} from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GetRoleByIdUseCase } from '@application/use-cases/role/get-role-by-id.use-case';
 import { DeleteRoleUseCase } from '@application/use-cases/role/delete-role.use-case';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel, ROLE_ACCESS_LEVEL_LABELS } from '@domain/enums/role-access-level.enum';
 import { TitleService } from '@core/services/title.service';
 import { NotificationService } from '@core/services/notification.service';
@@ -45,11 +52,44 @@ export class DeleteRole {
     private readonly deleteRoleUseCase = inject(DeleteRoleUseCase);
 
     // Signals
-    role = signal<RoleModel | null>(null);
-    isLoading = signal(true);
-    isDeleting = signal(false);
-    error = signal<string | null>(null);
-    confirmationText = signal('');
+    readonly role = signal<RoleEntity | null>(null);
+    readonly isLoading = signal(true);
+    readonly isDeleting = signal(false);
+    readonly error = signal<string | null>(null);
+    readonly confirmationText = signal('');
+
+    // Computed properties for better performance
+    readonly canDelete = computed(
+        () => this.role() && this.isConfirmationValid() && !this.isDeleting()
+    );
+
+    readonly roleAccessInfo = computed(() => {
+        const roleData = this.role();
+        if (!roleData) return null;
+
+        return {
+            label: ROLE_ACCESS_LEVEL_LABELS[roleData.accessLevel] || 'Desconocido',
+            class: `access-level-${roleData.accessLevel}`,
+            level: roleData.accessLevel,
+        };
+    });
+
+    readonly formattedCreatedAt = computed(() => {
+        const roleData = this.role();
+        if (!roleData?.createdAt) return '';
+
+        try {
+            return roleData.createdAt.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        } catch {
+            return '';
+        }
+    });
 
     // Role access level labels
     protected readonly ROLE_ACCESS_LEVEL_LABELS = ROLE_ACCESS_LEVEL_LABELS;
@@ -103,20 +143,22 @@ export class DeleteRole {
      * Handle deletion confirmation
      */
     onConfirmDelete(): void {
-        const role = this.role();
-        if (!role || this.isDeleting()) return;
+        const roleData = this.role();
+        if (!roleData || this.isDeleting()) return;
 
         // Validate confirmation text
-        if (this.confirmationText().trim().toLowerCase() !== role.name.toLowerCase()) {
-            this.notificationService.error('Error', 'El nombre del rol no coincide');
+        if (!this.isConfirmationValid()) {
+            this.notificationService.error('Error', 'El nombre del rol no coincide').subscribe();
             return;
         }
 
         this.isDeleting.set(true);
 
-        this.deleteRoleUseCase.execute(role.id).subscribe({
+        this.deleteRoleUseCase.execute(roleData.id).subscribe({
             next: () => {
-                this.notificationService.success('Éxito', 'Rol eliminado exitosamente');
+                this.notificationService
+                    .success('Éxito', `Rol "${roleData.name}" eliminado exitosamente`)
+                    .subscribe();
                 this.router.navigate(['/users/roles']);
             },
             error: (error) => {
@@ -138,9 +180,9 @@ export class DeleteRole {
      * Navigate to role detail page
      */
     onViewDetails(): void {
-        const role = this.role();
-        if (role) {
-            this.router.navigate(['/users/roles', role.id]);
+        const roleData = this.role();
+        if (roleData) {
+            this.router.navigate(['/users/roles', roleData.id]);
         }
     }
 
@@ -160,7 +202,7 @@ export class DeleteRole {
     private handleError(message: string): void {
         this.error.set(message);
         this.isLoading.set(false);
-        this.notificationService.error('Error', message);
+        this.notificationService.error('Error', message).subscribe();
     }
 
     /**
@@ -175,34 +217,8 @@ export class DeleteRole {
      * Check if confirmation text matches role name
      */
     isConfirmationValid(): boolean {
-        const role = this.role();
-        if (!role) return false;
-        return this.confirmationText().trim().toLowerCase() === role.name.toLowerCase();
-    }
-
-    /**
-     * Get access level label with proper styling
-     */
-    getAccessLevelInfo(level: RoleAccessLevel): { label: string; class: string } {
-        const label = this.ROLE_ACCESS_LEVEL_LABELS[level] || 'Desconocido';
-        const cssClass = `access-level-${level}`;
-        return { label, class: cssClass };
-    }
-
-    /**
-     * Format date for display
-     */
-    formatDate(dateString: string): string {
-        try {
-            return new Date(dateString).toLocaleDateString('es-ES', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-        } catch {
-            return dateString;
-        }
+        const roleData = this.role();
+        if (!roleData) return false;
+        return this.confirmationText().trim().toLowerCase() === roleData.name.toLowerCase();
     }
 }

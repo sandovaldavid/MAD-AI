@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { authRoutes } from '@presentation/auth/auth.routes';
 import { securedRoutes } from '@presentation/secured/secured.routes';
 import { AuthGuard } from '@core/guards/auth.guard';
-import { GuestGuard } from '@core/guards/guest.guard';
 
 export const routes: Routes = [
     {
@@ -16,7 +15,6 @@ export const routes: Routes = [
             import('@presentation/layouts/auth-layout/auth-layout').then(
                 (m) => m.AuthLayoutComponent
             ),
-        canActivate: [GuestGuard],
         children: authRoutes,
     },
     {

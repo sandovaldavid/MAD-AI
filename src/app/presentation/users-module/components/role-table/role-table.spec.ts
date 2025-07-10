@@ -6,8 +6,7 @@ import { DeleteRoleUseCase } from '@application/use-cases/role/delete-role.use-c
 import { UpdateRoleUseCase } from '@application/use-cases/role/update-role.use-case';
 import { NotificationService } from '@core/services/notification.service';
 import { Router } from '@angular/router';
-import { RoleListModel } from '@domain/models/role/role-list.model';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 import { NotificationEntity } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification.enum';
@@ -22,31 +21,40 @@ describe('RoleTable', () => {
     let mockNotificationService: jasmine.SpyObj<NotificationService>;
     let mockRouter: jasmine.SpyObj<Router>;
 
-    const mockRoles: RoleListModel[] = [
-        {
+    const mockRoles: RoleEntity[] = [
+        new RoleEntity({
             id: 1,
             name: 'Administrator',
             description: 'Full system access',
-            access_level: RoleAccessLevel.ADMINISTRATOR,
-            is_active: true,
-            user_count: 2,
-        },
-        {
+            accessLevel: RoleAccessLevel.ADMINISTRATOR,
+            isActive: true,
+            userCount: 2,
+            canLeadProjects: true,
+            isUniquePerTeam: false,
+            createdAt: new Date('2024-01-01T00:00:00Z'),
+        }),
+        new RoleEntity({
             id: 2,
             name: 'Developer',
             description: 'Development access',
-            access_level: RoleAccessLevel.DEVELOPER,
-            is_active: true,
-            user_count: 5,
-        },
-        {
+            accessLevel: RoleAccessLevel.DEVELOPER,
+            isActive: true,
+            userCount: 5,
+            canLeadProjects: false,
+            isUniquePerTeam: false,
+            createdAt: new Date('2024-01-02T00:00:00Z'),
+        }),
+        new RoleEntity({
             id: 3,
             name: 'User',
             description: 'Basic user access',
-            access_level: RoleAccessLevel.USER,
-            is_active: false,
-            user_count: 0,
-        },
+            accessLevel: RoleAccessLevel.USER,
+            isActive: false,
+            userCount: 0,
+            canLeadProjects: false,
+            isUniquePerTeam: false,
+            createdAt: new Date('2024-01-03T00:00:00Z'),
+        }),
     ];
 
     const mockNotification = new NotificationEntity({
@@ -82,8 +90,12 @@ describe('RoleTable', () => {
         component = fixture.componentInstance;
 
         mockGetRolesUseCase = TestBed.inject(GetRolesUseCase) as jasmine.SpyObj<GetRolesUseCase>;
-        mockDeleteRoleUseCase = TestBed.inject(DeleteRoleUseCase) as jasmine.SpyObj<DeleteRoleUseCase>;
-        mockUpdateRoleUseCase = TestBed.inject(UpdateRoleUseCase) as jasmine.SpyObj<UpdateRoleUseCase>;
+        mockDeleteRoleUseCase = TestBed.inject(
+            DeleteRoleUseCase
+        ) as jasmine.SpyObj<DeleteRoleUseCase>;
+        mockUpdateRoleUseCase = TestBed.inject(
+            UpdateRoleUseCase
+        ) as jasmine.SpyObj<UpdateRoleUseCase>;
         mockNotificationService = TestBed.inject(
             NotificationService
         ) as jasmine.SpyObj<NotificationService>;
@@ -92,7 +104,7 @@ describe('RoleTable', () => {
         // Setup default mock returns
         mockGetRolesUseCase.execute.and.returnValue(of(mockRoles));
         mockDeleteRoleUseCase.execute.and.returnValue(of(void 0));
-        mockUpdateRoleUseCase.execute.and.returnValue(of({} as RoleModel));
+        mockUpdateRoleUseCase.execute.and.returnValue(of(mockRoles[0])); // Return updated entity
         mockNotificationService.success.and.returnValue(of(mockNotification));
         mockNotificationService.error.and.returnValue(of(mockNotification));
     });
@@ -127,7 +139,7 @@ describe('RoleTable', () => {
         component['onAccessLevelFilterChange'](RoleAccessLevel.DEVELOPER.toString());
         const filteredRoles = component['filteredAndSortedRoles']();
         expect(filteredRoles.length).toBe(1);
-        expect(filteredRoles[0].access_level).toBe(RoleAccessLevel.DEVELOPER);
+        expect(filteredRoles[0].accessLevel).toBe(RoleAccessLevel.DEVELOPER);
     });
 
     it('should sort roles correctly', () => {
@@ -227,12 +239,12 @@ describe('RoleTable', () => {
     it('should delete role successfully', () => {
         mockDeleteRoleUseCase.execute.and.returnValue(of(void 0));
         fixture.detectChanges();
-        
+
         // Set selected role
         component['selectedRole'].set(mockRoles[0]);
-        
+
         component['onConfirmDelete']();
-        
+
         expect(mockDeleteRoleUseCase.execute).toHaveBeenCalledWith(1);
         expect(mockNotificationService.success).toHaveBeenCalled();
     });
@@ -242,40 +254,40 @@ describe('RoleTable', () => {
         (error as any).status = 400;
         mockDeleteRoleUseCase.execute.and.throwError(error);
         fixture.detectChanges();
-        
+
         // Set selected role
         component['selectedRole'].set(mockRoles[0]);
-        
+
         component['onConfirmDelete']();
-        
+
         expect(mockDeleteRoleUseCase.execute).toHaveBeenCalledWith(1);
         expect(mockNotificationService.error).toHaveBeenCalledWith(
-            'Error', 
+            'Error',
             'No se puede eliminar el rol porque tiene usuarios asignados'
         );
     });
 
     it('should toggle role status successfully', () => {
-        const mockUpdatedRole: RoleModel = {
+        const mockUpdatedRole = new RoleEntity({
             id: 1,
             name: 'Administrator',
             description: 'Full system access',
-            access_level: RoleAccessLevel.ADMINISTRATOR,
-            can_lead_projects: true,
-            is_unique_per_team: false,
-            is_active: false, // toggled
-            created_at: '2024-01-01T00:00:00Z',
-            user_count: 2,
-        };
-        
+            accessLevel: RoleAccessLevel.ADMINISTRATOR,
+            canLeadProjects: true,
+            isUniquePerTeam: false,
+            isActive: false, // toggled
+            createdAt: new Date('2024-01-01T00:00:00Z'),
+            userCount: 2,
+        });
+
         mockUpdateRoleUseCase.execute.and.returnValue(of(mockUpdatedRole));
         fixture.detectChanges();
-        
+
         // Set selected role
         component['selectedRole'].set(mockRoles[0]);
-        
+
         component['onConfirmToggleStatus']();
-        
+
         expect(mockUpdateRoleUseCase.execute).toHaveBeenCalled();
         expect(mockNotificationService.success).toHaveBeenCalled();
     });
@@ -283,12 +295,12 @@ describe('RoleTable', () => {
     it('should handle toggle status error', () => {
         mockUpdateRoleUseCase.execute.and.throwError('Update error');
         fixture.detectChanges();
-        
+
         // Set selected role
         component['selectedRole'].set(mockRoles[0]);
-        
+
         component['onConfirmToggleStatus']();
-        
+
         expect(mockUpdateRoleUseCase.execute).toHaveBeenCalled();
         expect(mockNotificationService.error).toHaveBeenCalled();
     });

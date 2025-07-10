@@ -7,9 +7,11 @@ import { CreateRole } from './create-role';
 import { TitleService } from '@core/services/title.service';
 import { NotificationService } from '@core/services/notification.service';
 import { AuthService } from '@core/services/auth.service';
-import { CreateRoleUseCase } from '@app/application/use-cases/role/create-role.use-case';
+import { CreateRoleUseCase } from '@application/use-cases/role/create-role.use-case';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
+import { NotificationEntity } from '@domain/entities/notification.entity';
+import { NotificationType } from '@domain/enums/notification.enum';
 
 describe('CreateRole', () => {
     let component: CreateRole;
@@ -20,17 +22,22 @@ describe('CreateRole', () => {
     let mockCreateRoleUseCase: jasmine.SpyObj<CreateRoleUseCase>;
     let mockRouter: jasmine.SpyObj<Router>;
 
-    const mockCreatedRole: RoleModel = {
+    const mockCreatedRole = new RoleEntity({
         id: 1,
         name: 'Test Role',
         description: 'Test Description',
-        access_level: RoleAccessLevel.USER,
-        can_lead_projects: false,
-        is_unique_per_team: false,
-        is_active: true,
-        created_at: '2023-01-01T00:00:00Z',
-        user_count: 0,
-    };
+        accessLevel: RoleAccessLevel.USER,
+        canLeadProjects: false,
+        isUniquePerTeam: false,
+        isActive: true,
+        userCount: 0,
+    });
+
+    const mockNotification = new NotificationEntity({
+        type: NotificationType.SUCCESS,
+        title: 'Test',
+        message: 'Test message',
+    });
 
     beforeEach(async () => {
         const titleServiceSpy = jasmine.createSpyObj('TitleService', ['setTitle']);
@@ -38,6 +45,10 @@ describe('CreateRole', () => {
             'success',
             'error',
         ]);
+        
+        // Setup default mock returns
+        notificationServiceSpy.success.and.returnValue(of(mockNotification));
+        notificationServiceSpy.error.and.returnValue(of(mockNotification));
         const authServiceSpy = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
         const createRoleUseCaseSpy = jasmine.createSpyObj('CreateRoleUseCase', ['execute']);
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -80,9 +91,9 @@ describe('CreateRole', () => {
     it('should initialize form with default values', () => {
         expect(component['createForm'].get('name')?.value).toBe('');
         expect(component['createForm'].get('description')?.value).toBe('');
-        expect(component['createForm'].get('access_level')?.value).toBe(RoleAccessLevel.USER);
-        expect(component['createForm'].get('can_lead_projects')?.value).toBe(false);
-        expect(component['createForm'].get('is_unique_per_team')?.value).toBe(false);
+        expect(component['createForm'].get('accessLevel')?.value).toBe(RoleAccessLevel.USER);
+        expect(component['createForm'].get('canLeadProjects')?.value).toBe(false);
+        expect(component['createForm'].get('isUniquePerTeam')?.value).toBe(false);
     });
 
     it('should validate required fields', () => {
@@ -104,9 +115,9 @@ describe('CreateRole', () => {
         component['createForm'].patchValue({
             name: 'Test Role',
             description: 'Test Description',
-            access_level: RoleAccessLevel.USER,
-            can_lead_projects: false,
-            is_unique_per_team: false,
+            accessLevel: RoleAccessLevel.USER,
+            canLeadProjects: false,
+            isUniquePerTeam: false,
         });
 
         component['onSubmit']();
@@ -114,7 +125,7 @@ describe('CreateRole', () => {
         expect(mockCreateRoleUseCase.execute).toHaveBeenCalled();
         expect(mockNotificationService.success).toHaveBeenCalledWith(
             'Éxito',
-            'Rol creado exitosamente'
+            'Rol "Test Role" creado exitosamente'
         );
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles', 1]);
     });
@@ -145,7 +156,7 @@ describe('CreateRole', () => {
 
         expect(component['createForm'].get('name')?.value).toBe('');
         expect(component['createForm'].get('description')?.value).toBe('');
-        expect(component['createForm'].get('access_level')?.value).toBe(RoleAccessLevel.USER);
+        expect(component['createForm'].get('accessLevel')?.value).toBe(RoleAccessLevel.USER);
     });
 
     it('should navigate back to roles page', () => {
@@ -174,5 +185,45 @@ describe('CreateRole', () => {
 
         const submitButton = fixture.nativeElement.querySelector('button[type="submit"]');
         expect(submitButton.disabled).toBeFalsy();
+    });
+
+    it('should correctly compute canSubmit state', () => {
+        // Initially should not be able to submit (form invalid)
+        expect(component['canSubmit']()).toBeFalsy();
+
+        // Fill required fields
+        component['createForm'].patchValue({
+            name: 'Test Role',
+            description: 'Test Description',
+        });
+
+        // Now should be able to submit
+        expect(component['canSubmit']()).toBeTruthy();
+
+        // Set creating state
+        component['isCreating'].set(true);
+
+        // Should not be able to submit while creating
+        expect(component['canSubmit']()).toBeFalsy();
+    });
+
+    it('should correctly count form errors', () => {
+        // Initially no errors shown (not submitted)
+        expect(component['formErrorsCount']()).toBe(0);
+
+        // Submit form to show errors
+        component['isSubmitted'].set(true);
+
+        // Now errors should be counted
+        expect(component['formErrorsCount']()).toBeGreaterThan(0);
+
+        // Fill required fields
+        component['createForm'].patchValue({
+            name: 'Test Role',
+            description: 'Test Description',
+        });
+
+        // Errors count should decrease
+        expect(component['formErrorsCount']()).toBe(0);
     });
 });

@@ -13,9 +13,9 @@ import { catchError, finalize, of } from 'rxjs';
 import { TitleService } from '@core/services/title.service';
 import { NotificationService } from '@core/services/notification.service';
 import { AuthService } from '@core/services/auth.service';
-import { CreateRoleUseCase } from '@app/application/use-cases/role/create-role.use-case';
+import { CreateRoleUseCase } from '@application/use-cases/role/create-role.use-case';
 
-import { CreateRoleModel } from '@domain/models/role/create-role.model';
+import { CreateRoleData } from '@domain/models/role/role.dto';
 import { RoleAccessLevel, ROLE_ACCESS_LEVEL_LABELS } from '@domain/enums/role-access-level.enum';
 
 import { Button } from '@shared/components/ui/button/button';
@@ -59,11 +59,21 @@ export class CreateRole implements OnInit {
     // Form
     protected readonly createForm: FormGroup;
 
-    // Computed properties
+    // Computed properties for better performance and reactivity
     protected readonly formIsValid = computed(() => this.createForm.valid);
     protected readonly selectedAccessLevel = computed(
-        () => this.createForm.get('access_level')?.value
+        () => this.createForm.get('accessLevel')?.value
     );
+    protected readonly canSubmit = computed(() => 
+        this.formIsValid() && !this.isCreating()
+    );
+    protected readonly formErrorsCount = computed(() => {
+        const form = this.createForm;
+        return Object.keys(form.controls).filter(key => {
+            const control = form.get(key);
+            return control?.errors && (control.touched || this.isSubmitted());
+        }).length;
+    });
 
     // Access level options
     protected readonly accessLevelOptions = [
@@ -90,12 +100,12 @@ export class CreateRole implements OnInit {
         this.createForm = this.formBuilder.group({
             name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(100)]],
             description: ['', [Validators.required, Validators.minLength(1)]],
-            access_level: [
+            accessLevel: [
                 RoleAccessLevel.USER,
                 [Validators.required, Validators.min(1), Validators.max(5)],
             ],
-            can_lead_projects: [false],
-            is_unique_per_team: [false],
+            canLeadProjects: [false],
+            isUniquePerTeam: [false],
         });
     }
 
@@ -106,7 +116,7 @@ export class CreateRole implements OnInit {
     protected onSubmit(): void {
         this.isSubmitted.set(true);
 
-        if (!this.createForm.valid || this.isCreating()) {
+        if (!this.canSubmit()) {
             return;
         }
 
@@ -121,13 +131,13 @@ export class CreateRole implements OnInit {
         this.error.set(null);
 
         const formValue = this.createForm.value;
-        const createData: CreateRoleModel = {
+        const createData: CreateRoleData = {
             name: formValue.name,
             description: formValue.description,
-            access_level: formValue.access_level,
-            can_lead_projects: formValue.can_lead_projects || false,
-            is_unique_per_team: formValue.is_unique_per_team || false,
-            created_by_user_id: currentUserId,
+            accessLevel: formValue.accessLevel,
+            canLeadProjects: formValue.canLeadProjects || false,
+            isUniquePerTeam: formValue.isUniquePerTeam || false,
+            createdByUserId: currentUserId,
         };
 
         this.createRoleUseCase
@@ -142,7 +152,9 @@ export class CreateRole implements OnInit {
             )
             .subscribe((createdRole) => {
                 if (createdRole) {
-                    this.notificationService.success('Éxito', 'Rol creado exitosamente');
+                    this.notificationService
+                        .success('Éxito', `Rol "${createdRole.name}" creado exitosamente`)
+                        .subscribe();
                     this.router.navigate(['/users/roles', createdRole.id]);
                 }
             });
@@ -153,9 +165,9 @@ export class CreateRole implements OnInit {
         this.createForm.reset({
             name: '',
             description: '',
-            access_level: RoleAccessLevel.USER,
-            can_lead_projects: false,
-            is_unique_per_team: false,
+            accessLevel: RoleAccessLevel.USER,
+            canLeadProjects: false,
+            isUniquePerTeam: false,
         });
         this.error.set(null);
     }
@@ -205,7 +217,7 @@ export class CreateRole implements OnInit {
             case 'description':
                 if (errors['required']) return 'La descripción es requerida';
                 break;
-            case 'access_level':
+            case 'accessLevel':
                 if (errors['required']) return 'El nivel de acceso es requerido';
                 break;
         }
@@ -221,6 +233,6 @@ export class CreateRole implements OnInit {
 
     private handleError(message: string): void {
         this.error.set(message);
-        this.notificationService.error('Error', message);
+        this.notificationService.error('Error', message).subscribe();
     }
 }

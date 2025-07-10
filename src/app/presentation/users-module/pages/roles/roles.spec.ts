@@ -1,49 +1,39 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Router } from '@angular/router';
+
 import { Roles } from './roles';
 import { TitleService } from '@core/services/title.service';
-import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
-import { NotificationService } from '@core/services/notification.service';
-import { Router } from '@angular/router';
-import { RoleListModel } from '@domain/models/role/role-list.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 
 describe('Roles', () => {
     let component: Roles;
     let fixture: ComponentFixture<Roles>;
     let mockTitleService: jasmine.SpyObj<TitleService>;
-    let mockGetRolesUseCase: jasmine.SpyObj<GetRolesUseCase>;
-    let mockNotificationService: jasmine.SpyObj<NotificationService>;
     let mockRouter: jasmine.SpyObj<Router>;
 
-    const mockRoles: RoleListModel[] = [
-        {
+    const mockRoles: RoleEntity[] = [
+        new RoleEntity({
             id: 1,
             name: 'Administrator',
             description: 'Full system access',
-            access_level: RoleAccessLevel.ADMINISTRATOR,
-            is_active: true,
-            user_count: 2,
-        },
+            accessLevel: RoleAccessLevel.ADMINISTRATOR,
+            isActive: true,
+            userCount: 2,
+            canLeadProjects: true,
+            isUniquePerTeam: false,
+            createdAt: new Date(),
+        }),
     ];
 
     beforeEach(async () => {
         const titleServiceSpy = jasmine.createSpyObj('TitleService', ['setTitle']);
-        const getRolesUseCaseSpy = jasmine.createSpyObj('GetRolesUseCase', ['execute']);
-        const notificationServiceSpy = jasmine.createSpyObj('NotificationService', [
-            'success',
-            'error',
-            'info',
-            'warning',
-        ]);
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
         await TestBed.configureTestingModule({
             imports: [Roles],
             providers: [
                 { provide: TitleService, useValue: titleServiceSpy },
-                { provide: GetRolesUseCase, useValue: getRolesUseCaseSpy },
-                { provide: NotificationService, useValue: notificationServiceSpy },
                 { provide: Router, useValue: routerSpy },
             ],
         }).compileComponents();
@@ -52,14 +42,7 @@ describe('Roles', () => {
         component = fixture.componentInstance;
 
         mockTitleService = TestBed.inject(TitleService) as jasmine.SpyObj<TitleService>;
-        mockGetRolesUseCase = TestBed.inject(GetRolesUseCase) as jasmine.SpyObj<GetRolesUseCase>;
-        mockNotificationService = TestBed.inject(
-            NotificationService
-        ) as jasmine.SpyObj<NotificationService>;
         mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-
-        // Setup default mock returns
-        mockGetRolesUseCase.execute.and.returnValue(of(mockRoles));
     });
 
     it('should create', () => {
@@ -86,6 +69,11 @@ describe('Roles', () => {
         const compiled = fixture.debugElement.nativeElement;
         
         expect(compiled.querySelector('app-role-table')).toBeTruthy();
+    });
+
+    it('should navigate back to users when goBack is called', () => {
+        component.goBack();
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/users']);
     });
 
     it('should have proper page structure', () => {

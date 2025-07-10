@@ -6,7 +6,7 @@ import { TitleService } from '@core/services/title.service';
 import { NotificationService } from '@core/services/notification.service';
 import { GetRoleByIdUseCase } from '@application/use-cases/role/get-role-by-id.use-case';
 import { DeleteRoleUseCase } from '@application/use-cases/role/delete-role.use-case';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 
 describe('DeleteRole', () => {
@@ -19,17 +19,17 @@ describe('DeleteRole', () => {
     let mockGetRoleByIdUseCase: jasmine.SpyObj<GetRoleByIdUseCase>;
     let mockDeleteRoleUseCase: jasmine.SpyObj<DeleteRoleUseCase>;
 
-    const mockRole: RoleModel = {
+    const mockRole = new RoleEntity({
         id: 1,
         name: 'Test Role',
         description: 'Test role description',
-        access_level: RoleAccessLevel.TEAM_LEAD,
-        can_lead_projects: true,
-        is_unique_per_team: false,
-        is_active: true,
-        created_at: '2024-01-01T00:00:00Z',
-        user_count: 5,
-    };
+        accessLevel: RoleAccessLevel.TEAM_LEAD,
+        canLeadProjects: true,
+        isUniquePerTeam: false,
+        isActive: true,
+        createdAt: '2024-01-01T00:00:00Z',
+        userCount: 5,
+    });
 
     beforeEach(async () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -118,14 +118,14 @@ describe('DeleteRole', () => {
         fixture.detectChanges();
         component.onCancel();
 
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/roles']);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles']);
     });
 
     it('should navigate to role details', () => {
         fixture.detectChanges();
         component.onViewDetails();
 
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/roles', mockRole.id]);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles', mockRole.id]);
     });
 
     it('should validate confirmation text', () => {
@@ -169,9 +169,9 @@ describe('DeleteRole', () => {
         expect(mockDeleteRoleUseCase.execute).toHaveBeenCalledWith(mockRole.id);
         expect(mockNotificationService.success).toHaveBeenCalledWith(
             'Éxito',
-            'Rol eliminado exitosamente'
+            `Rol "${mockRole.name}" eliminado exitosamente`
         );
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/admin/users/roles']);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/users/roles']);
     });
 
     it('should handle delete error', () => {
@@ -185,18 +185,34 @@ describe('DeleteRole', () => {
         expect(mockNotificationService.error).toHaveBeenCalled();
     });
 
-    it('should format date correctly', () => {
+    it('should get role access info as computed property', () => {
         fixture.detectChanges();
-        const formattedDate = component.formatDate('2024-01-01T00:00:00Z');
+        const accessLevelInfo = component.roleAccessInfo();
+        expect(accessLevelInfo).toBeTruthy();
+        expect(accessLevelInfo!.label).toBeTruthy();
+        expect(accessLevelInfo!.class).toBe('access-level-3');
+    });
+
+    it('should format created date as computed property', () => {
+        fixture.detectChanges();
+        const formattedDate = component.formattedCreatedAt();
         expect(formattedDate).toBeTruthy();
         expect(typeof formattedDate).toBe('string');
     });
 
-    it('should get access level info', () => {
+    it('should compute canDelete correctly', () => {
         fixture.detectChanges();
-        const accessLevelInfo = component.getAccessLevelInfo(RoleAccessLevel.TEAM_LEAD);
-        expect(accessLevelInfo.label).toBeTruthy();
-        expect(accessLevelInfo.class).toBe('access-level-3');
+
+        // Initially false because no confirmation text
+        expect(component.canDelete()).toBeFalse();
+
+        // Set correct confirmation text
+        component.confirmationText.set(mockRole.name);
+        expect(component.canDelete()).toBeTrue();
+
+        // Should be false when deleting
+        component.isDeleting.set(true);
+        expect(component.canDelete()).toBeFalse();
     });
 
     it('should update confirmation text on input change', () => {
