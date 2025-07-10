@@ -52,38 +52,38 @@
 
         <!-- First Name Field -->
         <div class="form-group">
-            <label for="first_name" class="form-label"> Nombre * </label>
+            <label for="firstName" class="form-label"> Nombre * </label>
             <input
-                id="first_name"
+                id="firstName"
                 type="text"
-                formControlName="first_name"
+                formControlName="firstName"
                 class="form-input"
-                [class.form-input-error]="getFieldError('first_name')"
+                [class.form-input-error]="getFieldError('firstName')"
                 placeholder="Nombre del usuario" />
-            @if (getFieldError('first_name')) {
-            <span class="form-error">{{ getFieldError('first_name') }}</span>
+            @if (getFieldError('firstName')) {
+            <span class="form-error">{{ getFieldError('firstName') }}</span>
             }
         </div>
 
         <!-- Last Name Field -->
         <div class="form-group">
-            <label for="last_name" class="form-label"> Apellido * </label>
+            <label for="lastName" class="form-label"> Apellido * </label>
             <input
-                id="last_name"
+                id="lastName"
                 type="text"
-                formControlName="last_name"
+                formControlName="lastName"
                 class="form-input"
-                [class.form-input-error]="getFieldError('last_name')"
+                [class.form-input-error]="getFieldError('lastName')"
                 placeholder="Apellido del usuario" />
-            @if (getFieldError('last_name')) {
-            <span class="form-error">{{ getFieldError('last_name') }}</span>
+            @if (getFieldError('lastName')) {
+            <span class="form-error">{{ getFieldError('lastName') }}</span>
             }
         </div>
 
         <!-- Role Field (Optional) -->
         <div class="form-group">
-            <label for="role_id" class="form-label"> Rol (Opcional) </label>
-            <select id="role_id" formControlName="role_id" class="form-select">
+            <label for="roleId" class="form-label"> Rol (Opcional) </label>
+            <select id="roleId" formControlName="roleId" class="form-select">
                 <option value="">Selecciona un rol</option>
                 @for (role of roles(); track role.id) {
                 <option [value]="role.id">{{ role.name }} - {{ role.description }}</option>

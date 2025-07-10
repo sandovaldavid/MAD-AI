@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CreateUserUseCase } from '@application/use-cases/user/create-user.use-case';
 import { GetRolesUseCase } from '@application/use-cases/role/get-roles.use-case';
-import { CreateUserModel } from '@domain/models/user/create-user.model';
-import { RoleListModel } from '@domain/models/role/role-list.model';
+import { CreateUserData } from '@domain/models/user/user.dto';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { NotificationService } from '@core/services/notification.service';
 
 @Component({
@@ -22,8 +22,8 @@ export class CreateUser {
     private readonly notificationService = inject(NotificationService);
 
     protected readonly isLoading = signal(false);
-    protected readonly roles = signal<RoleListModel[]>([]);
-    protected readonly form: FormGroup;
+    protected readonly roles = signal<RoleEntity[]>([]);
+    public readonly form: FormGroup;
 
     constructor() {
         this.form = this.formBuilder.group({
@@ -33,15 +33,15 @@ export class CreateUser {
             ],
             email: ['', [Validators.required, Validators.email]],
             password: ['', [Validators.required, Validators.minLength(8)]],
-            first_name: [
+            firstName: [
                 '',
                 [Validators.required, Validators.minLength(1), Validators.maxLength(150)],
             ],
-            last_name: [
+            lastName: [
                 '',
                 [Validators.required, Validators.minLength(1), Validators.maxLength(150)],
             ],
-            role_id: [null],
+            roleId: [null],
         });
 
         // Load available roles
@@ -51,7 +51,7 @@ export class CreateUser {
     private loadRoles(): void {
         this.getRolesUseCase.execute().subscribe({
             next: (roles) => {
-                this.roles.set(roles.filter((role) => role.is_active));
+                this.roles.set(roles.filter((role) => role.isActive));
             },
             error: (error) => {
                 console.error('Error loading roles:', error);
@@ -66,7 +66,7 @@ export class CreateUser {
         if (this.form.valid && !this.isLoading()) {
             this.isLoading.set(true);
 
-            const userData: CreateUserModel = this.form.value;
+            const userData: CreateUserData = this.form.value;
 
             this.createUserUseCase.execute(userData).subscribe({
                 next: (user) => {
@@ -116,8 +116,8 @@ export class CreateUser {
             username: 'Nombre de usuario',
             email: 'Email',
             password: 'Contraseña',
-            first_name: 'Nombre',
-            last_name: 'Apellido',
+            firstName: 'Nombre',
+            lastName: 'Apellido',
         };
 
         return labels[fieldName] || fieldName;
