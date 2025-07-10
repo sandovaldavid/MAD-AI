@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, signal, inject, effect } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GetUserByIdUseCase } from '@application/use-cases/user/get-user-by-id.use-case';
-import { UserListModel } from '@domain/models/user/user-list.model';
+import { UserEntity } from '@domain/entities/user.entity';
+import { UserStatus, USER_STATUS_LABELS } from '@domain/enums/user_status.enum';
 import { DatePipe } from '@angular/common';
 import { TitleService } from '@core/services/title.service';
 import { Button } from '@shared/components/ui/button/button';
@@ -42,7 +43,7 @@ export class DetailUser {
     private readonly route = inject(ActivatedRoute);
     private readonly titleService = inject(TitleService);
 
-    protected readonly user = signal<UserListModel | null>(null);
+    protected readonly user = signal<UserEntity | null>(null);
     protected readonly isLoading = signal(true);
     protected readonly error = signal<string | null>(null);
     private readonly userId = signal<number | null>(null);
@@ -61,7 +62,7 @@ export class DetailUser {
         effect(() => {
             const userData = this.user();
             if (userData) {
-                this.titleService.setTitle(`Perfil de ${userData.full_name}`);
+                this.titleService.setTitle(`Perfil de ${userData.fullName}`);
             }
         });
     }
@@ -102,12 +103,11 @@ export class DetailUser {
         return isActive ? 'Activo' : 'Inactivo';
     }
 
-    protected getUserInitials(fullName: string): string {
-        return fullName
-            .split(' ')
-            .map((name) => name.charAt(0))
-            .slice(0, 2)
-            .join('')
-            .toUpperCase();
+    protected getUserStatusText(status: UserStatus): string {
+        return USER_STATUS_LABELS[status];
+    }
+
+    protected getUserInitials(firstName: string, lastName: string): string {
+        return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
     }
 }
