@@ -16,10 +16,10 @@
                 <h2 class="error-title">Error al cargar el rol</h2>
                 <p class="error-message">{{ error() }}</p>
                 <div class="error-actions">
-                    <app-button variant="outline" size="md" icon="refresh" (clicked)="refresh()">
+                    <app-button variant="outline" size="md" icon="refresh" (click)="refresh()">
                         Reintentar
                     </app-button>
-                    <app-button variant="ghost" size="md" icon="arrow-left" (clicked)="goBack()">
+                    <app-button variant="ghost" size="md" icon="arrow-left" (click)="goBack()">
                         Volver a Roles
                     </app-button>
                 </div>
@@ -41,17 +41,18 @@
                             <div>
                                 <h1 class="role-title">{{ role()!.name }}</h1>
                                 <div class="role-meta">
-                                    <span
-                                        class="access-level-badge {{
-                                            getAccessLevelBadgeClass(role()!.access_level)
-                                        }}">
-                                        {{ getAccessLevelLabel(role()!.access_level) }}
+                                    @if (roleAccessInfo()) {
+                                    <span class="access-level-badge {{ roleAccessInfo()!.class }}">
+                                        {{ roleAccessInfo()!.label }}
                                     </span>
+                                    }
                                     <span
                                         class="status-badge {{
-                                            getStatusBadgeClass(role()!.is_active)
+                                            role()!.isActive
+                                                ? 'status-badge-active'
+                                                : 'status-badge-inactive'
                                         }}">
-                                        {{ getStatusText(role()!.is_active) }}
+                                        {{ role()!.isActive ? 'Activo' : 'Inactivo' }}
                                     </span>
                                 </div>
                             </div>
@@ -64,14 +65,10 @@
                             variant="outline"
                             size="md"
                             icon="edit"
-                            (clicked)="navigateToEdit()">
+                            (click)="navigateToEdit()">
                             Editar Rol
                         </app-button>
-                        <app-button
-                            variant="ghost"
-                            size="md"
-                            icon="arrow-left"
-                            (clicked)="goBack()">
+                        <app-button variant="ghost" size="md" icon="arrow-left" (click)="goBack()">
                             Volver a Roles
                         </app-button>
                     </div>
@@ -123,8 +120,8 @@
                             <div class="info-content">
                                 <label class="info-label">Usuarios Asignados</label>
                                 <span class="info-value">
-                                    {{ role()!.user_count }} usuario{{
-                                        role()!.user_count !== 1 ? 's' : ''
+                                    {{ role()!.userCount }} usuario{{
+                                        role()!.userCount !== 1 ? 's' : ''
                                     }}
                                 </span>
                             </div>
@@ -142,22 +139,22 @@
                     </div>
                     <div class="info-grid">
                         <div class="info-item">
-                            <span
-                                class="access-level-badge {{
-                                    getAccessLevelBadgeClass(role()!.access_level)
-                                }}">
-                                {{ getAccessLevelLabel(role()!.access_level) }}
+                            @if (roleAccessInfo()) {
+                            <span class="access-level-badge {{ roleAccessInfo()!.class }}">
+                                {{ roleAccessInfo()!.label }}
                             </span>
+                            }
                             <div class="info-content">
                                 <label class="info-label">Nivel de Acceso</label>
                                 <span class="info-value">
-                                    Nivel {{ role()!.access_level }} -
-                                    {{ getAccessLevelLabel(role()!.access_level) }}
+                                    @if (roleAccessInfo()) { Nivel {{ roleAccessInfo()!.level }} -
+                                    {{ roleAccessInfo()!.label }}
+                                    }
                                 </span>
                             </div>
                         </div>
                         <div class="info-item">
-                            @if (role()!.can_lead_projects) {
+                            @if (role()!.canLeadProjects) {
                             <icon-check-circle
                                 size="16"
                                 customClass="info-icon text-successful-600 dark:text-successful-400" />
@@ -169,12 +166,12 @@
                             <div class="info-content">
                                 <label class="info-label">Puede Liderar Proyectos</label>
                                 <span class="info-value">
-                                    {{ role()!.can_lead_projects ? 'Sí' : 'No' }}
+                                    {{ role()!.canLeadProjects ? 'Sí' : 'No' }}
                                 </span>
                             </div>
                         </div>
                         <div class="info-item">
-                            @if (role()!.is_unique_per_team) {
+                            @if (role()!.isUniquePerTeam) {
                             <icon-check-circle
                                 size="16"
                                 customClass="info-icon text-successful-600 dark:text-successful-400" />
@@ -186,12 +183,12 @@
                             <div class="info-content">
                                 <label class="info-label">Único por Equipo</label>
                                 <span class="info-value">
-                                    {{ role()!.is_unique_per_team ? 'Sí' : 'No' }}
+                                    {{ role()!.isUniquePerTeam ? 'Sí' : 'No' }}
                                 </span>
                             </div>
                         </div>
                         <div class="info-item">
-                            @if (role()!.is_active) {
+                            @if (role()!.isActive) {
                             <icon-check-circle
                                 size="16"
                                 customClass="info-icon text-successful-600 dark:text-successful-400" />
@@ -204,9 +201,11 @@
                                 <label class="info-label">Estado del Rol</label>
                                 <span
                                     class="status-badge {{
-                                        getStatusBadgeClass(role()!.is_active)
+                                        role()!.isActive
+                                            ? 'status-badge-active'
+                                            : 'status-badge-inactive'
                                     }}">
-                                    {{ getStatusText(role()!.is_active) }}
+                                    {{ role()!.isActive ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </div>
                         </div>
@@ -228,7 +227,7 @@
                                 customClass="info-icon text-neutral-500 dark:text-neutral-400" />
                             <div class="info-content">
                                 <label class="info-label">Fecha de Creación</label>
-                                <span class="info-value">{{ formatDate(role()!.created_at) }}</span>
+                                <span class="info-value">{{ formattedCreatedAt() }}</span>
                             </div>
                         </div>
                         <div class="info-item">
@@ -238,10 +237,10 @@
                             <div class="info-content">
                                 <label class="info-label">Estadísticas de Uso</label>
                                 <span class="info-value">
-                                    {{ role()!.user_count }} usuario{{
-                                        role()!.user_count !== 1 ? 's' : ''
+                                    {{ role()!.userCount }} usuario{{
+                                        role()!.userCount !== 1 ? 's' : ''
                                     }}
-                                    {{ role()!.is_active ? 'activos' : 'inactivos' }}
+                                    {{ role()!.isActive ? 'activos' : 'inactivos' }}
                                 </span>
                             </div>
                         </div>
@@ -265,16 +264,11 @@
                                 <span class="permission-title">Gestión del Sistema</span>
                             </div>
                             <p class="permission-description">
-                                @switch (role()!.access_level) { @case (1) { Acceso total al sistema
-                                y configuraciones administrativas } @case (2) { Gestión de proyectos
-                                y equipos de trabajo } @case (3) { Liderazgo de equipos y
-                                supervisión de desarrolladores } @case (4) { Desarrollo y
-                                colaboración en proyectos } @case (5) { Acceso básico de usuario
-                                final } @default { Permisos no definidos } }
+                                {{ accessLevelDescription() }}
                             </p>
                         </div>
 
-                        @if (role()!.can_lead_projects) {
+                        @if (role()!.canLeadProjects) {
                         <div class="permission-item">
                             <div class="permission-header">
                                 <icon-user-list
@@ -286,7 +280,7 @@
                                 Puede crear, gestionar y liderar proyectos en la organización
                             </p>
                         </div>
-                        } @if (role()!.is_unique_per_team) {
+                        } @if (role()!.isUniquePerTeam) {
                         <div class="permission-item">
                             <div class="permission-header">
                                 <icon-shield
