@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RoleRepository } from '@domain/repositories/role.repository';
-import { CreateRoleModel } from '@domain/models/role/create-role.model';
+import { CreateRoleData } from '@domain/models/role/role.dto';
 import { RoleEntity } from '@domain/entities/role.entity';
 import { ROLE_REPOSITORY_TOKEN } from '@infrastructure/tokens/role.providers';
 
@@ -11,7 +11,7 @@ import { ROLE_REPOSITORY_TOKEN } from '@infrastructure/tokens/role.providers';
 export class CreateRoleUseCase {
     private readonly roleRepository: RoleRepository = inject(ROLE_REPOSITORY_TOKEN);
 
-    execute(createRoleModel: CreateRoleModel): Observable<RoleEntity> {
-        return this.roleRepository.createRole(createRoleModel);
+    execute(createRoleData: CreateRoleData): Observable<RoleEntity> {
+        return this.roleRepository.createRole(createRoleData);
     }
 }
