@@ -28,6 +28,19 @@
                 </div>
             </div>
 
+            <!-- Error Alert -->
+            @if (error()) {
+            <div class="error-alert">
+                <div class="error-content">
+                    <icon-shield size="20" customClass="text-error-500" />
+                    <div class="error-text">
+                        <p class="error-title">Error al crear el rol</p>
+                        <p class="error-message">{{ error() }}</p>
+                    </div>
+                </div>
+            </div>
+            }
+
             <!-- Form Content -->
             <div class="form-content">
                 <div class="form-sections">
@@ -89,8 +102,8 @@
                                     placeholder="Selecciona el nivel de acceso"
                                     helperText="Nivel de privilegios (1 es el más alto)"
                                     [options]="accessLevelOptions"
-                                    [errorMessage]="getFieldErrorMessage('access_level')"
-                                    formControlName="access_level">
+                                    [errorMessage]="getFieldErrorMessage('accessLevel')"
+                                    formControlName="accessLevel">
                                 </app-select>
 
                                 @if (selectedAccessLevel()) {
@@ -146,14 +159,14 @@
                                 <app-slide-toggle
                                     label="Puede Liderar Proyectos"
                                     description="Permite a los usuarios con este rol liderar y gestionar proyectos"
-                                    formControlName="can_lead_projects" />
+                                    formControlName="canLeadProjects" />
                             </div>
 
                             <div class="form-field">
                                 <app-slide-toggle
                                     label="Único por Equipo"
                                     description="Solo un usuario por equipo puede tener este rol"
-                                    formControlName="is_unique_per_team" />
+                                    formControlName="isUniquePerTeam" />
                             </div>
                         </div>
                     </div>
@@ -169,7 +182,7 @@
                             variant="primary"
                             size="md"
                             icon="save"
-                            [disabled]="!formIsValid() || isCreating()"
+                            [disabled]="!canSubmit()"
                             [loading]="isCreating()">
                             @if (isCreating()) { Creando Rol... } @else { Crear Rol }
                         </app-button>
