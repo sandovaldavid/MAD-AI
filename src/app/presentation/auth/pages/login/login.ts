@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal, inject, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { LoginRequest } from '@domain/models/auth/auth.model';
+import { UserEntity } from '@domain/entities/user.entity';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
 import { LoginForm } from '../../components/login-form/login-form';
@@ -23,11 +24,6 @@ export class Login implements OnInit {
     protected readonly successMessage = signal<string>('');
     protected readonly isLoading = signal<boolean>(false);
 
-    constructor() {
-        // Ensure AuthService is initialized
-        this.authService.initialize();
-    }
-
     ngOnInit() {
         // Check for success message from registration
         const message = this.activatedRoute.snapshot.queryParams['message'];
@@ -43,11 +39,24 @@ export class Login implements OnInit {
 
         this.authService.login(loginData).subscribe({
             next: () => {
-                this.isLoading.set(false); // Get the current user info
+                this.isLoading.set(false);
                 const currentUser = this.authService.user();
+
                 if (currentUser) {
+                    // Convert UserInfo to UserEntity if needed for business logic
+                    const userEntity = new UserEntity({
+                        id: currentUser.id,
+                        username: currentUser.username,
+                        email: currentUser.email,
+                        firstName: currentUser.first_name,
+                        lastName: currentUser.last_name,
+                        isActive: currentUser.is_active,
+                        roleName: currentUser.role_name || undefined,
+                        createdAt: currentUser.created_at,
+                    });
+
                     // Show success notification with the user's name
-                    const displayName = currentUser.first_name || currentUser.username || 'Usuario';
+                    const displayName = userEntity.firstName || userEntity.username || 'Usuario';
                     const message = `¡Bienvenido/a ${displayName}! Has iniciado sesión correctamente.`;
 
                     this.notificationService
