@@ -2,9 +2,9 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RoleRepository } from '@domain/repositories/role.repository';
-import { RoleListModel } from '@domain/models/role/role-list.model';
-import { RoleModel } from '@domain/models/role/role.model';
+import { RoleEntity } from '@domain/entities/role.entity';
 import { AssignRoleModel } from '@domain/models/role/assign-role.model';
+import { UnassignRoleModel } from '@domain/models/role/unassign-role.model';
 import { UpdateRoleModel } from '@domain/models/role/update-role.model';
 import { CreateRoleModel } from '@domain/models/role/create-role.model';
 import { RoleApiService } from '../api/role.api';
@@ -20,15 +20,19 @@ import { RoleAccessLevel } from '@domain/enums/role-access-level.enum';
 @Injectable({
     providedIn: 'root',
 })
-export class RoleRepositoryImpl implements RoleRepository {
-    constructor(private readonly roleApi: RoleApiService) {}
-
-    getRoles(): Observable<RoleListModel[]> {
-        return this.roleApi.getRoles().pipe(map((roles) => roles.map(this.mapRoleResponseToModel)));
+export class RoleRepositoryImpl extends RoleRepository {
+    constructor(private readonly roleApi: RoleApiService) {
+        super();
     }
 
-    getRoleById(id: number): Observable<RoleModel> {
-        return this.roleApi.getRoleById(id).pipe(map(this.mapRoleDetailResponseToModel));
+    getRoles(): Observable<RoleEntity[]> {
+        return this.roleApi
+            .getRoles()
+            .pipe(map((roles) => roles.map(this.mapRoleResponseToEntity)));
+    }
+
+    getRoleById(id: number): Observable<RoleEntity> {
+        return this.roleApi.getRoleById(id).pipe(map(this.mapRoleDetailResponseToEntity));
     }
 
     assignRole(assignRoleModel: AssignRoleModel): Observable<void> {
@@ -40,7 +44,13 @@ export class RoleRepositoryImpl implements RoleRepository {
         return this.roleApi.assignRole(dto);
     }
 
-    updateRole(id: number, updateRoleModel: UpdateRoleModel): Observable<RoleModel> {
+    unassignRole(unassignRoleModel: UnassignRoleModel): Observable<void> {
+        return this.roleApi.unassignRole({
+            user_id: unassignRoleModel.user_id,
+        });
+    }
+
+    updateRole(id: number, updateRoleModel: UpdateRoleModel): Observable<RoleEntity> {
         const dto: UpdateRoleRequestDto = {
             name: updateRoleModel.name,
             description: updateRoleModel.description,
@@ -49,10 +59,10 @@ export class RoleRepositoryImpl implements RoleRepository {
             is_unique_per_team: updateRoleModel.is_unique_per_team,
             is_active: updateRoleModel.is_active,
         };
-        return this.roleApi.updateRole(id, dto).pipe(map(this.mapUpdateRoleResponseToModel));
+        return this.roleApi.updateRole(id, dto).pipe(map(this.mapUpdateRoleResponseToEntity));
     }
 
-    createRole(createRoleModel: CreateRoleModel): Observable<RoleModel> {
+    createRole(createRoleModel: CreateRoleModel): Observable<RoleEntity> {
         const dto: CreateRoleRequestDto = {
             name: createRoleModel.name,
             description: createRoleModel.description,
@@ -61,63 +71,64 @@ export class RoleRepositoryImpl implements RoleRepository {
             is_unique_per_team: createRoleModel.is_unique_per_team ?? false,
             created_by_user_id: createRoleModel.created_by_user_id,
         };
-        return this.roleApi.createRole(dto).pipe(map(this.mapCreateRoleResponseToModel));
+        return this.roleApi.createRole(dto).pipe(map(this.mapCreateRoleResponseToEntity));
     }
 
     deleteRole(id: number): Observable<void> {
         return this.roleApi.deleteRole(id);
     }
 
-    private mapRoleResponseToModel(dto: RoleResponseDto): RoleListModel {
-        return {
+    private mapRoleResponseToEntity(dto: RoleResponseDto): RoleEntity {
+        return new RoleEntity({
             id: dto.id,
             name: dto.name,
             description: dto.description,
-            access_level: dto.access_level as RoleAccessLevel,
-            is_active: dto.is_active,
-            user_count: dto.user_count,
-        };
+            accessLevel: dto.access_level as RoleAccessLevel,
+            isActive: dto.is_active,
+            userCount: dto.user_count,
+            createdAt: new Date(),
+        });
     }
 
-    private mapRoleDetailResponseToModel(dto: RoleDetailResponseDto): RoleModel {
-        return {
+    private mapRoleDetailResponseToEntity(dto: RoleDetailResponseDto): RoleEntity {
+        return new RoleEntity({
             id: dto.id,
             name: dto.name,
             description: dto.description,
-            access_level: dto.access_level as RoleAccessLevel,
-            can_lead_projects: dto.can_lead_projects,
-            is_unique_per_team: dto.is_unique_per_team,
-            is_active: dto.is_active,
-            created_at: dto.created_at,
-            user_count: dto.user_count,
-        };
+            accessLevel: dto.access_level as RoleAccessLevel,
+            canLeadProjects: dto.can_lead_projects,
+            isUniquePerTeam: dto.is_unique_per_team,
+            isActive: dto.is_active,
+            createdAt: new Date(dto.created_at),
+            userCount: dto.user_count,
+        });
     }
 
-    private mapUpdateRoleResponseToModel(dto: UpdateRoleResponseDto): RoleModel {
-        return {
+    private mapUpdateRoleResponseToEntity(dto: UpdateRoleResponseDto): RoleEntity {
+        return new RoleEntity({
             id: dto.id,
             name: dto.name,
             description: dto.description,
-            access_level: dto.access_level as RoleAccessLevel,
-            can_lead_projects: dto.can_lead_projects,
-            is_unique_per_team: dto.is_unique_per_team,
-            is_active: dto.is_active,
-            created_at: dto.created_at,
-            user_count: dto.user_count,
-        };
+            accessLevel: dto.access_level as RoleAccessLevel,
+            canLeadProjects: dto.can_lead_projects,
+            isUniquePerTeam: dto.is_unique_per_team,
+            isActive: dto.is_active,
+            createdAt: new Date(dto.created_at),
+            userCount: dto.user_count,
+        });
     }
 
-    private mapCreateRoleResponseToModel(dto: CreateRoleResponseDto): RoleModel {
-        return {
+    private mapCreateRoleResponseToEntity(dto: CreateRoleResponseDto): RoleEntity {
+        return new RoleEntity({
             id: dto.id,
             name: dto.name,
             description: dto.description,
-            access_level: dto.access_level as RoleAccessLevel,
-            can_lead_projects: dto.can_lead_projects,
-            is_unique_per_team: dto.is_unique_per_team,
-            is_active: dto.is_active,
-            created_at: dto.created_at,
-            user_count: dto.user_count,
-        };
+            accessLevel: dto.access_level as RoleAccessLevel,
+            canLeadProjects: dto.can_lead_projects,
+            isUniquePerTeam: dto.is_unique_per_team,
+            isActive: dto.is_active,
+            createdAt: new Date(dto.created_at),
+            userCount: dto.user_count,
+        });
     }
 }
