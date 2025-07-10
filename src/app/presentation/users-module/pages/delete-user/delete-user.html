@@ -10,16 +10,16 @@
     <div class="user-info-card">
         <div class="user-info-header">
             <div class="user-avatar">
-                {{ user()?.first_name?.charAt(0) }}{{ user()?.last_name?.charAt(0) }}
+                {{ user()?.firstName?.charAt(0) }}{{ user()?.lastName?.charAt(0) }}
             </div>
             <div class="user-details">
-                <h2 class="user-name">{{ user()?.first_name }} {{ user()?.last_name }}</h2>
+                <h2 class="user-name">{{ user()?.firstName }} {{ user()?.lastName }}</h2>
                 <p class="user-username">&#64;{{ user()?.username }}</p>
                 <p class="user-email">{{ user()?.email }}</p>
                 <span
                     class="user-status"
-                    [class]="user()?.is_active ? 'status-active' : 'status-inactive'">
-                    {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
+                    [class]="user()?.isActive ? 'status-active' : 'status-inactive'">
+                    {{ user()?.isActive ? 'Activo' : 'Inactivo' }}
                 </span>
             </div>
         </div>
