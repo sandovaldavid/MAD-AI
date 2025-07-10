@@ -1,6 +1,8 @@
 import { Injectable, signal, inject, DOCUMENT, PLATFORM_ID, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
+type ThemeMode = 'light' | 'dark' | 'system';
+
 @Injectable({
     providedIn: 'root',
 })
@@ -10,72 +12,129 @@ export class ThemeService {
     private readonly storageKey = 'theme';
 
     // Signal para el tema actual
-    readonly isDarkMode = signal(this.getInitialTheme());
+    readonly isDarkMode = signal<boolean>(false);
 
     constructor() {
+        // Initialize theme state
+        this.isDarkMode.set(this.getInitialTheme());
+
         // Efecto para aplicar el tema cuando cambie el signal
         effect(() => {
             this.applyTheme(this.isDarkMode());
         });
+
+        // Set up system theme change listener
+        this.setupSystemThemeListener();
+    }
+
+    private get isBrowser(): boolean {
+        return isPlatformBrowser(this.platformId);
+    }
+
+    private getStoredThemePreference(): ThemeMode | null {
+        if (!this.isBrowser) {
+            return null;
+        }
+
+        try {
+            const stored = localStorage.getItem(this.storageKey);
+            return (stored as ThemeMode) || null;
+        } catch (error) {
+            console.warn('Error accessing localStorage:', error);
+            return null;
+        }
+    }
+
+    private getSystemPreference(): boolean {
+        if (!this.isBrowser) {
+            return false;
+        }
+
+        try {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        } catch (error) {
+            console.warn('Error accessing matchMedia:', error);
+            return false;
+        }
     }
 
     private getInitialTheme(): boolean {
-        // Solo acceder a localStorage en el navegador
-        if (isPlatformBrowser(this.platformId)) {
-            try {
-                // Verificar localStorage primero
-                const stored = localStorage.getItem(this.storageKey);
+        const storedPreference = this.getStoredThemePreference();
 
-                // Seguir el patrón recomendado de Tailwind v4.1
-                if (stored === 'dark') {
-                    return true;
-                } else if (stored === 'light') {
-                    return false;
-                } else {
-                    // Si no hay preferencia guardada, usar la preferencia del sistema
-                    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-                }
-            } catch (error) {
-                console.warn('Error accessing localStorage or matchMedia:', error);
-                return false;
-            }
+        if (storedPreference === 'dark') {
+            return true;
+        } else if (storedPreference === 'light') {
+            return false;
+        } else {
+            return this.getSystemPreference();
+        }
+    }
+
+    private setupSystemThemeListener(): void {
+        if (!this.isBrowser) {
+            return;
         }
 
-        // En el servidor, usar tema claro por defecto
-        return false;
+        try {
+            // Only attach listener if using system preference
+            if (this.getStoredThemePreference() === null) {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+                // Modern event listener
+                const handler = (event: MediaQueryListEvent) => {
+                    if (this.getStoredThemePreference() === null) {
+                        this.isDarkMode.set(event.matches);
+                    }
+                };
+
+                mediaQuery.addEventListener('change', handler);
+            }
+        } catch (error) {
+            console.warn('Error setting up system theme listener:', error);
+        }
     }
 
     private applyTheme(isDark: boolean): void {
-        if (!isPlatformBrowser(this.platformId)) {
-            return; // No aplicar temas en el servidor
+        if (!this.isBrowser) {
+            return;
         }
 
         const htmlElement = this.document.documentElement;
 
-        // Aplicar la lógica recomendada por Tailwind v4.1
         if (isDark) {
             htmlElement.classList.add('dark');
-            localStorage.setItem(this.storageKey, 'dark');
         } else {
             htmlElement.classList.remove('dark');
-            localStorage.setItem(this.storageKey, 'light');
+        }
+    }
+
+    private saveThemePreference(mode: ThemeMode): void {
+        if (this.isBrowser) {
+            try {
+                if (mode === 'system') {
+                    localStorage.removeItem(this.storageKey);
+                } else {
+                    localStorage.setItem(this.storageKey, mode);
+                }
+            } catch (error) {
+                console.warn('Error saving theme preference:', error);
+            }
         }
     }
 
     toggleTheme(): void {
-        this.isDarkMode.set(!this.isDarkMode());
+        const newValue = !this.isDarkMode();
+        this.isDarkMode.set(newValue);
+        this.saveThemePreference(newValue ? 'dark' : 'light');
     }
 
     setTheme(isDark: boolean): void {
         this.isDarkMode.set(isDark);
+        this.saveThemePreference(isDark ? 'dark' : 'light');
     }
 
-    // Método para respetar la preferencia del sistema
     useSystemTheme(): void {
-        if (isPlatformBrowser(this.platformId)) {
-            localStorage.removeItem(this.storageKey);
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            this.isDarkMode.set(systemPrefersDark);
-        }
+        this.saveThemePreference('system');
+        this.isDarkMode.set(this.getSystemPreference());
     }
 }
