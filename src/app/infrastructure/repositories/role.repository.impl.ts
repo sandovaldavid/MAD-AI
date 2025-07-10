@@ -3,10 +3,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { RoleRepository } from '@domain/repositories/role.repository';
 import { RoleEntity } from '@domain/entities/role.entity';
-import { AssignRoleModel } from '@domain/models/role/assign-role.model';
-import { UnassignRoleModel } from '@domain/models/role/unassign-role.model';
-import { UpdateRoleModel } from '@domain/models/role/update-role.model';
-import { CreateRoleModel } from '@domain/models/role/create-role.model';
+import {
+    AssignRoleData,
+    UnassignRoleData,
+    UpdateRoleData,
+    CreateRoleData,
+} from '@domain/models/role/role.dto';
 import { RoleApiService } from '../api/role.api';
 import { RoleResponseDto } from '../dto/role/role-response.dto';
 import { RoleDetailResponseDto } from '../dto/role/role-detail-response.dto';
@@ -35,41 +37,41 @@ export class RoleRepositoryImpl extends RoleRepository {
         return this.roleApi.getRoleById(id).pipe(map(this.mapRoleDetailResponseToEntity));
     }
 
-    assignRole(assignRoleModel: AssignRoleModel): Observable<void> {
+    assignRole(assignRoleData: AssignRoleData): Observable<void> {
         const dto: AssignRoleRequestDto = {
-            user_id: assignRoleModel.user_id,
-            role_id: assignRoleModel.role_id,
-            assigned_by_user_id: assignRoleModel.assigned_by_user_id,
+            user_id: assignRoleData.userId,
+            role_id: assignRoleData.roleId,
+            assigned_by_user_id: assignRoleData.assignedByUserId,
         };
         return this.roleApi.assignRole(dto);
     }
 
-    unassignRole(unassignRoleModel: UnassignRoleModel): Observable<void> {
+    unassignRole(unassignRoleData: UnassignRoleData): Observable<void> {
         return this.roleApi.unassignRole({
-            user_id: unassignRoleModel.user_id,
+            user_id: unassignRoleData.userId,
         });
     }
 
-    updateRole(id: number, updateRoleModel: UpdateRoleModel): Observable<RoleEntity> {
+    updateRole(id: number, updateRoleData: UpdateRoleData): Observable<RoleEntity> {
         const dto: UpdateRoleRequestDto = {
-            name: updateRoleModel.name,
-            description: updateRoleModel.description,
-            access_level: updateRoleModel.access_level,
-            can_lead_projects: updateRoleModel.can_lead_projects,
-            is_unique_per_team: updateRoleModel.is_unique_per_team,
-            is_active: updateRoleModel.is_active,
+            name: updateRoleData.name,
+            description: updateRoleData.description,
+            access_level: updateRoleData.accessLevel,
+            can_lead_projects: updateRoleData.canLeadProjects,
+            is_unique_per_team: updateRoleData.isUniquePerTeam,
+            is_active: updateRoleData.isActive,
         };
         return this.roleApi.updateRole(id, dto).pipe(map(this.mapUpdateRoleResponseToEntity));
     }
 
-    createRole(createRoleModel: CreateRoleModel): Observable<RoleEntity> {
+    createRole(createRoleData: CreateRoleData): Observable<RoleEntity> {
         const dto: CreateRoleRequestDto = {
-            name: createRoleModel.name,
-            description: createRoleModel.description,
-            access_level: createRoleModel.access_level,
-            can_lead_projects: createRoleModel.can_lead_projects ?? false,
-            is_unique_per_team: createRoleModel.is_unique_per_team ?? false,
-            created_by_user_id: createRoleModel.created_by_user_id,
+            name: createRoleData.name,
+            description: createRoleData.description,
+            access_level: createRoleData.accessLevel,
+            can_lead_projects: createRoleData.canLeadProjects ?? false,
+            is_unique_per_team: createRoleData.isUniquePerTeam ?? false,
+            created_by_user_id: createRoleData.createdByUserId,
         };
         return this.roleApi.createRole(dto).pipe(map(this.mapCreateRoleResponseToEntity));
     }

@@ -2,9 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { UserEntity } from '../../domain/entities/user.entity';
-import { UserStatsModel } from '../../domain/models/user/user-stats.model';
-import { CreateUserModel } from '../../domain/models/user/create-user.model';
-import { UpdateUserModel } from '../../domain/models/user/update-user.model';
+import {
+    CreateUserData,
+    UpdateUserData,
+    DeactivateUserData,
+    UserStats,
+} from '../../domain/models/user/user.dto';
 import { UserApiClient } from '../api/user.api';
 import { UserStatus } from '../../domain/enums/user_status.enum';
 
@@ -70,30 +73,33 @@ export class UserRepositoryImpl extends UserRepository {
         );
     }
 
-    getUserStats(): Observable<UserStatsModel> {
+    getUserStats(): Observable<UserStats> {
         return this.getUsers().pipe(
             map((users) => {
-                const total_users = users.length;
-                const active_users = users.filter((user) => user.isActive).length;
-                const inactive_users = total_users - active_users;
+                const totalUsers = users.length;
+                const activeUsers = users.filter((user) => user.isActive).length;
+                const inactiveUsers = totalUsers - activeUsers;
 
                 return {
-                    total_users,
-                    active_users,
-                    inactive_users,
+                    totalUsers,
+                    activeUsers,
+                    inactiveUsers,
                 };
             })
         );
     }
 
-    createUser(user: CreateUserModel): Observable<UserEntity> {
+    createUser(user: CreateUserData): Observable<UserEntity> {
         const createUserDto = {
             username: user.username,
             email: user.email,
             password: user.password,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            role_id: user.role_id,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            role_id: user.roleId,
+            email_notifications_enabled: user.emailNotificationsEnabled,
+            system_notifications_enabled: user.systemNotificationsEnabled,
+            task_notifications_enabled: user.taskNotificationsEnabled,
         };
 
         return this.userApi.createUser(createUserDto).pipe(
@@ -124,8 +130,24 @@ export class UserRepositoryImpl extends UserRepository {
         );
     }
 
-    updateUser(id: number, user: UpdateUserModel): Observable<UserEntity> {
-        return this.userApi.updateUser(id, user).pipe(
+    updateUser(id: number, user: UpdateUserData): Observable<UserEntity> {
+        // Convert camelCase to snake_case for API
+        const updateUserDto: any = {};
+
+        if (user.firstName !== undefined) updateUserDto.first_name = user.firstName;
+        if (user.lastName !== undefined) updateUserDto.last_name = user.lastName;
+        if (user.email !== undefined) updateUserDto.email = user.email;
+        if (user.roleId !== undefined) updateUserDto.role_id = user.roleId;
+        if (user.isActive !== undefined) updateUserDto.is_active = user.isActive;
+        if (user.status !== undefined) updateUserDto.status = user.status;
+        if (user.emailNotificationsEnabled !== undefined)
+            updateUserDto.email_notifications_enabled = user.emailNotificationsEnabled;
+        if (user.systemNotificationsEnabled !== undefined)
+            updateUserDto.system_notifications_enabled = user.systemNotificationsEnabled;
+        if (user.taskNotificationsEnabled !== undefined)
+            updateUserDto.task_notifications_enabled = user.taskNotificationsEnabled;
+
+        return this.userApi.updateUser(id, updateUserDto).pipe(
             map(
                 (response) =>
                     new UserEntity({
@@ -182,8 +204,8 @@ export class UserRepositoryImpl extends UserRepository {
         );
     }
 
-    deactivateUser(id: number, reason?: string): Observable<UserEntity> {
-        return this.userApi.deactivateUser(id, reason).pipe(
+    deactivateUser(id: number, data?: DeactivateUserData): Observable<UserEntity> {
+        return this.userApi.deactivateUser(id, data?.reason).pipe(
             map(
                 (response) =>
                     new UserEntity({
