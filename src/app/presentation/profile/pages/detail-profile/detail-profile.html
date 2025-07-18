@@ -26,11 +26,7 @@
                     <icon-mail />{{ user()?.email }}
                 </span>
                 <span class="inline-flex items-center gap-1 mt-1">
-                    <icon-status />
-                    <span
-                        class="w-2 h-2 rounded-full mr-1"
-                        [class.bg-green-500]="user()?.is_active"
-                        [class.bg-red-500]="!user()?.is_active"></span>
+                    <icon-status [active]="user()?.is_active || false" />
                     <span
                         class="text-xs font-medium"
                         [class.text-green-700]="user()?.is_active"
@@ -68,7 +64,9 @@
                 </span>
             </div>
             <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-status />Estado</span>
+                <span class="profile-label flex items-center gap-1"
+                    ><icon-status [active]="user()?.is_active || false" />Estado</span
+                >
                 <span class="profile-value">
                     <span class="inline-flex items-center gap-1">
                         <span
