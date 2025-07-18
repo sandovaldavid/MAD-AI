@@ -1,0 +1,96 @@
+<section class="profile-container">
+    @if (user()) {
+    <div class="profile-card">
+        <div
+            class="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
+            <div
+                class="user-avatar w-24 h-24 bg-primary-500 text-white rounded-full flex items-center justify-center text-4xl font-bold select-none shadow-md">
+                <icon-user />
+            </div>
+            <div class="flex-1 flex flex-col items-center sm:items-start">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span
+                        class="text-neutral-600 dark:text-neutral-400 text-base flex items-center gap-1">
+                        <icon-user />&#64;{{ user()?.username }}
+                    </span>
+                    @if (user()?.role_name) {
+                    <span
+                        class="role-pill inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-100 border border-primary-200 dark:border-primary-700 gap-1">
+                        <icon-badge />
+                        {{ user()?.role_name }}
+                    </span>
+                    }
+                </div>
+                <span
+                    class="text-neutral-600 dark:text-neutral-400 text-sm mb-2 flex items-center gap-1">
+                    <icon-mail />{{ user()?.email }}
+                </span>
+                <span class="inline-flex items-center gap-1 mt-1">
+                    <icon-status />
+                    <span
+                        class="w-2 h-2 rounded-full mr-1"
+                        [class.bg-green-500]="user()?.is_active"
+                        [class.bg-red-500]="!user()?.is_active"></span>
+                    <span
+                        class="text-xs font-medium"
+                        [class.text-green-700]="user()?.is_active"
+                        [class.text-red-700]="!user()?.is_active">
+                        {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <div class="profile-details-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-user />Nombre</span>
+                <span class="profile-value">{{ user()?.first_name }} {{ user()?.last_name }}</span>
+            </div>
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-user />Usuario</span>
+                <span class="profile-value">{{ user()?.username }}</span>
+            </div>
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-mail />Email</span>
+                <span class="profile-value">{{ user()?.email }}</span>
+            </div>
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-badge />Rol</span>
+                <span class="profile-value">
+                    @if (user()?.role_name) {
+                    <span
+                        class="role-pill inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-100 border border-primary-200 dark:border-primary-700 gap-1">
+                        {{ user()?.role_name }}
+                    </span>
+                    } @else {
+                    <span class="text-neutral-400">Sin rol asignado</span>
+                    }
+                </span>
+            </div>
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-status />Estado</span>
+                <span class="profile-value">
+                    <span class="inline-flex items-center gap-1">
+                        <span
+                            class="w-2 h-2 rounded-full mr-1"
+                            [class.bg-green-500]="user()?.is_active"
+                            [class.bg-red-500]="!user()?.is_active"></span>
+                        <span
+                            class="text-xs font-medium"
+                            [class.text-green-700]="user()?.is_active"
+                            [class.text-red-700]="!user()?.is_active">
+                            {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                    </span>
+                </span>
+            </div>
+            <div class="profile-detail">
+                <span class="profile-label flex items-center gap-1"><icon-calendar />Creado</span>
+                <span class="profile-value">{{ user()?.created_at | date : 'medium' }}</span>
+            </div>
+        </div>
+    </div>
+    } @else {
+    <div class="profile-loading">Cargando perfil...</div>
+    }
+</section>
