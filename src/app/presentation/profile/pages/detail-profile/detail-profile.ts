@@ -9,6 +9,7 @@ import { CheckCircleIcon } from '../../icons/check-circle.icon';
 import { XCircleIcon } from '../../icons/x-circle.icon';
 import { Button } from '@/app/shared/components/ui/button/button';
 import { Router } from '@angular/router';
+import { EditIcon } from '../../icons/edit.icon';
 
 @Component({
     selector: 'app-detail-profile',
@@ -21,6 +22,7 @@ import { Router } from '@angular/router';
         IconCalendar,
         CheckCircleIcon,
         XCircleIcon,
+        EditIcon,
     ],
     templateUrl: './detail-profile.html',
     styleUrl: './detail-profile.css',
@@ -51,5 +53,9 @@ export class DetailProfile {
 
     protected goBack(): void {
         this.router.navigate(['/dashboard']);
+    }
+
+    protected navigateToEdit(): void {
+        this.router.navigate(['/profile/update']);
     }
 }
