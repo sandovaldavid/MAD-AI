@@ -173,7 +173,7 @@ export class HeaderComponent {
     }
 
     protected navigateToSettings(): void {
-        this.router.navigate(['/settings']);
+        this.router.navigate(['/profile/settings']);
         this.closeAllDropdowns();
     }
 
