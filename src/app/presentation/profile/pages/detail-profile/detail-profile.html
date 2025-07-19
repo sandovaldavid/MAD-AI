@@ -1,90 +1,141 @@
 <section class="profile-container">
     @if (user()) {
     <div class="profile-card">
-        <div
-            class="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-neutral-200 dark:border-neutral-700">
-            <div
-                class="user-avatar w-24 h-24 bg-primary-500 text-white rounded-full flex items-center justify-center text-4xl font-bold select-none shadow-md">
-                <icon-user />
+        <div class="user-avatar-section">
+            <div class="user-avatar-large">
+                {{ getUserInitials(user()!.first_name, user()!.last_name) }}
             </div>
-            <div class="flex-1 flex flex-col items-center sm:items-start">
-                <div class="flex flex-wrap items-center gap-2 mb-2">
-                    <span
-                        class="text-neutral-600 dark:text-neutral-400 text-base flex items-center gap-1">
-                        <icon-user />&#64;{{ user()?.username }}
+            <div class="user-basic-info">
+                <h1 class="user-full-name">{{ fullName }}</h1>
+                <p class="user-username">{{ '@' + user()!.username }}</p>
+                <div class="flex items-center space-x-4 mt-3">
+                    <span [class]="getStatusBadgeClass(user()!.is_active)">
+                        @if (user()!.is_active) {
+                        <icon-check-circle customClass="mr-1" />
+                        } @else {
+                        <icon-x-circle customClass="mr-1" />
+                        }
+                        {{ getStatusText(user()!.is_active) }}
                     </span>
-                    @if (user()?.role_name) {
-                    <span
-                        class="role-pill inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-100 border border-primary-200 dark:border-primary-700 gap-1">
+                    @if (user()!.role_name) {
+                    <span class="role-badge">
                         <icon-badge />
-                        {{ user()?.role_name }}
+                        {{ user()!.role_name }}
                     </span>
                     }
                 </div>
-                <span
-                    class="text-neutral-600 dark:text-neutral-400 text-sm mb-2 flex items-center gap-1">
-                    <icon-mail />{{ user()?.email }}
-                </span>
-                <span class="inline-flex items-center gap-1 mt-1">
-                    <icon-status [active]="user()?.is_active || false" />
-                    <span
-                        class="text-xs font-medium"
-                        [class.text-green-700]="user()?.is_active"
-                        [class.text-red-700]="!user()?.is_active">
-                        {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
-                </span>
+            </div>
+            <div>
+                <app-button
+                    variant="ghost"
+                    size="sm"
+                    (clicked)="goBack()"
+                    icon="arrow-left"
+                    customClass="text-neutral-600 hover:text-primary-600 dark:text-neutral-400 dark:hover:text-primary-400">
+                    Volver a Dashboard
+                </app-button>
             </div>
         </div>
 
-        <div class="profile-details-grid grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-user />Nombre</span>
-                <span class="profile-value">{{ user()?.first_name }} {{ user()?.last_name }}</span>
+        <div class="info-sections">
+            <div class="info-section">
+                <div class="section-header">
+                    <icon-mail customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Información de Contacto</h3>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <icon-mail customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Email</label>
+                            <span class="info-value">{{ user()!.email }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <icon-user customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Nombre de Usuario</label>
+                            <span class="info-value">{{ user()!.username }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-user />Usuario</span>
-                <span class="profile-value">{{ user()?.username }}</span>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <icon-user customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Información Personal</h3>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <icon-user customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Nombre</label>
+                            <span class="info-value">{{ user()!.first_name }}</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <icon-user customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Apellido</label>
+                            <span class="info-value">{{ user()!.last_name }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-mail />Email</span>
-                <span class="profile-value">{{ user()?.email }}</span>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <icon-badge customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Rol y Estado</h3>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <icon-badge
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Rol</label>
+                            @if (user()!.role_name) {
+                            <span class="role-badge">{{ user()!.role_name }}</span>
+                            } @else {
+                            <span class="no-role">Sin rol asignado</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        @if (user()!.is_active) {
+                        <icon-check-circle
+                            customClass="info-icon text-successful-600 dark:text-successful-400" />
+                        } @else {
+                        <icon-x-circle customClass="info-icon text-error-600 dark:text-error-400" />
+                        }
+                        <div class="info-content">
+                            <label class="info-label">Estado de la Cuenta</label>
+                            <span [class]="getStatusBadgeClass(user()!.is_active)">
+                                {{ getStatusText(user()!.is_active) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-badge />Rol</span>
-                <span class="profile-value">
-                    @if (user()?.role_name) {
-                    <span
-                        class="role-pill inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-100 border border-primary-200 dark:border-primary-700 gap-1">
-                        {{ user()?.role_name }}
-                    </span>
-                    } @else {
-                    <span class="text-neutral-400">Sin rol asignado</span>
-                    }
-                </span>
-            </div>
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"
-                    ><icon-status [active]="user()?.is_active || false" />Estado</span
-                >
-                <span class="profile-value">
-                    <span class="inline-flex items-center gap-1">
-                        <span
-                            class="w-2 h-2 rounded-full mr-1"
-                            [class.bg-green-500]="user()?.is_active"
-                            [class.bg-red-500]="!user()?.is_active"></span>
-                        <span
-                            class="text-xs font-medium"
-                            [class.text-green-700]="user()?.is_active"
-                            [class.text-red-700]="!user()?.is_active">
-                            {{ user()?.is_active ? 'Activo' : 'Inactivo' }}
-                        </span>
-                    </span>
-                </span>
-            </div>
-            <div class="profile-detail">
-                <span class="profile-label flex items-center gap-1"><icon-calendar />Creado</span>
-                <span class="profile-value">{{ user()?.created_at | date : 'medium' }}</span>
+
+            <div class="info-section">
+                <div class="section-header">
+                    <icon-calendar customClass="text-primary-600 dark:text-primary-400" />
+                    <h3 class="section-title">Fechas Importantes</h3>
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <icon-calendar
+                            customClass="info-icon text-neutral-500 dark:text-neutral-400" />
+                        <div class="info-content">
+                            <label class="info-label">Fecha de Registro</label>
+                            <span class="info-value">{{
+                                user()!.created_at | date : 'dd/MM/yyyy HH:mm'
+                            }}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

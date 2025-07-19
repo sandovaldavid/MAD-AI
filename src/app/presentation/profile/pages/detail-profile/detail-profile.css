@@ -1,29 +1,89 @@
 @reference '../../../../../styles.css';
 
 .profile-container {
-    @apply flex justify-center items-center min-h-[60vh] bg-primary-50 dark:bg-primary-900;
+    @apply max-w-6xl mx-auto p-6 space-y-8 min-h-screen bg-neutral-50 dark:bg-neutral-900;
 }
 
 .profile-card {
-    @apply w-full max-w-xl rounded-xl shadow-lg p-8 bg-white dark:bg-neutral-900;
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-8 transition-all hover:shadow-md;
 }
 
-.profile-title {
-    @apply text-2xl font-bold mb-6 text-primary-700 dark:text-primary-200;
+.user-avatar-section {
+    @apply flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-8;
 }
 
-.profile-row {
-    @apply flex items-center mb-4;
+.user-avatar-large {
+    @apply w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white text-2xl font-bold flex items-center justify-center shadow-lg;
 }
 
-.profile-label {
-    @apply w-32 font-semibold text-neutral-600 dark:text-neutral-300;
+.user-basic-info {
+    @apply flex-1 space-y-3 text-center sm:text-left;
 }
 
-.profile-value {
-    @apply flex-1 text-neutral-900 dark:text-neutral-50;
+.user-full-name {
+    @apply text-3xl font-bold text-neutral-900 dark:text-neutral-100;
+}
+
+.user-username {
+    @apply text-neutral-600 dark:text-neutral-300 text-xl;
+}
+
+.info-sections {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8;
+}
+
+.info-section {
+    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-200 dark:border-neutral-700 p-6 transition-all hover:shadow-md;
+}
+
+.section-header {
+    @apply flex items-center space-x-3 mb-6 pb-4 border-b border-neutral-200 dark:border-neutral-700;
+}
+
+.section-title {
+    @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100;
+}
+
+.info-grid {
+    @apply space-y-4;
+}
+
+.info-item {
+    @apply flex items-start space-x-3 p-3 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900;
+}
+
+.info-icon {
+    @apply flex-shrink-0 mt-0.5;
+}
+
+.info-content {
+    @apply flex-1 space-y-1;
+}
+
+.info-label {
+    @apply block text-sm font-medium text-neutral-600 dark:text-neutral-400;
+}
+
+.info-value {
+    @apply block text-neutral-900 dark:text-neutral-100 font-medium break-words;
+}
+
+.status-badge-active {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-successful-100 text-successful-800 dark:bg-successful-900/20 dark:text-successful-300 border border-successful-200 dark:border-successful-800;
+}
+
+.status-badge-inactive {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-error-100 text-error-800 dark:bg-error-900/20 dark:text-error-300 border border-error-200 dark:border-error-800;
+}
+
+.role-badge {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-800 dark:bg-primary-900/20 dark:text-primary-300 border border-primary-200 dark:border-primary-800;
+}
+
+.no-role {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700;
 }
 
 .profile-loading {
-    @apply text-center text-lg text-neutral-500 dark:text-neutral-400;
+    @apply flex flex-col items-center justify-center py-20 space-y-6 bg-white dark:bg-neutral-800 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700;
 }
