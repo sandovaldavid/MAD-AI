@@ -1,0 +1,56 @@
+<section class="update-profile-container">
+    @if (isLoading()) {
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Cargando perfil...</p>
+    </div>
+    } @else if (user()) {
+    <div class="update-profile-card">
+        <header class="update-profile-header">
+            <h1 class="update-profile-title">Editar Perfil</h1>
+            <p class="update-profile-subtitle">Actualiza tu información personal.</p>
+        </header>
+
+        <form [formGroup]="updateForm" (ngSubmit)="saveChanges()" class="p-6">
+            <div class="space-y-6">
+                <app-input
+                    formControlName="firstName"
+                    label="Nombre"
+                    placeholder="Ingresa tu nombre">
+                    <icon-user customClass="text-neutral-400" />
+                </app-input>
+                <app-input
+                    formControlName="lastName"
+                    label="Apellido"
+                    placeholder="Ingresa tu apellido">
+                    <icon-user customClass="text-neutral-400" />
+                </app-input>
+                <app-input
+                    formControlName="email"
+                    label="Correo Electrónico"
+                    type="email"
+                    placeholder="Ingresa tu correo">
+                    <icon-mail customClass="text-neutral-400" />
+                </app-input>
+            </div>
+
+            <div
+                class="flex justify-end gap-4 pt-6 mt-6 border-t border-neutral-200 dark:border-neutral-700">
+                <app-button type="button" variant="secondary" (clicked)="onCancel()">
+                    Cancelar
+                </app-button>
+                <app-button
+                    type="submit"
+                    variant="primary"
+                    [disabled]="updateForm.pristine || !updateForm.valid || isLoading()">
+                    Guardar Cambios
+                </app-button>
+            </div>
+        </form>
+    </div>
+    } @else {
+    <div class="error-container">
+        <p class="error-text">No se pudo cargar el perfil para editar.</p>
+    </div>
+    }
+</section>
