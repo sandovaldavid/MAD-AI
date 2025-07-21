@@ -1,0 +1,39 @@
+<div class="stat-card">
+    <div class="flex items-center">
+        <div
+            class="p-3 rounded-full"
+            [ngClass]="{
+                'bg-blue-100 dark:bg-blue-800': icon() === 'users',
+                'bg-green-100 dark:bg-green-800': icon() === 'box',
+                'bg-yellow-100 dark:bg-yellow-800': icon() === 'calendar-off',
+                'bg-indigo-100 dark:bg-indigo-800': icon() === 'line-chart'
+            }">
+            <ng-container [ngSwitch]="icon()">
+                <app-users-icon
+                    *ngSwitchCase="'users'"
+                    class="h-6 w-6 text-blue-500 dark:text-blue-400" />
+                <app-box-icon
+                    *ngSwitchCase="'box'"
+                    class="h-6 w-6 text-green-500 dark:text-green-400" />
+                <app-calendar-off-icon
+                    *ngSwitchCase="'calendar-off'"
+                    class="h-6 w-6 text-yellow-500 dark:text-yellow-400" />
+                <app-line-chart-icon
+                    *ngSwitchCase="'line-chart'"
+                    class="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
+            </ng-container>
+        </div>
+        <div class="ml-4">
+            <h3 class="stat-title">{{ title() }}</h3>
+            <p class="stat-value">{{ value() }}</p>
+        </div>
+    </div>
+    @if(change() !== undefined){
+    <div class="flex items-center mt-2">
+        <p class="stat-change" [class.positive]="change()! > 0" [class.negative]="change()! < 0">
+            {{ change() }}%
+        </p>
+        <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">vs last month</span>
+    </div>
+    }
+</div>
