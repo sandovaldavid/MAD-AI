@@ -16,6 +16,14 @@ import { NOTIFICATION_REPOSITORY_TOKEN } from '@infrastructure/tokens/notificati
 import { USER_PROVIDERS } from '@infrastructure/tokens/user.providers';
 import { ROLE_PROVIDERS } from '@infrastructure/tokens/role.providers';
 import { advancedAuthInterceptor } from '@/app/core/interceptors/auth.interceptor';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
+import {
+    HUMAN_RESOURCE_PROVIDERS,
+    MATERIAL_RESOURCE_PROVIDERS,
+    ABSENCE_PROVIDERS,
+    RESOURCE_TYPE_PROVIDERS,
+    RESOURCE_PROVIDERS,
+} from '@infrastructure/tokens/resource-management';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -26,6 +34,12 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(withFetch(), withInterceptors([advancedAuthInterceptor])),
         ...USER_PROVIDERS,
         ...ROLE_PROVIDERS,
+        // Resource Management Providers
+        ...HUMAN_RESOURCE_PROVIDERS,
+        ...MATERIAL_RESOURCE_PROVIDERS,
+        ...ABSENCE_PROVIDERS,
+        ...RESOURCE_TYPE_PROVIDERS,
+        ...RESOURCE_PROVIDERS,
         {
             provide: AuthRepository,
             useClass: AuthRepositoryImpl,
@@ -38,5 +52,6 @@ export const appConfig: ApplicationConfig = {
             provide: NOTIFICATION_REPOSITORY_TOKEN,
             useExisting: NotificationRepository,
         },
+        provideCharts(withDefaultRegisterables()),
     ],
 };
