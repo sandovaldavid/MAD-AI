@@ -1,0 +1,10 @@
+<div class="dashboard-grid">
+    <app-stat-card title="Total Human Resources" [value]="humanResourceCount()" icon="users" />
+    <app-stat-card title="Total Material Resources" [value]="materialResourceCount()" icon="box" />
+    <app-stat-card title="Active Absences" [value]="absenceCount()" icon="calendar-off" />
+    <app-stat-card
+        title="Resource Utilization"
+        [value]="humanUtilization() + '%'"
+        icon="line-chart" />
+    <app-chart title="Utilizacion de Recursos por Tipo" [data]="utilizationData()" class="span-2" />
+</div>
