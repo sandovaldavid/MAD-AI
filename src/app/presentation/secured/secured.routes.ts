@@ -19,4 +19,12 @@ export const securedRoutes: Routes = [
         loadChildren: () => import('@presentation/profile/profile.routes').then((m) => m.default),
         title: 'Perfil',
     },
+    {
+        path: 'resource-management',
+        loadChildren: () =>
+            import('@presentation/resource_management-module/resource_management.routes').then(
+                (m) => m.RESOURCE_MANAGEMENT_ROUTES
+            ),
+        title: 'Gestión de Recursos',
+    },
 ];
