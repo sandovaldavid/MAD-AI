@@ -50,7 +50,7 @@ export class Sidebar {
                 { icon: 'projects', label: 'Gestión de Proyectos', route: '/projects' },
                 { icon: 'tasks', label: 'Gestión de Tareas', route: '/tasks' },
                 { icon: 'teams', label: 'Gestión de Equipos', route: '/teams' },
-                { icon: 'resources', label: 'Gestión de Recursos', route: '/resources' },
+                { icon: 'resources', label: 'Gestión de Recursos', route: '/resource-management/dashboard' },
             ],
         },
         {
