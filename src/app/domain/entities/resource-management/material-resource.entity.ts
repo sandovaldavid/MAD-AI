@@ -1,10 +1,6 @@
+import { Resource } from './resource.entity';
 
-export interface MaterialResource {
-  resource: number;
-  resource_id: number;
-  resource_name: string;
-  resource_status: string;
-  resource_type_name: string;
+export interface MaterialResource extends Resource {
   is_consumable: boolean;
   unit_cost: string | null;
   unit_of_measure: 'unit' | 'hour' | 'day' | 'sprint' | 'story_point' | 'task' | 'license' | 'user' | 'instance' | 'month' | 'service';
@@ -17,6 +13,5 @@ export interface MaterialResource {
   serial_number: string;
   is_low_stock: boolean;
   total_value: string;
-  is_available: boolean;
   stock_status: string;
 }
