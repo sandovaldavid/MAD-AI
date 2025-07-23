@@ -11,10 +11,8 @@ export class ResourceApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = `${environment.API_URL}/resource_management/resources`;
 
-  getAll(): Observable<Resource[]> {
-    return this.http.get<PaginatedResponse<Resource>>(this.apiUrl).pipe(
-      map(response => response.results)
-    );
+  getAll(page: number): Observable<PaginatedResponse<Resource>> {
+    return this.http.get<PaginatedResponse<Resource>>(`${this.apiUrl}?page=${page}`);
   }
 
   getById(id: number): Observable<Resource> {
