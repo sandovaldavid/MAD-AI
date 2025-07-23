@@ -1,13 +1,43 @@
-<div class="dashboard-grid">
-    <app-stat-card title="Total Human Resources" [value]="humanResourceCount()" icon="users" />
-    <app-stat-card title="Total Material Resources" [value]="materialResourceCount()" icon="box" />
-    <app-stat-card title="Active Absences" [value]="absenceCount()" icon="calendar-off" />
-    <app-stat-card
-        title="Resource Utilization"
-        [value]="humanUtilization() + '%'"
-        icon="line-chart" />
-    <app-resource-type
-        title="Utilizacion de Recursos por Tipo"
-        [data]="utilizationData()"
-        class="span-2" />
+<div class="p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Resource Management Dashboard</h1>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <app-stat-card
+            title="Total Human Resources"
+            [value]="humanResourceCount()"
+            icon="users"></app-stat-card>
+        <app-stat-card
+            title="Total Material Resources"
+            [value]="materialResourceCount()"
+            icon="box"></app-stat-card>
+        <app-stat-card
+            title="Absences"
+            [value]="absenceCount()"
+            icon="calendar-off"></app-stat-card>
+        <app-stat-card
+            title="Human Resource Utilization"
+            [value]="humanUtilization()"
+            icon="line-chart"
+            unit="%"></app-stat-card>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <app-resource-type
+                title="Resource Utilization"
+                [data]="utilizationData()"></app-resource-type>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Resource Types</h2>
+            <!-- Placeholder for another chart -->
+        </div>
+    </div>
+
+    <!-- Resource Table -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">All Resources</h2>
+        <app-resources-table></app-resources-table>
+    </div>
 </div>

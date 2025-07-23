@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatCardComponent } from '../../components/stat-card/stat-card.component';
 import { ResourceTypeComponent } from '../../components/chart/resource-type/resource-type.component';
+import { ResourcesTable } from '../../components/tables/resources-table/resources-table';
 import { HumanResourceUseCases } from '@application/use-cases/resource-management/human-resource.use-case';
 import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
 import { AbsenceUseCases } from '@application/use-cases/resource-management/absence.use-case';
@@ -12,7 +13,7 @@ import { Absence } from '@domain/entities/resource-management/absence.entity';
 @Component({
     selector: 'app-dashboard-rm',
     standalone: true,
-    imports: [CommonModule, StatCardComponent, ResourceTypeComponent],
+    imports: [CommonModule, StatCardComponent, ResourceTypeComponent, ResourcesTable],
     templateUrl: './dashboard-rm.html',
     styleUrls: ['./dashboard-rm.css'],
 })
