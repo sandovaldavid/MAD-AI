@@ -3,13 +3,14 @@ import { Observable } from 'rxjs';
 import { IResourceRepository } from '../../../domain/repositories/resource-management/resource.repository';
 import { Resource } from '../../../domain/entities/resource-management/resource.entity';
 import { ResourceApiService } from '../../api/resource-management/resource.api';
+import { PaginatedResponse } from '../../../domain/models/paginated-response.model';
 
 @Injectable()
 export class ResourceRepositoryImpl implements IResourceRepository {
     constructor(private apiService: ResourceApiService) {}
 
-    getAll(): Observable<Resource[]> {
-        return this.apiService.getAll();
+    getAll(page: number): Observable<PaginatedResponse<Resource>> {
+        return this.apiService.getAll(page);
     }
 
     getById(id: number): Observable<Resource> {
