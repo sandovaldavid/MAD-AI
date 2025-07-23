@@ -51,9 +51,17 @@ export class DashboardRm implements OnInit {
     });
 
     protected readonly materialUtilization = computed(() => {
-        // Placeholder: all material resources are available
-        const total = this.materialResources().length;
-        return total ? 100 : 0;
+        const allMaterialResources = this.materialResources();
+        const total = allMaterialResources.length;
+        if (!total) return 0;
+
+        const availableCount = allMaterialResources.filter(
+            (r) => r.availability_status === 'available'
+        ).length;
+        
+        console.log(availableCount);
+
+        return Math.round((availableCount / total) * 100);
     });
 
     protected readonly utilizationData = computed(() => [
