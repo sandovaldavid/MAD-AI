@@ -1,0 +1,64 @@
+@reference '../../../../../../styles.css';
+
+.table-container {
+    @apply bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden;
+}
+
+.table {
+    @apply min-w-full leading-normal;
+}
+
+.table-header th {
+    @apply px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider;
+}
+
+.table-row {
+    @apply hover:bg-gray-50 dark:hover:bg-gray-700;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.table-cell {
+    @apply px-5 py-4 border-b border-gray-200 dark:border-gray-700 text-sm;
+}
+
+.status-badge {
+    @apply relative inline-block px-3 py-1 font-semibold leading-tight rounded-full;
+}
+
+.status-badge-dot {
+    @apply absolute inset-0 opacity-50 rounded-full;
+}
+
+.status-available {
+    @apply text-green-900 dark:text-green-100;
+}
+.status-available .status-badge-dot {
+    @apply bg-green-200;
+}
+
+.status-assigned {
+    @apply text-yellow-900 dark:text-yellow-100;
+}
+.status-assigned .status-badge-dot {
+    @apply bg-yellow-200;
+}
+
+.status-maintenance {
+    @apply text-blue-900 dark:text-blue-100;
+}
+.status-maintenance .status-badge-dot {
+    @apply bg-blue-200;
+}
+
+.status-unavailable {
+    @apply text-red-900 dark:text-red-100;
+}
+.status-unavailable .status-badge-dot {
+    @apply bg-red-200;
+}
+
+.action-button {
+    @apply p-2 rounded-full text-gray-500 dark:text-gray-400;
+    @apply hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-white;
+    transition: all 0.2s ease-in-out;
+}
