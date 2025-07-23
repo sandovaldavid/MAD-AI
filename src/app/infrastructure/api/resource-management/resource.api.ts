@@ -1,8 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Resource } from '../../../domain/entities/resource-management/resource.entity';
 import { environment } from '../../../../env/environment';
+import { PaginatedResponse } from '../../dto/paginated-response.dto';
 
 @Injectable()
 export class ResourceApiService {
@@ -10,7 +12,9 @@ export class ResourceApiService {
   private readonly apiUrl = `${environment.API_URL}/resource_management/resources`;
 
   getAll(): Observable<Resource[]> {
-    return this.http.get<Resource[]>(this.apiUrl);
+    return this.http.get<PaginatedResponse<Resource>>(this.apiUrl).pipe(
+      map(response => response.results)
+    );
   }
 
   getById(id: number): Observable<Resource> {
