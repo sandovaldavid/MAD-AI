@@ -7,7 +7,7 @@ import { Absence } from '../../../domain/entities/resource-management/absence.en
 @Injectable()
 export class AbsenceApiService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.API_URL}/absences`;
+  private readonly url = `${environment.API_URL}/resource_management/absences`;
 
   getAll(): Observable<Absence[]> {
     return this.http.get<Absence[]>(this.url);

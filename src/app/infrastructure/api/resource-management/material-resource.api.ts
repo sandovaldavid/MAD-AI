@@ -7,7 +7,7 @@ import { MaterialResource } from '../../../domain/entities/resource-management/m
 @Injectable()
 export class MaterialResourceApiService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.API_URL}/material-resources`;
+  private readonly url = `${environment.API_URL}/resource_management/material-resources`;
 
   getAll(): Observable<MaterialResource[]> {
     return this.http.get<MaterialResource[]>(this.url);

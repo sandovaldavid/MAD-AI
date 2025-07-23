@@ -7,7 +7,7 @@ import { environment } from '../../../../env/environment';
 @Injectable()
 export class ResourceTypeApiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.API_URL}/resource_management/resource-types`;
+  private readonly apiUrl = `${environment.API_URL}/resource_management/resource_management/resource-types`;
 
   getAll(): Observable<ResourceType[]> {
     return this.http.get<ResourceType[]>(this.apiUrl);

@@ -7,7 +7,7 @@ import { HumanResource } from '../../../domain/entities/resource-management/huma
 @Injectable()
 export class HumanResourceApiService {
   private readonly http = inject(HttpClient);
-  private readonly url = `${environment.API_URL}/human-resources`;
+  private readonly url = `${environment.API_URL}/resource_management/human-resources`;
 
   getAll(): Observable<HumanResource[]> {
     return this.http.get<HumanResource[]>(this.url);
