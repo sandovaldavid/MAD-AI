@@ -6,5 +6,8 @@
         title="Resource Utilization"
         [value]="humanUtilization() + '%'"
         icon="line-chart" />
-    <app-chart title="Utilizacion de Recursos por Tipo" [data]="utilizationData()" class="span-2" />
+    <app-resource-type
+        title="Utilizacion de Recursos por Tipo"
+        [data]="utilizationData()"
+        class="span-2" />
 </div>
