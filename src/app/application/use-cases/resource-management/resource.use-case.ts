@@ -3,16 +3,17 @@ import { Observable } from 'rxjs';
 import { IResourceRepository } from '@domain/repositories/resource-management/resource.repository';
 import { Resource } from '@domain/entities/resource-management/resource.entity';
 import { RESOURCE_REPOSITORY } from '@infrastructure/tokens/resource-management/resource.tokens';
+import { PaginatedResponse } from '@domain/models/paginated-response.model';
 
 @Injectable()
 export class ResourceUseCases {
     constructor(@Inject(RESOURCE_REPOSITORY) private resourceRepository: IResourceRepository) {}
 
-    getAllResources(): Observable<Resource[]> {
-        return this.resourceRepository.getAll();
+    getAll(page: number): Observable<PaginatedResponse<Resource>> {
+        return this.resourceRepository.getAll(page);
     }
 
-    getResourceById(id: number): Observable<Resource> {
+    getById(id: number): Observable<Resource> {
         return this.resourceRepository.getById(id);
     }
 
