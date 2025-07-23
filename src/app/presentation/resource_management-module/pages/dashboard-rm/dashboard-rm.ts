@@ -1,14 +1,14 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StatCardComponent } from '../../components/stat-card/stat-card.component';
 import { ResourceTypeComponent } from '../../components/chart/resource-type/resource-type.component';
 import { ResourcesTable } from '../../components/tables/resources-table/resources-table';
-import { HumanResourceUseCases } from '@application/use-cases/resource-management/human-resource.use-case';
-import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
-import { AbsenceUseCases } from '@application/use-cases/resource-management/absence.use-case';
 import { HumanResource } from '@domain/entities/resource-management/human-resource.entity';
 import { MaterialResource } from '@domain/entities/resource-management/material-resource.entity';
 import { Absence } from '@domain/entities/resource-management/absence.entity';
+import { HumanResourceUseCases } from '@application/use-cases/resource-management/human-resource.use-case';
+import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
+import { AbsenceUseCases } from '@application/use-cases/resource-management/absence.use-case';
 
 @Component({
     selector: 'app-dashboard-rm',
@@ -59,72 +59,21 @@ export class DashboardRm implements OnInit {
     protected readonly utilizationData = computed(() => [
         { name: 'Human Resources', value: this.humanUtilization() },
         { name: 'Material Resources', value: this.materialUtilization() },
-        // Add more categories as needed
     ]);
 
     ngOnInit(): void {
-        this.humanResourceUseCases
-            .getAllHumanResources()
-            .subscribe(async (data: HumanResource[]) => {
-                if (data && data.length > 0) {
-                    this.humanResources.set(data);
-                } else {
-                    const mock = await import('./database/human-resources.mock.json');
-                    const casted = (mock.default ?? mock).map((hr: any) => ({
-                        ...hr,
-                        role: hr.role as
-                            | 'senior'
-                            | 'junior'
-                            | 'specialist'
-                            | 'consultant'
-                            | 'intern',
-                    }));
-                    this.humanResources.set(casted);
-                }
-            });
+        this.humanResourceUseCases.getAllHumanResources().subscribe((data: HumanResource[]) => {
+            this.humanResources.set(data || []);
+        });
+
         this.materialResourceUseCases
             .getAllMaterialResources()
-            .subscribe(async (data: MaterialResource[]) => {
-                if (data && data.length > 0) {
-                    this.materialResources.set(data);
-                } else {
-                    const mock = await import('./database/material-resources.mock.json');
-                    const casted = (mock.default ?? mock).map((mr: any) => ({
-                        ...mr,
-                        unit_of_measure: mr.unit_of_measure as
-                            | 'unit'
-                            | 'hour'
-                            | 'day'
-                            | 'sprint'
-                            | 'story_point'
-                            | 'task'
-                            | 'license'
-                            | 'user'
-                            | 'instance'
-                            | 'month'
-                            | 'service',
-                    }));
-                    this.materialResources.set(casted);
-                }
+            .subscribe((data: MaterialResource[]) => {
+                this.materialResources.set(data || []);
             });
-        this.absenceUseCases.getAllAbsences().subscribe(async (data: Absence[]) => {
-            if (data && data.length > 0) {
-                this.absences.set(data);
-            } else {
-                const mock = await import('./database/absences.mock.json');
-                const casted = (mock.default ?? mock).map((a: any) => ({
-                    ...a,
-                    absence_type: a.absence_type as
-                        | 'vacation'
-                        | 'sick_leave'
-                        | 'training'
-                        | 'maintenance'
-                        | 'conference'
-                        | 'personal'
-                        | 'other',
-                }));
-                this.absences.set(casted);
-            }
+
+        this.absenceUseCases.getAllAbsences().subscribe((data: Absence[]) => {
+            this.absences.set(data || []);
         });
     }
 }
