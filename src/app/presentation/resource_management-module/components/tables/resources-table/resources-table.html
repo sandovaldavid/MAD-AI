@@ -1,0 +1,37 @@
+<div class="overflow-x-auto">
+    <table class="min-w-full bg-white">
+        <thead class="bg-gray-800 text-white">
+            <tr>
+                <th class="w-1/4 py-3 px-4 uppercase font-semibold text-sm">Name</th>
+                <th class="w-1/4 py-3 px-4 uppercase font-semibold text-sm">Category</th>
+                <th class="w-1/4 py-3 px-4 uppercase font-semibold text-sm">Type</th>
+                <th class="w-1/4 py-3 px-4 uppercase font-semibold text-sm">Status</th>
+                <th class="py-3 px-4 uppercase font-semibold text-sm">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="text-gray-700">
+            <tr *ngFor="let resource of resources$ | async">
+                <td class="w-1/4 py-3 px-4">{{ resource.name }}</td>
+                <td class="w-1/4 py-3 px-4">{{ resource.resource_category }}</td>
+                <td class="w-1/4 py-3 px-4">{{ resource.resource_type_name }}</td>
+                <td class="w-1/4 py-3 px-4">
+                    <span
+                        [ngClass]="getStatusClass(resource.availability_status)"
+                        class="py-1 px-3 rounded-full text-xs">
+                        {{ resource.status_display }}
+                    </span>
+                </td>
+                <td class="py-3 px-4">
+                    <button
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                        <fa-icon [icon]="['fas', 'edit']"></fa-icon>
+                    </button>
+                    <button
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded ml-2">
+                        <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
