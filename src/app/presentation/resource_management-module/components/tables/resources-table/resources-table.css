@@ -46,6 +46,15 @@
 .status-maintenance {
     @apply text-blue-900 dark:text-blue-100;
 }
+
+.status-in_use{
+    @apply text-neutral-700 dark:text-neutral-100 bg-neutral-200 dark:bg-neutral-900;
+}
+
+.status-scheduled{
+    @apply text-tertiary-700 dark:text-tertiary-100 bg-tertiary-200 dark:bg-tertiary-800;
+}
+
 .status-maintenance .status-badge-dot {
     @apply bg-blue-200;
 }
