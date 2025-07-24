@@ -4,7 +4,7 @@ export interface Resource {
   name: string;
   description: string;
   location: string;
-  availability_status: 'available' | 'assigned' | 'maintenance' | 'unavailable';
+  availability_status: 'available' | 'assigned' | 'maintenance' | 'unavailable' | 'in_used';
   status_display: string;
   workload_percentage: number;
   is_active: boolean;
