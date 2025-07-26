@@ -16,6 +16,8 @@ import { HumanResourceApiService } from '@infrastructure/api/resource-management
 import { MaterialResourceApiService } from '@infrastructure/api/resource-management/material-resource.api';
 import { AbsenceApiService } from '@infrastructure/api/resource-management/absence.api';
 import { ResourceTypeApiService } from '@infrastructure/api/resource-management/resource-type.api';
+import { RESOURCE_STATS_REPOSITORY } from './resource-management/resource-stats.tokens';
+import { ResourceStatsRepositoryImpl } from '../repositories/resource-management/resource-stats.repository.impl';
 
 // Use Cases
 import { GetResourcesUseCase } from '@application/use-cases/resource-management/get-resources.use-case';
@@ -23,6 +25,7 @@ import { AbsenceUseCases } from '@application/use-cases/resource-management/abse
 import { HumanResourceUseCases } from '@application/use-cases/resource-management/human-resource.use-case';
 import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
 import { ResourceTypeUseCases } from '@application/use-cases/resource-management/resource-type.use-case';
+import { GetResourceStatsUseCase } from '@application/use-cases/resource-management/get-resource-stats.use-case';
 
 export const resourceManagementProviders: Provider[] = [
     // Repositories
@@ -31,6 +34,7 @@ export const resourceManagementProviders: Provider[] = [
     { provide: MATERIAL_RESOURCE_REPOSITORY, useClass: MaterialResourceRepositoryImpl },
     { provide: RESOURCE_TYPE_REPOSITORY, useClass: ResourceTypeRepositoryImpl },
     { provide: RESOURCE_REPOSITORY, useClass: ResourceRepositoryImpl },
+    { provide: RESOURCE_STATS_REPOSITORY, useClass: ResourceStatsRepositoryImpl },
     // API Services
     ResourceApiService,
     HumanResourceApiService,
@@ -43,4 +47,5 @@ export const resourceManagementProviders: Provider[] = [
     HumanResourceUseCases,
     MaterialResourceUseCases,
     ResourceTypeUseCases,
+    GetResourceStatsUseCase,
 ];
