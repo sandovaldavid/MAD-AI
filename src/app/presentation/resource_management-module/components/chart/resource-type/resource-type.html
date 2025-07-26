@@ -1,0 +1,10 @@
+<div class="chart-container">
+    <h2 class="chart-title">
+        <fa-icon [icon]="['fas', 'chart-bar']" class="chart-title-logo"></fa-icon>
+        Recursos Disponibles por Tipo
+    </h2>
+    <div class="chart-content">
+        <canvas baseChart [data]="barChartData()" [type]="barChartType" [options]="barChartOptions">
+        </canvas>
+    </div>
+</div>
