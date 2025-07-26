@@ -40,6 +40,10 @@
     @apply text-xl font-bold text-gray-800 dark:text-white mb-4;
 }
 
+.chart-title-logo {
+    @apply mr-2 text-primary-500;
+}
+
 .chart-content {
     @apply mt-4 flex justify-center items-center h-64;
 }
