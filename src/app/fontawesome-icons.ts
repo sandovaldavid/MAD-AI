@@ -11,6 +11,7 @@ import {
     faBoxOpen,
     faTasks,
     faChartPie,
+    faChartBar,
 } from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
@@ -29,7 +30,8 @@ export class FontAwesomeIconsModule {
             faCheckCircle,
             faBoxOpen,
             faTasks,
-            faChartPie
+            faChartPie,
+            faChartBar
         );
     }
 }
