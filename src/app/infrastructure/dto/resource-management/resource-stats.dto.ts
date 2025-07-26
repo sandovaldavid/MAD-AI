@@ -14,7 +14,15 @@ export interface GeneralStatisticsDTO {
 }
 
 export interface FullStatsResponseDTO {
-    totales: Record<string, number>;
+    totales: {
+        total: number;
+        activos: number;
+        inactivos: number;
+        asignados: number;
+        disponibles: number;
+        en_mantenimiento: number;
+        no_disponibles: number;
+    };
     por_tipo: Record<string, any>;
     estadisticas_generales: GeneralStatisticsDTO;
 }
