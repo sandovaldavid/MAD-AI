@@ -25,6 +25,7 @@ export class ResourceStatsRepositoryImpl extends IResourceStatsRepository {
                     },
                     total_recursos: dto.estadisticas_generales.total_recursos,
                     totales: dto.totales,
+                    por_tipo: dto.por_tipo,
                 };
             })
         );
