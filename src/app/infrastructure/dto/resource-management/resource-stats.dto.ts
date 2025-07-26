@@ -23,6 +23,14 @@ export interface FullStatsResponseDTO {
         en_mantenimiento: number;
         no_disponibles: number;
     };
-    por_tipo: Record<string, any>;
+    por_tipo: {
+        [key: string]: {
+            tipo_id: number;
+            total: number;
+            activos: number;
+            asignados: number;
+            disponibles: number;
+        };
+    };
     estadisticas_generales: GeneralStatisticsDTO;
 }
