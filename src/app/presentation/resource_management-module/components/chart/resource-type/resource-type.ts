@@ -1,10 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, ViewChild } from '@angular/core';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
-import { GetResourceStatsUseCase } from '@application/use-cases/resource-management/get-resource-stats.use-case';
 import { ThemeService } from '@core/services/theme.service';
-import { effect } from '@angular/core';
 import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
+import { ResourcesByType } from '@domain/models/resource-management/resource-type-stats.model';
 
 @Component({
     selector: 'app-resource-type',
@@ -13,9 +12,11 @@ import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
     templateUrl: './resource-type.html',
     styleUrls: ['./resource-type.css'],
 })
-export class ResourceType implements OnInit {
-    private readonly getResourceStatsUseCase = inject(GetResourceStatsUseCase);
+export class ResourceType {
+    @ViewChild(BaseChartDirective) chart: BaseChartDirective | undefined;
     private readonly themeService = inject(ThemeService);
+
+    resourcesByType = input<ResourcesByType | null>(null);
 
     public barChartOptions: ChartConfiguration['options'] = {
         responsive: true,
@@ -38,13 +39,32 @@ export class ResourceType implements OnInit {
             },
         },
     };
-    public barChartData = signal<ChartData<'bar'>>({
+    public barChartData: ChartData<'bar'> = {
         labels: [],
         datasets: [{ data: [], label: 'Disponibles' }],
-    });
+    };
     public barChartType: ChartType = 'bar';
 
     constructor() {
+        effect(() => {
+            const porTipo = this.resourcesByType();
+            if (porTipo) {
+                const labels = Object.keys(porTipo);
+                const data = labels.map((key) => porTipo[key].disponibles);
+                this.barChartData = {
+                    labels,
+                    datasets: [
+                        {
+                            data,
+                            label: 'Disponibles',
+                            backgroundColor: '#3B82F6',
+                        },
+                    ],
+                };
+                this.chart?.update();
+            }
+        });
+
         effect(() => {
             const isDark = this.themeService.isDarkMode();
             this.barChartOptions = {
@@ -62,29 +82,6 @@ export class ResourceType implements OnInit {
                     },
                 },
             };
-        });
-    }
-
-    ngOnInit(): void {
-        this.loadStats();
-    }
-
-    loadStats(): void {
-        this.getResourceStatsUseCase.execute().subscribe((response) => {
-            const porTipo = response.por_tipo;
-            const labels = Object.keys(porTipo);
-            const data = labels.map((key) => porTipo[key].disponibles);
-
-            this.barChartData.set({
-                labels,
-                datasets: [
-                    {
-                        data,
-                        label: 'Disponibles',
-                        backgroundColor: '#3B82F6',
-                    },
-                ],
-            });
         });
     }
 }

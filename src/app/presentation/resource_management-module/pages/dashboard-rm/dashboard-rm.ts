@@ -11,6 +11,10 @@ import { ResourcesStats } from '../../components/stats/resources-stats/resources
 import { ResourceState } from '../../components/chart/resource-state/resource-state';
 import { ResourceType } from '../../components/chart/resource-type/resource-type';
 import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
+import { Button } from '@shared/components/ui/button/button';
+import { Router, RouterModule } from '@angular/router';
+import { GetResourceStatsUseCase } from '@application/use-cases/resource-management/get-resource-stats.use-case';
+import { GeneralStatistics } from '@domain/models/resource-management/resource-stats.model';
 
 @Component({
     selector: 'app-dashboard-rm',
@@ -22,16 +26,21 @@ import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
         ResourceState,
         ResourceType,
         FontAwesomeIconsModule,
+        Button,
+        RouterModule,
     ],
     templateUrl: './dashboard-rm.html',
     styleUrls: ['./dashboard-rm.css'],
 })
 export class DashboardRm implements OnInit {
+    private readonly router = inject(Router);
     private readonly humanResourceUseCases = inject(HumanResourceUseCases);
     private readonly materialResourceUseCases = inject(MaterialResourceUseCases);
     private readonly absenceUseCases = inject(AbsenceUseCases);
+    private readonly getResourceStatsUseCase = inject(GetResourceStatsUseCase);
 
-    // Signals for real API data (or mock if empty)
+    // Signals for real API data
+    protected readonly stats = signal<GeneralStatistics | null>(null);
     protected readonly humanResources = signal<HumanResource[]>([]);
     protected readonly materialResources = signal<MaterialResource[]>([]);
     protected readonly absences = signal<Absence[]>([]);
@@ -40,6 +49,11 @@ export class DashboardRm implements OnInit {
     protected readonly humanResourceCount = computed(() => this.humanResources().length);
     protected readonly materialResourceCount = computed(() => this.materialResources().length);
     protected readonly absenceCount = computed(() => this.absences().length);
+
+    // Derived signals for child components
+    protected readonly resourceStats = computed(() => this.stats()?.estadisticas_generales ?? null);
+    protected readonly resourceTotals = computed(() => this.stats()?.totales ?? null);
+    protected readonly resourcesByType = computed(() => this.stats()?.por_tipo ?? null);
 
     // Utilization (example: % of resources currently absent)
     protected readonly humanUtilization = computed(() => {
@@ -78,7 +92,13 @@ export class DashboardRm implements OnInit {
         { name: 'Material Resources', value: this.materialUtilization() },
     ]);
 
+    navigateTo(path: string): void {
+        this.router.navigate([path]);
+    }
+
     ngOnInit(): void {
+        this.getResourceStatsUseCase.execute().subscribe((data) => this.stats.set(data));
+
         this.humanResourceUseCases.getAllHumanResources().subscribe((data: HumanResource[]) => {
             this.humanResources.set(data || []);
         });

@@ -1,4 +1,10 @@
 <div class="p-6">
+    <div class="flex justify-start mb-4">
+        <app-button variant="outline" (clicked)="navigateTo('/resource-management/dashboard')">
+            <fa-icon [icon]="['fas', 'arrow-left']"></fa-icon>
+            <span>Volver</span>
+        </app-button>
+    </div>
     <!-- Stat Cards -->
     <div class="mb-6">
         <app-material-resources-stats></app-material-resources-stats>
