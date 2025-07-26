@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Resource } from '@domain/entities/resource-management/resource.entity';
 import { environment } from '@env/environment';
 import { PaginatedResponse } from '@infrastructure/dto/paginated-response.dto';
+import { ResourceSearch } from '@domain/models/resource-management/resource-search.model';
 
 @Injectable()
 export class ResourceApiService {
@@ -11,7 +12,7 @@ export class ResourceApiService {
     private readonly apiUrl = `${environment.API_URL}/resource_management/resources`;
 
     getAll(page: number): Observable<PaginatedResponse<Resource>> {
-        return this.http.get<PaginatedResponse<Resource>>(`${this.apiUrl}?page=${page}`);
+        return this.http.get<PaginatedResponse<Resource>>(`${this.apiUrl}/?page=${page}`);
     }
 
     getById(id: number): Observable<Resource> {
@@ -28,5 +29,9 @@ export class ResourceApiService {
 
     delete(id: number): Observable<void> {
         return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    }
+
+    search(criteria: ResourceSearch): Observable<PaginatedResponse<Resource>> {
+        return this.http.post<PaginatedResponse<Resource>>(`${this.apiUrl}/search/`, criteria);
     }
 }
