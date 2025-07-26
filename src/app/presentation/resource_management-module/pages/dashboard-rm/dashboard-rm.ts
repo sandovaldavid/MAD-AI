@@ -9,11 +9,12 @@ import { HumanResourceUseCases } from '@application/use-cases/resource-managemen
 import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
 import { AbsenceUseCases } from '@application/use-cases/resource-management/absence.use-case';
 import { ResourcesStats } from '../../components/stats/resources-stats/resources-stats';
+import { ResourceState } from '../../components/chart/resource-state/resource-state';
 
 @Component({
     selector: 'app-dashboard-rm',
     standalone: true,
-    imports: [CommonModule, ResourceTypeComponent, ResourcesTable, ResourcesStats],
+    imports: [CommonModule, ResourceTypeComponent, ResourcesTable, ResourcesStats, ResourceState],
     templateUrl: './dashboard-rm.html',
     styleUrls: ['./dashboard-rm.css'],
 })
