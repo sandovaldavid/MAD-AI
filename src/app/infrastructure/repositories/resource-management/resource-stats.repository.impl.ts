@@ -24,6 +24,7 @@ export class ResourceStatsRepositoryImpl extends IResourceStatsRepository {
                         recursos_asignados: generalStats.recursos_asignados,
                     },
                     total_recursos: dto.estadisticas_generales.total_recursos,
+                    totales: dto.totales,
                 };
             })
         );
