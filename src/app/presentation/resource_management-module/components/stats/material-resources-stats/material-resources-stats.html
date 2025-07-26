@@ -1,0 +1,33 @@
+<div class="stats-container">
+    @if (stats()) {
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-primary-100 text-primary-600">
+            <fa-icon [icon]="['fas', 'box']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Total de Recursos</p>
+            <p class="stat-value">{{ stats()?.total_resources }}</p>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-secondary-100 text-secondary-600">
+            <fa-icon [icon]="['fas', 'recycle']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Recursos Consumibles</p>
+            <p class="stat-value">{{ stats()?.consumable_resources }}</p>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-tertiary-100 text-tertiary-600">
+            <fa-icon [icon]="['fas', 'archive']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Recursos Permanentes</p>
+            <p class="stat-value">{{ stats()?.permanent_resources }}</p>
+        </div>
+    </div>
+    } @else {
+    <p class="loading-text">Cargando estadisticas...</p>
+    }
+</div>
