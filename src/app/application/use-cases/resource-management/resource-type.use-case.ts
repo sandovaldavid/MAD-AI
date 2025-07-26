@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { IResourceTypeRepository } from '@domain/repositories/resource-management/resource-type.repository';
-import { ResourceType } from '@domain/entities/resource-management/resource-type.entity';
+import { ResourceType } from '@domain/models/resource-management/resource-type.model';
 import { RESOURCE_TYPE_REPOSITORY } from '@infrastructure/tokens/resource-management/resource-type.tokens';
+import { PaginatedResponse } from '@domain/models/paginated-response.model';
 
 @Injectable()
 export class ResourceTypeUseCases {
@@ -10,7 +11,7 @@ export class ResourceTypeUseCases {
         @Inject(RESOURCE_TYPE_REPOSITORY) private resourceTypeRepository: IResourceTypeRepository
     ) {}
 
-    getAllResourceTypes(): Observable<ResourceType[]> {
+    getAllResourceTypes(): Observable<PaginatedResponse<ResourceType>> {
         return this.resourceTypeRepository.getAll();
     }
 
