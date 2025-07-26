@@ -6,12 +6,8 @@
 
     <!-- Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div class="bg-white p-6 rounded-lg shadow">
-            <app-resource-type
-                title="Resource Utilization"
-                [data]="utilizationData()"></app-resource-type>
-        </div>
         <app-resource-state></app-resource-state>
+        <app-resource-type></app-resource-type>
     </div>
 
     <!-- Resource Table -->
