@@ -1,3 +1,5 @@
+import { ResourceTotals } from './resource-totals.model';
+
 export interface ResourceStats {
     total_recursos: number;
     recursos_activos: number;
@@ -8,4 +10,5 @@ export interface ResourceStats {
 export interface GeneralStatistics {
     estadisticas_generales: ResourceStats;
     total_recursos: number;
+    totales: ResourceTotals;
 }
