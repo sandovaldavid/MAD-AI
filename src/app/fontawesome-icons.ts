@@ -15,6 +15,7 @@ import {
     faBox,
     faRecycle,
     faArchive,
+    faListUl,
 } from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
@@ -37,7 +38,8 @@ export class FontAwesomeIconsModule {
             faChartBar,
             faBox,
             faRecycle,
-            faArchive
+            faArchive,
+            faListUl
         );
     }
 }

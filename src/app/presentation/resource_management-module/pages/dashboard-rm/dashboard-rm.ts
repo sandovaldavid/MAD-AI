@@ -10,11 +10,19 @@ import { AbsenceUseCases } from '@application/use-cases/resource-management/abse
 import { ResourcesStats } from '../../components/stats/resources-stats/resources-stats';
 import { ResourceState } from '../../components/chart/resource-state/resource-state';
 import { ResourceType } from '../../components/chart/resource-type/resource-type';
+import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
 
 @Component({
     selector: 'app-dashboard-rm',
     standalone: true,
-    imports: [CommonModule, ResourcesTable, ResourcesStats, ResourceState, ResourceType],
+    imports: [
+        CommonModule,
+        ResourcesTable,
+        ResourcesStats,
+        ResourceState,
+        ResourceType,
+        FontAwesomeIconsModule,
+    ],
     templateUrl: './dashboard-rm.html',
     styleUrls: ['./dashboard-rm.css'],
 })
