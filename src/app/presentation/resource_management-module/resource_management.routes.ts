@@ -10,5 +10,6 @@ export const RESOURCE_MANAGEMENT_ROUTES: Routes = [
     {
         path: 'material-resources/dashboard',
         component: DashboardMaterialResources,
+        title: 'Dashboard de Recursos Materiales',
     },
 ];
