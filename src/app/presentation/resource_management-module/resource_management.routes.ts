@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { DashboardRm } from './pages/dashboard-rm/dashboard-rm';
+import { DashboardMaterialResources } from './pages/dashboard-material-resources/dashboard-material-resources';
 
 export const RESOURCE_MANAGEMENT_ROUTES: Routes = [
     {
@@ -7,8 +8,7 @@ export const RESOURCE_MANAGEMENT_ROUTES: Routes = [
         component: DashboardRm,
     },
     {
-        path: 'resource-management/dashboard',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
+        path: 'material-resources/dashboard',
+        component: DashboardMaterialResources,
     },
 ];
