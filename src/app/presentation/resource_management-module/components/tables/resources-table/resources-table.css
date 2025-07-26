@@ -1,7 +1,7 @@
 @reference '../../../../../../styles.css';
 
 .table-container {
-    @apply bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden;
+    @apply bg-white dark:bg-gray-800 shadow-md shadow-primary-100 dark:shadow-gray-900 rounded-lg overflow-hidden;
 }
 
 .table {
