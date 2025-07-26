@@ -18,6 +18,8 @@ import { AbsenceApiService } from '@infrastructure/api/resource-management/absen
 import { ResourceTypeApiService } from '@infrastructure/api/resource-management/resource-type.api';
 import { RESOURCE_STATS_REPOSITORY } from './resource-management/resource-stats.tokens';
 import { ResourceStatsRepositoryImpl } from '../repositories/resource-management/resource-stats.repository.impl';
+import { MATERIAL_RESOURCE_STATS_REPOSITORY } from './resource-management/material-resource-stats.tokens';
+import { MaterialResourceStatsRepositoryImpl } from '../repositories/resource-management/material-resource-stats.repository.impl';
 
 // Use Cases
 import { GetResourcesUseCase } from '@application/use-cases/resource-management/get-resources.use-case';
@@ -26,6 +28,7 @@ import { HumanResourceUseCases } from '@application/use-cases/resource-managemen
 import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
 import { ResourceTypeUseCases } from '@application/use-cases/resource-management/resource-type.use-case';
 import { GetResourceStatsUseCase } from '@application/use-cases/resource-management/get-resource-stats.use-case';
+import { GetMaterialResourceStatsUseCase } from '@application/use-cases/resource-management/get-material-resource-stats.use-case';
 
 export const resourceManagementProviders: Provider[] = [
     // Repositories
@@ -35,6 +38,7 @@ export const resourceManagementProviders: Provider[] = [
     { provide: RESOURCE_TYPE_REPOSITORY, useClass: ResourceTypeRepositoryImpl },
     { provide: RESOURCE_REPOSITORY, useClass: ResourceRepositoryImpl },
     { provide: RESOURCE_STATS_REPOSITORY, useClass: ResourceStatsRepositoryImpl },
+    { provide: MATERIAL_RESOURCE_STATS_REPOSITORY, useClass: MaterialResourceStatsRepositoryImpl },
     // API Services
     ResourceApiService,
     HumanResourceApiService,
@@ -48,4 +52,5 @@ export const resourceManagementProviders: Provider[] = [
     MaterialResourceUseCases,
     ResourceTypeUseCases,
     GetResourceStatsUseCase,
+    GetMaterialResourceStatsUseCase,
 ];
