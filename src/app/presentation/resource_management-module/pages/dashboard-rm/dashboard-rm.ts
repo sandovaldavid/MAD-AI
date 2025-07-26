@@ -1,6 +1,5 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StatCardComponent } from '../../components/stat-card/stat-card.component';
 import { ResourceTypeComponent } from '../../components/chart/resource-type/resource-type.component';
 import { ResourcesTable } from '../../components/tables/resources-table/resources-table';
 import { HumanResource } from '@domain/entities/resource-management/human-resource.entity';
@@ -9,11 +8,12 @@ import { Absence } from '@domain/entities/resource-management/absence.entity';
 import { HumanResourceUseCases } from '@application/use-cases/resource-management/human-resource.use-case';
 import { MaterialResourceUseCases } from '@application/use-cases/resource-management/material-resource.use-case';
 import { AbsenceUseCases } from '@application/use-cases/resource-management/absence.use-case';
+import { ResourcesStats } from '../../components/stats/resources-stats/resources-stats';
 
 @Component({
     selector: 'app-dashboard-rm',
     standalone: true,
-    imports: [CommonModule, StatCardComponent, ResourceTypeComponent, ResourcesTable],
+    imports: [CommonModule, ResourceTypeComponent, ResourcesTable, ResourcesStats],
     templateUrl: './dashboard-rm.html',
     styleUrls: ['./dashboard-rm.css'],
 })
@@ -58,7 +58,7 @@ export class DashboardRm implements OnInit {
         const availableCount = allMaterialResources.filter(
             (r) => r.availability_status === 'available'
         ).length;
-        
+
         console.log(availableCount);
 
         return Math.round((availableCount / total) * 100);
