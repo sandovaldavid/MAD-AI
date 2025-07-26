@@ -25,3 +25,21 @@
 .section-title {
     @apply text-xl font-extrabold text-primary-800 dark:text-primary-200;
 }
+
+/* Charts Styles*/
+.chart-container {
+    @apply bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.chart-container:hover {
+    @apply shadow-2xl;
+}
+
+.chart-title {
+    @apply text-xl font-bold text-gray-800 dark:text-white mb-4;
+}
+
+.chart-content {
+    @apply mt-4 flex justify-center items-center h-64;
+}
