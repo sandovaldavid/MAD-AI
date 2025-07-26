@@ -7,7 +7,7 @@ import { MATERIAL_RESOURCE_REPOSITORY } from './resource-management/material-res
 import { MaterialResourceRepositoryImpl } from '../repositories/resource-management/material-resource.repository.impl';
 import { RESOURCE_TYPE_REPOSITORY } from './resource-management/resource-type.tokens';
 import { ResourceTypeRepositoryImpl } from '../repositories/resource-management/resource-type.repository.impl';
-import { RESOURCE_REPOSITORY } from '@domain/repositories/resource-management/resource.repository';
+import { RESOURCE_REPOSITORY } from './resource-management/resource.tokens';
 import { ResourceRepositoryImpl } from '@infrastructure/repositories/resource-management/resource.repository.impl';
 
 // API Services
@@ -29,6 +29,7 @@ import { MaterialResourceUseCases } from '@application/use-cases/resource-manage
 import { ResourceTypeUseCases } from '@application/use-cases/resource-management/resource-type.use-case';
 import { GetResourceStatsUseCase } from '@application/use-cases/resource-management/get-resource-stats.use-case';
 import { GetMaterialResourceStatsUseCase } from '@application/use-cases/resource-management/get-material-resource-stats.use-case';
+import { SearchResourcesUseCase } from '@application/use-cases/resource-management/search-resources.use-case';
 
 export const resourceManagementProviders: Provider[] = [
     // Repositories
@@ -53,4 +54,5 @@ export const resourceManagementProviders: Provider[] = [
     ResourceTypeUseCases,
     GetResourceStatsUseCase,
     GetMaterialResourceStatsUseCase,
+    SearchResourcesUseCase,
 ];
