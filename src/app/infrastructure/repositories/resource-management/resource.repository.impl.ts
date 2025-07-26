@@ -1,16 +1,21 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { IResourceRepository } from '../../../domain/repositories/resource-management/resource.repository';
-import { Resource } from '../../../domain/entities/resource-management/resource.entity';
-import { ResourceApiService } from '../../api/resource-management/resource.api';
-import { PaginatedResponse } from '../../../domain/models/paginated-response.model';
+import { PaginatedResponse } from '@domain/models/paginated-response.model';
+import { Resource } from '@domain/entities/resource-management/resource.entity';
+import { IResourceRepository } from '@domain/repositories/resource-management/resource.repository';
+import { ResourceSearch } from '@domain/models/resource-management/resource-search.model';
+import { ResourceApiService } from '@infrastructure/api/resource-management/resource.api';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ResourceRepositoryImpl implements IResourceRepository {
-    constructor(private apiService: ResourceApiService) {}
+    private readonly apiService = inject(ResourceApiService);
 
     getAll(page: number): Observable<PaginatedResponse<Resource>> {
         return this.apiService.getAll(page);
+    }
+
+    search(criteria: ResourceSearch): Observable<PaginatedResponse<Resource>> {
+        return this.apiService.search(criteria);
     }
 
     getById(id: number): Observable<Resource> {
