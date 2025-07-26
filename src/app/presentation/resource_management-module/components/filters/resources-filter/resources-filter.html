@@ -1,0 +1,31 @@
+<form [formGroup]="filterForm" (ngSubmit)="onSubmit()" class="filter-container">
+    <div class="filter-grid">
+        <div class="filter-item">
+            <label for="name" class="filter-label">Nombre</label>
+            <input id="name" type="text" formControlName="name" class="filter-input" />
+        </div>
+        <div class="filter-item">
+            <label for="category" class="filter-label">Tipo</label>
+            <select id="category" formControlName="resource_type_id" class="filter-select">
+                <option [ngValue]="null">Todas</option>
+                @for (type of resourceTypes(); track type.id) {
+                <option [value]="type.id">{{ type.name }}</option>
+                }
+            </select>
+        </div>
+        <div class="filter-item">
+            <label for="status" class="filter-label">Estado</label>
+            <select id="status" formControlName="availability_status" class="filter-select">
+                <option value="">Todos</option>
+                <option value="available">Disponible</option>
+                <option value="assigned">Asignado</option>
+                <option value="maintenance">Mantenimiento</option>
+                <option value="unavailable">No disponible</option>
+            </select>
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button type="submit" class="btn-primary">Filtrar</button>
+        <button type="button" (click)="resetFilter()" class="btn-secondary">Limpiar</button>
+    </div>
+</form>
