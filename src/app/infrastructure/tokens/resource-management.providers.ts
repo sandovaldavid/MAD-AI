@@ -1,6 +1,9 @@
+import { HumanResourcesByRol } from '@presentation/resource_management-module/components/chart/human-resources-by-rol/human-resources-by-rol';
 import { Provider } from '@angular/core';
 import { ABSENCE_REPOSITORY } from './resource-management/absence.tokens';
 import { AbsenceRepositoryImpl } from '../repositories/resource-management/absence.repository.impl';
+import { HUMAN_RESOURCES_REPOSITORY } from '@infrastructure/tokens/resource-management/human-resources.repository.token';
+import { HumanResourcesRepositoryImpl } from '@infrastructure/repositories/resource-management/human-resources.repository.impl';
 import { HUMAN_RESOURCE_REPOSITORY } from './resource-management/human-resource.tokens';
 import { HumanResourceRepositoryImpl } from '../repositories/resource-management/human-resource.repository.impl';
 import { MATERIAL_RESOURCE_REPOSITORY } from './resource-management/material-resource.tokens';
@@ -13,6 +16,7 @@ import { ResourceRepositoryImpl } from '@infrastructure/repositories/resource-ma
 // API Services
 import { ResourceApiService } from '@infrastructure/api/resource-management/resource.api';
 import { HumanResourceApiService } from '@infrastructure/api/resource-management/human-resource.api';
+import { HumanResourcesApi } from '@infrastructure/api/resource-management/human-resources.api';
 import { MaterialResourceApiService } from '@infrastructure/api/resource-management/material-resource.api';
 import { AbsenceApiService } from '@infrastructure/api/resource-management/absence.api';
 import { ResourceTypeApiService } from '@infrastructure/api/resource-management/resource-type.api';
@@ -40,9 +44,12 @@ export const resourceManagementProviders: Provider[] = [
     { provide: RESOURCE_REPOSITORY, useClass: ResourceRepositoryImpl },
     { provide: RESOURCE_STATS_REPOSITORY, useClass: ResourceStatsRepositoryImpl },
     { provide: MATERIAL_RESOURCE_STATS_REPOSITORY, useClass: MaterialResourceStatsRepositoryImpl },
+    { provide: HUMAN_RESOURCES_REPOSITORY, useClass: HumanResourcesRepositoryImpl },
+    HumanResourcesByRol,
     // API Services
     ResourceApiService,
     HumanResourceApiService,
+    HumanResourcesApi,
     MaterialResourceApiService,
     AbsenceApiService,
     ResourceTypeApiService,
