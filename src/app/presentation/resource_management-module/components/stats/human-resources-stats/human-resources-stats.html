@@ -1,0 +1,33 @@
+<div class="stats-container">
+    @if (stats()) {
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-primary-100 text-primary-600">
+            <fa-icon [icon]="['fas', 'users']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Total Recursos Humanos</p>
+            <p class="stat-value">{{ stats()?.total_human_resources }}</p>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-successful-100 text-successful-600">
+            <fa-icon [icon]="['fas', 'user']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Activos</p>
+            <p class="stat-value">{{ stats()?.active_human_resources }}</p>
+        </div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-icon-wrapper bg-info-100 text-info-600">
+            <fa-icon [icon]="['fas', 'user-check']"></fa-icon>
+        </div>
+        <div class="stat-info">
+            <p class="stat-label">Disponibles</p>
+            <p class="stat-value">{{ stats()?.available_human_resources }}</p>
+        </div>
+    </div>
+    } @else {
+    <p class="loading-text">Cargando estadísticas...</p>
+    }
+</div>
