@@ -363,21 +363,7 @@ npm run lint
 ## Recursos Adicionales
 
 - **Documentación de Angular**: https://angular.dev
-- **Clean Architecture**: Documentos en `docs/architecture/`
+- **Clean Architecture**: Documento en `docs/clean-architecture.md`
 - **Tailwind CSS**: Para estilos y componentes UI
 - **RxJS**: Para manejo de estado reactivo
 - **TypeScript**: Para tipado fuerte
-
-## Preguntas Frecuentes
-
-**Q: ¿Dónde agrego una nueva validación de formulario?**
-A: Si es específica del negocio: `domain/`. Si es de UI: `shared/validators/`
-
-**Q: ¿Cómo integro un nuevo servicio externo?**
-A: Crea la interfaz en `application/ports/`, implementa en `infrastructure/adapters/`
-
-**Q: ¿Dónde defino constantes globales?**
-A: En `shared/constants/` para UI, `core/constants/` para configuración global
-
-**Q: ¿Cómo organizo los tests?**
-A: Junto al archivo que testean, siguiendo la misma estructura de carpetas
