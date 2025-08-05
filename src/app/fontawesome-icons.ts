@@ -19,6 +19,8 @@ import {
     faBoxesStacked,
     faUsers,
     faArrowLeft,
+    faUserCheck,
+    faFileContract,
 } from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
@@ -45,7 +47,9 @@ export class FontAwesomeIconsModule {
             faListUl,
             faBoxesStacked,
             faUsers,
-            faArrowLeft
+            faArrowLeft,
+            faUserCheck,
+            faFileContract
         );
     }
 }
