@@ -1,5 +1,6 @@
 import {
     ApplicationConfig,
+    importProvidersFrom,
     provideBrowserGlobalErrorListeners,
     provideZoneChangeDetection,
 } from '@angular/core';
@@ -18,9 +19,11 @@ import { ROLE_PROVIDERS } from '@infrastructure/tokens/role.providers';
 import { advancedAuthInterceptor } from '@/app/core/interceptors/auth.interceptor';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { resourceManagementProviders } from '@infrastructure/tokens/resource-management.providers';
+import { FontAwesomeIconsModule } from './fontawesome-icons';
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        importProvidersFrom(FontAwesomeIconsModule),
         provideBrowserGlobalErrorListeners(),
         provideZoneChangeDetection({ eventCoalescing: true }),
         provideRouter(routes),
