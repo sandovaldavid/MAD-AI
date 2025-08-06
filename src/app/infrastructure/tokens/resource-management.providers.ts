@@ -1,3 +1,7 @@
+import { ResourceDetailRepositoryImpl } from '../repositories/resource-management/resource-detail.repository.impl';
+import { ResourceTypeCacheRepositoryImpl } from '../repositories/resource-management/resource-type-cache.repository.impl';
+import { RESOURCE_DETAIL_REPOSITORY } from '@domain/repositories/resource-management/resource-detail.repository';
+import { RESOURCE_TYPE_CACHE_REPOSITORY } from '@domain/repositories/resource-management/resource-type-cache.repository';
 import { HumanResourcesByRol } from '@presentation/resource_management-module/components/chart/human-resources-by-rol/human-resources-by-rol';
 import { Provider } from '@angular/core';
 import { ABSENCE_REPOSITORY } from './resource-management/absence.tokens';
@@ -35,6 +39,10 @@ import { GetResourceStatsUseCase } from '@application/use-cases/resource-managem
 import { GetMaterialResourceStatsUseCase } from '@application/use-cases/resource-management/get-material-resource-stats.use-case';
 import { SearchResourcesUseCase } from '@application/use-cases/resource-management/search-resources.use-case';
 
+import { GetResourceDetailUseCase } from '@application/use-cases/resource-management/get-resource-detail.use-case';
+
+import { ResourceTypeCacheUseCase } from '@application/use-cases/resource-management/resource-type-cache.use-case';
+
 export const resourceManagementProviders: Provider[] = [
     // Repositories
     { provide: ABSENCE_REPOSITORY, useClass: AbsenceRepositoryImpl },
@@ -45,6 +53,8 @@ export const resourceManagementProviders: Provider[] = [
     { provide: RESOURCE_STATS_REPOSITORY, useClass: ResourceStatsRepositoryImpl },
     { provide: MATERIAL_RESOURCE_STATS_REPOSITORY, useClass: MaterialResourceStatsRepositoryImpl },
     { provide: HUMAN_RESOURCES_REPOSITORY, useClass: HumanResourcesRepositoryImpl },
+    { provide: RESOURCE_DETAIL_REPOSITORY, useClass: ResourceDetailRepositoryImpl },
+    { provide: RESOURCE_TYPE_CACHE_REPOSITORY, useClass: ResourceTypeCacheRepositoryImpl },
     HumanResourcesByRol,
     // API Services
     ResourceApiService,
@@ -62,4 +72,6 @@ export const resourceManagementProviders: Provider[] = [
     GetResourceStatsUseCase,
     GetMaterialResourceStatsUseCase,
     SearchResourcesUseCase,
+    GetResourceDetailUseCase,
+    ResourceTypeCacheUseCase,
 ];
