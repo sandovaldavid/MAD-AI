@@ -1,12 +1,12 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ResourceStats } from '@domain/models/resource-management/resource-stats.model';
 
 @Component({
     selector: 'app-resources-stats',
     standalone: true,
-    imports: [CommonModule, FontAwesomeIconsModule],
+    imports: [CommonModule, FontAwesomeModule],
     templateUrl: './resources-stats.html',
     styleUrl: './resources-stats.css',
 })
