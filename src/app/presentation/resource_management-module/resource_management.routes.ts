@@ -1,3 +1,4 @@
+import { DetailRm } from './pages/detail-rm/detail-rm';
 import { Routes } from '@angular/router';
 import { DashboardRm } from './pages/dashboard-rm/dashboard-rm';
 import { DashboardMaterialResources } from './pages/dashboard-material-resources/dashboard-material-resources';
@@ -17,5 +18,10 @@ export const RESOURCE_MANAGEMENT_ROUTES: Routes = [
         path: 'human-resources/dashboard',
         component: DashboardHumanResources,
         title: 'Dashboard de Recursos Humanos',
+    },
+    {
+        path: 'detail/:id',
+        component: DetailRm,
+        title: 'Detalle de Recurso',
     },
 ];
