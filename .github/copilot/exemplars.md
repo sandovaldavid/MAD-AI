@@ -6,11 +6,14 @@
 
 ## Introduction
 
-This document identifies high-quality, representative code examples from our Angular codebase. These exemplars demonstrate our coding standards, architectural patterns, and best practices. Use this guide to maintain consistency and quality when implementing new features.
+This document identifies high-quality, representative code examples from our Angular codebase. These exemplars
+demonstrate our coding standards, architectural patterns, and best practices. Use this guide to maintain consistency and
+quality when implementing new features.
 
 ---
 
 ## Table of Contents
+
 - [Presentation Layer](#presentation-layer)
 - [Business Logic Layer](#business-logic-layer)
 - [Data Access Layer](#data-access-layer)
@@ -25,126 +28,111 @@ This document identifies high-quality, representative code examples from our Ang
 
 ## Presentation Layer
 
-### 1. `src/app/app.ts`
-**Description:** Main application component demonstrating Angular's OnPush change detection and modular routing.
-**Pattern:** UI Component Structure
+### 1. UI Button Types
+
+**File:** `src/app/domain/ui/button.ts`
+**Description:** Defines strong TypeScript types for button configuration, supporting extensibility and clear UI
+abstraction boundaries.
 **Key Details:**
-- Uses Angular's `@Component` decorator
-- Implements OnPush change detection for performance
-- Imports RouterOutlet for modular routing
+
+- Uses union types for variants, sizes, and icons
+- Promotes type safety and maintainability
+- Separation of UI configuration from implementation
+  **Code Snippet:**
+
 ```typescript
-@Component({
-  selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-})
-export class App {
-  protected readonly title = 'MAD-AI-NEW';
-}
+// Button configuration types for UI components
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonType = 'button' | 'submit' | 'reset';
+export type IconName =
+    'plus'
+    | 'edit'
+    | 'delete'
+    | 'refresh'
+    | 'save'
+    | 'arrow-left'
+    | 'arrow-right'
+    | 'download'
+    | 'upload'
+    | 'search'
+    | 'x'
+    | 'check'
+    | 'eye'
+    | 'check-circle'
+    | 'x-circle'
+    | 'trash'
+    | 'users';
+export type IconPosition = 'left' | 'right';
 ```
-
-### 2. `src/app/presentation/dashboard/dashboard.ts`
-**Description:** Dashboard component with clear separation of UI logic and template.
-**Pattern:** UI Component Structure
-**Key Details:**
-- Follows Angular component conventions
-- Uses dedicated CSS and HTML files for separation of concerns
-
-### 3. `src/app/presentation/users-module/components/`
-**Description:** Shared user components demonstrating reusable UI patterns.
-**Pattern:** UI Component Structure
-**Key Details:**
-- Organized in a feature-based folder
-- Promotes reusability and modularity
 
 ---
 
 ## Business Logic Layer
 
-### 1. `src/app/core/services/auth.service.ts`
-**Description:** AuthService implementing authentication logic with dependency injection and signals for state management.
-**Pattern:** Service Implementation
+### 1. Auth Service
+
+**File:** `src/app/core/services/auth.service.ts`
+**Description:** Implements authentication logic using Angular signals, dependency injection, and platform checks.
+Demonstrates separation of concerns and robust state management.
 **Key Details:**
-- Uses Angular's DI system
-- Coordinates authentication via use-cases
-- Manages state with signals and computed properties
+
+- Uses Angular signals for reactive state
+- Injects use cases and services for modularity
+- Handles browser/server platform differences
+- Comprehensive comments and documentation
+  **Code Snippet:**
+
 ```typescript
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  // ...inject use-cases and token service...
-  login(request: LoginRequest): Observable<UserInfo> {
-    return this.loginUseCase.execute(request);
-  }
+    // ...existing code...
+    private readonly _isAuthenticated = signal<boolean>(false);
+    private readonly _user = signal<UserInfo | null>(null);
+    private readonly _isLoading = signal<boolean>(false);
+    // ...existing code...
+    readonly isAuthenticated = computed(() => this._isAuthenticated());
+    readonly user = computed(() => this._user());
+    readonly isLoading = computed(() => this._isLoading());
+    // ...existing code...
 }
 ```
-
-### 2. `src/app/core/services/notification.service.ts`
-**Description:** NotificationService handling cross-cutting notification logic.
-**Pattern:** Service Implementation
-**Key Details:**
-- Encapsulates notification logic
-- Promotes separation of concerns
-
-### 3. `src/app/application/use-cases/user/`
-**Description:** User use-cases implementing business workflows.
-**Pattern:** Workflow Orchestration
-**Key Details:**
-- Organized by feature
-- Implements single responsibility principle
 
 ---
 
 ## Data Access Layer
 
-### 1. `src/app/domain/entities/user.entity.ts`
-**Description:** UserEntity class encapsulating user business logic and validation.
-**Pattern:** Domain Model
+### 1. User Entity
+
+**File:** `src/app/domain/entities/user.entity.ts`
+**Description:** Represents a system user with clear property definitions, type safety, and business logic
+encapsulation. Uses enums and constructor pattern for flexibility.
 **Key Details:**
-- Implements core business logic
-- Uses strong typing and enums
+
+- Strong typing and use of enums
+- Constructor for flexible instantiation
+- Comprehensive comments
+  **Code Snippet:**
+
 ```typescript
+/**
+ * User entity representing a system user
+ * Contains core business logic and validation related to users
+ */
 export class UserEntity {
-  id: number;
-  username: string;
-  email: string;
-  // ...other properties...
-  constructor(params: { username: string; email: string; /* ... */ }) {
-    // ...validation and assignment...
-  }
-}
-```
+    id: number;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    status: UserStatus;
+    isActive: boolean;
 
-### 2. `src/app/domain/repositories/user.repository.ts`
-**Description:** Abstract repository interface defining contracts for user data access.
-**Pattern:** Repository Interface
-**Key Details:**
-- Follows Clean Architecture principles
-- Promotes dependency inversion
-```typescript
-export abstract class UserRepository {
-  abstract getUsers(): Observable<UserEntity[]>;
-  abstract getUserById(id: number): Observable<UserEntity>;
-  // ...other methods...
-}
-```
-
-### 3. `src/app/infrastructure/repositories/user.repository.impl.ts`
-**Description:** Concrete repository implementation using API client and mapping DTOs to domain entities.
-**Pattern:** Repository Implementation
-**Key Details:**
-- Implements domain repository interface
-- Uses Angular DI and RxJS for async data handling
-```typescript
-@Injectable({ providedIn: 'root' })
-export class UserRepositoryImpl extends UserRepository {
-  private readonly userApi = inject(UserApiClient);
-  getUsers(): Observable<UserEntity[]> {
-    return this.userApi.getUsers().pipe(
-      map(users => users.map(user => new UserEntity({ ...user })));
-    );
-  }
+    // ...existing code...
+    constructor(params: { username: string; email: string; firstName: string; lastName: string; /* ... */ }) {
+        // ...existing code...
+    }
 }
 ```
 
@@ -152,64 +140,73 @@ export class UserRepositoryImpl extends UserRepository {
 
 ## Cross-Cutting Concerns
 
-### 1. `src/app/core/guards/auth.guard.ts`
-**Description:** AuthGuard implementing route protection based on authentication state.
-**Pattern:** Authentication/Authorization
-**Key Details:**
-- Uses Angular's guard interface
-- Integrates with AuthService for state checks
+### 1. Auth Interceptor
 
-### 2. `src/app/core/interceptors/auth.interceptor.ts`
-**Description:** AuthInterceptor handling authentication tokens in HTTP requests.
-**Pattern:** Error Handling & Authentication
+**File:** `src/app/core/interceptors/auth.interceptor.ts`
+**Description:** Implements authentication token handling for HTTP requests. Cleanly separates routes that require/skip
+token, uses DI, and robust error handling.
 **Key Details:**
-- Implements Angular HTTP interceptor
-- Adds authentication headers to requests
 
-### 3. `src/app/core/services/notification.service.ts`
-**Description:** NotificationService for cross-cutting notification logic.
-**Pattern:** Logging & Notification
-**Key Details:**
-- Centralizes notification logic
-- Promotes maintainability
+- Dependency injection for services
+- Route filtering for token logic
+- Error handling and token management
+- Well-commented code
+  **Code Snippet:**
+
+```typescript
+export const advancedAuthInterceptor: HttpInterceptorFn = (
+    req: HttpRequest<unknown>,
+    next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> => {
+    // ...existing code...
+    const token = tokenService.getAccessToken();
+    if (!token) return next(req);
+    const authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
+    return next(authReq).pipe(
+        // ...existing code...
+    );
+};
+```
 
 ---
 
 ## Consistency Patterns
-- Feature-based folder organization (domain, application, infrastructure, presentation, shared)
-- Use of abstract interfaces for repositories
-- Dependency injection for services and repositories
-- Separation of concerns between layers
-- Strong typing and use of enums for domain models
+
+- Use of TypeScript strict types and enums throughout the codebase
+- Angular dependency injection and signals for state management
+- Feature-based folder structure and path aliases
+- Comprehensive comments and documentation in core files
 
 ---
 
 ## Architecture Observations
-- Clean Architecture principles: domain-driven design, dependency inversion, separation of concerns
-- Modular organization by feature and layer
-- Use of RxJS for reactive programming and state management
-- Angular's DI and OnPush change detection for performance
+
+- Clean Architecture principles: separation of concerns, modularity, and testability
+- Cross-cutting concerns handled via interceptors and services
+- UI abstractions separated from business logic and data access
 
 ---
 
 ## Implementation Conventions
-- PascalCase for classes, camelCase for methods/variables
-- Kebab-case for file names
-- Dedicated folders for components, services, models, repositories
-- Use of Angular decorators and DI tokens
-- Comprehensive use of TypeScript types and interfaces
+
+- PascalCase for classes/types, camelCase for methods/variables
+- Union types for configuration options
+- Constructor patterns for entities
+- Injectable services and interceptors for modularity
 
 ---
 
 ## Anti-patterns to Avoid
-- Tight coupling between layers
-- Lack of error handling in service and repository implementations
-- Missing unit tests for core business logic
-- Overly complex components without separation of concerns
+
+- Mixing UI logic with business/data access logic
+- Lack of comments/documentation in core files
+- Hardcoded values or magic strings in services/interceptors
+- Ignoring platform/environment differences
 
 ---
 
 ## Conclusion
 
-These exemplars represent our standard approaches to component structure, business logic, data access, and cross-cutting concerns. Follow these patterns to maintain code quality and consistency. Regularly review and update this document as the codebase evolves.
+These exemplars represent our standard approaches for each architecture layer. Follow these patterns to maintain code
+quality, consistency, and extensibility. Update this document as new best practices emerge or the codebase evolves.
 
