@@ -2,7 +2,9 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
 import { Chart, ChartType, registerables } from 'chart.js';
-import { GetHumanResourcesStatsUseCase } from '@application/use-cases/resource-management/get-human-resources-stats.use-case';
+import {
+    GetHumanResourcesStatsUseCase,
+} from '@application/use-cases/resource-management/get-human-resources-stats.use-case';
 import { HumanResourcesStats } from '@domain/models/resource-management/human-resources-stats.model';
 
 Chart.register(...registerables);
