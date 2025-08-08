@@ -1,4 +1,4 @@
-# Project Architecture Blueprint
+# Project Architecture Blueprint: MAD-AI (Angular, Clean Architecture)
 
 **Generated:** August 8, 2025
 
@@ -7,185 +7,250 @@
 ## 1. Architecture Detection and Analysis
 
 **Technology Stack:**
-- Angular 20 (TypeScript)
-- RxJS
-- Express (SSR)
-- TailwindCSS
-- Jasmine/Karma (testing)
+
+- Angular (TypeScript, Angular CLI, SSR)
+- RESTful APIs, CSS, FontAwesome
 
 **Architectural Pattern:**
-- Clean Architecture (layered separation: domain, application, infrastructure, presentation) and a layer core
+
+- Clean Architecture (layered, dependency inversion, separation of concerns)
 
 ---
 
 ## 2. Architectural Overview
-- Clear separation of concerns: domain logic, use cases, infrastructure, and UI
-- Dependency inversion: domain defines interfaces, infrastructure implements them
-- Modularity: features organized by domain and use-case
-- Extensible boundaries: new features can be added with minimal impact
+
+- **Guiding Principles:** Separation of concerns, testability, extensibility
+- **Boundaries:** Enforced via folder structure and interfaces
+- **Hybrid Patterns:** Clean Architecture + Angular conventions
 
 ---
 
 ## 3. Architecture Visualization
-- **High-level diagram:**
-  - Presentation (Angular components/routes)
-  - Application (use-cases)
-  - Domain (entities, repositories)
-  - Infrastructure (API clients, repository implementations)
-- **Component interaction:**
-  - Presentation → Application → Domain → Infrastructure
-- **Data flow:**
-  - UI triggers use-case → domain logic → infrastructure API → domain entity → UI update
+
+**High-Level Layer Diagram:**
+
+```
+Presentation Layer (src/app/presentation)
+  ↓
+Application Layer (src/app/application)
+  ↓
+Domain Layer (src/app/domain)
+  ↓
+Infrastructure Layer (src/app/infrastructure)
+```
+
+**Component Interaction:**
+
+- Services in `core` mediate between layers
+- Dependency injection for repository implementations
+
+**Data Flow:**
+
+- UI → Presentation → Application (use-case) → Domain (repo interface) → Infrastructure (repo impl/API) → Data source
 
 ---
 
 ## 4. Core Architectural Components
-### Example: User
-- **Purpose:** Encapsulates user business logic and validation
-- **Internal Structure:** `UserEntity` class, enums, DTOs
-- **Interaction:** Repository interface, implemented by API client
-- **Evolution:** Extend entity, add new repository methods, update DTOs
+
+### Domain Layer
+
+- **Purpose:** Business logic, contracts, entities
+- **Structure:** `entities/`, `enums/`, `models/`, `repositories/`, `ui/`
+- **Patterns:** Repository interfaces, value objects, domain events
+
+### Application Layer
+
+- **Purpose:** Orchestrates use cases
+- **Structure:** `use-cases/` by feature
+- **Patterns:** Use-case handlers, service orchestration
+
+### Infrastructure Layer
+
+- **Purpose:** Data access, API integration
+- **Structure:** `api/`, `dto/`, `repositories/`, `tokens/`
+- **Patterns:** Repository implementations, DTO mapping, API services
+
+### Presentation Layer
+
+- **Purpose:** UI, routing, user interaction
+- **Structure:** Feature folders (auth, dashboard, etc.)
+- **Patterns:** Angular components, routing modules
+
+### Core Layer
+
+- **Purpose:** Cross-cutting concerns
+- **Structure:** `guards/`, `interceptors/`, `services/`
+- **Patterns:** Auth guards, interceptors, shared services
+
+### Shared Layer
+
+- **Purpose:** Reusable UI components
+- **Structure:** `components/`
+- **Patterns:** Component library, design system
 
 ---
 
 ## 5. Architectural Layers and Dependencies
-- **Layers:** Presentation, Application, Domain, Infrastructure
-- **Dependency Rules:** Outer layers depend on abstractions, not implementations
-- **Abstraction Mechanisms:** Repository interfaces, DI tokens
-- **Violations:** None detected
-- **DI Patterns:** Angular's `@Injectable`, constructor injection
+
+- **Layer Map:** Presentation → Application → Domain → Infrastructure
+- **Dependency Rules:** No direct dependency from presentation to infrastructure; domain is independent of
+  infrastructure
+- **Abstraction Mechanisms:** Repository interfaces, service tokens
+- **Dependency Injection:** Angular DI for service/repository implementations
 
 ---
 
 ## 6. Data Architecture
-- **Domain Model:** Entities (User, Role, Notification)
-- **Relationships:** Entities reference enums, DTOs, and other entities
-- **Data Access:** Repositories, API clients
-- **Transformation:** Mapping API DTOs to domain entities
-- **Caching:** Not detected
-- **Validation:** Entity constructors, service methods
+
+- **Domain Model:** Entities, enums, models organized by feature
+- **Entity Relationships:** Aggregates in `entities/`, relationships via models
+- **Data Access:** Repositories, DTOs, API services
+- **Transformation:** DTOs map to domain models
+- **Caching/Validation:** Service/interceptor level
 
 ---
 
 ## 7. Cross-Cutting Concerns Implementation
-- **Authentication:** `AuthService`, guards, interceptors
-- **Error Handling:** RxJS operators, Angular error boundaries
-- **Logging/Monitoring:** Not detected (recommend integration)
-- **Validation:** DTOs, entity constructors
-- **Configuration:** Environment files, DI tokens
+
+- **Authentication & Authorization:** `auth.guard.ts`, `auth.service.ts`, token management
+- **Error Handling & Resilience:** Interceptors, service-level error handling
+- **Logging & Monitoring:** Extendable via interceptors/services
+- **Validation:** Domain models, service-level validation
+- **Configuration Management:** Environment files, config services
 
 ---
 
 ## 8. Service Communication Patterns
-- **Boundaries:** API clients per domain
-- **Protocols:** HTTP (REST)
-- **Sync/Async:** Observable streams (RxJS)
-- **Versioning:** Not detected
-- **Discovery:** Static endpoints
-- **Resilience:** Error handling via RxJS
+
+- **Service Boundaries:** API services in `infrastructure/api`
+- **Protocols:** HTTP/REST (Angular HttpClient)
+- **Sync/Async:** Observable-based async communication
+- **API Versioning:** Managed via API service structure
 
 ---
 
 ## 9. Technology-Specific Architectural Patterns
-### Angular
-- **Modules:** Feature-based organization
-- **Components:** Reusable, OnPush change detection
-- **Services:** DI, singleton pattern
-- **Routing:** Route modules, guards
-- **State Management:** Signals, computed properties
-- **Guards:** Auth guard for route protection
+
+### Angular Patterns
+
+- Module organization, component hierarchy, DI, route guards, reactive programming, state management via services
 
 ---
 
 ## 10. Implementation Patterns
-- **Interface Design:** Abstract repositories
-- **Service Implementation:** Injectable services, use-case orchestration
-- **Repository Implementation:** API mapping, DTO transformation
-- **Controller/API:** Route modules, Angular components
-- **Domain Model:** Entity classes, enums
+
+- **Interface Design:** Segregated interfaces, abstraction via repositories
+- **Service Implementation:** Singleton services, DI, error handling
+- **Repository Implementation:** API-backed, transaction management via service logic
+- **Controller/API:** Angular components as controllers, API services for backend
+- **Domain Model:** Entities, value objects, domain events
 
 ---
 
 ## 11. Testing Architecture
-- **Strategies:** Unit (Jasmine), integration (Karma)
-- **Boundaries:** Test doubles for repositories/services
-- **Test Data:** DTOs, mock entities
-- **Tools:** Jasmine, Karma
+
+- **Testing Strategies:** Unit tests (spec files), integration tests for services
+- **Test Doubles:** Mock services/repositories
+- **Test Data:** Factories, mock data in test files
+- **Tools:** Jasmine, Karma (default Angular)
 
 ---
 
 ## 12. Deployment Architecture
-- **Topology:** SSR with Express, Angular build
-- **Environment:** `environment.ts`, `environment.prod.ts`
-- **Runtime Dependencies:** DI tokens, environment configs
-- **Containerization:** Not detected
-- **Cloud Integration:** Not detected
+
+- **Topology:** SSR, environment configs, assets
+- **Environment Adaptation:** `environment.ts`, `environment.prod.ts`
+- **Containerization:** Extendable (Docker)
+- **Cloud Integration:** Extendable
 
 ---
 
 ## 13. Extension and Evolution Patterns
-- **Feature Addition:** Add new use-case, entity, repository, and API client
-- **Modification:** Update interfaces, extend entities, maintain backward compatibility
-- **Integration:** Add new API client, implement repository interface, use DI tokens
+
+- **Feature Addition:** Add use-case, domain entity, API service, UI component
+- **Modification:** Update use-case, extend domain model, maintain backward compatibility
+- **Integration:** Add API service, implement adapter, use anti-corruption layer
 
 ---
 
 ## 14. Architectural Pattern Examples
-### Layer Separation
+
+**Layer Separation Example:**
+
 ```typescript
-// Domain repository interface
-export abstract class UserRepository {
-  abstract getUsers(): Observable<UserEntity[]>;
+// domain/repositories/auth.repository.ts
+export interface AuthRepository {
+  login(username: string, password: string): Observable<User>;
 }
-// Infrastructure implementation
-@Injectable({ providedIn: 'root' })
-export class UserRepositoryImpl extends UserRepository {
-  // ...implementation...
+
+// infrastructure/repositories/auth.repository.impl.ts
+@Injectable()
+export class AuthRepositoryImpl implements AuthRepository {
+  constructor(private api: AuthApi) {}
+  login(username: string, password: string): Observable<User> {
+    return this.api.login(username, password);
+  }
 }
 ```
-### Component Communication
+
+**Component Communication Example:**
+
 ```typescript
-// Service invocation in component
-this.authService.login(credentials).subscribe(...);
+// core/services/notification.service.ts
+@Injectable()
+export class NotificationService {
+  private subject = new Subject<Notification>();
+  publish(notification: Notification) { this.subject.next(notification); }
+  get notifications$() { return this.subject.asObservable(); }
+}
 ```
-### Extension Point
+
+**Extension Point Example:**
+
 ```typescript
-// DI token for repository
-export const USER_REPOSITORY = new InjectionToken<UserRepository>('UserRepository');
+// shared/components/button.ts
+@Component({ selector: 'app-button', ... })
+export class ButtonComponent { /* ... */ }
 ```
 
 ---
 
 ## 15. Architectural Decision Records
-- **Style:** Clean Architecture chosen for maintainability and testability
-- **Technology:** Angular 20 for modern features, RxJS for reactive programming
-- **Implementation:** DI and abstract interfaces for extensibility
-- **Context:** Need for modular, scalable, testable codebase
-- **Consequences:** Easy to extend, test, and maintain; requires discipline in layer separation
+
+- **Style Decision:** Chose Clean Architecture for maintainability and testability
+- **Technology Selection:** Angular for UI, REST APIs for backend
+- **Implementation Approach:** DI, repository pattern, SSR for performance
+
+**Decision Record Template:**
+
+- Context: Need for scalable, maintainable architecture
+- Factors: Testability, separation of concerns, Angular best practices
+- Consequences: Improved maintainability, easier onboarding, clear extension points
+- Future: Update blueprint as architecture evolves
 
 ---
 
 ## 16. Architecture Governance
-- **Consistency:** Enforced by folder structure, interfaces, DI
-- **Automated Checks:** TypeScript, Angular CLI, linting
-- **Review:** Code reviews, documentation in `docs/`
-- **Documentation:** Blueprint, module READMEs
+
+- **Consistency:** Enforced via folder structure, interfaces, Angular CLI
+- **Automated Checks:** Linting, unit tests
+- **Review Processes:** Code reviews, documentation in `/docs`
+- **Documentation:** Markdown docs in `/docs`
 
 ---
 
 ## 17. Blueprint for New Development
+
 - **Workflow:**
-  1. Define domain entity and repository interface
-  2. Implement use-case in application layer
-  3. Create infrastructure implementation (API client)
-  4. Add presentation component/page
-  5. Write tests
-- **Templates:** Abstract classes, DI tokens, Angular components
-- **Pitfalls:** Layer violations, tight coupling, missing tests
-- **Performance:** Use OnPush change detection, optimize API calls
-- **Testing:** Unit and integration tests for all layers
+    - Start with domain model, add use-case, implement API, create UI component
+- **Templates:**
+    - Use existing interfaces, service patterns, component structure
+- **Pitfalls:**
+    - Avoid direct dependencies between layers, maintain test coverage, document changes
 
 ---
 
-**Keep this blueprint updated as the architecture evolves.**
+**Generated:** August 8, 2025
+**Recommendation:** Update this blueprint as architecture evolves, especially when adding new features or refactoring
+core components.
 
