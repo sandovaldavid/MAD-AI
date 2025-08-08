@@ -38,7 +38,7 @@ Todas las rutas del módulo de usuarios utilizan lazy loading para optimizar el 
 {
     path: 'users',
     loadChildren: () =>
-        import('@presentation/users-module/users-module.routes').then((m) => m.USER_MODULE_ROUTES),
+        import('@presentation/users/users.routes').then((m) => m.USER_MODULE_ROUTES),
     title: 'Gestión de Usuarios',
 }
 ```

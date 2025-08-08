@@ -9,7 +9,7 @@ export const securedRoutes: Routes = [
     {
         path: 'users',
         loadChildren: () =>
-            import('@presentation/users-module/users-module.routes').then(
+            import('@presentation/users/users-module.routes').then(
                 (m) => m.USER_MODULE_ROUTES
             ),
         title: 'Gestión de Usuarios',
@@ -22,7 +22,7 @@ export const securedRoutes: Routes = [
     {
         path: 'resource-management',
         loadChildren: () =>
-            import('@presentation/resource_management-module/resource_management.routes').then(
+            import('@presentation/resource_management/resource_management.routes').then(
                 (m) => m.RESOURCE_MANAGEMENT_ROUTES
             ),
         title: 'Gestión de Recursos',

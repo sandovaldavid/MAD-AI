@@ -2,7 +2,7 @@ import { ResourceDetailRepositoryImpl } from '../repositories/resource-managemen
 import { ResourceTypeCacheRepositoryImpl } from '../repositories/resource-management/resource-type-cache.repository.impl';
 import { RESOURCE_DETAIL_REPOSITORY } from '@domain/repositories/resource-management/resource-detail.repository';
 import { RESOURCE_TYPE_CACHE_REPOSITORY } from '@domain/repositories/resource-management/resource-type-cache.repository';
-import { HumanResourcesByRol } from '@presentation/resource_management-module/components/chart/human-resources-by-rol/human-resources-by-rol';
+import { HumanResourcesByRol } from '@presentation/resource_management/components/chart/human-resources-by-rol/human-resources-by-rol';
 import { Provider } from '@angular/core';
 import { ABSENCE_REPOSITORY } from './resource-management/absence.tokens';
 import { AbsenceRepositoryImpl } from '../repositories/resource-management/absence.repository.impl';
