@@ -18,3 +18,5 @@ coverage/
 
 # Angular
 .angular/
+package.json
+package-lock.json
