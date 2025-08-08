@@ -14,4 +14,9 @@ export const securedRoutes: Routes = [
             ),
         title: 'Gestión de Usuarios',
     },
+    {
+        path: 'profile',
+        loadChildren: () => import('@presentation/profile/profile.routes').then((m) => m.default),
+        title: 'Perfil',
+    },
 ];

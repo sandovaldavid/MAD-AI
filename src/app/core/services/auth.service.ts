@@ -141,4 +141,15 @@ export class AuthService {
         this._user.set(null);
         this.tokenService.clearTokens();
     }
+
+    updateUserData(updatedUserInfo: Partial<UserInfo>): void {
+        const currentUser = this._user();
+        if (currentUser) {
+            const newUser = { ...currentUser, ...updatedUserInfo };
+            this._user.set(newUser);
+
+            // Actualizar también en TokenService
+            this.tokenService.saveUserData(newUser);
+        }
+    }
 }

@@ -4,7 +4,7 @@ Estoy desarrollando una aplicación web y deseo seguir **buenas prácticas de es
 
 ## 🎨 Paleta de colores personalizada
 
-Toda la aplicación debe usar exclusivamente los colores definidos en el archivo `/styles/colos.css` y no utilizar colores directos en el HTML o CSS. Los colores deben referenciarse mediante clases extendidas de Tailwind.
+Toda la aplicación debe usar exclusivamente los colores definidos en el archivo `/styles/colors.css` y no utilizar colores directos en el HTML o CSS. Los colores deben referenciarse mediante clases extendidas de Tailwind.
 
 ## 🎯 Estilos con clases reutilizables
 
