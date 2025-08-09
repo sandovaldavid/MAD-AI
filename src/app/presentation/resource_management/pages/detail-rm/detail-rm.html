@@ -1,210 +1,211 @@
 <div class="p-6 max-w-4xl mx-auto">
-    <ng-container *ngIf="loading(); else loaded">
+    @if (loading()) {
         <div class="text-center py-8 text-lg text-primary-500 font-semibold">
             Cargando recurso...
         </div>
-    </ng-container>
-    <ng-template #loaded>
-        <ng-container *ngIf="error(); else content">
-            <div class="text-center text-red-500 font-semibold">{{ error() }}</div>
-        </ng-container>
-        <ng-template #content>
-            <div *ngIf="resourceDetail() as detail">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">{{ detail.name }}</h2>
-                        <span class="badge" [ngClass]="detail.status_display.toLowerCase()">{{
-                                detail.status_display
-                            }}</span>
-                    </div>
-                    <p class="card-description">{{ detail.description }}</p>
-
-                    <div class="card-grid">
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'map-marker-alt']" />
-                            <span>Ubicación:</span>
-                            {{ detail.location }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'info-circle']" />
-                            <span>Disponibilidad:</span> {{ detail.availability_status }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'tasks']" />
-                            <span>Carga:</span>
-                            {{ detail.workload_percentage }}%
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'power-off']" />
-                            <span>Activo:</span>
-                            {{ detail.is_active ? 'Sí' : 'No' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-alt']" />
-                            <span>Adquisición:</span>
-                            {{ detail.acquisition_date | date : 'shortDate' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'tag']" />
-                            <span>Tipo:</span>
-                            {{ detail.resource_type_name }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'layer-group']" />
-                            <span>Categoría:</span>
-                            {{ detail.resource_category }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'check-circle']" />
-                            <span>Disponible:</span>
-                            {{ detail.is_available ? 'Sí' : 'No' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'battery-half']" />
-                            <span>Capacidad Restante:</span> {{ detail.remaining_capacity }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'history']" />
-                            <span>Días desde Adquisición:</span> {{ detail.days_since_acquisition }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'user-clock']" />
-                            <span>Ausencias Activas:</span> {{ detail.active_absences_count }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-times']" />
-                            <span>Ausencias Recientes:</span> {{ detail.recent_absences }}
-                        </div>
-                    </div>
+    }
+    @if (!loading() && error()) {
+        <div class="text-center text-red-500 font-semibold">{{ error() }}</div>
+    }
+    @if (!loading() && !error() && resourceDetail()) {
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">{{ resourceDetail()?.name }}</h2>
+                <span class="badge"
+                      [class]="resourceDetail()?.status_display?.toLowerCase()">{{ resourceDetail()?.status_display }}</span>
+            </div>
+            <p class="card-description">{{ resourceDetail()?.description }}</p>
+            <div class="card-grid">
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'map-marker-alt']" />
+                    <span>Ubicación:</span>
+                    {{ resourceDetail()?.location }}
                 </div>
-
-                <div
-                    *ngIf="detail.resource_category === 'HUMANO' && humanDetail() as h"
-                    class="card">
-                    <div class="card-header">
-                        <h3 class="card-subtitle">Detalles de Recurso Humano</h3>
-                    </div>
-                    <div class="card-grid">
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'id-badge']" />
-                            <span>Posición:</span>
-                            {{ h.position }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'user-tie']" />
-                            <span>Rol:</span>
-                            {{ h.role_display }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'cogs']" />
-                            <span>Skills:</span> {{ h.skills }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'briefcase']" />
-                            <span>Experiencia:</span>
-                            {{ h.experience_years }} años
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'certificate']" />
-                            <span>Certificación:</span>
-                            {{ h.certification_level }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'file-contract']" />
-                            <span>Tipo Empleo:</span>
-                            {{ h.employment_type_display }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'dollar-sign']" />
-                            <span>Tarifa/Hora:</span>
-                            {{ h.hourly_rate | currency }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'money-bill-wave']" />
-                            <span>Costo Mensual:</span> {{ h.monthly_cost | currency }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'user']" />
-                            <span>Usuario:</span>
-                            {{ h.user_full_name }} ({{ h.user_email }})
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'info-circle']" />
+                    <span>Disponibilidad:</span>
+                    {{ resourceDetail()?.availability_status }}
                 </div>
-
-                <div
-                    *ngIf="detail.resource_category !== 'HUMANO' && materialDetail() as m"
-                    class="card">
-                    <div class="card-header">
-                        <h3 class="card-subtitle">Detalles de Recurso Material</h3>
-                    </div>
-                    <div class="card-grid">
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'box-open']" />
-                            <span>Consumible:</span>
-                            {{ m.is_consumable ? 'Sí' : 'No' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'ruler']" />
-                            <span>Unidad Medida:</span>
-                            {{ m.unit_of_measure_display }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'boxes']" />
-                            <span>Cantidad:</span>
-                            {{ m.quantity_available }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'archive']" />
-                            <span>Stock Mínimo:</span>
-                            {{ m.minimum_stock }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'truck']" />
-                            <span>Proveedor:</span>
-                            {{ m.supplier }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-check']" />
-                            <span>Fecha Compra:</span> {{ m.purchase_date | date : 'shortDate' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-times']" />
-                            <span>Garantía:</span>
-                            {{ m.warranty_expiry | date : 'shortDate' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'barcode']" />
-                            <span>N° Serie:</span>
-                            {{ m.serial_number }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'coins']" />
-                            <span>Valor Total:</span>
-                            {{ m.total_value | currency }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'chart-pie']" />
-                            <span>Estado Stock:</span>
-                            {{ m.stock_status }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'exclamation-triangle']" />
-                            <span>Bajo Stock:</span> {{ m.is_low_stock ? 'Sí' : 'No' }}
-                        </div>
-                        <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'dollar-sign']" />
-                            <span>Costo Unitario:</span> {{ m.unit_cost | currency }}
-                        </div>
-                    </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'tasks']" />
+                    <span>Carga:</span>
+                    {{ resourceDetail()?.workload_percentage }}%
                 </div>
-
-                <div class="mt-6 text-center">
-                    <button class="btn-secondary" (click)="navigateTo('/resource-management/dashboard')">
-                        <fa-icon [icon]="['fas', 'arrow-left']" class="mr-2" />
-                        Volver
-                    </button>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'power-off']" />
+                    <span>Activo:</span>
+                    {{ resourceDetail()?.is_active ? 'Sí' : 'No' }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'calendar-alt']" />
+                    <span>Adquisición:</span>
+                    {{ resourceDetail()?.acquisition_date | date : 'shortDate' }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'tag']" />
+                    <span>Tipo:</span>
+                    {{ resourceDetail()?.resource_type_name }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'layer-group']" />
+                    <span>Categoría:</span>
+                    {{ resourceDetail()?.resource_category }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'check-circle']" />
+                    <span>Disponible:</span>
+                    {{ resourceDetail()?.is_available ? 'Sí' : 'No' }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'battery-half']" />
+                    <span>Capacidad Restante:</span>
+                    {{ resourceDetail()?.remaining_capacity }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'history']" />
+                    <span>Días desde Adquisición:</span>
+                    {{ resourceDetail()?.days_since_acquisition }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'user-clock']" />
+                    <span>Ausencias Activas:</span>
+                    {{ resourceDetail()?.active_absences_count }}
+                </div>
+                <div class="detail-item">
+                    <fa-icon [icon]="['fas', 'calendar-times']" />
+                    <span>Ausencias Recientes:</span>
+                    {{ resourceDetail()?.recent_absences }}
                 </div>
             </div>
-        </ng-template>
-    </ng-template>
+        </div>
+        @if (resourceDetail()?.resource_category === 'HUMANO' && humanDetail()) {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-subtitle">Detalles de Recurso Humano</h3>
+                </div>
+                <div class="card-grid">
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'id-badge']" />
+                        <span>Posición:</span>
+                        {{ humanDetail()?.position }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'user-tie']" />
+                        <span>Rol:</span>
+                        {{ humanDetail()?.role_display }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'cogs']" />
+                        <span>Skills:</span>
+                        {{ humanDetail()?.skills }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'briefcase']" />
+                        <span>Experiencia:</span>
+                        {{ humanDetail()?.experience_years + ' años' }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'certificate']" />
+                        <span>Certificación:</span>
+                        {{ humanDetail()?.certification_level }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'file-contract']" />
+                        <span>Tipo Empleo:</span>
+                        {{ humanDetail()?.employment_type_display }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'dollar-sign']" />
+                        <span>Tarifa/Hora:</span>
+                        {{ humanDetail()?.hourly_rate | currency }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'money-bill-wave']" />
+                        <span>Costo Mensual:</span>
+                        {{ humanDetail()?.monthly_cost | currency }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'user']" />
+                        <span>Usuario:</span>
+                        {{ humanDetail()?.user_full_name + ' (' + humanDetail()?.user_email + ')' }}
+                    </div>
+                </div>
+            </div>
+        }
+        @if (resourceDetail()?.resource_category !== 'HUMANO' && materialDetail()) {
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-subtitle">Detalles de Recurso Material</h3>
+                </div>
+                <div class="card-grid">
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'box-open']" />
+                        <span>Consumible:</span>
+                        {{ materialDetail()?.is_consumable ? 'Sí' : 'No' }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'ruler']" />
+                        <span>Unidad Medida:</span>
+                        {{ materialDetail()?.unit_of_measure_display }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'boxes']" />
+                        <span>Cantidad:</span>
+                        {{ materialDetail()?.quantity_available }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'archive']" />
+                        <span>Stock Mínimo:</span>
+                        {{ materialDetail()?.minimum_stock }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'truck']" />
+                        <span>Proveedor:</span>
+                        {{ materialDetail()?.supplier }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'calendar-check']" />
+                        <span>Fecha Compra:</span>
+                        {{ materialDetail()?.purchase_date | date : 'shortDate' }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'calendar-times']" />
+                        <span>Garantía:</span>
+                        {{ materialDetail()?.warranty_expiry | date : 'shortDate' }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'barcode']" />
+                        <span>N° Serie:</span>
+                        {{ materialDetail()?.serial_number }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'coins']" />
+                        <span>Valor Total:</span>
+                        {{ materialDetail()?.total_value | currency }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'chart-pie']" />
+                        <span>Estado Stock:</span>
+                        {{ materialDetail()?.stock_status }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'exclamation-triangle']" />
+                        <span>Bajo Stock:</span>
+                        {{ materialDetail()?.is_low_stock ? 'Sí' : 'No' }}
+                    </div>
+                    <div class="detail-item">
+                        <fa-icon [icon]="['fas', 'dollar-sign']" />
+                        <span>Costo Unitario:</span>
+                        {{ materialDetail()?.unit_cost | currency }}
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="mt-6 text-center">
+            <button class="btn-secondary" (click)="navigateTo('/resource-management/dashboard')">
+                <fa-icon [icon]="['fas', 'arrow-left']" class="mr-2" />
+                Volver
+            </button>
+        </div>
+    }
 </div>
