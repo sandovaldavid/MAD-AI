@@ -46,6 +46,7 @@ import {
     faCoins,
     faExclamationTriangle,
     faPlus,
+    faEye,
 } from '@fortawesome/free-solid-svg-icons';
 
 @NgModule({
@@ -99,7 +100,8 @@ export class FontAwesomeIconsModule {
             faBarcode,
             faCoins,
             faExclamationTriangle,
-            faPlus
+            faPlus,
+            faEye
         );
     }
 }
