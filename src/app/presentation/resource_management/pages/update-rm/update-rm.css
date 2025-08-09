@@ -1,0 +1,13 @@
+@reference '../../../../../styles.css';
+
+.subtitle {
+    @apply text-lg font-semibold mb-6 border-b pb-2 flex items-center gap-2 text-neutral-900 dark:text-neutral-100;
+}
+
+.label {
+    @apply font-medium mb-1 flex items-center gap-2 text-neutral-900 dark:text-neutral-100;
+}
+
+.label-icon {
+    @apply text-primary-500 dark:text-primary-200;
+}
