@@ -55,4 +55,8 @@ export class ResourcesTable implements OnInit {
     viewDetail(id: number): void {
         this.router.navigate([`/resource-management/detail/${id}`]);
     }
+
+    editResource(id: number): void {
+        this.router.navigate([`/resource-management/update/${id}`]);
+    }
 }
