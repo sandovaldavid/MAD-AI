@@ -1,6 +1,8 @@
 # Implementacion del componente Detalle Recurso (detail-rm)
 
-Para esta implementacion, tendremos en consideracion 3 endpoind (se detallan mas abajo). necesitamos que cuando ingresemos mediante el id del recuso, para ver su detalle, debemos verificar si es un recurso material o humano para que pueda mostrar los detalles especificos de cada uno.
+Para esta implementacion, tendremos en consideracion 3 endpoind (se detallan mas abajo). necesitamos que cuando
+ingresemos mediante el id del recuso, para ver su detalle, debemos verificar si es un recurso material o humano para que
+pueda mostrar los detalles especificos de cada uno.
 
 Para hacer esa validacion de tipo de recurso de debe de llamar al endpoint de tipo de recuso:
 
@@ -65,8 +67,9 @@ Para hacer esa validacion de tipo de recurso de debe de llamar al endpoint de ti
 }
 ```
 
-para esto tipos de recuros, necesitamos guardar en cache la ifnroamcion para evitar haecr peticiones constantemenetes, asi que quiero que crees una funcion que guarde estos datos en el cache, otro para obtener los datos, y otro para eliminar los datos del cache.
-
+para esto tipos de recuros, necesitamos guardar en cache la ifnroamcion para evitar haecr peticiones constantemenetes,
+asi que quiero que crees una funcion que guarde estos datos en el cache, otro para obtener los datos, y otro para
+eliminar los datos del cache.
 
 ## GET - /resource_management/resources/{id}/
 
@@ -76,11 +79,16 @@ Este endpoint proporciona los detalles comunes entre los dos tipos de recuros (m
 
 #### Response Schema: application/json
 
+```json
 id
 integer (Id)
 name
 required
-string (Name) [ 1 .. 255 ] characters
+string (Name) [
+    1
+    ..
+    255
+] characters
 Name of the resource
 
 description
@@ -99,7 +107,7 @@ Current availability status
 status_display
 string (Status display) non-empty
 workload_percentage
-number (Workload percentage) [ 0 .. 100 ]
+number (Workload percentage) [0 .. 100]
 Current workload as percentage (0-100)
 
 is_active
@@ -139,6 +147,7 @@ active_absences_count
 integer (Active absences count)
 recent_absences
 string (Recent absences)
+```
 
 #### Ejemplo de respuesta
 
@@ -184,7 +193,7 @@ Este endpoint proporciona detalles especificos para los recursos materiales.
 
 #### Response Schema: application/json
 
-Response Schema: application/json
+```json
 resource
 integer (Resource)
 resource_id
@@ -242,6 +251,7 @@ is_available
 boolean (Is available)
 stock_status
 string (Stock status)
+```
 
 #### Ejemplo de respuesta
 
@@ -275,7 +285,7 @@ string (Stock status)
 
 #### Response Schema: application/json
 
-Response Schema: application/json
+```json
 resource
 integer (Resource)
 resource_id
@@ -295,7 +305,7 @@ role_display
 string (Role display) non-empty
 position
 required
-string (Position) [ 1 .. 255 ] characters
+string (Position) [1 .. 255] characters
 Job position or role
 
 skills
@@ -314,7 +324,7 @@ Type of employment
 employment_type_display
 string (Employment type display) non-empty
 experience_years
-integer or null (Experience years) [ 0 .. 50 ]
+integer or null (Experience years) [0 .. 50]
 Years of relevant experience
 
 certification_level
@@ -333,6 +343,7 @@ is_available
 boolean (Is available)
 monthly_cost
 string or null <decimal> (Monthly cost)
+```
 
 #### Ejemplo de respuesta
 

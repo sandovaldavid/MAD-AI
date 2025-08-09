@@ -37,10 +37,9 @@ export class DetailRm implements OnInit {
 
             // 1. Obtener tipos de recurso (de caché o API)
             let types = this.resourceTypeCacheUseCase.getResourceTypesFromCache();
-            if (!types) {
-                // Aquí deberías llamar a un use case/API real, simulado por ahora
-                // types = await this.resourceTypeApi.getAll();
-                types = [];
+            if (!types || types.length === 0) {
+                // Si no hay tipos en caché, obtener de API y guardar en caché
+                types = await this.resourceTypeCacheUseCase.fetchAndCacheResourceTypes();
             }
             this.resourceTypes.set(types);
 
