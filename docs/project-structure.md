@@ -26,16 +26,16 @@ MAD-AI/
 
 **¿Qué encontrarás?**
 
-- Modelos de datos (Project, Task, User)
-- Enums de estado (ProjectStatus, TaskPriority)
-- Entidades con lógica de negocio
-- Contratos/interfaces para repositorios
+-   Modelos de datos (Project, Task, User)
+-   Enums de estado (ProjectStatus, TaskPriority)
+-   Entidades con lógica de negocio
+-   Contratos/interfaces para repositorios
 
 **¿Cuándo usarlo?**
 
-- Al crear nuevos modelos de datos
-- Al definir reglas de negocio
-- Al establecer enums y constantes del dominio
+-   Al crear nuevos modelos de datos
+-   Al definir reglas de negocio
+-   Al establecer enums y constantes del dominio
 
 **Ejemplo de navegación:**
 
@@ -53,16 +53,16 @@ domain/
 
 **¿Qué encontrarás?**
 
-- Casos de uso específicos (CreateProject, EstimateTaskTime)
-- Servicios de aplicación que coordinan múltiples casos de uso
-- DTOs para transferir datos entre capas
-- Ports (interfaces) para la infraestructura
+-   Casos de uso específicos (CreateProject, EstimateTaskTime)
+-   Servicios de aplicación que coordinan múltiples casos de uso
+-   DTOs para transferir datos entre capas
+-   Ports (interfaces) para la infraestructura
 
 **¿Cuándo usarlo?**
 
-- Al implementar nueva funcionalidad de negocio
-- Al crear APIs internas de la aplicación
-- Al definir contratos con servicios externos
+-   Al implementar nueva funcionalidad de negocio
+-   Al crear APIs internas de la aplicación
+-   Al definir contratos con servicios externos
 
 **Ejemplo de flujo:**
 
@@ -81,17 +81,17 @@ domain/
 
 **¿Qué encontrarás?**
 
-- Clientes HTTP para APIs (FastAPI backend)
-- Implementaciones de repositorios
-- Adaptadores para servicios de IA
-- DTOs específicos de APIs externas
-- Interceptores HTTP
+-   Clientes HTTP para APIs (FastAPI backend)
+-   Implementaciones de repositorios
+-   Adaptadores para servicios de IA
+-   DTOs específicos de APIs externas
+-   Interceptores HTTP
 
 **¿Cuándo usarlo?**
 
-- Al integrar nuevas APIs
-- Al implementar nuevos repositorios
-- Al configurar comunicación con servicios externos
+-   Al integrar nuevas APIs
+-   Al implementar nuevos repositorios
+-   Al configurar comunicación con servicios externos
 
 **Ejemplo de estructura:**
 
@@ -112,16 +112,16 @@ infrastructure/
 
 **¿Qué encontrarás?**
 
-- Layouts de la aplicación
-- Páginas organizadas por features
-- Componentes específicos de cada funcionalidad
-- Lógica de presentación y estado de UI
+-   Layouts de la aplicación
+-   Páginas organizadas por features
+-   Componentes específicos de cada funcionalidad
+-   Lógica de presentación y estado de UI
 
 **¿Cuándo usarlo?**
 
-- Al crear nuevas páginas o componentes
-- Al modificar la interfaz de usuario
-- Al agregar nuevas funcionalidades visuales
+-   Al crear nuevas páginas o componentes
+-   Al modificar la interfaz de usuario
+-   Al agregar nuevas funcionalidades visuales
 
 **Navegación por features:**
 
@@ -146,17 +146,17 @@ presentation/
 
 **¿Qué encontrarás?**
 
-- Componentes UI reutilizables (Button, Modal, Input)
-- Pipes personalizados (truncate, timeAgo)
-- Directivas útiles (clickOutside, autoFocus)
-- Utilidades y helpers
-- Validadores personalizados
+-   Componentes UI reutilizables (Button, Modal, Input)
+-   Pipes personalizados (truncate, timeAgo)
+-   Directivas útiles (clickOutside, autoFocus)
+-   Utilidades y helpers
+-   Validadores personalizados
 
 **¿Cuándo usarlo?**
 
-- Al crear componentes que se usan en múltiples lugares
-- Al necesitar pipes o directivas personalizadas
-- Al agregar utilidades que no son específicas del negocio
+-   Al crear componentes que se usan en múltiples lugares
+-   Al necesitar pipes o directivas personalizadas
+-   Al agregar utilidades que no son específicas del negocio
 
 ### ⚙️ Core (Servicios Globales)
 
@@ -164,17 +164,17 @@ presentation/
 
 **¿Qué encontrarás?**
 
-- Servicio de autenticación
-- Servicio de notificaciones
-- Guards para protección de rutas
-- Interceptores HTTP globales
-- Configuraciones de la aplicación
+-   Servicio de autenticación
+-   Servicio de notificaciones
+-   Guards para protección de rutas
+-   Interceptores HTTP globales
+-   Configuraciones de la aplicación
 
 **¿Cuándo usarlo?**
 
-- Al configurar aspectos globales de la aplicación
-- Al implementar autenticación y autorización
-- Al agregar interceptores o guards
+-   Al configurar aspectos globales de la aplicación
+-   Al implementar autenticación y autorización
+-   Al agregar interceptores o guards
 
 ## Flujo de Desarrollo Típico
 
@@ -236,11 +236,11 @@ presentation/
 
 **Problemas comunes y dónde buscar:**
 
-- **Error de API**: `infrastructure/api/` y `infrastructure/interceptors/`
-- **Lógica de negocio incorrecta**: `domain/` y `application/`
-- **Problemas de UI**: `presentation/pages/` o `presentation/components/`
-- **Autenticación**: `core/services/auth/`
-- **Permisos**: `core/guards/`
+-   **Error de API**: `infrastructure/api/` y `infrastructure/interceptors/`
+-   **Lógica de negocio incorrecta**: `domain/` y `application/`
+-   **Problemas de UI**: `presentation/pages/` o `presentation/components/`
+-   **Autenticación**: `core/services/auth/`
+-   **Permisos**: `core/guards/`
 
 ## Buenas Prácticas de Navegación
 
@@ -271,30 +271,30 @@ Infrastructure → Application → Domain
 
 Cada capa tiene su documentación específica en `docs/architecture/`:
 
-- `domain-layer.md`
-- `application-layer.md`
-- `infrastructure-layer.md`
-- `presentation-layer.md`
-- `shared-layer.md`
-- `core-layer.md`
+-   `domain-layer.md`
+-   `application-layer.md`
+-   `infrastructure-layer.md`
+-   `presentation-layer.md`
+-   `shared-layer.md`
+-   `core-layer.md`
 
 ### 4. Convenciones de Nombres
 
-- **Archivos**: `kebab-case.type.ts` (ej: `project-create.component.ts`)
-- **Clases**: `PascalCase` (ej: `ProjectCreateComponent`)
-- **Interfaces**: `PascalCase` (ej: `Project`)
-- **Enums**: `PascalCase` (ej: `ProjectStatus`)
-- **Servicios**: `PascalCase + Service` (ej: `ProjectService`)
+-   **Archivos**: `kebab-case.type.ts` (ej: `project-create.component.ts`)
+-   **Clases**: `PascalCase` (ej: `ProjectCreateComponent`)
+-   **Interfaces**: `PascalCase` (ej: `Project`)
+-   **Enums**: `PascalCase` (ej: `ProjectStatus`)
+-   **Servicios**: `PascalCase + Service` (ej: `ProjectService`)
 
 ## Herramientas de Desarrollo
 
 ### 1. VS Code Extensions Recomendadas
 
-- **Angular Language Service**: Autocompletado y navegación
-- **Angular Snippets**: Snippets útiles para Angular
-- **Auto Rename Tag**: Sincroniza tags HTML
-- **Bracket Pair Colorizer**: Visualiza brackets anidados
-- **GitLens**: Información de Git en el editor
+-   **Angular Language Service**: Autocompletado y navegación
+-   **Angular Snippets**: Snippets útiles para Angular
+-   **Auto Rename Tag**: Sincroniza tags HTML
+-   **Bracket Pair Colorizer**: Visualiza brackets anidados
+-   **GitLens**: Información de Git en el editor
 
 ### 2. Comandos Angular CLI Útiles
 
@@ -362,8 +362,8 @@ npm run lint
 
 ## Recursos Adicionales
 
-- **Documentación de Angular**: https://angular.dev
-- **Clean Architecture**: Documento en `docs/clean-architecture.md`
-- **Tailwind CSS**: Para estilos y componentes UI
-- **RxJS**: Para manejo de estado reactivo
-- **TypeScript**: Para tipado fuerte
+-   **Documentación de Angular**: https://angular.dev
+-   **Clean Architecture**: Documento en `docs/clean-architecture.md`
+-   **Tailwind CSS**: Para estilos y componentes UI
+-   **RxJS**: Para manejo de estado reactivo
+-   **TypeScript**: Para tipado fuerte
