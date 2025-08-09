@@ -14,4 +14,10 @@ export interface MaterialResource extends Resource {
   is_low_stock: boolean;
   total_value: string;
   stock_status: string;
+
+  // Display/read-only fields from API
+  resource?: number;
+  resource_id?: number;
+  resource_name?: string;
+  resource_status?: string;
 }
