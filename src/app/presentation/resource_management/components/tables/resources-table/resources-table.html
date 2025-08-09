@@ -36,6 +36,9 @@
                     </span>
                 </td>
                 <td class="table-cell">
+                    <button class="action-button" aria-label="View resource detail" (click)="viewDetail(resource.id)">
+                        <fa-icon [icon]="['fas', 'eye']"></fa-icon>
+                    </button>
                     <button class="action-button" aria-label="Edit resource">
                         <fa-icon [icon]="['fas', 'edit']"></fa-icon>
                     </button>

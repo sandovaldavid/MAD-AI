@@ -7,6 +7,7 @@ import { FontAwesomeIconsModule } from '@/app/fontawesome-icons';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { ResourcesFilter } from '../../filters/resources-filter/resources-filter';
 import { ResourceSearch } from '@domain/models/resource-management/resource-search.model';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-resources-table',
@@ -18,6 +19,7 @@ import { ResourceSearch } from '@domain/models/resource-management/resource-sear
 export class ResourcesTable implements OnInit {
     private readonly getResourcesUseCase = inject(GetResourcesUseCase);
     private readonly searchResourcesUseCase = inject(SearchResourcesUseCase);
+    private readonly router = inject(Router);
 
     resources = signal<Resource[]>([]);
     currentPage = signal(1);
@@ -48,5 +50,9 @@ export class ResourcesTable implements OnInit {
             this.totalPages.set(Math.ceil(response.count / 20));
             this.currentPage.set(1);
         });
+    }
+
+    viewDetail(id: number): void {
+        this.router.navigate([`/resource-management/detail/${id}`]);
     }
 }
