@@ -32,6 +32,7 @@
 .status-available {
     @apply text-green-900 dark:text-green-100;
 }
+
 .status-available .status-badge-dot {
     @apply bg-green-200;
 }
@@ -39,6 +40,7 @@
 .status-assigned {
     @apply text-yellow-900 dark:text-yellow-100;
 }
+
 .status-assigned .status-badge-dot {
     @apply bg-yellow-200;
 }
@@ -62,6 +64,7 @@
 .status-unavailable {
     @apply text-red-900 dark:text-red-100;
 }
+
 .status-unavailable .status-badge-dot {
     @apply bg-red-200;
 }

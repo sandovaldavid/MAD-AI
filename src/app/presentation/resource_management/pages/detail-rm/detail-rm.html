@@ -14,14 +14,15 @@
                     <div class="card-header">
                         <h2 class="card-title">{{ detail.name }}</h2>
                         <span class="badge" [ngClass]="detail.status_display.toLowerCase()">{{
-                            detail.status_display
-                        }}</span>
+                                detail.status_display
+                            }}</span>
                     </div>
                     <p class="card-description">{{ detail.description }}</p>
 
                     <div class="card-grid">
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'map-marker-alt']" /> <span>Ubicación:</span>
+                            <fa-icon [icon]="['fas', 'map-marker-alt']" />
+                            <span>Ubicación:</span>
                             {{ detail.location }}
                         </div>
                         <div class="detail-item">
@@ -29,27 +30,33 @@
                             <span>Disponibilidad:</span> {{ detail.availability_status }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'tasks']" /> <span>Carga:</span>
+                            <fa-icon [icon]="['fas', 'tasks']" />
+                            <span>Carga:</span>
                             {{ detail.workload_percentage }}%
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'power-off']" /> <span>Activo:</span>
+                            <fa-icon [icon]="['fas', 'power-off']" />
+                            <span>Activo:</span>
                             {{ detail.is_active ? 'Sí' : 'No' }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-alt']" /> <span>Adquisición:</span>
+                            <fa-icon [icon]="['fas', 'calendar-alt']" />
+                            <span>Adquisición:</span>
                             {{ detail.acquisition_date | date : 'shortDate' }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'tag']" /> <span>Tipo:</span>
+                            <fa-icon [icon]="['fas', 'tag']" />
+                            <span>Tipo:</span>
                             {{ detail.resource_type_name }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'layer-group']" /> <span>Categoría:</span>
+                            <fa-icon [icon]="['fas', 'layer-group']" />
+                            <span>Categoría:</span>
                             {{ detail.resource_category }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'check-circle']" /> <span>Disponible:</span>
+                            <fa-icon [icon]="['fas', 'check-circle']" />
+                            <span>Disponible:</span>
                             {{ detail.is_available ? 'Sí' : 'No' }}
                         </div>
                         <div class="detail-item">
@@ -79,30 +86,37 @@
                     </div>
                     <div class="card-grid">
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'id-badge']" /> <span>Posición:</span>
+                            <fa-icon [icon]="['fas', 'id-badge']" />
+                            <span>Posición:</span>
                             {{ h.position }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'user-tie']" /> <span>Rol:</span>
+                            <fa-icon [icon]="['fas', 'user-tie']" />
+                            <span>Rol:</span>
                             {{ h.role_display }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'cogs']" /> <span>Skills:</span> {{ h.skills }}
+                            <fa-icon [icon]="['fas', 'cogs']" />
+                            <span>Skills:</span> {{ h.skills }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'briefcase']" /> <span>Experiencia:</span>
+                            <fa-icon [icon]="['fas', 'briefcase']" />
+                            <span>Experiencia:</span>
                             {{ h.experience_years }} años
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'certificate']" /> <span>Certificación:</span>
+                            <fa-icon [icon]="['fas', 'certificate']" />
+                            <span>Certificación:</span>
                             {{ h.certification_level }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'file-contract']" /> <span>Tipo Empleo:</span>
+                            <fa-icon [icon]="['fas', 'file-contract']" />
+                            <span>Tipo Empleo:</span>
                             {{ h.employment_type_display }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'dollar-sign']" /> <span>Tarifa/Hora:</span>
+                            <fa-icon [icon]="['fas', 'dollar-sign']" />
+                            <span>Tarifa/Hora:</span>
                             {{ h.hourly_rate | currency }}
                         </div>
                         <div class="detail-item">
@@ -110,7 +124,8 @@
                             <span>Costo Mensual:</span> {{ h.monthly_cost | currency }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'user']" /> <span>Usuario:</span>
+                            <fa-icon [icon]="['fas', 'user']" />
+                            <span>Usuario:</span>
                             {{ h.user_full_name }} ({{ h.user_email }})
                         </div>
                     </div>
@@ -124,23 +139,28 @@
                     </div>
                     <div class="card-grid">
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'box-open']" /> <span>Consumible:</span>
+                            <fa-icon [icon]="['fas', 'box-open']" />
+                            <span>Consumible:</span>
                             {{ m.is_consumable ? 'Sí' : 'No' }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'ruler']" /> <span>Unidad Medida:</span>
+                            <fa-icon [icon]="['fas', 'ruler']" />
+                            <span>Unidad Medida:</span>
                             {{ m.unit_of_measure_display }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'boxes']" /> <span>Cantidad:</span>
+                            <fa-icon [icon]="['fas', 'boxes']" />
+                            <span>Cantidad:</span>
                             {{ m.quantity_available }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'archive']" /> <span>Stock Mínimo:</span>
+                            <fa-icon [icon]="['fas', 'archive']" />
+                            <span>Stock Mínimo:</span>
                             {{ m.minimum_stock }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'truck']" /> <span>Proveedor:</span>
+                            <fa-icon [icon]="['fas', 'truck']" />
+                            <span>Proveedor:</span>
                             {{ m.supplier }}
                         </div>
                         <div class="detail-item">
@@ -148,19 +168,23 @@
                             <span>Fecha Compra:</span> {{ m.purchase_date | date : 'shortDate' }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'calendar-times']" /> <span>Garantía:</span>
+                            <fa-icon [icon]="['fas', 'calendar-times']" />
+                            <span>Garantía:</span>
                             {{ m.warranty_expiry | date : 'shortDate' }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'barcode']" /> <span>N° Serie:</span>
+                            <fa-icon [icon]="['fas', 'barcode']" />
+                            <span>N° Serie:</span>
                             {{ m.serial_number }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'coins']" /> <span>Valor Total:</span>
+                            <fa-icon [icon]="['fas', 'coins']" />
+                            <span>Valor Total:</span>
                             {{ m.total_value | currency }}
                         </div>
                         <div class="detail-item">
-                            <fa-icon [icon]="['fas', 'chart-pie']" /> <span>Estado Stock:</span>
+                            <fa-icon [icon]="['fas', 'chart-pie']" />
+                            <span>Estado Stock:</span>
                             {{ m.stock_status }}
                         </div>
                         <div class="detail-item">

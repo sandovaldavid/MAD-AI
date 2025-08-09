@@ -3,54 +3,71 @@
 .font-semibold {
     @apply font-semibold;
 }
+
 .text-primary-500 {
     @apply text-primary-500;
 }
+
 .text-red-500 {
     @apply text-red-500;
 }
+
 .text-slate-600 {
     @apply text-slate-600;
 }
+
 .dark .text-slate-200 {
     @apply text-slate-200;
 }
+
 .p-6 {
     @apply p-6;
 }
+
 .max-w-2xl {
     @apply max-w-2xl;
 }
+
 .mx-auto {
     @apply mx-auto;
 }
+
 .mb-2 {
     @apply mb-2;
 }
+
 .mb-4 {
     @apply mb-4;
 }
+
 .mb-6 {
     @apply mb-6;
 }
+
 .grid {
     @apply grid;
 }
+
 .grid-cols-1 {
     @apply grid-cols-1;
 }
+
 .md\:grid-cols-2 {
     @apply md:grid-cols-2;
 }
+
 .gap-4 {
     @apply gap-4;
 }
+
 .text-2xl {
     @apply text-2xl;
 }
+
 .text-xl {
     @apply text-xl;
 }
+
 .font-bold {
     @apply font-bold;
 }
@@ -98,12 +115,15 @@
 .badge.available {
     @apply bg-green-500;
 }
+
 .badge.assigned {
     @apply bg-blue-500;
 }
+
 .badge.maintenance {
     @apply bg-yellow-500;
 }
+
 .badge.unavailable {
     @apply bg-red-500;
 }
