@@ -1,20 +1,22 @@
 import { Injectable } from '@angular/core';
 import { ResourceTypeCacheRepository } from '@domain/repositories/resource-management/resource-type-cache.repository';
+import { ResourceTypeCacheService } from '@core/services/resource-type-cache.service';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceTypeCacheRepositoryImpl implements ResourceTypeCacheRepository {
-    private readonly CACHE_KEY = 'resource_types_cache';
+    constructor(private cache: ResourceTypeCacheService) {
+    }
 
     setResourceTypesToCache(resourceTypes: any[]): void {
-        localStorage.setItem(this.CACHE_KEY, JSON.stringify(resourceTypes));
+        this.cache.setResourceTypes(resourceTypes);
     }
 
     getResourceTypesFromCache(): any[] | null {
-        const data = localStorage.getItem(this.CACHE_KEY);
-        return data ? JSON.parse(data) : null;
+        return this.cache.getResourceTypes();
     }
 
     clearResourceTypesCache(): void {
-        localStorage.removeItem(this.CACHE_KEY);
+        this.cache.removeResourceTypes();
     }
 }
+
