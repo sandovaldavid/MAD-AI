@@ -12,18 +12,14 @@ import { Resource } from '@domain/entities/resource-management/resource.entity';
 import { HumanResource } from '@domain/entities/resource-management/human-resource.entity';
 import { MaterialResource } from '@domain/entities/resource-management/material-resource.entity';
 import { ResourceFormService } from './resource-form.service';
+import { ResourceTypeApiService } from '@infrastructure/api/resource-management/resource-type.api';
+import { ResourceType } from '@domain/entities/resource-management/resource-type.entity';
 import { NotificationService } from '@core/services/notification.service';
 
 @Component({
     selector: 'app-update-rm',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        FontAwesomeModule,
-        Button,
-    SlideToggleComponent,
-    ],
+    imports: [CommonModule, ReactiveFormsModule, FontAwesomeModule, Button, SlideToggleComponent],
     templateUrl: './update-rm.html',
     styleUrl: './update-rm.css',
     providers: [ResourceUseCases, HumanResourceUseCases, MaterialResourceUseCases],
@@ -37,6 +33,7 @@ export class UpdateRm implements OnInit {
     private readonly resourceFormService = inject(ResourceFormService);
     private readonly cdr = inject(ChangeDetectorRef);
     private readonly notificationService = inject(NotificationService);
+    private readonly resourceTypeApi = inject(ResourceTypeApiService);
 
     resourceId: number | null = null;
     resourceType: string | null = null;
@@ -47,6 +44,7 @@ export class UpdateRm implements OnInit {
     resourceForm!: FormGroup;
     humanForm!: FormGroup;
     materialForm!: FormGroup;
+    resourceTypes: any = { results: [] };
 
     // Display fields for HumanResource
     humanDisplay: Partial<HumanResource> = {};
@@ -55,7 +53,18 @@ export class UpdateRm implements OnInit {
 
     ngOnInit() {
         this.resourceId = Number(this.route.snapshot.paramMap.get('id'));
-        this.loadResource();
+        this.resourceTypeApi.getAll().subscribe({
+            next: (response) => {
+                this.resourceTypes = response;
+                this.loadResource();
+            },
+            error: () => {
+                this.notificationService
+                    .error('Error', 'No se pudieron cargar los tipos de recurso.')
+                    .subscribe();
+                this.loadResource();
+            },
+        });
     }
 
     loadResource() {
