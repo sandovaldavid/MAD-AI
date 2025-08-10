@@ -192,6 +192,20 @@ export class User {
     }
 
     /**
+     * Get the role of the user.
+     */
+    get role(): Role {
+        return this._role;
+    }
+
+    /**
+     * Set the role of the user.
+     */
+    set role(value: Role) {
+        this._role = value;
+    }
+
+    /**
      * Gets the username of the user.
      */
     get username(): string {
