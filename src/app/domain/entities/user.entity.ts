@@ -13,7 +13,7 @@ import type { FieldError } from '../models/field-error.model';
 
 export class User {
     private constructor(
-        public readonly id: number,
+        public readonly id: string,
         private _username: Username,
         private _email: Email,
         private _firstName: FirstName,
@@ -32,7 +32,7 @@ export class User {
     ) {}
 
     static create(p: {
-        id: number;
+        id: string;
         username: string;
         email: string;
         firstName: string;
