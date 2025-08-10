@@ -1,22 +1,25 @@
-import { Injectable, inject } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
-import { TokenService } from '@core/services/token.service';
+import { CanActivateFn, CanActivateChildFn, Router, UrlTree } from '@angular/router';
+import { inject } from '@angular/core';
+import { AUTH_REPOSITORY } from '../../di/tokens';
+import { AuthFacade } from '@application/facades/auth.facade';
+import type { AuthRepository } from '@domain/repositories/auth.repository';
 
-@Injectable({
-    providedIn: 'root',
-})
-export class AuthGuard implements CanActivate {
-    private readonly tokenService = inject(TokenService);
-    private readonly router = inject(Router);
+const checkAuth = async (): Promise<boolean | UrlTree> => {
+    const router = inject(Router);
+    const auth = inject(AuthFacade);
+    const repo = inject<AuthRepository>(AUTH_REPOSITORY);
 
-    canActivate(): boolean {
-        // Verificación inmediata usando solo localStorage/sessionStorage
-        if (this.tokenService.isAuthenticated()) {
-            return true;
-        }
+    if (auth.user()) return true;
 
-        // Redirección inmediata si no está autenticado
-        this.router.navigate(['/auth/login']);
-        return false;
+    const hasToken = !!repo.getLocalTokens()?.accessToken;
+    if (hasToken) {
+        try {
+            await auth.refreshProfile();
+        } catch {}
+        if (auth.user()) return true;
     }
-}
+    return router.parseUrl('/auth/login');
+};
+
+export const authGuard: CanActivateFn = (_route, _state) => checkAuth();
+export const authChildGuard: CanActivateChildFn = (_route, _state) => checkAuth();
