@@ -1,17 +1,13 @@
-export interface NotificationPreferencesProps {
-    email: boolean;
-    system: boolean;
-    task: boolean;
-}
+import type { NotificationPreferences } from '../models/notification-preferences.model';
 
 export class NotificationPreferencesVO {
-    private constructor(public readonly props: NotificationPreferencesProps) {}
+    private constructor(public readonly props: NotificationPreferences) {}
     /**
      * Creates a NotificationPreferences value object after validating the input.
      * @param props Notification preferences
      * @throws Error if any preference is missing or not boolean
      */
-    static create(props: NotificationPreferencesProps): NotificationPreferencesVO {
+    static create(props: NotificationPreferences): NotificationPreferencesVO {
         if (
             typeof props.email !== 'boolean' ||
             typeof props.system !== 'boolean' ||
