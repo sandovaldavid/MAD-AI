@@ -7,7 +7,7 @@ import type { FieldError } from '../models/field-error.model';
 
 export class Role {
     private constructor(
-        private readonly _id: number,
+        private readonly _id: string,
         private readonly _name: RoleName,
         private readonly _accessLevel: AccessLevel,
         private _isActive: boolean,
@@ -21,7 +21,7 @@ export class Role {
      * @throws ValidationError if any property is invalid
      */
     static create(p: {
-        id: number;
+        id: string;
         name: string;
         accessLevel: number;
         isActive: boolean;
@@ -79,7 +79,7 @@ export class Role {
     /**
      * Gets the role ID.
      */
-    get id(): number {
+    get id(): string {
         return this._id;
     }
 
