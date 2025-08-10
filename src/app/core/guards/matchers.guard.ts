@@ -1,9 +1,9 @@
-// src/app/core/guards/matchers.ts
 import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthFacade } from '../../application/facades/auth.facade';
+import { AuthFacade } from '@application/facades/auth.facade';
 import { AUTH_REPOSITORY } from '../../di/tokens';
-import type { AuthRepository } from '../../domain/repositories/auth.repository';
+import type { AuthRepository } from '@domain/repositories/auth.repository';
+import { ReturnUrlService } from '../services/return-url.service';
 
 /**
  * Permite la ruta solo si el usuario NO está autenticado.
@@ -13,9 +13,14 @@ export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
     const repo = inject<AuthRepository>(AUTH_REPOSITORY);
+    const returnUrlService = inject(ReturnUrlService);
 
     // Si ya hay user en memoria -> bloquear
-    if (auth.user()) return router.parseUrl('/dashboard');
+    if (auth.user()) {
+        // Guarda la URL actual para retorno si el usuario está autenticado
+        returnUrlService.set(router.url);
+        return router.parseUrl('/dashboard');
+    }
 
     // Si hay token guardado pero aún no cargamos perfil, intenta cargarlo
     const hasToken = !!repo.getLocalTokens()?.accessToken;
@@ -23,7 +28,10 @@ export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
         try {
             await auth.refreshProfile();
         } catch {}
-        if (auth.user()) return router.parseUrl('/dashboard');
+        if (auth.user()) {
+            returnUrlService.set(router.url);
+            return router.parseUrl('/dashboard');
+        }
     }
 
     // Usuario invitado: permitir
@@ -38,6 +46,7 @@ export const authOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
     const repo = inject<AuthRepository>(AUTH_REPOSITORY);
+    const returnUrlService = inject(ReturnUrlService);
 
     if (auth.user()) return true;
 
@@ -49,5 +58,7 @@ export const authOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
         if (auth.user()) return true;
     }
 
+    // Guarda la URL actual para retorno si el usuario no está autenticado
+    returnUrlService.set(router.url);
     return router.parseUrl('/auth/login');
 };
