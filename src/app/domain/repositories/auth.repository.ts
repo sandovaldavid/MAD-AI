@@ -1,31 +1,17 @@
-import { Observable } from 'rxjs';
-import {
-    LoginRequest,
-    LoginResponse,
-    RegisterRequest,
-    RegisterResponse,
-    RefreshTokenRequest,
-    RefreshTokenResponse,
-    LogoutRequest,
-    UserInfo,
-} from '../models/auth/auth.model';
+import { Session } from '../entities/session.entity';
+import { User } from '../entities/user.entity';
+import { Credentials, LocalTokens } from '../models/auth/auth.model';
+import { MessageResult, RegisterData, ResetPasswordData } from '../models/auth/auth.model';
 
-export interface ResetPasswordResponse {
-    message: string;
-    success: boolean;
-}
-
-export abstract class AuthRepository {
-    abstract login(request: LoginRequest): Observable<LoginResponse>;
-    abstract register(request: RegisterRequest): Observable<RegisterResponse>;
-    abstract logout(request: LogoutRequest): Observable<void>;
-    abstract refreshToken(request: RefreshTokenRequest): Observable<RefreshTokenResponse>;
-    abstract getMe(): Observable<UserInfo>;
-    abstract confirmEmail(token: string): Observable<{ access_token: string }>;
-    abstract requestPasswordReset(email: string): Observable<ResetPasswordResponse>;
-    abstract confirmPasswordReset(
-        token: string,
-        newPassword: string,
-        newPasswordConfirm: string
-    ): Observable<ResetPasswordResponse>;
+export interface AuthRepository {
+    login(creds: Credentials): Promise<Session>;
+    logout(): Promise<void>;
+    refresh(): Promise<Session>;
+    me(): Promise<User>;
+    getLocalTokens(): LocalTokens;
+    setLocalTokens(s: LocalTokens): void;
+    register(data: RegisterData): Promise<Session>;
+    confirmEmail(token: string): Promise<MessageResult>;
+    requestPasswordReset(email: string): Promise<MessageResult>;
+    confirmPasswordReset(data: ResetPasswordData): Promise<MessageResult>;
 }
