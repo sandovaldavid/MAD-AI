@@ -1,0 +1,8 @@
+export enum ValidationErrorCode {
+    VALIDATION_ERROR = 'VALIDATION_ERROR',
+    EMAIL_INVALID = 'EMAIL_INVALID',
+    REQUIRED_FIELD_MISSING = 'REQUIRED_FIELD_MISSING',
+    USERNAME_TAKEN = 'USERNAME_TAKEN',
+    ROLE_NOT_ALLOWED = 'ROLE_NOT_ALLOWED',
+    // Agrega más códigos según necesidad
+}
