@@ -1,9 +1,9 @@
-import { Route } from '@angular/router';
+import { Routes } from '@angular/router';
 import { DetailProfile } from './pages/detail-profile/detail-profile';
 import { SettingsProfile } from './pages/settings-profile/settings-profile';
 import { UpdateProfile } from './pages/update-profile/update-profile';
 
-export default [
+export const profileRoutes: Routes = [
     {
         path: '',
         component: DetailProfile,
@@ -19,4 +19,4 @@ export default [
         component: UpdateProfile,
         title: 'Actualizar Perfil',
     },
-] as Route[];
+];
