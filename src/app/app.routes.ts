@@ -1,16 +1,13 @@
 import { Routes } from '@angular/router';
 import { authRoutes } from '@presentation/auth/auth.routes';
-import { securedRoutes } from '@presentation/secured/secured.routes';
-import { AuthGuard } from '@core/guards/auth.guard';
+import { profileRoutes } from '@presentation/profile/profile.routes';
+import { authOnly, guestOnly } from './core/guards/matchers.guard';
+import { emailConfirmedOnly } from './core/guards/email-confirmed.guard';
 
 export const routes: Routes = [
     {
-        path: '',
-        redirectTo: '/dashboard',
-        pathMatch: 'full',
-    },
-    {
         path: 'auth',
+        canMatch: [guestOnly],
         loadComponent: () =>
             import('@presentation/layouts/auth-layout/auth-layout').then(
                 (m) => m.AuthLayoutComponent
@@ -18,15 +15,22 @@ export const routes: Routes = [
         children: authRoutes,
     },
     {
-        path: '',
+        path: '/profile',
+        canMatch: [authOnly, emailConfirmedOnly],
         loadComponent: () =>
             import('@presentation/layouts/main-layout/main-layout').then(
                 (m) => m.MainLayoutComponent
             ),
-        canActivate: [AuthGuard],
-        children: securedRoutes,
+        children: profileRoutes,
     },
     {
+        path: 'dashboard',
+        canMatch: [authOnly],
+        loadComponent: () => import('@presentation/dashboard/dashboard').then((m) => m.Dashboard),
+    },
+    { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+    {
+        /* crear un componente para error 404 */
         path: '**',
         redirectTo: '/dashboard',
     },
