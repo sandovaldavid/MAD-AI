@@ -18,7 +18,8 @@
             "@env/*": ["src/env/*"],
             "@icons/*": ["src/app/presentation/shared/icons/*"],
             "@di/*": ["src/app/di/*"],
-            "@types/*": ["src/types/*"]
+            "@types/*": ["src/types/*"],
+            "@test/*": ["src/app/test/*"]
         },
         "strict": true,
         "noImplicitOverride": true,
