@@ -6,8 +6,10 @@ import { Register } from '../use-cases/auth/register.usecase';
 import { ConfirmEmail } from '../use-cases/auth/confirm-email.usecase';
 import { RequestPasswordReset } from '../use-cases/auth/request-password-reset.usecase';
 import { ConfirmPasswordReset } from '../use-cases/auth/confirm-password-reset.usecase';
+import { NotificationsFacade } from './notifications.facade';
 import type { User } from '@domain/entities/user.entity';
 import type { Identifier, RegisterData, ResetPasswordData } from '@domain/models/auth/auth.model';
+import type { FacadeOpts } from '@application/types/facade-opts';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
@@ -18,6 +20,7 @@ export class AuthFacade {
     private confirmEmailUC = inject(ConfirmEmail);
     private reqResetUC = inject(RequestPasswordReset);
     private confirmResetUC = inject(ConfirmPasswordReset);
+    private notify = inject(NotificationsFacade);
 
     private _loading = signal(false);
     private _error = signal<string | null>(null);
@@ -28,24 +31,29 @@ export class AuthFacade {
     readonly user = computed(() => this._user());
     readonly isAuthenticated = computed(() => !!this._user());
 
-    async login(identifier: Identifier, password: string, rememberMe = false) {
+    async login(identifier: Identifier, password: string, remember_me = false, opts?: FacadeOpts) {
         this._loading.set(true);
         this._error.set(null);
         try {
-            await this.loginUC.execute(identifier, password, rememberMe);
+            await this.loginUC.execute(identifier, password, remember_me);
             await this.refreshProfile();
+            if (!opts?.silent) this.notify.success('Bienvenido de nuevo');
         } catch (e: any) {
-            this._error.set(e?.message ?? 'No se pudo iniciar sesión');
+            const msg = e?.message ?? 'No se pudo iniciar sesión';
+            this._error.set(msg);
+            if (!opts?.silent) this.notify.error(msg);
+            throw e;
         } finally {
             this._loading.set(false);
         }
     }
 
-    async logout() {
+    async logout(opts?: FacadeOpts) {
         this._loading.set(true);
         try {
             await this.logoutUC.execute();
             this._user.set(null);
+            if (!opts?.silent) this.notify.info('Sesión cerrada');
         } finally {
             this._loading.set(false);
         }
@@ -65,50 +73,67 @@ export class AuthFacade {
         return null; // mantenemos el header delegado al interceptor
     }
 
-    async register(data: RegisterData) {
+    async register(data: RegisterData, opts?: FacadeOpts) {
         this._loading.set(true);
         this._error.set(null);
         try {
             await this.registerUC.execute(data);
             await this.refreshProfile();
+            if (!opts?.silent) this.notify.info('Revisa tu correo para confirmar tu cuenta');
         } catch (e: any) {
-            this._error.set(e?.message ?? 'No se pudo registrar');
-        } finally {
-            this._loading.set(false);
-        }
-    }
-
-    async confirmEmail(token: string) {
-        this._loading.set(true);
-        this._error.set(null);
-        try {
-            await this.confirmEmailUC.execute(token);
-            await this.refreshProfile();
-        } finally {
-            this._loading.set(false);
-        }
-    }
-
-    async requestPasswordReset(email: string) {
-        this._loading.set(true);
-        this._error.set(null);
-        try {
-            return await this.reqResetUC.execute(email);
-        } catch (e: any) {
-            this._error.set(e?.message ?? 'No se pudo enviar el correo de reseteo');
+            const msg = e?.message ?? 'No se pudo registrar';
+            this._error.set(msg);
+            if (!opts?.silent) this.notify.error(msg);
             throw e;
         } finally {
             this._loading.set(false);
         }
     }
 
-    async confirmPasswordReset(data: ResetPasswordData) {
+    async confirmEmail(token: string, opts?: FacadeOpts) {
         this._loading.set(true);
         this._error.set(null);
         try {
-            return await this.confirmResetUC.execute(data);
+            await this.confirmEmailUC.execute(token);
+            await this.refreshProfile();
+            if (!opts?.silent) this.notify.success('Correo confirmado');
         } catch (e: any) {
-            this._error.set(e?.message ?? 'No se pudo restablecer la contraseña');
+            const msg = e?.message ?? 'No se pudo confirmar el correo';
+            this._error.set(msg);
+            if (!opts?.silent) this.notify.error(msg);
+            throw e;
+        } finally {
+            this._loading.set(false);
+        }
+    }
+
+    async requestPasswordReset(email: string, opts?: FacadeOpts) {
+        this._loading.set(true);
+        this._error.set(null);
+        try {
+            await this.reqResetUC.execute(email);
+            if (!opts?.silent)
+                this.notify.info('Te enviamos un email para restablecer la contraseña');
+        } catch (e: any) {
+            const msg = e?.message ?? 'No se pudo enviar el correo de restablecimiento';
+            this._error.set(msg);
+            if (!opts?.silent) this.notify.error(msg);
+            throw e;
+        } finally {
+            this._loading.set(false);
+        }
+    }
+
+    async confirmPasswordReset(data: ResetPasswordData, opts?: FacadeOpts) {
+        this._loading.set(true);
+        this._error.set(null);
+        try {
+            await this.confirmResetUC.execute(data);
+            if (!opts?.silent) this.notify.success('Contraseña actualizada');
+        } catch (e: any) {
+            const msg = e?.message ?? 'No se pudo actualizar la contraseña';
+            this._error.set(msg);
+            if (!opts?.silent) this.notify.error(msg);
             throw e;
         } finally {
             this._loading.set(false);
