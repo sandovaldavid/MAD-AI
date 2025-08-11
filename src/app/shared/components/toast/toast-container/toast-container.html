@@ -1,0 +1,71 @@
+<!-- TOP LEFT -->
+<div class="toast-anchor top-4 left-4" [class.mobile-center]="false">
+    <ng-container *ngFor="let t of byPos('top-left') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
+
+<!-- TOP CENTER -->
+<div class="toast-anchor top-4 left-1/2 -translate-x-1/2">
+    <ng-container *ngFor="let t of byPos('top-center') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
+
+<!-- TOP RIGHT -->
+<div class="toast-anchor top-4 right-4">
+    <ng-container *ngFor="let t of byPos('top-right') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
+
+<!-- BOTTOM LEFT -->
+<div class="toast-anchor bottom-4 left-4">
+    <ng-container *ngFor="let t of byPos('bottom-left') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
+
+<!-- BOTTOM CENTER -->
+<div class="toast-anchor bottom-4 left-1/2 -translate-x-1/2">
+    <ng-container *ngFor="let t of byPos('bottom-center') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
+
+<!-- BOTTOM RIGHT -->
+<div class="toast-anchor bottom-4 right-4">
+    <ng-container *ngFor="let t of byPos('bottom-right') | slice : 0 : cap(); trackBy: trackId">
+        <app-toast-item
+            [t]="t"
+            (close)="close(t.id)"
+            (act)="onAction(t.id, $event)"
+            (hover)="pause(t.id)"
+            (leave)="resume(t.id)"></app-toast-item>
+    </ng-container>
+</div>
