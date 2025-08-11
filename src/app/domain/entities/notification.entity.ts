@@ -1,34 +1,23 @@
-import { NotificationType, NotificationPosition } from '../enums/notification.enum';
+import { NotificationType, NotificationPosition } from '../enums/notification';
+import { NotificationAction } from '../models/notification/action.model';
 
-export class NotificationEntity {
-    id: string;
+export type NotificationId = string;
+
+export interface Notification {
+    id: NotificationId;
     type: NotificationType;
-    title: string;
     message: string;
-    duration: number;
-    position: NotificationPosition;
-    autoClose: boolean;
-    showCloseButton: boolean;
-    createdAt: Date;
-
-    constructor(params: {
-        id?: string;
-        type: NotificationType;
-        title: string;
-        message: string;
-        duration?: number;
-        position?: NotificationPosition;
-        autoClose?: boolean;
-        showCloseButton?: boolean;
-    }) {
-        this.id = params.id || crypto.randomUUID();
-        this.type = params.type;
-        this.title = params.title;
-        this.message = params.message;
-        this.duration = params.duration ?? 5000; // Default 5 seconds
-        this.position = params.position ?? NotificationPosition.TOP_RIGHT;
-        this.autoClose = params.autoClose ?? true;
-        this.showCloseButton = params.showCloseButton ?? true;
-        this.createdAt = new Date();
-    }
+    title?: string;
+    duration?: number | 0;
+    dismissible?: boolean;
+    icon?: string | null;
+    key?: string | null;
+    groupId?: string | null;
+    createdAt: number;
+    position?: NotificationPosition | null;
+    action?: NotificationAction | null;
+    secondaryAction?: NotificationAction | null;
+    data?: Record<string, unknown>;
 }
+
+export type NewNotification = Omit<Notification, 'id' | 'createdAt'> & { id?: NotificationId };
