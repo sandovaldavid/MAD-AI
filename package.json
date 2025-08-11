@@ -7,7 +7,11 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:MAD-AI-NEW": "node dist/MAD-AI-NEW/server/server.mjs"
+    "serve:ssr:MAD-AI-NEW": "node dist/MAD-AI-NEW/server/server.mjs",
+    "lint:icons": "node scripts/lint-icons.cjs",
+    "fix:icons": "node scripts/lint-icons.cjs --fix",
+    "fix:icons:dry": "node scripts/lint-icons.cjs --fix --dry",
+    "prebuild": "npm run lint:icons"
   },
   "private": true,
   "dependencies": {
