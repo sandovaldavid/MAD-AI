@@ -16,6 +16,9 @@
             "@application/*": ["src/app/application/*"],
             "@shared/*": ["src/app/shared/*"],
             "@env/*": ["src/env/*"],
+            "@icons/*": ["src/app/presentation/shared/icons/*"],
+            "@di/*": ["src/app/di/*"],
+            "@types/*": ["src/types/*"]
         },
     "strict": true,
     "noImplicitOverride": true,
