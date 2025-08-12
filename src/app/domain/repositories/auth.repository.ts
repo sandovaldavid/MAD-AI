@@ -1,7 +1,7 @@
 import { Session } from '../entities/session.entity';
 import { User } from '../entities/user.entity';
-import { Credentials, LocalTokens } from '../models/auth/auth.model';
-import { MessageResult, RegisterData, ResetPasswordData } from '../models/auth/auth.model';
+import { Credentials, LocalTokens } from '../models/auth';
+import { MessageResult, RegisterData, ResetPasswordData } from '../models/auth';
 
 export interface AuthRepository {
     login(creds: Credentials): Promise<Session>;
