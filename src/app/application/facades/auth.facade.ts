@@ -8,7 +8,7 @@ import { RequestPasswordReset } from '../use-cases/auth/request-password-reset.u
 import { ConfirmPasswordReset } from '../use-cases/auth/confirm-password-reset.usecase';
 import { NotificationsFacade } from './notifications.facade';
 import type { User } from '@domain/entities/user.entity';
-import type { Identifier, RegisterData, ResetPasswordData } from '@domain/models/auth/auth.model';
+import type { Identifier, RegisterData, ResetPasswordData } from '@domain/models/auth';
 import type { FacadeOpts } from '@application/types/facade-opts';
 
 @Injectable({ providedIn: 'root' })

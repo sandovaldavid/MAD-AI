@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY } from '../../../di/tokens';
+import { AUTH_REPOSITORY } from '@di/tokens';
 import type { AuthRepository } from '@domain/repositories/auth.repository';
-import type { RegisterData } from '@domain/models/auth/auth.model';
+import type { RegisterData } from '@domain/models/auth';
 
 @Injectable({ providedIn: 'root' })
 export class Register {
