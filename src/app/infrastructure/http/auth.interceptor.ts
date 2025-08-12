@@ -4,9 +4,10 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthHttpOrchestrator } from './auth-http.orchestrator';
 import { Router } from '@angular/router';
 import { ReturnUrlService } from '@core/services/return-url.service';
+import { environment } from '@/env/environment';
 
 const RETRIED = 'x-auth-retried';
-const AUTH_API_PREFIX = '/api/v1/auth/';
+const AUTH_API_PREFIX = `${environment.API_URL}/auth/`;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const orch = inject(AuthHttpOrchestrator);

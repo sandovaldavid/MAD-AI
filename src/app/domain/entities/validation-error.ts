@@ -22,7 +22,6 @@ export class ValidationError extends Error {
         this.name = 'ValidationError';
         this.errors = errorList;
         this.code = code;
-        Error.captureStackTrace?.(this, ValidationError);
     }
 
     toJSON() {

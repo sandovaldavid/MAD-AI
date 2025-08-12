@@ -1,12 +1,13 @@
 import { CanMatchFn, CanActivateFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
-import { AUTH_USER_STORE_PORT, AUTH_REPOSITORY } from '../../di/tokens';
+import { AUTH_USER_STORE_PORT, AUTH_REPOSITORY } from '@di/tokens';
 import { AuthFacade } from '@application/facades/auth.facade';
 import type { AuthUserStorePort } from '@domain/ports/auth-user-store.port';
 import type { AuthRepository } from '@domain/repositories/auth.repository';
 import { UserStatus } from '@domain/enums/user_status.enum';
+import { environment } from '@env/environment';
 
-const VERIFY_URL = '/auth/verify-email';
+const VERIFY_URL = `${environment.API_URL}/auth/verify-email/`;
 const BLOCK_ON_UNKNOWN = false;
 
 const isEmailConfirmed = (u: any): boolean => {

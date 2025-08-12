@@ -7,7 +7,7 @@ import {
     RegisterData,
     MessageResult,
     ResetPasswordData,
-} from '@domain/models/auth/auth.model';
+} from '@domain/models/auth';
 import { Session } from '@domain/entities/session.entity';
 import { User } from '@domain/entities/user.entity';
 import { TokenStorePort } from '@domain/ports/token-store.port';
@@ -22,7 +22,6 @@ import {
     RefreshResponseDTO,
     LogoutRequestDTO,
     LogoutResponseDTO,
-    ConfirmEmailRequestDTO,
     ConfirmEmailResponseDTO,
     RegisterRequestDTO,
     RegisterResponseDTO,
@@ -32,11 +31,12 @@ import {
     ResetPasswordConfirmResponseDTO,
 } from '../dtos/auth';
 import { AuthMapper } from '../mappers/auth.mapper';
+import { environment } from '@env/environment';
 
 import type { AuthUserStorePort } from '@domain/ports/auth-user-store.port';
 import { UserStatus } from '@/app/domain/enums/user_status.enum';
 
-const API = '/api/v1/auth';
+const API = `${environment.API_URL}/auth`;
 
 @Injectable()
 export class HttpAuthRepository implements AuthRepository {
@@ -58,7 +58,7 @@ export class HttpAuthRepository implements AuthRepository {
 
     async login(creds: Credentials): Promise<Session> {
         const body: LoginRequestDTO = {
-            identifier: creds.identifier,
+            identifier: creds.identifier.value,
             password: creds.password,
             remember_me: !!creds.rememberMe,
         };
