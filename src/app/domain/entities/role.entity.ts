@@ -23,7 +23,7 @@ export class Role {
     static create(p: {
         id: number;
         name: string;
-        accessLevel: number;
+        accessLevel?: number;
         isActive: boolean;
         description?: string | null;
         userCount?: number;
@@ -50,13 +50,16 @@ export class Role {
             });
         }
 
+        // Determinar accessLevel por defecto si no se provee
+        let accessLevelValue: number =
+            p.accessLevel !== undefined ? p.accessLevel : Role.defaultAccessLevelForName(p.name);
         let accessLevel: AccessLevel;
         try {
-            accessLevel = AccessLevel.create(p.accessLevel);
+            accessLevel = AccessLevel.create(accessLevelValue);
         } catch (e: any) {
             errors.push({
                 field: 'accessLevel',
-                value: p.accessLevel,
+                value: accessLevelValue,
                 message: e.message,
                 code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
             });
@@ -74,6 +77,16 @@ export class Role {
             p.description ?? '',
             p.userCount
         );
+    }
+
+    /**
+     * Determinate the default access level based on the role name.
+     */
+    private static defaultAccessLevelForName(name: string): number {
+        const n = name?.toLowerCase().trim();
+        if (n === 'administrator' || n === 'administrador') return 1;
+        if (n === 'user' || n === 'usuario') return 5;
+        return 5; // Default
     }
 
     /**
