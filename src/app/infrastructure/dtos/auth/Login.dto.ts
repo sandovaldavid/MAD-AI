@@ -1,4 +1,4 @@
-export type Identifier = { type: 'email'; value: string } | { type: 'username'; value: string };
+export type Identifier = string | { email: string } | { username: string };
 
 export interface LoginRequestDTO {
     identifier: Identifier;
