@@ -14,11 +14,7 @@ function mapRole(name: string, id: number, accessLevel?: number, isActive = true
     return Role.create({
         id,
         name,
-        accessLevel:
-            accessLevel ??
-            (name?.toLowerCase() === 'administrator' || name?.toLowerCase() === 'administrador'
-                ? 1
-                : 99),
+        accessLevel,
         isActive,
         description: name,
     });
