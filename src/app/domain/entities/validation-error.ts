@@ -1,6 +1,6 @@
 import { ValidationErrorCode } from '../enums/validation-error-code.enum';
 
-import type { FieldError } from '../models/field-error.model';
+import type { FieldError } from '../types/field-error.type';
 
 export class ValidationError extends Error {
     public readonly errors: FieldError[];

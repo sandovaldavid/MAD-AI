@@ -1,5 +1,5 @@
 import { NotificationType, NotificationPosition } from '../enums/notification';
-import { NotificationAction } from '../models/notification/action.model';
+import { NotificationAction } from '../types/notification/action.type';
 
 export type NotificationId = string;
 

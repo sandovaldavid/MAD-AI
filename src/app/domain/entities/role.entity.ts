@@ -3,7 +3,7 @@ import { ValidationErrorCode } from '../enums/validation-error-code.enum';
 import { RoleName } from '../value-objects/rolename.vo';
 import { AccessLevel } from '../value-objects/accesslevel.vo';
 
-import type { FieldError } from '../models/field-error.model';
+import type { FieldError } from '../types/field-error.type';
 
 export class Role {
     private constructor(

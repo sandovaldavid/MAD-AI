@@ -1,4 +1,4 @@
-import type { NotificationPreferences } from '../models/notification/notification-preferences.model';
+import type { NotificationPreferences } from '../types/notification/notification-preferences.type';
 
 export class NotificationPreferencesVO {
     private constructor(public readonly props: NotificationPreferences) {}

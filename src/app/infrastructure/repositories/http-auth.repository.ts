@@ -7,7 +7,7 @@ import {
     RegisterData,
     MessageResult,
     ResetPasswordData,
-} from '@domain/models/auth';
+} from '@/app/domain/types/auth';
 import { Session } from '@domain/entities/session.entity';
 import { User } from '@domain/entities/user.entity';
 import { TokenStorePort } from '@domain/ports/token-store.port';
