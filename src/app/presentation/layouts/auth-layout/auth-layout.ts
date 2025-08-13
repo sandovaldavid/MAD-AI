@@ -1,12 +1,20 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NotificationContainerComponent } from '@shared/components/notification/notification-container/notification-container';
+import { ThemeService } from '@core/services/theme.service';
 
 @Component({
     selector: 'app-auth-layout',
+    standalone: true,
+    imports: [RouterOutlet],
     templateUrl: './auth-layout.html',
     styleUrl: './auth-layout.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RouterOutlet, NotificationContainerComponent],
 })
-export class AuthLayoutComponent {}
+export class AuthLayout {
+    private theme = inject(ThemeService);
+    readonly isDark = this.theme.isDarkMode; // signal<boolean>
+
+    toggleTheme() {
+        this.theme.toggleTheme(); // cambia signal → OnPush re-renderiza
+    }
+}
