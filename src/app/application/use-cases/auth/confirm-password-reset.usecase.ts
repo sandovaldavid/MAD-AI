@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AUTH_REPOSITORY } from '../../../di/tokens';
 import type { AuthRepository } from '@domain/repositories/auth.repository';
-import type { ResetPasswordData } from '@domain/models/auth';
+import type { ResetPasswordData } from '@/app/domain/types/auth';
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmPasswordReset {

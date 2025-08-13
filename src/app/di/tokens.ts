@@ -5,6 +5,7 @@ import type { TokenStorePort } from '../domain/ports/token-store.port';
 import type { ClockPort } from '../domain/ports/clock.port';
 import type { AuthUserStorePort } from '../domain/ports/auth-user-store.port';
 import type { NotificationPort } from '../domain/ports/notification.port';
+import type { RoleRepository } from '../domain/repositories/role.repository';
 
 export interface NotificationConfig {
     maxVisibleDesktop: number;
@@ -29,6 +30,7 @@ export const CLOCK_PORT = new InjectionToken<ClockPort>('CLOCK_PORT');
 export const AUTH_USER_STORE_PORT = new InjectionToken<AuthUserStorePort>('AUTH_USER_STORE_PORT');
 export const NOTIFICATION_PORT = new InjectionToken<NotificationPort>('NOTIFICATION_PORT');
 export const NOTIFICATION_CONFIG = new InjectionToken<NotificationConfig>('NOTIFICATION_CONFIG');
+export const ROLE_REPOSITORY = new InjectionToken<RoleRepository>('ROLE_REPOSITORY');
 
 /** Multi‑provider: cada feature aporta { [key]: rawSvg } */
 export const ICON_SVG_SET = new InjectionToken<Record<string, string>>('ICON_SVG_SET (multi)', {

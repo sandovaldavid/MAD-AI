@@ -1,54 +1,38 @@
-import { Observable } from 'rxjs';
-import { RoleEntity } from '../entities/role.entity';
-import { RoleAccessLevel } from '../enums/role-access-level.enum';
-import {
-    AssignRoleData,
-    CreateRoleData,
-    UnassignRoleData,
-    UpdateRoleData,
-} from '../models/role/role.dto';
+import { Role } from '../entities/role.entity';
 
-/**
- * Repository interface for Role-related operations
- * Following the Clean Architecture pattern
- *
- * In Clean Architecture, repositories belong to the domain layer but are
- * implemented in the infrastructure layer. This allows the domain to define
- * what it needs without depending on specific implementations.
- */
-export abstract class RoleRepository {
-    /**
-     * Get all available roles
-     */
-    abstract getRoles(): Observable<RoleEntity[]>;
+export type CreateRolePayload = Readonly<{
+    name: string;
+    accessLevel?: number;
+    description?: string;
+}>;
 
-    /**
-     * Get a specific role by ID
-     */
-    abstract getRoleById(id: number): Observable<RoleEntity>;
+export type UpdateRolePayload = Readonly<{
+    name?: string;
+    accessLevel?: number;
+    description?: string;
+}>;
 
-    /**
-     * Assign a role to a user
-     */
-    abstract assignRole(roleData: AssignRoleData): Observable<void>;
+export type ListRolesParams = Readonly<{
+    search?: string;
+    active?: boolean;
+}>;
 
-    /**
-     * Unassign a role from a user
-     */
-    abstract unassignRole(unassignData: UnassignRoleData): Observable<void>;
+export type AssignRolePayload = Readonly<{
+    userId: number;
+    roleId: number;
+    assignedByUserId?: number;
+}>;
 
-    /**
-     * Update an existing role
-     */
-    abstract updateRole(id: number, roleData: UpdateRoleData): Observable<RoleEntity>;
+export type UnassignRolePayload = Readonly<{
+    userId: number;
+}>;
 
-    /**
-     * Create a new role
-     */
-    abstract createRole(roleData: CreateRoleData): Observable<RoleEntity>;
-
-    /**
-     * Delete a role
-     */
-    abstract deleteRole(id: number): Observable<void>;
+export interface RoleRepository {
+    list(params?: ListRolesParams): Promise<Role[]>;
+    getById(id: number): Promise<Role>;
+    create(payload: CreateRolePayload): Promise<Role>;
+    update(id: number, payload: UpdateRolePayload): Promise<Role>;
+    delete(id: number): Promise<void>;
+    assign(payload: { roleId: number; userId: number }): Promise<void>;
+    unassign(payload: { roleId: number; userId: number }): Promise<void>;
 }

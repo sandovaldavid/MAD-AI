@@ -1,0 +1,19 @@
+<section class="p-6">
+    @if (loading()) {
+    <p class="text-neutral-600">Cargando...</p>
+    } @else if (error()) {
+    <p class="text-error-600">Error: {{ error() }}</p>
+    } @else if (role()) {
+    <article class="rounded-lg border p-4 bg-secondary-50 dark:bg-secondary-800">
+        <h2 class="text-xl font-bold">{{ role()!.displayName }}</h2>
+        <p class="text-neutral-700 dark:text-neutral-200 mt-1">{{ role()!.description || '—' }}</p>
+        <p class="mt-2 text-sm">Usuarios asignados: {{ role()!.userCount ?? 0 }}</p>
+        <p class="mt-1 text-sm">
+            Estado:
+            <span class="{{ role()!.isActive ? 'text-successful-700' : 'text-error-700' }}">
+                {{ role()!.isActive ? 'Activo' : 'Inactivo' }}
+            </span>
+        </p>
+    </article>
+    }
+</section>

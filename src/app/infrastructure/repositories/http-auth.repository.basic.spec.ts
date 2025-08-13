@@ -9,7 +9,7 @@ import {
 import { UserStatus } from '@domain/enums/user_status.enum';
 import { AUTH_USER_STORE_PORT, TOKEN_STORE_PORT } from '@/app/di/tokens';
 import { environment } from '@env/environment';
-import type { Identifier } from '@domain/models/auth/Identifier.model';
+import type { Identifier } from '@domain/types/auth/Identifier.type';
 
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
