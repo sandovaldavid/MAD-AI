@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { AUTH_REPOSITORY } from '../../../di/tokens';
 import type { AuthRepository } from '@domain/repositories/auth.repository';
-import type { Identifier } from '@domain/models/auth/Identifier.model';
+import type { Identifier } from '@/app/domain/types/auth/Identifier.type';
 
 @Injectable({ providedIn: 'root' })
 export class LoginWithCredentials {
