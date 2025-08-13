@@ -120,15 +120,15 @@ export class Role {
     /**
      * Gets the description of the role (if any).
      */
-    get description(): string | null {
-        return this._description ?? null;
+    get description(): string {
+        return this._description ?? 'Noy ha Descripcion para ese rol';
     }
 
     /**
      * Gets the number of users assigned to this role (if available).
      */
-    get userCount(): number | undefined {
-        return this._userCount;
+    get userCount(): number {
+        return this._userCount ?? 0;
     }
 
     /**
