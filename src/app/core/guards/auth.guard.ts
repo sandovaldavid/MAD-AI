@@ -1,6 +1,6 @@
 import { CanActivateFn, CanActivateChildFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
-import { AUTH_REPOSITORY } from '../../di/tokens';
+import { AUTH_REPOSITORY } from '@di/tokens';
 import { AuthFacade } from '@application/facades/auth.facade';
 import type { AuthRepository } from '@domain/repositories/auth.repository';
 
