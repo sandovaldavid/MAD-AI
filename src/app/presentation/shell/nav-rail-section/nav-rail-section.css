@@ -1,0 +1,21 @@
+@reference '../../../../styles.css';
+
+.nav-rail-section {
+    @apply space-y-1;
+}
+
+.nav-rail-section__title {
+    @apply text-xs font-semibold text-neutral-600 dark:text-neutral-400 
+    uppercase tracking-wider px-3 py-2 mb-2;
+}
+
+.nav-rail-section__items {
+    @apply space-y-1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-rail-section__items li {
+    @apply w-full;
+}
