@@ -1,0 +1,33 @@
+<a
+    [routerLink]="item().route"
+    [attr.aria-current]="active() ? 'page' : null"
+    [attr.aria-describedby]="collapsed() && hovering() ? tooltipId() : null"
+    class="nav-rail-item"
+    [class.nav-rail-item--active]="active()"
+    [class.nav-rail-item--collapsed]="collapsed()"
+    (mouseenter)="onMouseEnter()"
+    (mouseleave)="onMouseLeave()"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (click)="onClick()">
+    <div class="nav-rail-item__icon">
+        <!-- Using a simple icon placeholder for now -->
+        <span class="icon">📊</span>
+    </div>
+
+    @if (!collapsed()) {
+    <span class="nav-rail-item__label">{{ item().label }}</span>
+    } @if (item().badge && !collapsed()) {
+    <span class="nav-rail-item__badge">{{ item().badge }}</span>
+    }
+</a>
+
+<!-- Tooltip for collapsed state -->
+@if (collapsed() && showTooltip()) {
+<div [id]="tooltipId()" role="tooltip" class="nav-rail-tooltip">
+    {{ item().label }}
+    @if (item().badge) {
+    <span class="nav-rail-tooltip__badge">{{ item().badge }}</span>
+    }
+</div>
+}
