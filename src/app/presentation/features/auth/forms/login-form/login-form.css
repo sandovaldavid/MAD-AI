@@ -1,0 +1,16 @@
+@reference '../../../../../../styles.css';
+
+.login-form {
+    @apply flex flex-col gap-6 min-w-xl p-6 bg-white text-neutral-900;
+    @apply dark:bg-neutral-950 dark:text-neutral-100;
+}
+
+.login-form-link {
+    @apply text-primary-600 hover:underline text-sm flex items-center gap-1;
+    @apply dark:text-primary-400;
+}
+
+.login-form-register {
+    @apply text-primary-600 hover:underline font-medium flex items-center gap-1 justify-center;
+    @apply dark:text-primary-400;
+}

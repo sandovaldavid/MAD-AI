@@ -1,0 +1,71 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+    <ui-form-field
+        label="Usuario o correo electrónico"
+        [required]="true"
+        [error]="identityError"
+        controlId="identity">
+        <ui-input
+            id="identity"
+            name="identity"
+            placeholder="Tu usuario o correo"
+            formControlName="identity"
+            autocomplete="username"
+            size="md">
+            <ui-icon prefix name="outline/user" size="sm" class="text-neutral-400" />
+            @if (form.get('identity')?.value) {
+            <button
+                type="button"
+                suffix
+                class="text-neutral-400 hover:text-neutral-600 p-0.5"
+                (click)="clearField('identity')">
+                <ui-icon name="outline/x-mark" size="xs" />
+            </button>
+            }
+        </ui-input>
+    </ui-form-field>
+
+    <ui-form-field
+        label="Contraseña"
+        [required]="true"
+        [error]="passwordError"
+        controlId="password">
+        <ui-input
+            id="password"
+            name="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            placeholder="Contraseña"
+            formControlName="password"
+            autocomplete="current-password"
+            size="md">
+            <ui-icon prefix name="outline/lock" size="sm" class="text-neutral-400" />
+            <button
+                type="button"
+                suffix
+                class="text-neutral-400 hover:text-neutral-600 p-0.5"
+                (click)="togglePassword()">
+                <ui-icon [name]="showPassword() ? 'outline/eye-slash' : 'outline/eye'" size="sm" />
+            </button>
+        </ui-input>
+    </ui-form-field>
+
+    <div class="flex items-center justify-between">
+        <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" formControlName="remember" class="accent-primary-500" />
+            Recordar sesión
+        </label>
+        <a routerLink="/auth/reset-password" class="login-form-link"> Olvidé mi contraseña </a>
+    </div>
+
+    <ui-button type="submit" variant="primary" size="md" [fullWidth]="true">
+        <ui-icon icon-right name="filled/arrow-right" size="sm" />
+        Iniciar sesión
+    </ui-button>
+
+    <div class="text-center text-sm mt-2">
+        ¿No tienes cuenta?
+        <a routerLink="/auth/register" class="login-form-register">
+            <ui-icon name="outline/user-plus" size="xs" />
+            Regístrate
+        </a>
+    </div>
+</form>
