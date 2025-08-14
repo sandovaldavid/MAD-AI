@@ -1,50 +1,53 @@
 <div
-    class="pointer-events-auto rounded-xl shadow-lg border p-3 bg-white/95 dark:bg-neutral-900/90 backdrop-blurflex gap-3 items-start"
+    class="pointer-events-auto rounded-xl shadow-lg border bg-white/95 dark:bg-neutral-900/90 backdrop-blur relative"
     role="alert"
     [attr.aria-live]="ariaLive"
     [ngClass]="accentClass(t.type)">
-    <!-- Icono -->
-    <div class="pt-0.5 shrink-0">
-        @if (t.type === types.SUCCESS) {
-        <app-icon name="success" ariaLabel="Éxito" />
-        } @if (t.type === types.ERROR) {
-        <app-icon name="error" ariaLabel="Error" />
-        } @if (t.type === types.WARNING) {
-        <app-icon name="warning" ariaLabel="Advertencia" />
-        } @if (t.type === types.INFO) {
-        <app-icon name="info" ariaLabel="Información" />
-        }
-    </div>
-
-    <!-- Contenido -->
-    <div class="flex-1 min-w-0">
-        @if (t.title) {
-        <div class="font-semibold truncate">{{ t.title }}</div>
-        }
-        <div class="text-sm leading-snug break-words whitespace-pre-line">
-            {{ t.message }}
-        </div>
-
-        @if (t.action || t.secondaryAction) {
-        <div class="mt-2 flex gap-2">
-            @if (t.action) {
-            <button
-                class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
-                (click)="onAction('primary')">
-                {{ t!.action!.label }}
-            </button>
-            } @if (t.secondaryAction) {
-            <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
-                {{ t!.secondaryAction!.label }}
-            </button>
+    <div class="flex gap-3 p-3">
+        <!-- Icono a la izquierda -->
+        <div class="flex items-center justify-center shrink-0 h-full">
+            @if (t.type === types.SUCCESS) {
+            <ui-icon name="outline/success" class="text-successful-500" ariaLabel="Éxito" />
+            } @if (t.type === types.ERROR) {
+            <ui-icon name="outline/error" class="text-error-500" ariaLabel="Error" />
+            } @if (t.type === types.WARNING) {
+            <ui-icon name="outline/warning" class="text-warning-500" ariaLabel="Advertencia" />
+            } @if (t.type === types.INFO) {
+            <ui-icon name="outline/info" class="text-info-500" ariaLabel="Información" />
             }
         </div>
-        }
+
+        <!-- Contenido en el medio -->
+        <div class="flex-1 min-w-0">
+            @if (t.title) {
+            <div class="font-semibold truncate">{{ t.title }}</div>
+            }
+            <div class="text-sm leading-snug break-words whitespace-pre-line">
+                {{ t.message }}
+            </div>
+
+            @if (t.action || t.secondaryAction) {
+            <div class="mt-2 flex gap-2">
+                @if (t.action) {
+                <button
+                    class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
+                    (click)="onAction('primary')">
+                    {{ t!.action!.label }}
+                </button>
+                } @if (t.secondaryAction) {
+                <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
+                    {{ t!.secondaryAction!.label }}
+                </button>
+                }
+            </div>
+            }
+        </div>
     </div>
-    <!-- Cerrar -->
+
+    <!-- Botón cerrar en la esquina superior derecha -->
     @if (t.dismissible !== false) {
     <button
-        class="ml-2 text-sm opacity-70 hover:opacity-100"
+        class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
         type="button"
         aria-label="Cerrar notificación"
         (click)="onClose()">
