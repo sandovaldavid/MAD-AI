@@ -1,0 +1,13 @@
+@reference '../../../../styles.css';
+
+.dashboard-container {
+    @apply bg-white dark:bg-neutral-900 w-3/12 rounded-3xl;
+}
+
+.dashboard-header {
+    @apply p-6 mb-0 border-neutral-200 dark:border-neutral-700;
+}
+
+.logout-button {
+    @apply mt-5;
+}
