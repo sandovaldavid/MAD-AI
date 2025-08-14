@@ -1,28 +1,22 @@
 import { Routes } from '@angular/router';
-import { authOnly, guestOnly } from './core/guards/matchers.guard';
-import { emailConfirmedOnly } from './core/guards/email-confirmed.guard';
-import { rolesRoutes } from '@presentation/features/roles/roles.routes';
+import { authOnly, guestOnly } from '@core/guards/matchers.guard';
+import { emailConfirmedOnly } from '@core/guards/email-confirmed.guard';
+import { securedRoutes } from '@presentation/features/secured.routes';
 import { authRoutes } from '@presentation/features/auth/auth.routes';
 
 export const routes: Routes = [
-    { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     {
         path: 'auth',
         canMatch: [guestOnly],
         loadComponent: () =>
-            import('@shared/layouts/auth-layout/auth-layout').then((m) => m.AuthLayout),
+            import('@presentation/layouts/auth-layout/auth-layout').then((m) => m.AuthLayout),
         children: authRoutes,
     },
     {
-        path: 'roles',
+        path: '',
         canMatch: [authOnly, emailConfirmedOnly],
-        loadChildren: () =>
-            import('@shared/layouts/main-layout/main-layout').then((m) => m.MainLayout),
-        children: rolesRoutes,
-    },
-    {
-        /* TODO: crear un componente para error 404 */
-        path: '**',
-        redirectTo: '/dashboard',
+        loadComponent: () =>
+            import('@presentation/layouts/main-layout/main-layout').then((m) => m.MainLayout),
+        children: securedRoutes,
     },
 ];
