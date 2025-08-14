@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, Inject, inject, input } from '@angular/core';
 import { IconRegistry } from '@core/services/icon-registry.service';
 import { ICON_REGISTRY_OPTIONS, IconRegistryOptions } from '@app/di/tokens';
-import type { Size, Variant } from '@/app/shared/types/icon';
+import type { Size, Variant } from '@shared/types/icon';
 
 @Component({
-    selector: 'app-icon',
+    selector: 'ui-icon',
     imports: [],
     templateUrl: './icon.html',
     styleUrl: './icon.css',
