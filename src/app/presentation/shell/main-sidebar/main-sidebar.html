@@ -1,0 +1,36 @@
+<!-- Desktop Sidebar Container -->
+<aside
+    class="main-sidebar"
+    [class.main-sidebar--collapsed]="isCollapsed()"
+    [attr.aria-label]="sidebarAriaLabel()"
+    role="navigation">
+    <!-- Sidebar Header with Toggle -->
+    <div class="main-sidebar__header">
+        <!-- Logo/Brand Area -->
+        <div class="main-sidebar__brand" [class.main-sidebar__brand--collapsed]="isCollapsed()">
+            @if (!isCollapsed()) {
+            <h1 class="main-sidebar__title">MAD-AI</h1>
+            } @else {
+            <span class="main-sidebar__logo">🤖</span>
+            }
+        </div>
+
+        <!-- Toggle Button -->
+        <app-nav-rail-toggler [collapsed]="isCollapsed()" (toggled)="onToggleCollapse()" />
+    </div>
+
+    <!-- Sidebar Content -->
+    <div class="main-sidebar__content">
+        <!-- Navigation Sections -->
+        <nav class="main-sidebar__nav" role="navigation" aria-label="Navegación principal">
+            @for (section of navigationSections(); track section.id) {
+            <app-nav-rail-section [section]="section" [collapsed]="isCollapsed()" />
+            }
+        </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="main-sidebar__footer">
+        <app-nav-rail-footer [collapsed]="isCollapsed()" />
+    </div>
+</aside>

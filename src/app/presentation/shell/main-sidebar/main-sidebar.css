@@ -1,0 +1,75 @@
+@reference '../../../../styles.css';
+
+.main-sidebar {
+    @apply fixed left-0 top-0 h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700;
+    @apply flex flex-col z-30 transition-all duration-300 ease-in-out;
+    width: 280px; /* Expanded width */
+}
+
+.main-sidebar--collapsed {
+    width: 64px; /* Collapsed width */
+}
+
+/* Header section */
+.main-sidebar__header {
+    @apply flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700;
+    min-height: 64px;
+}
+
+.main-sidebar__brand {
+    @apply flex items-center gap-3 transition-all duration-200;
+}
+
+.main-sidebar__brand--collapsed {
+    @apply justify-center;
+}
+
+.main-sidebar__title {
+    @apply text-xl font-bold text-primary-800 dark:text-primary-200;
+    @apply transition-opacity duration-200;
+}
+
+.main-sidebar__logo {
+    @apply text-2xl flex-shrink-0;
+}
+
+/* Content section */
+.main-sidebar__content {
+    @apply flex-1 overflow-y-auto overflow-x-hidden;
+}
+
+.main-sidebar__nav {
+    @apply p-2;
+}
+
+/* Footer section */
+.main-sidebar__footer {
+    @apply border-t border-neutral-200 dark:border-neutral-700;
+}
+
+/* Scrollbar styling */
+.main-sidebar__content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.main-sidebar__content::-webkit-scrollbar-track {
+    @apply bg-transparent;
+}
+
+.main-sidebar__content::-webkit-scrollbar-thumb {
+    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
+}
+
+.main-sidebar__content::-webkit-scrollbar-thumb:hover {
+    @apply bg-neutral-400 dark:bg-neutral-500;
+}
+
+/* Focus and accessibility */
+.main-sidebar:focus {
+    @apply outline-none;
+}
+
+/* Animation for content visibility */
+.main-sidebar--collapsed .main-sidebar__title {
+    @apply opacity-0;
+}
