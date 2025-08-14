@@ -37,7 +37,11 @@ export class AuthFacade {
         try {
             await this.loginUC.execute(identifier, password, remember_me);
             await this.refreshProfile();
-            if (!opts?.silent) this.notify.success('Bienvenido de nuevo');
+            if (!opts?.silent)
+                this.notify.success(
+                    'Bienvenido de nuevo ' + this._user()?.username,
+                    'Inicio de Sesión Exitoso'
+                );
         } catch (e: any) {
             const msg = e?.message ?? 'No se pudo iniciar sesión';
             this._error.set(msg);
