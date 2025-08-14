@@ -1,0 +1,45 @@
+@reference '../../../../styles.css';
+
+.nav-rail-footer {
+    @apply flex flex-col gap-1 p-2 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+/* Action buttons */
+.nav-rail-footer__action {
+    @apply w-full justify-start;
+    min-height: 2.25rem;
+}
+
+.nav-rail-footer__action--collapsed {
+    @apply justify-center;
+}
+
+.nav-rail-footer__action--danger:hover {
+    @apply bg-error-50 text-error-700 dark:bg-error-950 dark:text-error-300;
+}
+
+/* Icon and text layout */
+.nav-rail-footer__icon {
+    @apply flex-shrink-0 text-base leading-none;
+}
+
+.nav-rail-footer__text {
+    @apply text-sm font-medium truncate;
+}
+
+/* Version info */
+.nav-rail-footer__version {
+    @apply mt-2 px-3 py-1 text-center;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .nav-rail-footer {
+        @apply px-4 py-3;
+    }
+    
+    .nav-rail-footer__action {
+        @apply py-3;
+        min-height: 2.75rem;
+    }
+}
