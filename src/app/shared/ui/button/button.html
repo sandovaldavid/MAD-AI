@@ -1,0 +1,27 @@
+<button
+    [attr.type]="type()"
+    [disabled]="disabled() || loading()"
+    [class]="classes()"
+    [attr.aria-busy]="loading() ? 'true' : 'false'"
+    [attr.aria-label]="ariaLabel() ?? null"
+    (click)="onClick($event)">
+    @if (loading()) {
+    <span class="spinner" aria-hidden="true"></span>
+    } @else if (iconLeft()) {
+    <ui-icon
+        [name]="iconLeft()!"
+        [size]="iconSize()"
+        [variant]="iconVariant()"
+        aria-hidden="true" />
+    }
+
+    <span class="btn__label"><ng-content /></span>
+
+    @if (iconRight() && !loading()) {
+    <ui-icon
+        [name]="iconRight()!"
+        [size]="iconSize()"
+        [variant]="iconVariant()"
+        aria-hidden="true" />
+    }
+</button>
