@@ -13,7 +13,7 @@ import { ThemeService } from '@core/services/theme.service';
 export class AuthLayout {
     private theme = inject(ThemeService);
     readonly isDark = this.theme.isDarkMode; // signal<boolean>
-
+   
     toggleTheme() {
         this.theme.toggleTheme(); // cambia signal → OnPush re-renderiza
     }

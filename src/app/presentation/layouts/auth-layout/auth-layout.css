@@ -5,5 +5,5 @@
 }
 
 .auth-container {
-    @apply w-full max-w-md p-6 rounded-xl bg-white dark:bg-neutral-800 shadow;
+    @apply w-10/12 h-10/12 p-6 my-10;
 }
