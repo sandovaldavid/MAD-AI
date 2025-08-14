@@ -1,0 +1,185 @@
+@reference '../../../../../../styles.css';
+
+/* ===============================================
+   Register Page - Two Column Layout
+   =============================================== */
+
+.register-page {
+    @apply min-h-screen bg-neutral-50 dark:bg-neutral-950;
+}
+
+.register-page__container {
+    @apply min-h-screen grid grid-cols-1 lg:grid-cols-2;
+}
+
+/* ===============================================
+   Left Column - Image Section
+   =============================================== */
+
+.register-page__image-section {
+    @apply relative overflow-hidden;
+    /* Hide on mobile and tablet, show on large screens */
+    @apply hidden lg:block;
+    @apply rounded-l-3xl;
+}
+
+.register-page__image-wrapper {
+    @apply relative h-full;
+}
+
+.register-page__image {
+    @apply w-full h-full object-cover;
+}
+
+.register-page__overlay {
+    @apply absolute inset-0 bg-gradient-to-br from-primary-900/90 via-primary-800/80 to-primary-700/70;
+    @apply flex items-center justify-center;
+}
+
+.register-page__overlay-content {
+    @apply max-w-md px-8 text-center text-white;
+}
+
+.register-page__welcome-title {
+    @apply text-3xl xl:text-4xl font-bold mb-4;
+}
+
+.register-page__welcome-text {
+    @apply text-lg opacity-90 mb-8 leading-relaxed;
+}
+
+.register-page__features {
+    @apply space-y-4 text-left;
+}
+
+.register-page__feature {
+    @apply flex items-center gap-3 text-sm;
+}
+
+.register-page__feature-icon {
+    @apply flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center;
+}
+
+/* ===============================================
+   Right Column - Form Section
+   =============================================== */
+
+.register-page__form-section {
+    @apply flex items-center justify-center min-h-screen;
+    @apply bg-white dark:bg-neutral-950;
+    @apply px-6 py-12 lg:px-8;
+    @apply rounded-r-3xl;
+}
+
+.register-page__form-wrapper {
+    @apply w-full max-w-md space-y-8;
+}
+
+/* ===============================================
+   Brand Section
+   =============================================== */
+
+.register-page__brand {
+    @apply text-center mb-8;
+}
+
+.register-page__brand-title {
+    @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2;
+}
+
+.register-page__brand-subtitle {
+    @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+/* ===============================================
+   Footer Section
+   =============================================== */
+
+.register-page__footer {
+    @apply mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.register-page__footer-text {
+    @apply text-xs text-neutral-500 dark:text-neutral-400 text-center leading-relaxed;
+}
+
+.register-page__link {
+    @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300;
+    @apply underline underline-offset-2 transition-colors duration-150;
+}
+
+/* ===============================================
+   Responsive Design
+   =============================================== */
+
+/* Mobile and tablet - single column */
+@media (max-width: 1023px) {
+    .register-page__container {
+        @apply grid-cols-1;
+    }
+
+    .register-page__form-section {
+        @apply min-h-screen;
+    }
+
+    .register-page__form-wrapper {
+        @apply max-w-sm;
+    }
+
+    .register-page__brand-title {
+        @apply text-xl;
+    }
+}
+
+/* Large screens - optimize spacing */
+@media (min-width: 1280px) {
+    .register-page__form-wrapper {
+        @apply max-w-lg;
+    }
+
+    .register-page__welcome-title {
+        @apply text-4xl;
+    }
+
+    .register-page__welcome-text {
+        @apply text-xl;
+    }
+}
+
+/* ===============================================
+   Dark Mode Optimizations
+   =============================================== */
+
+@media (prefers-color-scheme: dark) {
+    .register-page__overlay {
+        @apply from-primary-950/95 via-primary-900/85 to-primary-800/75;
+    }
+}
+
+/* ===============================================
+   Accessibility Enhancements
+   =============================================== */
+
+/* Focus management */
+.register-page__link:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-neutral-800;
+    @apply rounded-sm;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .register-page__overlay {
+        @apply from-black/90 to-black/80;
+    }
+
+    .register-page__feature-icon {
+        @apply bg-white/40;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .register-page__link {
+        @apply transition-none;
+    }
+}

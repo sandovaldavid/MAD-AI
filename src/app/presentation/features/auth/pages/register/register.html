@@ -1,0 +1,72 @@
+<div class="register-page">
+    <!-- Two-column layout -->
+    <div class="register-page__container">
+        <!-- Left Column - Image -->
+        <div class="register-page__image-section">
+            <div class="register-page__image-wrapper">
+                <img
+                    src="/bg-placeholder.jpg"
+                    alt="Registro en MAD-AI"
+                    class="register-page__image"
+                    loading="lazy" />
+                <div class="register-page__overlay">
+                    <div class="register-page__overlay-content">
+                        <h1 class="register-page__welcome-title">Únete a MAD-AI</h1>
+                        <p class="register-page__welcome-text">
+                            Crea tu cuenta y accede a nuestra plataforma de inteligencia artificial
+                            avanzada.
+                        </p>
+                        <div class="register-page__features">
+                            <div class="register-page__feature">
+                                <div class="register-page__feature-icon">
+                                    <ui-icon name="check" size="sm" variant="filled" />
+                                </div>
+                                <span>Acceso completo a todas las funcionalidades</span>
+                            </div>
+                            <div class="register-page__feature">
+                                <div class="register-page__feature-icon">
+                                    <ui-icon name="check" size="sm" variant="filled" />
+                                </div>
+                                <span>Gestión avanzada de roles y permisos</span>
+                            </div>
+                            <div class="register-page__feature">
+                                <div class="register-page__feature-icon">
+                                    <ui-icon name="check" size="sm" variant="filled" />
+                                </div>
+                                <span>Soporte técnico especializado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Registration Form -->
+        <div class="register-page__form-section">
+            <div class="register-page__form-wrapper">
+                <!-- Logo or Brand -->
+                <div class="register-page__brand">
+                    <h2 class="register-page__brand-title">MAD-AI</h2>
+                    <p class="register-page__brand-subtitle">
+                        Plataforma de Inteligencia Artificial
+                    </p>
+                </div>
+
+                <!-- Registration Form -->
+                <app-register-form
+                    [showRoleSelection]="false"
+                    (registered)="onRegistrationSuccess()" />
+
+                <!-- Additional Links -->
+                <div class="register-page__footer">
+                    <p class="register-page__footer-text">
+                        Al registrarte, aceptas nuestros
+                        <a href="/terms" class="register-page__link">Términos de Servicio</a>
+                        y
+                        <a href="/privacy" class="register-page__link">Política de Privacidad</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
