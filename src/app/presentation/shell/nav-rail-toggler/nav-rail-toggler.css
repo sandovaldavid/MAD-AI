@@ -1,0 +1,13 @@
+@reference '../../../../styles.css';
+
+.nav-rail-toggler {
+    @apply w-full justify-start gap-3;
+}
+
+.nav-rail-toggler__icon {
+    @apply text-lg font-mono;
+}
+
+.nav-rail-toggler__text {
+    @apply text-sm font-medium;
+}

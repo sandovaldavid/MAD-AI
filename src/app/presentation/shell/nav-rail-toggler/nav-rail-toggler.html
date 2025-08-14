@@ -1,0 +1,15 @@
+<ui-button
+    variant="ghost"
+    size="sm"
+    attr.aria-expanded="{{ !collapsed() }}"
+    [attr.aria-label]="buttonLabel()"
+    class="nav-rail-toggler"
+    (clicked)="onToggle()">
+    <span class="nav-rail-toggler__icon">
+        {{ collapsed() ? '→' : '←' }}
+    </span>
+
+    @if (!collapsed()) {
+    <span class="nav-rail-toggler__text">Contraer</span>
+    }
+</ui-button>
