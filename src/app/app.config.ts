@@ -6,6 +6,7 @@ import { routes } from './app.routes';
 import { GlobalErrorHandler } from './core/errors/global-error.handler';
 import { provideAuth } from '../app/di/provide-auth';
 import { provideNotifications } from './di/provide-notifications';
+import { provideRoles } from './di/provide-roles';
 import { authInterceptor, errorInterceptor } from './infrastructure/http';
 import { provideIcons } from './di/provide-icons';
 
@@ -15,6 +16,7 @@ export const appConfig: ApplicationConfig = {
         provideClientHydration(withEventReplay()),
         provideAuth(),
         provideNotifications(),
+        ...provideRoles(),
         provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
         { provide: ErrorHandler, useClass: GlobalErrorHandler },
         ...provideIcons({
