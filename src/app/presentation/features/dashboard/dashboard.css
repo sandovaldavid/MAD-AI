@@ -1,13 +1,84 @@
 @reference '../../../../styles.css';
 
-.dashboard-container {
-    @apply bg-white dark:bg-neutral-900 w-3/12 rounded-3xl;
-}
+/* Override specific dashboard container styles */
 
+/* Enhanced dashboard header */
 .dashboard-header {
-    @apply p-6 mb-0 border-neutral-200 dark:border-neutral-700;
+    @apply dashboard-header;
+    /* Add gradient background */
+    @apply bg-gradient-form;
+    @apply rounded-xl shadow-form-elevated;
+    @apply border border-neutral-200 dark:border-neutral-700;
 }
 
-.logout-button {
-    @apply mt-5;
+/* Custom dashboard welcome text styling */
+.dashboard-welcome {
+    @apply text-lg text-neutral-600 dark:text-neutral-300 font-medium;
+}
+
+/* Ensure proper spacing for the content area */
+.dashboard-content {
+    @apply dashboard-content;
+}
+
+/* Custom animation delays for staggered entrance */
+.animate-fade-in {
+    animation-delay: 0.1s;
+}
+
+.animate-slide-up {
+    animation-delay: 0.2s;
+}
+
+.animate-scale-in {
+    animation-delay: 0.3s;
+}
+
+/* Enhanced hover effects for interactive cards */
+.interactive-scale:hover {
+    @apply shadow-lg;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    .interactive-scale:hover {
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+    .dashboard-container {
+        @apply px-4;
+    }
+
+    .dashboard-header {
+        @apply p-4;
+    }
+
+    .section-dashboard {
+        @apply p-4;
+    }
+}
+
+/* Custom gradient for user avatar */
+.user-avatar-gradient {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-secondary-500));
+}
+
+/* Status indicators */
+.status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-active {
+    @apply status-success;
+}
+
+/* Loading animation enhancement */
+.loading-spinner {
+    @apply loading-spinner;
+    border-color: var(--color-primary-500);
+    border-top-color: transparent;
 }
