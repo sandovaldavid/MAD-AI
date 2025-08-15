@@ -36,7 +36,7 @@
 /* Responsive breakpoints enhancement */
 @media (max-width: 1023px) {
     .container-auth {
-        @apply flex-col min-h-screen;
+        @apply flex-col items-center justify-center;
     }
 
     .container-image {
