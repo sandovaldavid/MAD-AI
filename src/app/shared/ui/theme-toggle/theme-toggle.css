@@ -1,0 +1,46 @@
+@reference '../../../../styles.css';
+
+.theme-toggle {
+    @apply relative inline-flex items-center justify-center p-2 rounded-xl
+    bg-white border border-neutral-200 text-neutral-700 transition-all duration-200
+    hover:bg-neutral-50 hover:border-neutral-300 hover:text-neutral-900
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25
+    focus-visible:border-primary-500 active:scale-95
+    dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300
+    dark:hover:bg-neutral-700 dark:hover:border-neutral-600 dark:hover:text-neutral-100
+    dark:focus-visible:ring-primary-400/25 dark:focus-visible:border-primary-400;
+    min-width: 2.5rem;
+    height: 2.5rem;
+}
+
+.theme-toggle__icon {
+    @apply transition-transform duration-300 ease-in-out;
+}
+
+.theme-toggle:hover .theme-toggle__icon {
+    @apply scale-110;
+}
+
+.theme-toggle:active .theme-toggle__icon {
+    @apply scale-95;
+}
+
+/* Professional hover effect with subtle shadow */
+.theme-toggle:hover {
+    box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.1);
+}
+
+.theme-toggle:focus-visible {
+    box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.1), 
+                0 0 0 3px rgb(var(--primary-500) / 0.25);
+}
+
+/* Dark mode specific hover effects */
+.dark .theme-toggle:hover {
+    box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.3);
+}
+
+.dark .theme-toggle:focus-visible {
+    box-shadow: 0 4px 12px -4px rgb(0 0 0 / 0.3), 
+                0 0 0 3px rgb(var(--primary-400) / 0.25);
+}
