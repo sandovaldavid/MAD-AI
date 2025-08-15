@@ -1,0 +1,210 @@
+@reference '../../../../../../styles.css';
+
+/* ===============================================
+   Request Reset Form - Enhanced Design
+   =============================================== */
+
+.request-reset-form {
+    @apply w-full max-w-md mx-auto;
+    @apply bg-white/80 backdrop-blur-md rounded-2xl shadow-xl border border-neutral-200/50;
+    @apply dark:bg-neutral-900/80 dark:border-neutral-700/50 dark:shadow-2xl;
+    @apply p-8 space-y-6;
+    animation: slideInUp 0.6s ease-out;
+}
+
+/* ===============================================
+   Header Section
+   =============================================== */
+
+.request-reset-form__header {
+    @apply text-center space-y-3 mb-8;
+}
+
+.request-reset-form__title {
+    @apply text-2xl lg:text-3xl font-bold;
+    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
+    @apply dark:from-primary-400 dark:to-primary-600;
+}
+
+.request-reset-form__subtitle {
+    @apply text-base text-neutral-600 leading-relaxed;
+    @apply dark:text-neutral-400;
+    @apply max-w-sm mx-auto;
+}
+
+/* ===============================================
+   Form Elements Enhancement
+   =============================================== */
+
+.request-reset-form .ui-form-field {
+    @apply space-y-2;
+}
+
+.request-reset-form .ui-input {
+    @apply transition-all duration-200;
+    @apply focus-within:ring-2 focus-within:ring-primary-500/25;
+    @apply focus-within:border-primary-500;
+}
+
+.request-reset-form .ui-button {
+    @apply shadow-lg hover:shadow-xl transition-all duration-200;
+    @apply bg-gradient-to-r from-primary-600 to-primary-700;
+    @apply hover:from-primary-700 hover:to-primary-800;
+    @apply focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2;
+}
+
+/* ===============================================
+   Links and Navigation
+   =============================================== */
+
+.request-reset-form__link {
+    @apply inline-flex items-center justify-center gap-2 text-sm font-medium;
+    @apply text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300;
+    @apply transition-colors duration-200;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25;
+    @apply focus-visible:ring-offset-2 rounded-lg px-2 py-1;
+}
+
+.request-reset-form__link:hover {
+    @apply underline underline-offset-2;
+}
+
+.request-reset-form__footer {
+    @apply pt-6 border-t border-neutral-200 dark:border-neutral-700;
+    @apply text-center space-y-2;
+}
+
+.request-reset-form__footer-text {
+    @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+/* ===============================================
+   Icons Enhancement
+   =============================================== */
+
+.request-reset-form .ui-icon {
+    @apply transition-colors duration-200;
+}
+
+.request-reset-form__link .ui-icon {
+    @apply text-primary-500 dark:text-primary-400;
+}
+
+/* ===============================================
+   Custom Animations
+   =============================================== */
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulseSuccess {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.02);
+    }
+}
+
+/* ===============================================
+   Interactive States
+   =============================================== */
+
+.request-reset-form:hover {
+    @apply shadow-2xl;
+    @apply border-primary-300/50 dark:border-primary-700/50;
+}
+
+.request-reset-form .ui-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+    @apply bg-neutral-300 dark:bg-neutral-700;
+    @apply from-neutral-300 to-neutral-300 dark:from-neutral-700 dark:to-neutral-700;
+}
+
+/* ===============================================
+   Success State
+   =============================================== */
+
+.request-reset-form--success {
+    @apply border-successful-300 dark:border-successful-700;
+    animation: pulseSuccess 0.6s ease-in-out;
+}
+
+.request-reset-form--success .request-reset-form__title {
+    @apply bg-gradient-to-r from-successful-600 to-successful-800 bg-clip-text text-transparent;
+    @apply dark:from-successful-400 dark:to-successful-600;
+}
+
+/* ===============================================
+   Error State
+   =============================================== */
+
+.request-reset-form--error {
+    @apply border-error-300 dark:border-error-700;
+}
+
+.request-reset-form--error .request-reset-form__title {
+    @apply bg-gradient-to-r from-error-600 to-error-800 bg-clip-text text-transparent;
+    @apply dark:from-error-400 dark:to-error-600;
+}
+
+/* ===============================================
+   Responsive Design
+   =============================================== */
+
+@media (max-width: 640px) {
+    .request-reset-form {
+        @apply mx-4 p-6 space-y-5;
+    }
+
+    .request-reset-form__title {
+        @apply text-xl;
+    }
+
+    .request-reset-form__subtitle {
+        @apply text-sm;
+    }
+
+    .request-reset-form__header {
+        @apply mb-6 space-y-2;
+    }
+}
+
+/* ===============================================
+   Accessibility Enhancements
+   =============================================== */
+
+@media (prefers-reduced-motion: reduce) {
+    .request-reset-form {
+        animation: none;
+    }
+
+    .request-reset-form__title {
+        @apply bg-none text-primary-700 dark:text-primary-300;
+    }
+}
+
+@media (prefers-contrast: high) {
+    .request-reset-form {
+        @apply bg-white dark:bg-black border-2 border-neutral-800 dark:border-neutral-200;
+    }
+
+    .request-reset-form__title {
+        @apply bg-none text-primary-800 dark:text-primary-200;
+    }
+
+    .request-reset-form__link {
+        @apply text-primary-800 dark:text-primary-200;
+    }
+}
