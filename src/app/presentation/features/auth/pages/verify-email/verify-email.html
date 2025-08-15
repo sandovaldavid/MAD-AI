@@ -1,0 +1,124 @@
+<div class="verify-email-page">
+    <div class="verify-email-page__container">
+        <div class="verify-email-page__card">
+            <!-- Brand Section -->
+            <div class="verify-email-page__brand">
+                <h1 class="verify-email-page__brand-title">MAD-AI</h1>
+                <p class="verify-email-page__brand-subtitle">Gestión Inteligente de Operaciones</p>
+            </div>
+
+            <!-- Loading State -->
+            @if (isLoading()) {
+            <div class="verify-email-page__loading">
+                <!-- Loading Icon -->
+                <ui-icon
+                    class="verify-email-page__loading-icon"
+                    name="outline/loading"
+                    size="lg"
+                    variant="outline" />
+
+                <h2 class="verify-email-page__loading-title">Verificando tu email</h2>
+                <p class="verify-email-page__loading-text">
+                    Por favor espera mientras confirmamos tu dirección de correo electrónico
+                    <span class="verify-email-page__loading-dots">...</span>
+                </p>
+            </div>
+            }
+
+            <!-- Success State -->
+            @if (isSuccess()) {
+            <div class="verify-email-page__success">
+                <!-- Success Icon -->
+                <ui-icon
+                    class="verify-email-page__success-icon"
+                    name="outline/success"
+                    size="lg"
+                    variant="outline" />
+
+                <h2 class="verify-email-page__success-title">¡Email verificado!</h2>
+                <p class="verify-email-page__success-text">
+                    Tu dirección de correo electrónico ha sido confirmada exitosamente. Ya puedes
+                    acceder a todas las funcionalidades de tu cuenta.
+                </p>
+                <p class="verify-email-page__success-redirect">
+                    Serás redirigido al panel de control en unos segundos...
+                </p>
+            </div>
+            }
+
+            <!-- Error State -->
+            @if (isError()) {
+            <div class="verify-email-page__error">
+                <!-- Error Icon -->
+                <ui-icon
+                    class="verify-email-page__error-icon"
+                    name="outline/error"
+                    size="lg"
+                    variant="outline" />
+
+                <h2 class="verify-email-page__error-title">Error en la verificación</h2>
+                <p class="verify-email-page__error-text">
+                    No pudimos verificar tu dirección de correo electrónico. Esto puede deberse a un
+                    enlace expirado o inválido.
+                </p>
+
+                @if (errorMessage()) {
+                <div class="verify-email-page__error-message">
+                    <p class="verify-email-page__error-message-text">
+                        {{ errorMessage() }}
+                    </p>
+                </div>
+                }
+
+                <div class="verify-email-page__actions">
+                    <button
+                        type="button"
+                        class="verify-email-page__btn verify-email-page__btn--primary"
+                        (click)="goToRegister()">
+                        Registrarse nuevamente
+                    </button>
+                    <button
+                        type="button"
+                        class="verify-email-page__btn verify-email-page__btn--secondary"
+                        (click)="goToLogin()">
+                        Ir al inicio de sesión
+                    </button>
+                </div>
+            </div>
+            }
+
+            <!-- Invalid Token State -->
+            @if (isInvalidToken()) {
+            <div class="verify-email-page__invalid">
+                <!-- Warning Icon -->
+                <ui-icon
+                    class="verify-email-page__invalid-icon"
+                    name="outline/warning"
+                    size="lg"
+                    variant="outline" />
+
+                <h2 class="verify-email-page__invalid-title">Enlace no válido</h2>
+                <p class="verify-email-page__invalid-text">
+                    El enlace de verificación no es válido o no se proporcionó un token. Por favor,
+                    verifica tu correo electrónico e intenta nuevamente.
+                </p>
+
+                <div class="verify-email-page__actions">
+                    <button
+                        type="button"
+                        class="verify-email-page__btn verify-email-page__btn--primary"
+                        (click)="goToRegister()">
+                        Registrarse
+                    </button>
+                    <button
+                        type="button"
+                        class="verify-email-page__btn verify-email-page__btn--secondary"
+                        (click)="goToLogin()">
+                        Iniciar sesión
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
