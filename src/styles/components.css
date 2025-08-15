@@ -55,7 +55,7 @@
 }
 
 .container-form {
-    @apply flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 min-h-0;
+    @apply flex-1 flex items-center justify-center;
 }
 
 .container-image {
