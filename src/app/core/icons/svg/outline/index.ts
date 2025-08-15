@@ -1,4 +1,5 @@
 export { default as arrowRight } from './arrow-right.svg?raw';
+export { default as arrowLeft } from './arrow-left.svg?raw';
 export { default as eye } from './eye.svg?raw';
 export { default as eyeSlash } from './eye-slash.svg?raw';
 export { default as lock } from './lock.svg?raw';
@@ -10,3 +11,10 @@ export { default as xMark } from './x-mark.svg?raw';
 export { default as error } from './error.svg?raw';
 export { default as info } from './info.svg?raw';
 export { default as warning } from './warning.svg?raw';
+export { default as check } from './check.svg?raw';
+export { default as envelope } from './envelope.svg?raw';
+export { default as sun } from './sun.svg?raw';
+export { default as moon } from './moon.svg?raw';
+export { default as paperAirplane } from './paper-airplane.svg?raw';
+export { default as link } from './link.svg?raw';
+export { default as key } from './key.svg?raw';
