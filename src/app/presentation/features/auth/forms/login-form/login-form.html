@@ -1,4 +1,9 @@
-<form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+<form
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    class="login-form"
+    [attr.data-loading]="auth()?.loading()">
+    <!-- Identity Field -->
     <ui-form-field
         label="Usuario o correo electrónico"
         [required]="true"
@@ -11,19 +16,21 @@
             formControlName="identity"
             autocomplete="username"
             size="md">
-            <ui-icon prefix name="outline/user" size="sm" class="text-neutral-400" />
+            <ui-icon prefix name="outline/user" size="lg" class="text-neutral-400" />
             @if (form.get('identity')?.value) {
             <button
                 type="button"
                 suffix
-                class="text-neutral-400 hover:text-neutral-600 p-0.5"
-                (click)="clearField('identity')">
-                <ui-icon name="outline/x-mark" size="xs" />
+                class="text-neutral-400 hover:text-neutral-600 p-0.5 rounded transition-colors duration-200"
+                (click)="clearField('identity')"
+                aria-label="Limpiar campo">
+                <ui-icon name="outline/x-mark" size="sm" />
             </button>
             }
         </ui-input>
     </ui-form-field>
 
+    <!-- Password Field -->
     <ui-form-field
         label="Contraseña"
         [required]="true"
@@ -37,35 +44,72 @@
             formControlName="password"
             autocomplete="current-password"
             size="md">
-            <ui-icon prefix name="outline/lock" size="sm" class="text-neutral-400" />
+            <ui-icon prefix name="outline/lock" size="lg" class="text-neutral-400" />
             <button
                 type="button"
                 suffix
-                class="text-neutral-400 hover:text-neutral-600 p-0.5"
-                (click)="togglePassword()">
-                <ui-icon [name]="showPassword() ? 'outline/eye-slash' : 'outline/eye'" size="sm" />
+                class="text-neutral-400 hover:text-neutral-600 p-0.5 rounded transition-colors duration-200"
+                (click)="togglePassword()"
+                [attr.aria-label]="showPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                <ui-icon [name]="showPassword() ? 'outline/eye-slash' : 'outline/eye'" size="md" />
             </button>
         </ui-input>
     </ui-form-field>
 
-    <div class="flex items-center justify-between">
-        <label class="flex items-center gap-2 text-sm">
-            <input type="checkbox" formControlName="remember" class="accent-primary-500" />
-            Recordar sesión
+    <!-- Remember Me and Forgot Password -->
+    <div class="login-form-remember">
+        <label class="flex items-center gap-3 text-sm">
+            <input
+                type="checkbox"
+                formControlName="remember"
+                class="login-form-checkbox"
+                id="remember-me" />
+            <span>Recordar sesión</span>
         </label>
-        <a routerLink="/auth/reset-password" class="login-form-link"> Olvidé mi contraseña </a>
+        <a routerLink="/auth/reset-password" class="login-form-link">
+            <ui-icon name="outline/key" size="sm" />
+            Olvidé mi contraseña
+        </a>
     </div>
 
-    <ui-button type="submit" variant="primary" size="md" [fullWidth]="true">
-        <ui-icon icon-right name="filled/arrow-right" size="sm" />
-        Iniciar sesión
+    <!-- Submit Button -->
+    <ui-button
+        type="submit"
+        variant="primary"
+        size="md"
+        [fullWidth]="true"
+        class="login-form-submit"
+        [disabled]="auth()?.loading() ?? false">
+        @if (auth()?.loading()) {
+        <div class="flex items-center justify-center gap-2">
+            <div
+                class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Iniciando sesión...
+        </div>
+        } @else {
+        <div class="flex items-center justify-center gap-2">
+            <ui-icon name="filled/login" size="sm" />
+            Iniciar sesión
+        </div>
+        }
     </ui-button>
 
-    <div class="text-center text-sm mt-2">
-        ¿No tienes cuenta?
-        <a routerLink="/auth/register" class="login-form-register">
-            <ui-icon name="outline/user-plus" size="xs" />
-            Regístrate
+    <!-- Error Message -->
+    @if (auth()?.error()) {
+    <div class="login-form-error">
+        <div class="flex items-center gap-2">
+            <ui-icon name="outline/warning" size="sm" />
+            {{ auth()?.error() }}
+        </div>
+    </div>
+    }
+
+    <!-- Register Link -->
+    <div class="text-center text-sm">
+        <span class="text-neutral-600 dark:text-neutral-400">¿No tienes cuenta?</span>
+        <a routerLink="/auth/register" class="login-form-register ml-2">
+            <ui-icon name="outline/user-plus" size="sm" />
+            Regístrate aquí
         </a>
     </div>
 </form>
