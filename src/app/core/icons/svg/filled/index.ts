@@ -1,8 +1,14 @@
 export { default as user } from './user.svg?raw';
 export { default as success } from './success.svg?raw';
-export { default as arrowRight } from './arrow-right.svg?raw';
+export { default as login } from './login.svg?raw';
 export { default as lock } from './lock.svg?raw';
 export { default as mail } from './mail.svg?raw';
 export { default as error } from './error.svg?raw';
 export { default as info } from './info.svg?raw';
 export { default as warning } from './warning.svg?raw';
+export { default as check } from './check.svg?raw';
+export { default as envelope } from './envelope.svg?raw';
+export { default as arrowLeft } from './arrow-left.svg?raw';
+export { default as arrowRight } from './arrow-right.svg?raw';
+export { default as link } from './link.svg?raw';
+export { default as loading } from './loading.svg?raw';
