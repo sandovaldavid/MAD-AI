@@ -11,6 +11,14 @@ import {
     error,
     info,
     warning,
+    check,
+    envelope,
+    sun,
+    moon,
+    paperAirplane,
+    arrowLeft,
+    link,
+    key,
 } from './svg/outline';
 
 export const ICONS_CORE_OUTLINE = {
@@ -26,4 +34,12 @@ export const ICONS_CORE_OUTLINE = {
     'outline/error': error,
     'outline/info': info,
     'outline/warning': warning,
+    'outline/check': check,
+    'outline/envelope': envelope,
+    'outline/sun': sun,
+    'outline/moon': moon,
+    'outline/paper-airplane': paperAirplane,
+    'outline/link': link,
+    'outline/arrow-left': arrowLeft,
+    'outline/key': key,
 } as const;
