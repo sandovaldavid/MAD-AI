@@ -18,10 +18,15 @@ export const authRoutes: Routes = [
             import('./pages/reset-password/reset-password').then((m) => m.ResetPassword),
         title: 'Recuperar Contraseña',
     },
-    // Página para usuarios logueados pero con email NO confirmado
     {
-        path: 'auth/verify-email',
-        canMatch: [authOnly], // debe estar logueado
+        path: 'change-password',
+        loadComponent: () =>
+            import('./pages/change-password/change-password').then((m) => m.ChangePassword),
+        title: 'Cambiar Contraseña',
+    },
+    {
+        path: 'verify-email',
         loadComponent: () => import('./pages/verify-email/verify-email').then((m) => m.VerifyEmail),
+        title: 'Verificar Email',
     },
 ];
