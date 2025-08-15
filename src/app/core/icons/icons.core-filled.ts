@@ -1,4 +1,18 @@
-import { user, success, arrowRight, lock, mail, error, info, warning } from './svg/filled';
+import {
+    user,
+    success,
+    arrowRight,
+    lock,
+    mail,
+    error,
+    info,
+    warning,
+    check,
+    envelope,
+    arrowLeft,
+    login,
+    link,
+} from './svg/filled';
 
 export const ICONS_CORE_FILLED = {
     'filled/user': user,
@@ -9,4 +23,9 @@ export const ICONS_CORE_FILLED = {
     'filled/error': error,
     'filled/info': info,
     'filled/warning': warning,
+    'filled/check': check,
+    'filled/envelope': envelope,
+    'filled/arrow-left': arrowLeft,
+    'filled/login': login,
+    'filled/link': link,
 } as const;
