@@ -19,6 +19,7 @@ import type { RegisterData } from '@domain/types/auth/register-user.type';
 import { Button } from '@shared/ui/button/button';
 import { FormField } from '@shared/ui/form-field/form-field';
 import { Input } from '@shared/ui/input/input';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-register-form',
@@ -26,7 +27,7 @@ import { Input } from '@shared/ui/input/input';
     templateUrl: './register-form.html',
     styleUrl: './register-form.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [CommonModule, ReactiveFormsModule, Button, FormField, Input],
+    imports: [CommonModule, ReactiveFormsModule, Button, FormField, Input, Icon],
 })
 export class RegisterForm {
     private authFacade = inject(AuthFacade);
