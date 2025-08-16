@@ -10,6 +10,9 @@ export type UpdateRolePayload = Readonly<{
     name?: string;
     accessLevel?: number;
     description?: string;
+    canLeadProjects?: boolean;
+    isUniquePerTeam?: boolean;
+    isActive?: boolean;
 }>;
 
 export type ListRolesParams = Readonly<{
