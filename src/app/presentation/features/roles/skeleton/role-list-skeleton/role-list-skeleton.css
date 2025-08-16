@@ -1,0 +1,57 @@
+@reference '../../../../../../styles.css';
+
+.role-skeleton {
+    @apply space-y-6;
+}
+
+.role-skeleton-header {
+    @apply mb-8;
+}
+
+.role-skeleton-actions {
+    @apply flex items-center gap-3 mb-6;
+}
+
+.role-skeleton-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.role-skeleton-card {
+    @apply bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 space-y-4;
+}
+
+.role-skeleton-card-header {
+    @apply flex items-start gap-4;
+}
+
+.role-skeleton-card-title {
+    @apply flex-1;
+}
+
+.role-skeleton-card-content {
+    @apply space-y-2;
+}
+
+.role-skeleton-stats {
+    @apply flex items-center gap-6 pt-3 border-t border-neutral-100 dark:border-neutral-700;
+}
+
+.role-skeleton-stat {
+    @apply text-center;
+}
+
+.role-skeleton-card-actions {
+    @apply flex items-center justify-between pt-4 border-t border-neutral-100 dark:border-neutral-700;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+    .role-skeleton-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .role-skeleton-actions {
+        @apply flex-col items-stretch;
+    }
+}
