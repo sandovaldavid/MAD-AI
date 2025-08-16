@@ -10,7 +10,7 @@ export interface AuthRepository {
     me(): Promise<User>;
     getLocalTokens(): LocalTokens;
     setLocalTokens(s: LocalTokens): void;
-    register(data: RegisterData): Promise<Session>;
+    register(data: RegisterData): Promise<void>;
     confirmEmail(token: string): Promise<MessageResult>;
     requestPasswordReset(email: string): Promise<MessageResult>;
     confirmPasswordReset(data: ResetPasswordData): Promise<MessageResult>;
