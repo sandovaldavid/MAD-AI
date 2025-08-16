@@ -7,18 +7,19 @@ import { GlobalErrorHandler } from './core/errors/global-error.handler';
 import { provideAuth } from '../app/di/provide-auth';
 import { provideNotifications } from './di/provide-notifications';
 import { provideRoles } from './di/provide-roles';
-import { authInterceptor, errorInterceptor } from './infrastructure/http';
+import { authInterceptor } from './infrastructure/http';
+import { enhancedErrorInterceptor } from './core/interceptors/enhanced-error.interceptor';
 import { provideIcons } from './di/provide-icons';
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        { provide: ErrorHandler, useClass: GlobalErrorHandler },
+        provideHttpClient(withInterceptors([authInterceptor, enhancedErrorInterceptor])),
         provideRouter(routes),
         provideClientHydration(withEventReplay()),
         provideAuth(),
         provideNotifications(),
         ...provideRoles(),
-        provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
-        { provide: ErrorHandler, useClass: GlobalErrorHandler },
         ...provideIcons({
             missingStrategy: 'warn',
             defaultVariant: 'outline',
