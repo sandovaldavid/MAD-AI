@@ -1,0 +1,102 @@
+@reference '../../../../../../styles.css';
+
+/* Button Styles */
+.btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+    transition disabled:cursor-not-allowed select-none;
+    min-height: 2.25rem;
+    padding-inline: 0.875rem;
+}
+
+.btn--sm {
+    @apply text-xs min-h-8 px-3;
+}
+
+.btn--primary {
+    @apply text-white bg-primary-500 hover:bg-primary-700;
+}
+
+/* Form Styles */
+.form-label {
+    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2;
+}
+
+.form-input {
+    @apply w-full border border-neutral-300 bg-white text-neutral-900 rounded-xl outline-none transition-all duration-150 px-3 py-2 placeholder:text-neutral-500 hover:border-neutral-400 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/25 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:hover:border-neutral-600 dark:focus-visible:border-primary-400 dark:focus-visible:ring-primary-400/25;
+}
+
+/* Enhanced Card Hover Effects */
+.bg-white:hover {
+    @apply transform scale-[1.02];
+}
+
+/* Smooth transitions for all interactive elements */
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+/* Custom badge animations */
+.px-2.py-1.rounded-full {
+    @apply transition-all duration-200 hover:scale-105;
+}
+
+/* Enhanced shadow for elevated cards */
+.shadow-form-elevated {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.shadow-form-elevated:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+    .shadow-form-elevated {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .shadow-form-elevated:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn--ghost {
+        @apply text-neutral-200 border-neutral-700 hover:bg-neutral-800;
+    }
+
+    .btn--secondary {
+        @apply text-neutral-100 bg-secondary-700 hover:bg-secondary-600;
+    }
+}
+
+/* Role card specific enhancements */
+.role-card {
+    @apply transition-all duration-300 hover:shadow-lg;
+}
+
+/* Status indicator animations */
+.status-badge {
+    @apply transition-all duration-200 hover:scale-110;
+}
+
+/* Grid responsive enhancements */
+@media (max-width: 768px) {
+    .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
+        gap: 1rem;
+    }
+}
+
+/* Enhanced form controls */
+.form-input:focus {
+    @apply ring-4 ring-primary-500/10;
+}
+
+/* Improved button spacing in card actions */
+.card-actions {
+    @apply space-x-2;
+}
+
+.card-actions > * {
+    @apply flex-shrink-0;
+}
