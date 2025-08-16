@@ -1,0 +1,20 @@
+<div class="error-details">
+    @if (config().collapsible) {
+    <button
+        class="error-details-toggle"
+        (click)="toggleExpanded()"
+        [attr.aria-expanded]="isExpanded()">
+        <ui-icon
+            [name]="isExpanded() ? 'chevron-up' : 'chevron-down'"
+            size="sm"
+            class="error-details-toggle-icon" />
+        <span>{{ isExpanded() ? 'Ocultar detalles' : 'Ver detalles' }}</span>
+    </button>
+    } @if (isExpanded()) {
+    <div class="error-details-content">
+        <div class="error-details-text">
+            {{ config().details }}
+        </div>
+    </div>
+    }
+</div>
