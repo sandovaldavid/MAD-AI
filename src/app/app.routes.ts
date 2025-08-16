@@ -19,4 +19,10 @@ export const routes: Routes = [
             import('@presentation/layouts/main-layout/main-layout').then((m) => m.MainLayout),
         children: securedRoutes,
     },
+    {
+        path: '**',
+        loadComponent: () =>
+            import('@presentation/features/not-found/not-found').then((m) => m.NotFoundPage),
+        title: 'Página no encontrada',
+    },
 ];
