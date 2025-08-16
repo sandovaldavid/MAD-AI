@@ -19,6 +19,15 @@ import {
     arrowLeft,
     link,
     key,
+    shieldCheck,
+    shieldExclamation,
+    shield,
+    userGroup,
+    magnifyingGlassWebsite,
+    chevronRight,
+    shieldPlus,
+    shieldUp,
+    shieldUser,
 } from './svg/outline';
 
 export const ICONS_CORE_OUTLINE = {
@@ -42,4 +51,13 @@ export const ICONS_CORE_OUTLINE = {
     'outline/link': link,
     'outline/arrow-left': arrowLeft,
     'outline/key': key,
+    'outline/shield-check': shieldCheck,
+    'outline/shield-exclamation': shieldExclamation,
+    'outline/shield': shield,
+    'outline/user-group': userGroup,
+    'outline/magnifying-glass-website': magnifyingGlassWebsite,
+    'outline/chevron-right': chevronRight,
+    'outline/shield-up': shieldUp,
+    'outline/shield-user': shieldUser,
+    'outline/shield-plus': shieldPlus,
 } as const;
