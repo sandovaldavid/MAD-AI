@@ -3,5 +3,6 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @import './styles/colors.css';
+@import './styles/skeleton.css';
 @import './styles/globals.css';
 @import './styles/components.css';
