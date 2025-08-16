@@ -21,11 +21,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         switchMap((h) =>
             next(withHeader(req, h)).pipe(
                 catchError((err) => {
-                    // Reintento una vez si 401
+                    // Reintento una vez si 401 - solo para endpoints no-auth
                     if (
                         err instanceof HttpErrorResponse &&
                         err.status === 401 &&
-                        !req.headers.has(RETRIED)
+                        !req.headers.has(RETRIED) &&
+                        !req.url.startsWith(AUTH_API_PREFIX)
                     ) {
                         return orch
                             .forceRefreshOnce$()
