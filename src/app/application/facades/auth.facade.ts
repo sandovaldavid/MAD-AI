@@ -7,6 +7,7 @@ import { ConfirmEmail } from '../use-cases/auth/confirm-email.usecase';
 import { RequestPasswordReset } from '../use-cases/auth/request-password-reset.usecase';
 import { ConfirmPasswordReset } from '../use-cases/auth/confirm-password-reset.usecase';
 import { NotificationsFacade } from './notifications.facade';
+import { createFacadeErrorHandler } from '@core/errors/facade-error.handler';
 import type { User } from '@domain/entities/user.entity';
 import type { Identifier, RegisterData, ResetPasswordData } from '@/app/domain/types/auth';
 import type { FacadeOpts } from '@application/types/facade-opts';
@@ -21,6 +22,9 @@ export class AuthFacade {
     private reqResetUC = inject(RequestPasswordReset);
     private confirmResetUC = inject(ConfirmPasswordReset);
     private notify = inject(NotificationsFacade);
+
+    // Enhanced error handling for auth feature
+    private errorHandler = createFacadeErrorHandler('auth');
 
     private _loading = signal(false);
     private _error = signal<string | null>(null);
@@ -43,7 +47,7 @@ export class AuthFacade {
                     'Inicio de Sesión Exitoso'
                 );
         } catch (e: any) {
-            const msg = e?.message ?? 'No se pudo iniciar sesión';
+            const msg = this.errorHandler.transformError(e, 'login');
             this._error.set(msg);
             if (!opts?.silent) this.notify.error(msg);
             throw e;
@@ -58,6 +62,9 @@ export class AuthFacade {
             await this.logoutUC.execute();
             this._user.set(null);
             if (!opts?.silent) this.notify.info('Sesión cerrada');
+        } catch (e: any) {
+            const msg = this.errorHandler.transformError(e, 'logout');
+            if (!opts?.silent) this.notify.error(msg);
         } finally {
             this._loading.set(false);
         }
@@ -66,7 +73,9 @@ export class AuthFacade {
     async refreshProfile() {
         try {
             this._user.set(await this.meUC.execute());
-        } catch {
+        } catch (e: any) {
+            // Don't show notifications for profile refresh errors
+            // They are usually handled by interceptors (401 -> redirect)
             this._user.set(null);
         }
     }
@@ -82,12 +91,12 @@ export class AuthFacade {
         this._error.set(null);
         try {
             await this.registerUC.execute(data);
-            await this.refreshProfile();
+            // Registration does not set user or tokens
             if (!opts?.silent) this.notify.info('Revisa tu correo para confirmar tu cuenta');
         } catch (e: any) {
-            const msg = e?.message ?? 'No se pudo registrar';
-            this._error.set(msg);
-            if (!opts?.silent) this.notify.error(msg);
+            const message = this.errorHandler.transformError(e, 'register');
+            this._error.set(message);
+            if (!opts?.silent) this.notify.error(message);
             throw e;
         } finally {
             this._loading.set(false);
@@ -102,9 +111,9 @@ export class AuthFacade {
             await this.refreshProfile();
             if (!opts?.silent) this.notify.success('Correo confirmado');
         } catch (e: any) {
-            const msg = e?.message ?? 'No se pudo confirmar el correo';
-            this._error.set(msg);
-            if (!opts?.silent) this.notify.error(msg);
+            const message = this.errorHandler.transformError(e, 'confirm-email');
+            this._error.set(message);
+            if (!opts?.silent) this.notify.error(message);
             throw e;
         } finally {
             this._loading.set(false);
@@ -119,7 +128,7 @@ export class AuthFacade {
             if (!opts?.silent)
                 this.notify.info('Te enviamos un email para restablecer la contraseña');
         } catch (e: any) {
-            const msg = e?.message ?? 'No se pudo enviar el correo de restablecimiento';
+            const msg = this.errorHandler.transformError(e, 'reset-password');
             this._error.set(msg);
             if (!opts?.silent) this.notify.error(msg);
             throw e;
@@ -135,7 +144,7 @@ export class AuthFacade {
             await this.confirmResetUC.execute(data);
             if (!opts?.silent) this.notify.success('Contraseña actualizada');
         } catch (e: any) {
-            const msg = e?.message ?? 'No se pudo actualizar la contraseña';
+            const msg = this.errorHandler.transformError(e, 'confirm-password-reset');
             this._error.set(msg);
             if (!opts?.silent) this.notify.error(msg);
             throw e;
