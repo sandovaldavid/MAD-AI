@@ -1,12 +1,16 @@
 @reference '../../../../styles.css';
 
-
-.main-content {
-    @apply flex-grow flex flex-col transition-all duration-300 ease-in-out;
+.main-layout {
+    @apply flex flex-row min-h-screen w-full;
 }
 
-.content-area {
-    @apply p-6 flex-grow;
-    margin-top: var(--header-height);
-    @apply bg-primary-50 dark:bg-primary-950;
+.main-content {
+    @apply min-h-screen flex flex-col transition-all duration-300 ease-in-out bg-primary-50 dark:bg-primary-950;
+    margin-left: 280px; /* Space for expanded sidebar */
+    width: calc(100% - 280px);
+}
+
+.main-content--sidebar-collapsed {
+    margin-left: 64px; /* Space for collapsed sidebar */
+    width: calc(100% - 64px);
 }

@@ -1,7 +1,7 @@
-
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MainSidebar } from '@presentation/shell/main-sidebar/main-sidebar';
+import { LayoutService } from '@core/services/layout.service';
 
 @Component({
     selector: 'app-main-layout',
@@ -10,4 +10,8 @@ import { MainSidebar } from '@presentation/shell/main-sidebar/main-sidebar';
     styleUrl: './main-layout.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MainLayout {}
+export class MainLayout {
+    private readonly layoutService = inject(LayoutService);
+
+    readonly sidebarCollapsed = computed(() => this.layoutService.sidebarCollapsed());
+}
