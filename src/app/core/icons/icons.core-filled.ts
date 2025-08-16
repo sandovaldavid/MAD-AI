@@ -12,6 +12,14 @@ import {
     arrowLeft,
     login,
     link,
+    checkCircle,
+    loading,
+    xCircle,
+    trash,
+    pause,
+    play,
+    home,
+    bug,
 } from './svg/filled';
 
 export const ICONS_CORE_FILLED = {
@@ -28,4 +36,12 @@ export const ICONS_CORE_FILLED = {
     'filled/arrow-left': arrowLeft,
     'filled/login': login,
     'filled/link': link,
+    'filled/check-circle': checkCircle,
+    'filled/loading': loading,
+    'filled/x-circle': xCircle,
+    'filled/trash': trash,
+    'filled/pause': pause,
+    'filled/play': play,
+    'filled/home': home,
+    'filled/bug': bug,
 } as const;
