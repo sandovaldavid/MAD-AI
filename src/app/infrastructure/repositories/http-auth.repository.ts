@@ -125,7 +125,7 @@ export class HttpAuthRepository implements AuthRepository {
         }
     }
 
-    async register(data: RegisterData): Promise<Session> {
+    async register(data: RegisterData): Promise<void> {
         const body: RegisterRequestDTO = {
             username: data.username,
             email: data.email,
@@ -135,24 +135,11 @@ export class HttpAuthRepository implements AuthRepository {
             last_name: data.last_name,
             role_id: data.role_id ?? null,
         };
-        const now = this.clock.nowEpochSeconds();
         const dto = await firstValueFrom(
             this.http.post<RegisterResponseDTO>(`${API}/register/`, body)
         );
+        // Registration successful - no session or tokens returned
         this.writeUserSnapshotFromLogin(dto.user);
-        const user = AuthMapper.registerUserToEntity(dto.user); // misma forma que login
-        const tokens = AuthMapper.tokensFromRegister(dto, now); // o tokensFromLogin(dto, now)
-        this.setLocalTokens({
-            accessToken: tokens.accessToken,
-            accessExp: tokens.accessExp,
-            refreshToken: tokens.refreshToken,
-        });
-        return AuthMapper.toSession({
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            accessExpEpochSeconds: tokens.accessExp,
-            user,
-        });
     }
 
     async confirmEmail(token: string): Promise<MessageResult> {
