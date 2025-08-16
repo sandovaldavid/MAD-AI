@@ -1,0 +1,91 @@
+@reference '../../../../../../styles.css';
+
+/* Loading spinner enhanced */
+.loading-spinner {
+    @apply w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin;
+}
+
+/* Role header icon container */
+.role-icon-container {
+    @apply p-3 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 
+    dark:from-primary-900/50 dark:to-primary-800/50 shadow-sm;
+}
+
+/* Role level badge animations */
+.role-level-badge {
+    @apply transition-all duration-200 hover:scale-105 shadow-sm;
+}
+
+/* Status badge animations */
+.status-badge {
+    @apply transition-all duration-200 hover:scale-105;
+}
+
+/* Statistics cards hover effect */
+.stat-card {
+    @apply transition-all duration-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 hover:scale-[1.02];
+}
+
+/* Info box with role-specific styling */
+.role-info-box {
+    @apply transition-all duration-300 hover:shadow-lg cursor-default;
+}
+
+/* Access level indicator */
+.access-level-indicator {
+    @apply relative overflow-hidden;
+}
+
+.access-level-indicator::before {
+    @apply absolute inset-0 opacity-10 transition-opacity duration-300;
+    content: '';
+    background: currentColor;
+}
+
+.access-level-indicator:hover::before {
+    @apply opacity-20;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .card-responsive {
+        @apply mx-4;
+    }
+
+    .dashboard-container {
+        @apply px-4;
+    }
+
+    .role-header-mobile {
+        @apply flex-col items-start gap-4;
+    }
+
+    .role-badge-mobile {
+        @apply self-start;
+    }
+}
+
+/* Animation classes */
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Role-specific hover effects */
+.role-stat:hover {
+    @apply transform scale-105 shadow-md;
+}
+
+/* Enhanced focus states for accessibility */
+.role-action-button:focus-visible {
+    @apply ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+}
