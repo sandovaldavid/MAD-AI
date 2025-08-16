@@ -4,21 +4,13 @@
 
 /* Enhanced dashboard header */
 .dashboard-header {
-    @apply dashboard-header;
-    /* Add gradient background */
-    @apply bg-gradient-form;
-    @apply rounded-xl shadow-form-elevated;
+    @apply rounded-xl;
     @apply border border-neutral-200 dark:border-neutral-700;
 }
 
 /* Custom dashboard welcome text styling */
 .dashboard-welcome {
     @apply text-lg text-neutral-600 dark:text-neutral-300 font-medium;
-}
-
-/* Ensure proper spacing for the content area */
-.dashboard-content {
-    @apply dashboard-content;
 }
 
 /* Custom animation delays for staggered entrance */
@@ -72,13 +64,8 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
 }
 
-.status-active {
-    @apply status-success;
-}
-
 /* Loading animation enhancement */
 .loading-spinner {
-    @apply loading-spinner;
     border-color: var(--color-primary-500);
     border-top-color: transparent;
 }
