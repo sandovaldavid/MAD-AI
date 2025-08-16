@@ -6,5 +6,4 @@ export interface RoleModel {
     isActive: boolean;
     description?: string;
     userCount?: number;
-    badgeTone: 'success' | 'warning' | 'error' | 'info';
 }
