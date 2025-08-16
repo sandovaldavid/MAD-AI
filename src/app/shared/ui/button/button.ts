@@ -2,7 +2,16 @@ import { ChangeDetectionStrategy, Component, computed, input, output } from '@an
 import { Icon } from '../icon/icon';
 import type { Size as IconSize, Variant as IconVariant } from '@shared/types/icon';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
+type ButtonVariant =
+    | 'primary'
+    | 'secondary'
+    | 'danger'
+    | 'ghost'
+    | 'success'
+    | 'warning'
+    | 'info'
+    | 'outline-primary'
+    | 'outline-secondary';
 type ButtonSize = 'sm' | 'md' | 'lg';
 type ButtonType = 'button' | 'submit' | 'reset';
 
@@ -37,8 +46,9 @@ export class Button {
         const v = `btn--${this.variant()}`;
         const s = `btn--${this.size()}`;
         const w = this.fullWidth() ? 'btn--block' : '';
+        const loading = this.loading() ? 'btn--loading' : '';
         const dis = this.disabled() || this.loading() ? 'btn--disabled' : '';
-        return [base, v, s, w, dis].filter(Boolean).join(' ');
+        return [base, v, s, w, loading, dis].filter(Boolean).join(' ');
     });
 
     // Tamaño del ícono basado en el tamaño del botón
