@@ -1,5 +1,5 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { ThemeService } from '@core/services/theme.service';
+import { ThemeService } from '@core/cross-cutting/ui-state/theme.service';
 import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
