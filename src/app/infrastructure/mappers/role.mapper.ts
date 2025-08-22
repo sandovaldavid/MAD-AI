@@ -1,14 +1,16 @@
 import { Role } from '@domain/entities/role.entity';
 import { RoleDTO } from '../dtos/roles/roles.dto';
-import { UpdateRolePayload } from '@/app/domain/repositories/role.repository';
+import { UpdateRolePatchContract } from '@domain/contracts/role.contract';
 import { RequestUpdateRoleDTO } from '../dtos/roles/update.dto';
+import { RoleName } from '@domain/value-objects/role-name.vo';
+import { AccessLevel } from '@domain/value-objects/accesslevel.vo';
 
 export const RoleMapper = {
     toEntity(dto: RoleDTO): Role {
         return Role.create({
             id: dto.id,
-            name: dto.name,
-            accessLevel: dto.access_level,
+            name: RoleName.create(dto.name),
+            accessLevel: AccessLevel.create(dto.access_level),
             isActive: dto.is_active,
             description: dto.description,
             userCount: dto.user_count,
@@ -30,7 +32,7 @@ export const RoleMapper = {
 /**
  * Transforma el payload de dominio al DTO de la API
  */
-export const mapUpdatePayloadToDTO = (payload: UpdateRolePayload): RequestUpdateRoleDTO => {
+export const mapUpdatePayloadToDTO = (payload: UpdateRolePatchContract): RequestUpdateRoleDTO => {
     const dto: RequestUpdateRoleDTO = {};
 
     if (payload.name !== undefined) {
