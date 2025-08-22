@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthHttpOrchestrator } from './auth-http.orchestrator';
 import { Router } from '@angular/router';
-import { ReturnUrlService } from '@core/services/return-url.service';
+import { ReturnUrlService } from '@core/cross-cutting/utilities/return-url.service';
 import { environment } from '@/env/environment';
 
 const RETRIED = 'x-auth-retried';
