@@ -6,8 +6,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { NavigationFacade } from '@application/facades/navigation.facade';
-import { LayoutService } from '@core/services/layout.service';
+import { NavigationService } from '@presentation/navigation/navigation.service';
+import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
 import { NavRailToggler } from '../nav-rail-toggler/nav-rail-toggler';
 import { NavRailSection } from '../nav-rail-section/nav-rail-section';
 import { NavRailFooter } from '../nav-rail-footer/nav-rail-footer';
@@ -27,11 +27,11 @@ import { NavRailFooter } from '../nav-rail-footer/nav-rail-footer';
 })
 export class MainSidebar {
     private readonly layoutService = inject(LayoutService);
-    private readonly navigationFacade = inject(NavigationFacade);
+    private readonly navigationService = inject(NavigationService);
 
     // Computed properties from services
     readonly isCollapsed = computed(() => this.layoutService.sidebarCollapsed());
-    readonly navigationSections = computed(() => this.navigationFacade.sections());
+    readonly navigationSections = computed(() => this.navigationService.accessibleSections());
 
     // Computed UI properties
     readonly sidebarAriaLabel = computed(() =>

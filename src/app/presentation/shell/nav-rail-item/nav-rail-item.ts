@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
-import { NavItem } from '@domain/entities/nav-item.entity';
-import { LayoutService } from '@core/services/layout.service';
+import { NavItem } from '@presentation/navigation/types';
+import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
 
 @Component({
     selector: 'app-nav-rail-item',

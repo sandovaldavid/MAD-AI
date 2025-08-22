@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
-import { ThemeService } from '@core/services/theme.service';
+import { ThemeService } from '@core/cross-cutting/ui-state/theme.service';
 import { Button } from '@shared/ui/button/button';
 
 @Component({

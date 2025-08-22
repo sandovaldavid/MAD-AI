@@ -9,7 +9,7 @@
             <app-nav-rail-item
                 [item]="item"
                 [collapsed]="collapsed()"
-                [active]="navigationFacade.isItemActive(item.id)"
+                [active]="navigationService.isItemActive(item)"
                 (hover)="onItemHover($event)"
                 (leave)="onItemLeave()" />
         </li>

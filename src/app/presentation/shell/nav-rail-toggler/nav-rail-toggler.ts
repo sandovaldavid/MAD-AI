@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { LayoutService } from '@core/services/layout.service';
+import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
 import { Button } from '@shared/ui/button/button';
 
 @Component({

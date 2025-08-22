@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { NavSection } from '@domain/entities/nav-section.entity';
-import { NavigationFacade } from '@application/facades/navigation.facade';
-import { LayoutService } from '@core/services/layout.service';
+import { NavSection } from '@presentation/navigation/types';
+import { NavigationService } from '@presentation/navigation/navigation.service';
+import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
 import { NavRailItem } from '../nav-rail-item/nav-rail-item';
 
 @Component({
@@ -16,7 +16,7 @@ import { NavRailItem } from '../nav-rail-item/nav-rail-item';
 })
 export class NavRailSection {
     private layoutService = inject(LayoutService);
-    protected navigationFacade = inject(NavigationFacade);
+    protected navigationService = inject(NavigationService);
 
     // Inputs
     section = input.required<NavSection>();
