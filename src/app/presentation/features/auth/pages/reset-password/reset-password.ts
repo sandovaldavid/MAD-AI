@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { AuthFacade } from '@/app/application/facades/auth.facade';
+import { AuthFacade } from '@application/facades/auth.facade';
 import { RequestResetForm } from '../../forms/request-reset-form/request-reset-form';
 
 @Component({
