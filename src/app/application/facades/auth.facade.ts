@@ -3,153 +3,421 @@ import { LoginWithCredentials } from '../use-cases/auth/login.usecase';
 import { Logout } from '../use-cases/auth/logout.usecase';
 import { GetProfile } from '../use-cases/auth/get-profile.usecase';
 import { Register } from '../use-cases/auth/register.usecase';
+import { RefreshSession } from '../use-cases/auth/refresh-session.usecase';
 import { ConfirmEmail } from '../use-cases/auth/confirm-email.usecase';
 import { RequestPasswordReset } from '../use-cases/auth/request-password-reset.usecase';
 import { ConfirmPasswordReset } from '../use-cases/auth/confirm-password-reset.usecase';
 import { NotificationsFacade } from './notifications.facade';
-import { createFacadeErrorHandler } from '@core/errors/facade-error.handler';
+import type {
+    LoginRequest,
+    RegisterRequest,
+    LogoutRequest,
+    RefreshSessionRequest,
+} from '@application/types/auth.types';
 import type { User } from '@domain/entities/user.entity';
-import type { Identifier, RegisterData, ResetPasswordData } from '@/app/domain/types/auth';
+import type { Session } from '@domain/entities/session.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
+import { ApplicationErrorTransformer } from '../errors/application-error.transformer';
 
+/**
+ * Authentication Facade - Clean Orchestrator Following MAD-AI Patterns
+ *
+ * @description
+ * Pure orchestrator that delegates all business logic to robust use cases.
+ * This facade focuses solely on:
+ * - Coordinating between use cases
+ * - Managing reactive application state (loading, user, errors)
+ * - Providing a clean API for the presentation layer
+ *
+ * All error handling, validation, and business logic is delegated to use cases.
+ * Follows the same patterns established in NotificationsFacade and UsersFacade.
+ *
+ * @responsibilities
+ * - Reactive state management for authentication UI
+ * - Use case orchestration and coordination
+ * - Session state synchronization
+ * - Cross-facade integration with NotificationsFacade
+ *
+ * @architecture
+ * - No direct business logic or error handling
+ * - Uses robust use cases for all operations
+ * - Manages reactive state with Angular signals
+ * - Provides computed properties for UI binding
+ * - Integrates with NotificationsFacade for user feedback
+ *
+ * @since 1.0.0
+ * @layer Application
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
-    private loginUC = inject(LoginWithCredentials);
-    private logoutUC = inject(Logout);
-    private meUC = inject(GetProfile);
-    private registerUC = inject(Register);
-    private confirmEmailUC = inject(ConfirmEmail);
-    private reqResetUC = inject(RequestPasswordReset);
-    private confirmResetUC = inject(ConfirmPasswordReset);
-    private notify = inject(NotificationsFacade);
+    // ============================================================================
+    // Dependencies Injection
+    // ============================================================================
 
-    // Enhanced error handling for auth feature
-    private errorHandler = createFacadeErrorHandler('auth');
+    // Use Case Dependencies
+    private readonly loginUC = inject(LoginWithCredentials);
+    private readonly logoutUC = inject(Logout);
+    private readonly profileUC = inject(GetProfile);
+    private readonly registerUC = inject(Register);
+    private readonly refreshUC = inject(RefreshSession);
+    private readonly confirmEmailUC = inject(ConfirmEmail);
+    private readonly reqResetUC = inject(RequestPasswordReset);
+    private readonly confirmResetUC = inject(ConfirmPasswordReset);
 
-    private _loading = signal(false);
-    private _error = signal<string | null>(null);
-    private _user = signal<User | null>(null);
+    // Error Transformer
+    private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
+    // Cross-Facade Dependencies
+    private readonly notifications = inject(NotificationsFacade);
+
+    // ============================================================================
+    // Private State Signals
+    // ============================================================================
+
+    /** Loading state for async operations */
+    private readonly _loading = signal(false);
+
+    /** Current authenticated user */
+    private readonly _user = signal<User | null>(null);
+
+    /** Current session data */
+    private readonly _session = signal<Session | null>(null);
+
+    /** Current error state */
+    private readonly _authError = signal<string | null>(null);
+
+    // ============================================================================
+    // Public Computed Properties (Reactive State)
+    // ============================================================================
+
+    /** Loading state for async operations */
     readonly loading = computed(() => this._loading());
-    readonly error = computed(() => this._error());
+
+    /** Current authenticated user */
     readonly user = computed(() => this._user());
+
+    /** Current session data */
+    readonly session = computed(() => this._session());
+
+    /** Current error state */
+    readonly error = computed(() => this._authError());
+
+    /** Whether user is authenticated */
     readonly isAuthenticated = computed(() => !!this._user());
 
-    async login(identifier: Identifier, password: string, remember_me = false, opts?: FacadeOpts) {
-        this._loading.set(true);
-        this._error.set(null);
+    /** User display name for UI */
+    readonly userDisplayName = computed(() => {
+        const user = this._user();
+        return user ? `${user.firstName} ${user.lastName}` : '';
+    });
+
+    /** Whether current user has admin role */
+    readonly isAdmin = computed(() => {
+        const user = this._user();
+        return user?.roleName === 'Admin' || false;
+    });
+
+    // ============================================================================
+    // Authentication Operations
+    // ============================================================================
+
+    /**
+     * Executes user login through robust use case
+     */
+    async login(request: LoginRequest, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
         try {
-            await this.loginUC.execute(identifier, password, remember_me);
-            await this.refreshProfile();
-            if (!opts?.silent)
-                this.notify.success(
-                    'Bienvenido de nuevo ' + this._user()?.username,
-                    'Inicio de Sesión Exitoso'
-                );
-        } catch (e: any) {
-            const msg = this.errorHandler.transformError(e, 'login');
-            this._error.set(msg);
-            if (!opts?.silent) this.notify.error(msg);
-            throw e;
+            const session = await this.loginUC.execute(request);
+
+            this._session.set(session);
+            this._user.set(session.user);
+
+            // Send success notification
+            await this.notifications.success(
+                'Welcome back!',
+                `Hello ${session.user.firstName}, you've successfully logged in.`
+            );
+        } catch (error: any) {
+            // DEBUG: Log the original error to console for debugging
+            console.error('🔥 AuthFacade Login Error - Original Error:', error);
+            console.error('🔥 AuthFacade Login Error - Error Type:', typeof error);
+            console.error('🔥 AuthFacade Login Error - Error Constructor:', error?.constructor?.name);
+            console.error('🔥 AuthFacade Login Error - Error Message:', error?.message);
+            console.error('🔥 AuthFacade Login Error - Error Stack:', error?.stack);
+            
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            console.error('🔥 AuthFacade Login Error - Transformed Message:', errorMessage);
+            
+            this._authError.set(errorMessage);
+            throw error;
         } finally {
-            this._loading.set(false);
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
         }
     }
 
-    async logout(opts?: FacadeOpts) {
-        this._loading.set(true);
+    /**
+     * Executes user registration through robust use case
+     */
+    async register(request: RegisterRequest, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
         try {
-            await this.logoutUC.execute();
+            await this.registerUC.execute(request);
+
+            // Send success notification
+            await this.notifications.success(
+                'Registration successful!',
+                'Please check your email to confirm your account.'
+            );
+        } catch (error: any) {
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            throw error;
+        } finally {
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
+        }
+    }
+
+    /**
+     * Executes user logout through robust use case
+     */
+    async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
+        try {
+            await this.logoutUC.execute(request || {});
+
+            this._session.set(null);
             this._user.set(null);
-            if (!opts?.silent) this.notify.info('Sesión cerrada');
-        } catch (e: any) {
-            const msg = this.errorHandler.transformError(e, 'logout');
-            if (!opts?.silent) this.notify.error(msg);
-        } finally {
-            this._loading.set(false);
-        }
-    }
+            this._authError.set(null);
 
-    async refreshProfile() {
-        try {
-            this._user.set(await this.meUC.execute());
-        } catch (e: any) {
-            // Don't show notifications for profile refresh errors
-            // They are usually handled by interceptors (401 -> redirect)
+            // Send info notification
+            await this.notifications.info(
+                'Logged out successfully',
+                'You have been safely logged out of your account.'
+            );
+        } catch (error: any) {
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            // Don't throw on logout errors - still clear session
+            this._session.set(null);
             this._user.set(null);
-        }
-    }
-
-    /** Útil si alguna llamada manual necesita el header; normalmente el interceptor lo agrega solo. */
-    getAccessHeaderOrNull(): string | null {
-        const u = this._user(); // opcional: puedes obtener el token desde el repo si lo prefieres
-        return null; // mantenemos el header delegado al interceptor
-    }
-
-    async register(data: RegisterData, opts?: FacadeOpts) {
-        this._loading.set(true);
-        this._error.set(null);
-        try {
-            await this.registerUC.execute(data);
-            // Registration does not set user or tokens
-            if (!opts?.silent) this.notify.info('Revisa tu correo para confirmar tu cuenta');
-        } catch (e: any) {
-            const message = this.errorHandler.transformError(e, 'register');
-            this._error.set(message);
-            if (!opts?.silent) this.notify.error(message);
-            throw e;
         } finally {
-            this._loading.set(false);
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
         }
     }
 
-    async confirmEmail(token: string, opts?: FacadeOpts) {
-        this._loading.set(true);
-        this._error.set(null);
+    /**
+     * Executes session refresh through robust use case
+     */
+    async refreshSession(opts?: FacadeOpts): Promise<void> {
+        // Session refresh is typically silent
+        const showLoading = opts?.skipLoading === false;
+
+        if (showLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
         try {
-            await this.confirmEmailUC.execute(token);
-            await this.refreshProfile();
-            if (!opts?.silent) this.notify.success('Correo confirmado');
-        } catch (e: any) {
-            const message = this.errorHandler.transformError(e, 'confirm-email');
-            this._error.set(message);
-            if (!opts?.silent) this.notify.error(message);
-            throw e;
+            const session = await this.refreshUC.execute();
+
+            this._session.set(session);
+            this._user.set(session.user);
+        } catch (error: any) {
+            // Failed session refresh usually means logout
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+
+            this._session.set(null);
+            this._user.set(null);
+
+            if (showLoading) {
+                throw error;
+            }
         } finally {
-            this._loading.set(false);
+            if (showLoading) {
+                this._loading.set(false);
+            }
         }
     }
 
-    async requestPasswordReset(email: string, opts?: FacadeOpts) {
-        this._loading.set(true);
-        this._error.set(null);
+    /**
+     * Refreshes user profile data
+     */
+    async refreshProfile(opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
         try {
-            await this.reqResetUC.execute(email);
-            if (!opts?.silent)
-                this.notify.info('Te enviamos un email para restablecer la contraseña');
-        } catch (e: any) {
-            const msg = this.errorHandler.transformError(e, 'reset-password');
-            this._error.set(msg);
-            if (!opts?.silent) this.notify.error(msg);
-            throw e;
+            const user = await this.profileUC.execute();
+            this._user.set(user);
+        } catch (error: any) {
+            // Profile refresh errors usually indicate session expiration
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            this._user.set(null);
+            this._session.set(null);
+            throw error;
         } finally {
-            this._loading.set(false);
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
         }
     }
 
-    async confirmPasswordReset(data: ResetPasswordData, opts?: FacadeOpts) {
-        this._loading.set(true);
-        this._error.set(null);
+    // ============================================================================
+    // Session Utility Methods
+    // ============================================================================
+
+    /**
+     * Gets authentication token for manual API calls
+     */
+    getAccessTokenOrNull(): string | null {
+        const session = this._session();
+        return session?.access?.value || null;
+    }
+
+    /**
+     * Checks if current session is valid (not expired)
+     */
+    isSessionValid(nowEpochSeconds: number): boolean {
+        const session = this._session();
+        return session ? !session.isAccessTokenExpired(nowEpochSeconds) : false;
+    }
+
+    /**
+     * Gets remaining session time in seconds
+     */
+    getSessionTimeRemaining(nowEpochSeconds: number): number | null {
+        const session = this._session();
+        return session ? session.expiresInSeconds(nowEpochSeconds) : null;
+    }
+
+    // ============================================================================
+    // Email and Password Reset Operations
+    // ============================================================================
+
+    async confirmEmail(token: string, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
+        try {
+            await this.confirmEmailUC.execute({ token });
+            await this.refreshProfile({ skipLoading: true });
+
+            // Send success notification
+            await this.notifications.success(
+                'Email confirmed!',
+                'Your email address has been successfully confirmed.'
+            );
+        } catch (error: any) {
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            throw error;
+        } finally {
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
+        }
+    }
+
+    async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
+        try {
+            await this.reqResetUC.execute({ email });
+
+            // Send success notification
+            await this.notifications.info(
+                'Password reset requested',
+                'Please check your email for password reset instructions.'
+            );
+        } catch (error: any) {
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            throw error;
+        } finally {
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
+        }
+    }
+
+    async confirmPasswordReset(data: any, opts?: FacadeOpts): Promise<void> {
+        if (!opts?.skipLoading) {
+            this._loading.set(true);
+        }
+        this._authError.set(null);
+
         try {
             await this.confirmResetUC.execute(data);
-            if (!opts?.silent) this.notify.success('Contraseña actualizada');
-        } catch (e: any) {
-            const msg = this.errorHandler.transformError(e, 'confirm-password-reset');
-            this._error.set(msg);
-            if (!opts?.silent) this.notify.error(msg);
-            throw e;
+
+            // Send success notification
+            await this.notifications.success(
+                'Password reset successful!',
+                'Your password has been updated. Please log in with your new password.'
+            );
+        } catch (error: any) {
+            const errorMessage = this.errorTransformer.transformError(error as Error);
+            this._authError.set(errorMessage);
+            throw error;
         } finally {
-            this._loading.set(false);
+            if (!opts?.skipLoading) {
+                this._loading.set(false);
+            }
         }
+    }
+
+    // ============================================================================
+    // State Management Operations
+    // ============================================================================
+
+    /**
+     * Clear current error state
+     */
+    clearError(): void {
+        this._authError.set(null);
+    }
+
+    /**
+     * Clear error and loading states (useful when entering auth pages)
+     */
+    clearAuthState(): void {
+        this._authError.set(null);
+        this._loading.set(false);
+    }
+
+    /**
+     * Reset facade state (useful for testing or logout)
+     */
+    reset(): void {
+        this._loading.set(false);
+        this._user.set(null);
+        this._session.set(null);
+        this._authError.set(null);
     }
 }
