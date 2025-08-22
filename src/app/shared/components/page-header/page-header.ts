@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Icon } from '@shared/ui/icon/icon';
-import { BreadcrumbService } from '@core/services/breadcrumb.service';
+import { BreadcrumbService } from '@core/cross-cutting/ui-state/breadcrumb.service';
 
 export interface PageHeaderConfig {
     title: string;
