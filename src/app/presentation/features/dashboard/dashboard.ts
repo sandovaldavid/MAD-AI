@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { TitleService } from '@core/services/title.service';
-import { BreadcrumbService } from '@core/services/breadcrumb.service';
-import { Button } from '@/app/shared/ui/button/button';
-import { Icon } from '@/app/shared/ui/icon/icon';
-import { AuthFacade } from '@/app/application/facades/auth.facade';
-import { User } from '@/app/domain/entities/user.entity';
+import { TitleService } from '@core/cross-cutting/utilities/title.service';
+import { BreadcrumbService } from '@core/cross-cutting/ui-state/breadcrumb.service';
+import { Button } from '@shared/ui/button/button';
+import { Icon } from '@shared/ui/icon/icon';
+import { AuthFacade } from '@application/facades/auth.facade';
+import { User } from '@domain/entities/user.entity';
 
 @Component({
     selector: 'app-dashboard',
