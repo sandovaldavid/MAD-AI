@@ -7,7 +7,7 @@ import { ErrorDisplay } from '@shared/components/error-view/error-display/error-
 import type { ErrorDisplayConfig } from '@shared/types/error-display.types';
 import { Button } from '@shared/ui/button/button';
 import { Icon } from '@shared/ui/icon/icon';
-import { BreadcrumbService } from '@core/services/breadcrumb.service';
+import { BreadcrumbService } from '@core/cross-cutting/ui-state/breadcrumb.service';
 import {
     getRoleAccessLevelInfo,
     getRoleAccessLevelIcon,
@@ -28,7 +28,7 @@ export class RoleDetail {
     private router = inject(Router);
     private breadcrumbService = inject(BreadcrumbService);
 
-    role = this.facade.current;
+    role = this.facade.currentRole;
     loading = this.facade.loading;
     error = this.facade.error;
 
@@ -70,7 +70,7 @@ export class RoleDetail {
         actions: [
             {
                 label: 'Reintentar',
-                icon: 'arrow-path',
+                icon: 'retry',
                 action: () => this.retry(),
                 style: 'primary',
             },
@@ -87,7 +87,7 @@ export class RoleDetail {
 
     constructor() {
         const id = Number(this.route.snapshot.paramMap.get('id'));
-        void this.facade.load(id);
+        void this.facade.loadRole(id);
 
         // Update breadcrumbs when role data changes
         effect(() => {
@@ -145,6 +145,6 @@ export class RoleDetail {
 
     private retry(): void {
         const id = Number(this.route.snapshot.paramMap.get('id'));
-        void this.facade.load(id);
+        void this.facade.loadRole(id);
     }
 }
