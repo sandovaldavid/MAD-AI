@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, Inject, inject, input } from '@angular/core';
-import { IconRegistry } from '@core/services/icon-registry.service';
+import { IconRegistry } from '@core/cross-cutting/utilities/icon-registry.service';
 import { ICON_REGISTRY_OPTIONS, IconRegistryOptions } from '@app/di/tokens';
 import type { Size, Variant } from '@shared/types/icon';
 
