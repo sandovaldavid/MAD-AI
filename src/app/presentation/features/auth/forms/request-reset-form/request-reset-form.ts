@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthFacade } from '@/app/application/facades/auth.facade';
+import { AuthFacade } from '@application/facades/auth.facade';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Input } from '@/app/shared/ui/input/input';
-import { FormField } from '@/app/shared/ui/form-field/form-field';
-import { Button } from '@/app/shared/ui/button/button';
-import { Icon } from '@/app/shared/ui/icon/icon';
+import { Input } from '@shared/ui/input/input';
+import { FormField } from '@shared/ui/form-field/form-field';
+import { Button } from '@shared/ui/button/button';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-request-reset-form',
