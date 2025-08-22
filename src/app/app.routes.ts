@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
-import { authOnly, guestOnly } from '@core/guards/matchers.guard';
-import { emailConfirmedOnly } from '@core/guards/email-confirmed.guard';
+import { authOnly, guestOnly, emailConfirmedOnly } from './core/guards';
 import { securedRoutes } from '@presentation/features/secured.routes';
 import { authRoutes } from '@presentation/features/auth/auth.routes';
 
