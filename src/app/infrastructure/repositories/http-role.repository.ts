@@ -1,25 +1,31 @@
 import { inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { firstValueFrom, catchError } from 'rxjs';
-import { RoleRepository } from '@domain/repositories/role.repository';
+import { RoleRepository } from '@domain/repositories/business/role.repository';
 import { Role } from '@domain/entities/role.entity';
 import { RoleDTO } from '../dtos/roles/roles.dto';
 import { RoleMapper, mapUpdatePayloadToDTO } from '../mappers/role.mapper';
 import { environment } from '@/env/environment';
 import type {
-    AssignRolePayload,
-    UnassignRolePayload,
-    UpdateRolePayload,
-} from '@domain/repositories/role.repository';
+    RoleAssignmentContract,
+    UpdateRolePatchContract,
+    CreateRoleContract,
+} from '@domain/contracts/role.contract';
 import type { AssignRoleRequestDTO } from '../dtos/roles/assign.dto';
 import type { UnassignRoleRequestDTO } from '../dtos/roles/unassign.dto';
 import { RequestUpdateRoleDTO } from '../dtos/roles/update.dto';
 import { CreateRoleRequestDTO } from '../dtos/roles/create.dto';
+import { InfraErrorToDomainMapper } from '../errors/infra-to-domain.mapper';
+import { mapHttpErrorToInfra, type InfraError } from '../errors/http-to-infra.mapper';
+import { AUTH_USER_STORE_PORT } from '@di/tokens';
+import type { AuthUserStorePort } from '@domain/repositories/session/session-store.repository';
 
 const API = `${environment.API_URL}/auth/roles`;
 
 export class HttpRoleRepository implements RoleRepository {
     private http = inject(HttpClient);
+    private errorMapper = inject(InfraErrorToDomainMapper);
+    private userStore = inject<AuthUserStorePort>(AUTH_USER_STORE_PORT);
 
     async list(params?: { search?: string; active?: boolean }): Promise<Role[]> {
         try {
@@ -38,8 +44,12 @@ export class HttpRoleRepository implements RoleRepository {
                     .pipe(catchError(this.handleError))
             );
             return dtos.map(RoleMapper.toEntity);
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'list',
+                entityType: 'Role',
+            });
+            throw domainError;
         }
     }
 
@@ -49,37 +59,52 @@ export class HttpRoleRepository implements RoleRepository {
                 this.http.get<RoleDTO>(`${API}/${id}/`).pipe(catchError(this.handleError))
             );
             return RoleMapper.toEntity(dto);
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'getById',
+                entityType: 'Role',
+                field: 'id',
+            });
+            throw domainError;
         }
     }
 
-    async create(payload: {
-        name: string;
-        accessLevel: number;
-        description?: string;
-    }): Promise<Role> {
+    async create(spec: CreateRoleContract): Promise<Role> {
         try {
-            // Usar DTO completo para el request - los campos faltantes con valores por defecto
+            // Get current user ID from the authenticated user store
+            const currentUserSnapshot = await this.userStore.read();
+            if (!currentUserSnapshot?.id) {
+                throw new Error('Cannot create role: No authenticated user found');
+            }
+
+            // Use complete DTO for the request with proper user context
             const requestDto: CreateRoleRequestDTO = {
-                name: payload.name,
-                access_level: payload.accessLevel,
-                description: payload.description ?? '',
-                can_lead_projects: false, // Valor por defecto
-                is_unique_per_team: false, // Valor por defecto
-                created_by_user_id: 1, // TODO: Obtener del contexto de usuario actual
+                name: spec.name,
+                access_level: spec.accessLevel,
+                description: spec.description,
+                can_lead_projects: spec.canLeadProjects,
+                is_unique_per_team: spec.isUniquePerTeam,
+                created_by_user_id: currentUserSnapshot.id, // Current authenticated user ID
             };
 
             const dto = await firstValueFrom(
-                this.http.post<RoleDTO>(API, requestDto).pipe(catchError(this.handleError))
+                this.http
+                    .post<RoleDTO>(`${API}/create/`, requestDto)
+                    .pipe(catchError(this.handleError))
             );
+            
             return RoleMapper.toEntity(dto);
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'create',
+                entityType: 'Role',
+                field: 'name',
+            });
+            throw domainError;
         }
     }
 
-    async update(id: number, payload: UpdateRolePayload): Promise<Role> {
+    async update(id: number, payload: UpdateRolePatchContract): Promise<Role> {
         try {
             // Usar el mapper centralizado para transformar payload del dominio a DTO de la API
             const requestDto: RequestUpdateRoleDTO = mapUpdatePayloadToDTO(payload);
@@ -90,22 +115,32 @@ export class HttpRoleRepository implements RoleRepository {
                     .pipe(catchError(this.handleError))
             );
             return RoleMapper.toEntity(dto);
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'update',
+                entityType: 'Role',
+                field: 'id',
+            });
+            throw domainError;
         }
     }
 
     async delete(id: number): Promise<void> {
         try {
             await firstValueFrom(
-                this.http.delete<void>(`${API}/${id}/`).pipe(catchError(this.handleError))
+                this.http.delete<void>(`${API}/${id}/delete/`).pipe(catchError(this.handleError))
             );
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'delete',
+                entityType: 'Role',
+                field: 'id',
+            });
+            throw domainError;
         }
     }
 
-    async assign(p: AssignRolePayload): Promise<void> {
+    async assign(p: RoleAssignmentContract): Promise<void> {
         try {
             if (p.assignedByUserId == null) {
                 throw new Error('assignedByUserId requerido');
@@ -120,57 +155,38 @@ export class HttpRoleRepository implements RoleRepository {
             await firstValueFrom(
                 this.http.post<void>(`${API}/assign/`, body).pipe(catchError(this.handleError))
             );
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'assign',
+                entityType: 'Role',
+                field: 'roleId',
+            });
+            throw domainError;
         }
     }
 
-    async unassign(p: UnassignRolePayload): Promise<void> {
+    async unassign(p: { roleId: number; userId: number }): Promise<void> {
         try {
             const body: UnassignRoleRequestDTO = { user_id: p.userId };
             await firstValueFrom(
                 this.http.post<void>(`${API}/unassign/`, body).pipe(catchError(this.handleError))
             );
-        } catch (error) {
-            throw this.transformError(error);
+        } catch (infraError: unknown) {
+            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+                operation: 'unassign',
+                entityType: 'Role',
+                field: 'roleId',
+            });
+            throw domainError;
         }
     }
 
     /**
-     * Maneja errores HTTP y los transforma a observables de error
+     * Handles HTTP errors and transforms them to infrastructure errors
      */
     private handleError = (error: HttpErrorResponse) => {
         console.error('HTTP Error:', error);
-        throw error;
+        const infraError = mapHttpErrorToInfra(error);
+        throw infraError;
     };
-
-    /**
-     * Transforma errores HTTP a errores de dominio
-     */
-    private transformError(error: any): Error {
-        if (error instanceof HttpErrorResponse) {
-            switch (error.status) {
-                case 400:
-                    return new Error('Datos inválidos proporcionados');
-                case 401:
-                    return new Error('No autorizado para realizar esta operación');
-                case 403:
-                    return new Error('No tiene permisos para realizar esta operación');
-                case 404:
-                    return new Error('Rol no encontrado');
-                case 409:
-                    return new Error('El rol ya existe o está en uso');
-                case 500:
-                    return new Error('Error interno del servidor');
-                default:
-                    return new Error(`Error del servidor: ${error.status}`);
-            }
-        }
-
-        if (error instanceof Error) {
-            return error;
-        }
-
-        return new Error('Error desconocido');
-    }
 }
