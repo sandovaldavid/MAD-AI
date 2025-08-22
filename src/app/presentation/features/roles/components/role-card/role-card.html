@@ -11,11 +11,13 @@
                     variant="outline"
                     [ngClass]="getAccessLevelInfo().iconColor" />
             </div>
-            <!-- Access Level Badge -->
-            <div class="role-card__level-badge" [ngClass]="getAccessLevelInfo().badgeClasses">
-                <span class="role-card__level-text">Nivel {{ role().accessLevel }}</span>
-                <span class="role-card__level-label">{{ getAccessLevelInfo().label }}</span>
-            </div>
+            <!-- Access Level Indicator Component -->
+            <app-access-level-indicator
+                [level]="role().accessLevel"
+                variant="badge"
+                [showLabel]="true"
+                class="role-card__level-indicator">
+            </app-access-level-indicator>
         </div>
 
         <!-- Status Indicator -->

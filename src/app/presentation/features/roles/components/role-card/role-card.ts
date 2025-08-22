@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Icon } from '@shared/ui/icon/icon';
+import { AccessLevelIndicator } from '../access-level-indicator/access-level-indicator';
 import { RoleModel } from '../../models/role.model';
 import {
     RoleAccessLevelInfo,
@@ -11,7 +12,7 @@ import {
 @Component({
     selector: 'app-role-card',
     standalone: true,
-    imports: [CommonModule, Icon],
+    imports: [CommonModule, Icon, AccessLevelIndicator],
     templateUrl: './role-card.html',
     styleUrl: './role-card.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
