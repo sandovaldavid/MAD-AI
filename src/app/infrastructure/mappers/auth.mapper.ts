@@ -7,14 +7,21 @@ import type {
 import { User } from '@domain/entities/user.entity';
 import { Role } from '@domain/entities/role.entity';
 import { Session } from '@domain/entities/session.entity';
-import { AccessToken } from '@domain/value-objects/access-token.vo';
-import { RefreshToken } from '@domain/value-objects/refresh-token.vo';
+import { AccessToken, RefreshToken } from '@domain/value-objects/local-tokens.vo';
+import { Email } from '@domain/value-objects/email.vo';
+import { Username } from '@domain/value-objects/username.vo';
+import { FirstName } from '@domain/value-objects/firstname.vo';
+import { LastName } from '@domain/value-objects/lastname.vo';
+import { RoleName } from '@domain/value-objects/role-name.vo';
+import { AccessLevel } from '@domain/value-objects/accesslevel.vo';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import { UserNotificationPreferences } from '@domain/value-objects/user-notification-preferences.vo';
 
 function mapRole(name: string, id: number, accessLevel?: number, isActive = true) {
     return Role.create({
         id,
-        name,
-        accessLevel,
+        name: RoleName.create(name),
+        accessLevel: AccessLevel.create(accessLevel ?? 1),
         isActive,
         description: name,
     });
@@ -25,15 +32,17 @@ export const AuthMapper = {
         const role = mapRole(dto.role_name, dto.role_id);
         return User.create({
             id: dto.id,
-            username: dto.username,
-            email: dto.email,
-            firstName: dto.first_name,
-            lastName: dto.last_name,
+            username: Username.create(dto.username),
+            email: Email.create(dto.email),
+            firstName: FirstName.create(dto.first_name),
+            lastName: LastName.create(dto.last_name),
             role,
             isActive: dto.is_active,
-            createdAt: dto.created_at,
-            updatedAt: dto.updated_at,
-            lastActivityAt: dto.last_activity_at ?? null,
+            createdAt: dto.created_at ? ISODateTime.create(dto.created_at) : undefined,
+            updatedAt: dto.updated_at ? ISODateTime.create(dto.updated_at) : undefined,
+            lastActivityAt: dto.last_activity_at
+                ? ISODateTime.create(dto.last_activity_at)
+                : undefined,
         });
     },
 
@@ -41,15 +50,17 @@ export const AuthMapper = {
         const role = mapRole(dto.role_name, dto.role_id);
         return User.create({
             id: dto.id,
-            username: dto.username,
-            email: dto.email,
-            firstName: dto.first_name,
-            lastName: dto.last_name,
+            username: Username.create(dto.username),
+            email: Email.create(dto.email),
+            firstName: FirstName.create(dto.first_name),
+            lastName: LastName.create(dto.last_name),
             role,
             isActive: dto.is_active,
-            createdAt: dto.created_at,
-            updatedAt: dto.updated_at,
-            lastActivityAt: dto.last_activity_at ?? null,
+            createdAt: dto.created_at ? ISODateTime.create(dto.created_at) : undefined,
+            updatedAt: dto.updated_at ? ISODateTime.create(dto.updated_at) : undefined,
+            lastActivityAt: dto.last_activity_at
+                ? ISODateTime.create(dto.last_activity_at)
+                : undefined,
         });
     },
 
@@ -62,17 +73,13 @@ export const AuthMapper = {
         );
         return User.create({
             id: dto.id,
-            username: dto.username,
-            email: dto.email,
-            firstName: dto.first_name,
-            lastName: dto.last_name,
+            username: Username.create(dto.username),
+            email: Email.create(dto.email),
+            firstName: FirstName.create(dto.first_name),
+            lastName: LastName.create(dto.last_name),
             isActive: dto.role?.is_active ?? true,
             role,
-            notificationPreferences: {
-                email: dto.notification_preferences.email_notifications,
-                system: dto.notification_preferences.system_notifications,
-                task: dto.notification_preferences.task_notifications,
-            },
+            notificationPreferences: UserNotificationPreferences.createDefault(),
         });
     },
 
