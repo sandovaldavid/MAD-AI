@@ -1,0 +1,48 @@
+@reference '../../../../../../styles.css';
+
+/* Form Field Styles */
+.form-field {
+    @apply space-y-2;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300;
+}
+
+.form-input {
+    @apply w-full border border-neutral-300 bg-white text-neutral-900 rounded-xl outline-none transition-all duration-150 px-3 py-2.5 placeholder:text-neutral-500 hover:border-neutral-400 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/25 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:hover:border-neutral-600 dark:focus-visible:border-primary-400 dark:focus-visible:ring-primary-400/25;
+}
+
+.form-input:disabled {
+    @apply bg-neutral-50 dark:bg-neutral-900 cursor-not-allowed opacity-60;
+}
+
+.form-checkbox {
+    @apply rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500 dark:bg-neutral-800;
+}
+
+.form-error {
+    @apply text-sm text-error-500 dark:text-error-400;
+}
+
+/* Form Actions */
+.form-actions {
+    @apply flex justify-between gap-3 mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+/* Button Styles */
+.btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+    transition disabled:cursor-not-allowed select-none;
+    min-height: 2.25rem;
+    padding-inline: 0.875rem;
+}
+
+.btn--primary {
+    @apply text-white bg-primary-500 hover:bg-primary-700 disabled:bg-primary-300;
+}
+
+.btn--secondary {
+    @apply text-neutral-700 bg-neutral-100 hover:bg-neutral-200 
+    dark:text-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600;
+}
