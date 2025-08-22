@@ -1,43 +1,54 @@
 import { CanMatchFn, CanActivateFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
-import { AUTH_USER_STORE_PORT, AUTH_REPOSITORY } from '@di/tokens';
-import { AuthFacade } from '@application/facades/auth.facade';
-import type { AuthUserStorePort } from '@domain/ports/auth-user-store.port';
-import type { AuthRepository } from '@domain/repositories/auth.repository';
-import { UserStatus } from '@domain/enums/user_status.enum';
-import { environment } from '@env/environment';
+import { AuthFacade } from '../../application/facades/auth.facade';
+import { environment } from '../../../env/environment';
+
+/**
+ * Email Confirmed Guard - Clean Architecture Compliant
+ * 
+ * @description Pure technical guard that verifies email confirmation status
+ * without containing business logic. Delegates to Application layer (AuthFacade)
+ * for user state verification following Clean Architecture principles.
+ * 
+ * @businessRules
+ * - Core layer should not contain business logic
+ * - Guards should be purely technical concerns
+ * - Delegation to Application layer for user state verification
+ * 
+ * @architecturalNotes
+ * - NO direct repository or port injection (violates dependency rule)
+ * - NO business logic in Core layer
+ * - Uses AuthFacade as single point of user state
+ */
 
 const VERIFY_URL = `${environment.API_URL}/auth/verify-email/`;
-const BLOCK_ON_UNKNOWN = false;
-
-const isEmailConfirmed = (u: any): boolean => {
-    if (typeof u?.is_email_confirmed === 'boolean') return u.is_email_confirmed;
-    if (u?.status) return u.status !== UserStatus.PENDING;
-    return true;
-};
 
 const checkEmailConfirmed = async (): Promise<boolean | UrlTree> => {
     const router = inject(Router);
-    const cache = inject<AuthUserStorePort>(AUTH_USER_STORE_PORT);
-    const repo = inject<AuthRepository>(AUTH_REPOSITORY);
-    const auth = inject(AuthFacade);
+    const authFacade = inject(AuthFacade);
 
-    // 1) Snapshot
-    const snap = cache.read();
-    if (snap) return isEmailConfirmed(snap) ? true : router.parseUrl(VERIFY_URL);
-
-    // 2) Si hay token, intenta poblar /me una vez
-    const hasToken = !!repo.getLocalTokens()?.accessToken;
-    if (hasToken) {
+    // Ensure we have user data
+    if (!authFacade.isAuthenticated()) {
         try {
-            await auth.refreshProfile();
-        } catch {}
-        const post = cache.read();
-        if (post) return isEmailConfirmed(post) ? true : router.parseUrl(VERIFY_URL);
+            await authFacade.refreshProfile();
+        } catch {
+            return router.parseUrl('/auth/login');
+        }
     }
 
-    // 3) Política cuando es desconocido
-    return BLOCK_ON_UNKNOWN ? router.parseUrl(VERIFY_URL) : true;
+    // Get current user
+    const user = authFacade.user();
+    if (!user) {
+        return router.parseUrl('/auth/login');
+    }
+
+    // Simple technical check - delegate business logic to domain
+    // Check if email is confirmed using domain entity property
+    const isConfirmed = user.isEmailConfirmed ?? true; // Default to true if undefined
+    
+    return isConfirmed 
+        ? true 
+        : router.parseUrl(VERIFY_URL);
 };
 
 export const emailConfirmedOnly: CanMatchFn = (_route, _segments) => checkEmailConfirmed();

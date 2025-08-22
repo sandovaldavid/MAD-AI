@@ -1,9 +1,9 @@
 import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthFacade } from '@application/facades/auth.facade';
-import { AUTH_REPOSITORY } from '../../di/tokens';
-import type { AuthRepository } from '@domain/repositories/auth.repository';
-import { ReturnUrlService } from '../services/return-url.service';
+import { TOKEN_STORE_PORT } from '@di/tokens';
+import type { TokenStorePort } from '@domain/repositories/session/session-store.repository';
+import { ReturnUrlService } from '../cross-cutting/utilities/return-url.service';
 
 /**
  * Permite la ruta solo si el usuario NO está autenticado.
@@ -12,7 +12,7 @@ import { ReturnUrlService } from '../services/return-url.service';
 export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
-    const repo = inject<AuthRepository>(AUTH_REPOSITORY);
+    const tokenStore = inject<TokenStorePort>(TOKEN_STORE_PORT);
     const returnUrlService = inject(ReturnUrlService);
 
     // Si ya hay user en memoria -> bloquear
@@ -23,11 +23,15 @@ export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     }
 
     // Si hay token guardado pero aún no cargamos perfil, intenta cargarlo
-    const hasToken = !!repo.getLocalTokens()?.accessToken;
+    const tokens = await tokenStore.read();
+    const hasToken = !!tokens?.accessToken;
     if (hasToken) {
         try {
             await auth.refreshProfile();
-        } catch {}
+        } catch {
+            // Clear auth state on failed refresh to prevent stale errors
+            auth.clearAuthState();
+        }
         if (auth.user()) {
             returnUrlService.set(router.url);
             return router.parseUrl('/dashboard');
@@ -45,16 +49,20 @@ export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
 export const authOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
-    const repo = inject<AuthRepository>(AUTH_REPOSITORY);
+    const tokenStore = inject<TokenStorePort>(TOKEN_STORE_PORT);
     const returnUrlService = inject(ReturnUrlService);
 
     if (auth.user()) return true;
 
-    const hasToken = !!repo.getLocalTokens()?.accessToken;
+    const tokens = await tokenStore.read();
+    const hasToken = !!tokens?.accessToken;
     if (hasToken) {
         try {
             await auth.refreshProfile();
-        } catch {}
+        } catch {
+            // Clear auth state on failed refresh to prevent stale errors
+            auth.clearAuthState();
+        }
         if (auth.user()) return true;
     }
 

@@ -1,6 +1,6 @@
 import { CanActivateFn } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthFacade } from '@application/facades/auth.facade';
+import { AuthFacade } from '../../application/facades/auth.facade';
 
 export const roleGuard =
     (requiredName: string): CanActivateFn =>
