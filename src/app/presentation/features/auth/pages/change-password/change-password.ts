@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
-import { AuthFacade } from '@/app/application/facades/auth.facade';
+import { AuthFacade } from '@application/facades/auth.facade';
 import { ResetPasswordForm } from '../../forms/reset-password-form/reset-password-form';
-import { Icon } from '@/app/shared/ui/icon/icon';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-change-password',
