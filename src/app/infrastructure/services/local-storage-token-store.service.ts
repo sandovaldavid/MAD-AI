@@ -1,18 +1,21 @@
 import { Injectable } from '@angular/core';
-import { TokenStorePort, TokenSnapshot } from '@domain/ports/token-store.port';
+import { TokenStorePort } from '@domain/repositories/session/session-store.repository';
+import { TokenSnapshotContract } from '@domain/contracts/session-store.contract';
 
 const KEY = 'mad-ai.auth.tokens.v1';
 
 @Injectable({ providedIn: 'root' })
 export class LocalStorageTokenStore implements TokenStorePort {
-    read(): TokenSnapshot | null {
+    async read(): Promise<TokenSnapshotContract | null> {
         const raw = localStorage.getItem(KEY);
         return raw ? JSON.parse(raw) : null;
     }
-    write(snapshot: TokenSnapshot | null) {
+
+    async write(snapshot: TokenSnapshotContract | null): Promise<void> {
         snapshot ? localStorage.setItem(KEY, JSON.stringify(snapshot)) : this.clear();
     }
-    clear() {
+
+    async clear(): Promise<void> {
         localStorage.removeItem(KEY);
     }
 }
