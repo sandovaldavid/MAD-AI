@@ -1,11 +1,16 @@
 import { InjectionToken } from '@angular/core';
-import { NotificationPosition } from '../domain/enums/notification';
-import type { AuthRepository } from '../domain/repositories/auth.repository';
-import type { TokenStorePort } from '../domain/ports/token-store.port';
-import type { ClockPort } from '../domain/ports/clock.port';
-import type { AuthUserStorePort } from '../domain/ports/auth-user-store.port';
-import type { NotificationPort } from '../domain/ports/notification.port';
-import type { RoleRepository } from '../domain/repositories/role.repository';
+import { UINotificationPosition } from '@shared/components/toast/enums/ui-notification-position.enum';
+import type { AuthRepository } from '@domain/repositories/business/auth.repository';
+import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { NotificationPort } from '@domain/repositories/business/notification.repository';
+import type { RoleRepository } from '@domain/repositories/business/role.repository';
+import type { UserRepository } from '@domain/repositories/business/user.repository';
+import type {
+    AuthUserStorePort,
+    TokenStorePort,
+    SessionStorePort,
+} from '@domain/repositories/session/session-store.repository';
+import type { ExportPort } from '@domain/contracts/export.port';
 
 export interface NotificationConfig {
     maxVisibleDesktop: number;
@@ -18,19 +23,24 @@ export interface NotificationConfig {
         warning: { duration: number; dismissible: boolean };
         error: { duration: number; dismissible: boolean };
         position: {
-            desktop: NotificationPosition;
-            mobile: NotificationPosition;
+            desktop: UINotificationPosition;
+            mobile: UINotificationPosition;
         };
     };
 }
 
 export const AUTH_REPOSITORY = new InjectionToken<AuthRepository>('AUTH_REPOSITORY');
-export const TOKEN_STORE_PORT = new InjectionToken<TokenStorePort>('TOKEN_STORE_PORT');
+export const USER_REPOSITORY = new InjectionToken<UserRepository>('USER_REPOSITORY');
+export const ROLE_REPOSITORY = new InjectionToken<RoleRepository>('ROLE_REPOSITORY');
 export const CLOCK_PORT = new InjectionToken<ClockPort>('CLOCK_PORT');
-export const AUTH_USER_STORE_PORT = new InjectionToken<AuthUserStorePort>('AUTH_USER_STORE_PORT');
 export const NOTIFICATION_PORT = new InjectionToken<NotificationPort>('NOTIFICATION_PORT');
 export const NOTIFICATION_CONFIG = new InjectionToken<NotificationConfig>('NOTIFICATION_CONFIG');
-export const ROLE_REPOSITORY = new InjectionToken<RoleRepository>('ROLE_REPOSITORY');
+export const EXPORT_PORT = new InjectionToken<ExportPort>('EXPORT_PORT');
+
+// Session Storage Ports
+export const AUTH_USER_STORE_PORT = new InjectionToken<AuthUserStorePort>('AUTH_USER_STORE_PORT');
+export const TOKEN_STORE_PORT = new InjectionToken<TokenStorePort>('TOKEN_STORE_PORT');
+export const SESSION_STORE_PORT = new InjectionToken<SessionStorePort>('SESSION_STORE_PORT');
 
 /** Multi‑provider: cada feature aporta { [key]: rawSvg } */
 export const ICON_SVG_SET = new InjectionToken<Record<string, string>>('ICON_SVG_SET (multi)', {
