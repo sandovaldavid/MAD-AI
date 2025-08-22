@@ -1,33 +1,14 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+// infrastructure/http/error.interceptor.ts
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
-import { inject } from '@angular/core';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
+import { mapHttpErrorToInfra } from '../errors/http-to-infra.mapper';
 
-// Ajusta si tu ValidationError tiene otra forma
-function extractMessage(err: any): string {
-    if (!err) return 'Error de validación';
-    if (typeof err === 'string') return err;
-    if (err.message) return err.message;
-    if (err.detail) return err.detail;
-    if (err.errors && typeof err.errors === 'object') {
-        const firstKey = Object.keys(err.errors)[0];
-        const firstMsg = Array.isArray(err.errors[firstKey])
-            ? err.errors[firstKey][0]
-            : err.errors[firstKey];
-        return String(firstMsg ?? 'Error de validación');
-    }
-    return 'Error de validación';
-}
-
-export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-    const notify = inject(NotificationsFacade);
-    return next(req).pipe(
+export const errorInterceptor: HttpInterceptorFn = (req, next) =>
+    next(req).pipe(
         catchError((err) => {
-            if (err instanceof HttpErrorResponse && err.status === 400) {
-                const msg = extractMessage(err.error);
-                notify.warning(msg);
+            if (err instanceof HttpErrorResponse) {
+                return throwError(() => mapHttpErrorToInfra(err));
             }
             return throwError(() => err);
         })
     );
-};
