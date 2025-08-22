@@ -4,6 +4,7 @@
 
     <!-- Search and Filter Section -->
     <div class="dashboard-header">
+        <!-- Basic Filters -->
         <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div class="flex-1 min-w-0">
                 <label class="form-label">Buscar roles</label>
@@ -11,15 +12,16 @@
                     class="form-input w-full"
                     placeholder="Buscar por nombre..."
                     [value]="search()"
-                    (input)="search.set($any($event.target).value)" />
+                    (input)="updateSearch($any($event.target).value)" />
             </div>
 
             <div class="w-full sm:w-auto">
                 <label class="form-label">Estado</label>
                 <select
                     class="form-input w-full sm:w-48"
+                    [value]="activeFilter() === null ? '' : activeFilter()?.toString()"
                     (change)="
-                        activeFilter.set(
+                        updateActiveFilter(
                             $any($event.target).value === ''
                                 ? null
                                 : $any($event.target).value === 'true'
@@ -31,6 +33,107 @@
                 </select>
             </div>
         </div>
+
+        <!-- Advanced Filters Panel -->
+        @if (showAdvancedFilters()) {
+        <div
+            class="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Access Level Filter -->
+                <div>
+                    <label class="form-label">Nivel de Acceso</label>
+                    <select
+                        class="form-input w-full"
+                        [value]="accessLevelFilter() || ''"
+                        (change)="
+                            updateAccessLevelFilter(
+                                $any($event.target).value ? +$any($event.target).value : null
+                            )
+                        ">
+                        <option value="">Todos los niveles</option>
+                        @for (level of getAccessLevelOptions(); track level.value) {
+                        <option [value]="level.value">{{ level.label }}</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- User Count Range -->
+                <div>
+                    <label class="form-label">Rango de Usuarios</label>
+                    <div class="flex gap-2">
+                        <input
+                            type="number"
+                            class="form-input flex-1"
+                            placeholder="Mín"
+                            min="0"
+                            [value]="userCountRangeFilter().min || ''"
+                            (input)="
+                                updateUserCountRange(
+                                    $any($event.target).value ? +$any($event.target).value : null,
+                                    userCountRangeFilter().max
+                                )
+                            " />
+                        <input
+                            type="number"
+                            class="form-input flex-1"
+                            placeholder="Máx"
+                            min="0"
+                            [value]="userCountRangeFilter().max || ''"
+                            (input)="
+                                updateUserCountRange(
+                                    userCountRangeFilter().min,
+                                    $any($event.target).value ? +$any($event.target).value : null
+                                )
+                            " />
+                    </div>
+                </div>
+
+                <!-- Sort By -->
+                <div>
+                    <label class="form-label">Ordenar por</label>
+                    <select
+                        class="form-input w-full"
+                        [value]="sortBy()"
+                        (change)="updateSort($any($event.target).value)">
+                        @for (option of getSortOptions(); track option.value) {
+                        <option [value]="option.value">{{ option.label }}</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Sort Direction -->
+                <div>
+                    <label class="form-label">Dirección</label>
+                    <select
+                        class="form-input w-full"
+                        [value]="sortDirection()"
+                        (change)="updateSort(sortBy(), $any($event.target).value)">
+                        <option value="asc">Ascendente</option>
+                        <option value="desc">Descendente</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filter Actions -->
+            <div
+                class="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+                <div class="text-sm text-neutral-600 dark:text-neutral-400">
+                    @if (filterStats().hasFilters) { Mostrando {{ filterStats().filtered }} de
+                    {{ filterStats().total }} roles ({{ filterStats().active }} activos) } @else {
+                    {{ filterStats().total }} roles en total ({{ filterStats().active }} activos) }
+                </div>
+
+                @if (filterStats().hasFilters) {
+                <button
+                    class="px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+                    (click)="clearAllFilters()">
+                    <ui-icon name="x-mark" class="h-4 w-4 mr-1" />
+                    Limpiar filtros
+                </button>
+                }
+            </div>
+        </div>
+        }
     </div>
 
     <!-- Main Content -->
@@ -45,7 +148,7 @@
         <div class="section-dashboard">
             <app-error-display [config]="errorConfig()" />
         </div>
-        } @else if (roles().length === 0) {
+        } @else if (filteredRoles().length === 0) {
         <!-- Empty State -->
         <div class="section-dashboard">
             <div class="text-center py-12">
@@ -57,9 +160,15 @@
                     No se encontraron roles
                 </h3>
                 <p class="text-neutral-600 dark:text-neutral-400 mb-6">
-                    @if (search() || activeFilter() !== null) { No hay roles que coincidan con los
-                    filtros aplicados. } @else { Aún no hay roles creados en el sistema. }
+                    @if (filterStats().hasFilters) { No hay roles que coincidan con los filtros
+                    aplicados. } @else { Aún no hay roles creados en el sistema. }
                 </p>
+                @if (filterStats().hasFilters) {
+                <button class="btn btn--secondary mr-2" (click)="clearAllFilters()">
+                    <ui-icon name="x-mark" size="sm" class="mr-2" />
+                    Limpiar filtros
+                </button>
+                }
                 <button class="btn btn--primary" (click)="onCreateRole()">
                     <ui-icon name="shield-plus" size="sm" class="mr-2" />
                     Crear Primer Rol
@@ -67,27 +176,61 @@
             </div>
         </div>
         } @else {
-        <!-- Results Summary -->
-        <div class="mb-6">
-            <div
-                class="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-                <div class="flex items-center space-x-3">
-                    <ui-icon name="info" size="sm" class="text-info-600 dark:text-info-400" />
-                    <span class="text-sm text-neutral-700 dark:text-neutral-300">
-                        {{ roles().length }}
-                        {{ roles().length === 1 ? 'rol encontrado' : 'roles encontrados' }}
-                    </span>
+        <!-- View Toggle and Results Summary -->
+        <div class="mb-6 space-y-4">
+            <!-- View Mode Toggle -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >Vista:</span
+                    >
+                    <div
+                        class="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
+                        <button
+                            class="toggle-btn"
+                            [class.toggle-btn--active]="viewMode() === 'cards'"
+                            (click)="setViewMode('cards')">
+                            <ui-icon name="grid" size="sm" />
+                            <span class="ml-1">Tarjetas</span>
+                        </button>
+                        <button
+                            class="toggle-btn"
+                            [class.toggle-btn--active]="viewMode() === 'table'"
+                            (click)="setViewMode('table')">
+                            <ui-icon name="table" size="sm" />
+                            <span class="ml-1">Tabla</span>
+                        </button>
+                    </div>
                 </div>
                 <button class="btn btn--primary btn--sm" (click)="onCreateRole()">
                     <ui-icon name="shield-plus" size="sm" class="mr-2" />
                     Nuevo Rol
                 </button>
             </div>
+
+            <!-- Results Summary -->
+            <div
+                class="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+                <div class="flex items-center space-x-3">
+                    <ui-icon name="info" size="sm" class="text-info-600 dark:text-info-400" />
+                    <span class="text-sm text-neutral-700 dark:text-neutral-300">
+                        @if (filterStats().hasFilters) {
+                        {{ filterStats().filtered }} de {{ filterStats().total }}
+                        {{ filterStats().filtered === 1 ? 'rol encontrado' : 'roles encontrados' }}
+                        } @else {
+                        {{ filterStats().total }}
+                        {{ filterStats().total === 1 ? 'rol encontrado' : 'roles encontrados' }}
+                        }
+                    </span>
+                </div>
+            </div>
         </div>
 
+        <!-- Dynamic View Content -->
+        @if (viewMode() === 'cards') {
         <!-- Roles Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            @for (role of roles(); track role.id) {
+            @for (role of filteredRoles(); track role.id) {
             <app-role-card
                 [role]="role"
                 [loading]="loading()"
@@ -96,6 +239,21 @@
                 (delete)="onDelete($event)" />
             }
         </div>
-        }
+        } @else {
+        <!-- Roles Table -->
+        <app-role-table
+            [roles]="filteredRoles()"
+            [loading]="loading()"
+            [enableBulkActions]="true"
+            [enablePagination]="true"
+            [pageSize]="10"
+            (viewRole)="onViewRole($event)"
+            (editRole)="onEditRole($event)"
+            (deleteRole)="onDelete($event)"
+            (toggleStatus)="onToggleActive($event.id, $event.isActive)"
+            (bulkAction)="onBulkAction($event)"
+            (exportRoles)="onExportRoles($event)">
+        </app-role-table>
+        } }
     </div>
 </section>

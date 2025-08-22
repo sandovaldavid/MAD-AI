@@ -1,5 +1,17 @@
 @reference '../../../../../../styles.css';
 
+/* Toggle Button Styles */
+.toggle-btn {
+    @apply flex items-center px-3 py-1.5 text-sm font-medium rounded-md
+    transition-all duration-200 text-neutral-600 dark:text-neutral-400
+    hover:text-neutral-900 dark:hover:text-neutral-100;
+}
+
+.toggle-btn--active {
+    @apply bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100
+    shadow-sm ring-1 ring-neutral-200 dark:ring-neutral-600;
+}
+
 /* Button Styles */
 .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
