@@ -35,17 +35,17 @@
                 {{ t.message }}
             </div>
 
-            @if (t.action || t.secondaryAction) {
+            @if (t.actions && t.actions.length > 0) {
             <div class="mt-2 flex gap-2">
-                @if (t.action) {
+                @if (t.actions[0]) {
                 <button
                     class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
                     (click)="onAction('primary')">
-                    {{ t!.action!.label }}
+                    {{ t.actions[0].label }}
                 </button>
-                } @if (t.secondaryAction) {
+                } @if (t.actions[1]) {
                 <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
-                    {{ t!.secondaryAction!.label }}
+                    {{ t.actions[1].label }}
                 </button>
                 }
             </div>
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Botón cerrar en la esquina superior derecha -->
-    @if (t.dismissible !== false) {
+    @if (!t.isDismissed) {
     <button
         class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
         type="button"

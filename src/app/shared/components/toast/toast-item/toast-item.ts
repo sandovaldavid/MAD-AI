@@ -7,9 +7,9 @@ import {
     Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationType } from '@domain/enums/notification';
+import { NotificationType } from '@domain/entities/notification.entity';
 import type { Notification } from '@domain/entities/notification.entity';
-import { Icon } from '@/app/shared/ui/icon/icon';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-toast-item',
@@ -27,19 +27,25 @@ export class ToastItem {
     @Output() hover = new EventEmitter<void>();
     @Output() leave = new EventEmitter<void>();
 
-    readonly types = NotificationType;
+    // Expose notification types for template usage
+    readonly types = {
+        SUCCESS: 'success' as const,
+        ERROR: 'error' as const,
+        WARNING: 'warning' as const,
+        INFO: 'info' as const,
+    };
 
     get ariaLive(): 'assertive' | 'polite' {
-        return this.t?.type === NotificationType.ERROR ? 'assertive' : 'polite';
+        return this.t?.type === 'error' ? 'assertive' : 'polite';
     }
 
     accentClass(type?: NotificationType) {
         switch (type) {
-            case NotificationType.SUCCESS:
+            case 'success':
                 return 'accent-success';
-            case NotificationType.ERROR:
+            case 'error':
                 return 'accent-error';
-            case NotificationType.WARNING:
+            case 'warning':
                 return 'accent-warning';
             default:
                 return 'accent-info';
