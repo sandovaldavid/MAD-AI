@@ -81,7 +81,7 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
  * Iconos asociados a cada nivel de acceso
  */
 export const ROLE_ACCESS_LEVEL_ICONS: Record<number, string> = {
-    1: 'shield-exclamation', // Crítico
+    1: 'crown', // Crítico
     2: 'shield-check', // Alto
     3: 'shield', // Medio
     4: 'user-group', // Bajo
