@@ -1,4 +1,3 @@
-import { authOnly } from '@/app/core/guards/matchers.guard';
 import { Routes } from '@angular/router';
 
 export const authRoutes: Routes = [
