@@ -1,7 +1,7 @@
 import { Provider } from '@angular/core';
 import { ICON_SVG_SET, ICON_REGISTRY_OPTIONS, IconRegistryOptions } from './tokens';
-import { ICONS_CORE_OUTLINE } from '../core/icons/icons.core-outline';
-import { ICONS_CORE_FILLED } from '../core/icons/icons.core-filled';
+import { ICONS_CORE_OUTLINE } from '@shared/assets/icons/icons.outline';
+import { ICONS_CORE_FILLED } from '@shared/assets/icons/icons.filled';
 
 export function provideIcons(opts?: Partial<IconRegistryOptions>): Provider[] {
     return [
