@@ -1,0 +1,468 @@
+@reference '../../../../styles.css';
+
+/* Bulk Actions Toolbar Styles */
+.bulk-toolbar {
+    @apply backdrop-blur-lg bg-white/95 dark:bg-neutral-900/95;
+    @apply border border-neutral-200 dark:border-neutral-700;
+    @apply rounded-2xl shadow-lg shadow-neutral-900/10 dark:shadow-neutral-900/30;
+
+    /* Dynamic width based on content with constraints */
+    @apply w-auto min-w-[320px] max-w-[90vw];
+
+    /* Better positioning for desktop responsiveness */
+    @apply mx-auto;
+
+    /* Glass morphism effect */
+    backdrop-filter: blur(16px) saturate(1.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Main Toolbar Layout */
+.toolbar-main {
+    @apply flex items-center gap-3 p-4;
+    @apply min-h-[64px];
+
+    /* Flexible layout that adapts to content */
+    @apply w-full;
+
+    /* Desktop: horizontal layout, Mobile: stack vertically */
+    @apply flex-col lg:flex-row;
+    @apply gap-3 lg:gap-4;
+}
+
+/* Desktop layout adjustments */
+@media (min-width: 1024px) {
+    .toolbar-main {
+        /* Ensure proper distribution of space */
+        min-width: 600px; /* Minimum width for desktop */
+        max-width: 1200px; /* Maximum width for desktop */
+    }
+
+    /* Dynamic layout based on number of actions */
+    .bulk-toolbar[data-quick-actions='1'] .toolbar-main,
+    .bulk-toolbar[data-quick-actions='2'] .toolbar-main {
+        min-width: 480px;
+    }
+
+    .bulk-toolbar[data-quick-actions='3'] .toolbar-main,
+    .bulk-toolbar[data-quick-actions='4'] .toolbar-main {
+        min-width: 600px;
+    }
+
+    .bulk-toolbar[data-quick-actions='5'] .toolbar-main,
+    .bulk-toolbar[data-quick-actions='6'] .toolbar-main {
+        min-width: 800px;
+    }
+
+    .bulk-toolbar.many-actions .toolbar-main {
+        min-width: 900px;
+        max-width: 1400px;
+    }
+}
+
+/* Selection Info Section */
+.selection-info {
+    @apply flex flex-col gap-1 flex-shrink-0;
+}
+
+.selection-count {
+    @apply flex items-center gap-2;
+}
+
+.selection-stats {
+    @apply flex items-center gap-3 text-xs;
+}
+
+.stat-item {
+    @apply flex items-center gap-1 text-neutral-600 dark:text-neutral-400;
+}
+
+/* Quick Actions Section */
+.quick-actions {
+    /* Desktop: centered with flex growth, Mobile: full width */
+    @apply flex items-center gap-2;
+    @apply lg:flex-1 lg:justify-center;
+    @apply w-full lg:w-auto;
+
+    /* Handle overflow with horizontal scroll on desktop when needed */
+    @apply overflow-x-auto;
+    @apply box-border;
+
+    /* Custom scrolling behavior */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.quick-actions::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Desktop improvements for quick actions */
+@media (min-width: 1024px) {
+    .quick-actions {
+        /* Allow content to determine width up to container limit */
+        min-width: 0; /* Allow shrinking */
+        flex-shrink: 1; /* Allow shrinking when needed */
+
+        /* Center content but allow overflow handling */
+        justify-content: center;
+
+        /* Padding for better visual spacing */
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    /* When many actions, allow scroll with visual cues */
+    .quick-actions::before,
+    .quick-actions::after {
+        content: '';
+        position: sticky;
+        width: 8px;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .quick-actions::before {
+        left: 0;
+        background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.8) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+    }
+
+    .quick-actions::after {
+        right: 0;
+        background: linear-gradient(
+            270deg,
+            rgba(255, 255, 255, 0.8) 0%,
+            rgba(255, 255, 255, 0) 100%
+        );
+    }
+
+    .dark .quick-actions::before {
+        background: linear-gradient(90deg, rgba(23, 23, 23, 0.8) 0%, rgba(23, 23, 23, 0) 100%);
+    }
+
+    .dark .quick-actions::after {
+        background: linear-gradient(270deg, rgba(23, 23, 23, 0.8) 0%, rgba(23, 23, 23, 0) 100%);
+    }
+
+    /* Enhanced scroll behavior for many actions */
+    .bulk-toolbar.many-actions .quick-actions {
+        /* Better scroll handling when there are many actions */
+        scroll-padding: 1rem;
+        scroll-snap-type: x proximity;
+    }
+
+    .bulk-toolbar.many-actions .quick-actions ui-button {
+        scroll-snap-align: start;
+        flex-shrink: 0; /* Prevent buttons from shrinking */
+    }
+}
+
+/* Toolbar Controls */
+.toolbar-controls {
+    @apply flex items-center gap-2;
+    /* Desktop: fixed width to prevent layout shift, Mobile: full width */
+    @apply w-full lg:w-auto;
+    @apply justify-end lg:justify-start;
+    @apply flex-shrink-0;
+}
+
+.clear-button {
+    @apply hover:bg-error-100 hover:text-error-700 dark:hover:bg-error-900/20 dark:hover:text-error-400;
+    @apply transition-all duration-200;
+}
+
+/* Advanced Panel */
+.advanced-panel {
+    @apply border-t border-neutral-200 dark:border-neutral-700;
+    @apply bg-neutral-50/50 dark:bg-neutral-800/50;
+    @apply overflow-hidden;
+}
+
+/* Advanced Panel Animation States */
+.advanced-panel.collapsed {
+    @apply overflow-hidden;
+}
+
+.advanced-panel.expanded {
+    @apply overflow-visible;
+}
+
+.advanced-section {
+    @apply p-4 border-b border-neutral-200 dark:border-neutral-700 last:border-b-0;
+}
+
+.section-title {
+    @apply flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3;
+}
+
+/* Advanced Actions Grid */
+.advanced-actions-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2;
+}
+
+.advanced-action-button {
+    @apply justify-start text-left p-3 rounded-xl;
+    @apply hover:bg-white dark:hover:bg-neutral-800;
+    @apply transition-all duration-200;
+    @apply border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700;
+}
+
+.action-content {
+    @apply text-left;
+}
+
+.action-label {
+    @apply font-medium text-neutral-900 dark:text-neutral-100;
+}
+
+.action-description {
+    @apply text-xs text-neutral-500 dark:text-neutral-400 mt-0.5;
+    @apply truncate max-w-48;
+}
+
+/* Export Options */
+.export-options {
+    @apply flex flex-wrap gap-2;
+}
+
+.export-option {
+    @apply rounded-lg;
+    @apply hover:bg-white dark:hover:bg-neutral-800;
+    @apply transition-all duration-200;
+}
+
+/* Statistics Grid */
+.stats-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-3;
+}
+
+.stat-card {
+    @apply text-center p-3 rounded-xl;
+    @apply bg-white dark:bg-neutral-800;
+    @apply border border-neutral-200 dark:border-neutral-700;
+}
+
+.stat-value {
+    @apply text-lg font-bold text-neutral-900 dark:text-neutral-100;
+}
+
+.stat-label {
+    @apply text-xs text-neutral-500 dark:text-neutral-400 mt-1;
+}
+
+/* Hotkey Hints */
+.hotkey-hint {
+    @apply ml-auto text-xs;
+    @apply px-1.5 py-0.5 rounded;
+    @apply bg-neutral-200 dark:bg-neutral-700;
+    @apply text-neutral-600 dark:text-neutral-400;
+    @apply opacity-60;
+}
+
+.shortcuts-hint {
+    @apply fixed bottom-2 left-1/2 -translate-x-1/2;
+    @apply px-3 py-2 rounded-lg;
+    @apply bg-neutral-800/90 dark:bg-neutral-200/90;
+    @apply text-white dark:text-neutral-800;
+    @apply pointer-events-none;
+    @apply opacity-0 transition-opacity duration-300;
+    @apply text-xs;
+
+    /* Ensure it stays within viewport */
+    @apply max-w-[90vw] w-max;
+    @apply whitespace-nowrap;
+
+    /* Show only when needed */
+    z-index: 1001;
+}
+
+.shortcuts-hint.show {
+    @apply opacity-90;
+}
+
+.shortcuts-hint.auto-hide {
+    animation: fadeInOut 4s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.9;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.shortcuts-hint kbd {
+    @apply px-1 py-0.5 mx-0.5 rounded;
+    @apply bg-neutral-700 dark:bg-neutral-300;
+    @apply text-neutral-200 dark:text-neutral-700;
+    @apply text-xs font-mono;
+}
+
+/* Responsive Design */
+@media (max-width: 1023px) {
+    /* Mobile and tablet layouts */
+    .toolbar-main {
+        @apply flex-col gap-3 p-3;
+    }
+
+    /* Mobile adjustments for shortcuts hint */
+    .shortcuts-hint {
+        @apply bottom-16 text-xs px-2 py-1;
+        @apply max-w-[95vw];
+        font-size: 10px; /* Smaller than text-xs for mobile */
+    }
+
+    .shortcuts-hint kbd {
+        @apply text-xs px-0.5 py-0.5;
+        font-size: 9px; /* Smaller for mobile */
+    }
+
+    .selection-info {
+        @apply flex-row items-center justify-between w-full;
+        /* Compact mobile layout */
+        order: 1;
+    }
+
+    .selection-stats {
+        @apply flex-wrap;
+        /* Allow stats to wrap on small screens */
+        gap: 0.5rem;
+    }
+
+    .quick-actions {
+        @apply w-full justify-start;
+        @apply overflow-x-auto pb-2;
+        /* Mobile: horizontal scroll for many actions */
+        order: 2;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .toolbar-controls {
+        @apply w-full justify-end;
+        /* Mobile: controls at the end */
+        order: 3;
+    }
+
+    .advanced-actions-grid {
+        @apply grid-cols-1;
+    }
+
+    .stats-grid {
+        @apply grid-cols-2;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Small mobile optimizations */
+    .bulk-toolbar {
+        @apply mx-2 max-w-none;
+        @apply rounded-xl;
+        /* Smaller border radius on mobile */
+        min-width: calc(100vw - 1rem);
+    }
+
+    .toolbar-main {
+        @apply p-2;
+        gap: 0.75rem;
+    }
+
+    .advanced-section {
+        @apply p-3;
+    }
+
+    .quick-actions {
+        /* Better mobile scrolling */
+        padding-bottom: 0.25rem;
+    }
+
+    /* Ensure buttons are touch-friendly */
+    .quick-actions ui-button {
+        min-height: 2.5rem;
+        min-width: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small mobile */
+    .selection-info {
+        @apply flex-col items-start gap-1;
+    }
+
+    .selection-stats {
+        @apply text-xs;
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        @apply text-xs;
+    }
+}
+
+/* Animation States */
+.bulk-toolbar[data-state='hidden'] {
+    @apply pointer-events-none;
+}
+
+.bulk-toolbar[data-state='visible'] {
+    @apply pointer-events-auto;
+}
+
+/* Focus States */
+.bulk-toolbar button:focus-visible {
+    @apply ring-2 ring-primary-500 ring-offset-2;
+    @apply ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* Loading States */
+.bulk-toolbar button[disabled] {
+    @apply opacity-60 cursor-not-allowed;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .bulk-toolbar {
+        @apply border-2 border-neutral-900 dark:border-white;
+        @apply bg-white dark:bg-neutral-900;
+        backdrop-filter: none;
+    }
+
+    .advanced-panel {
+        @apply bg-neutral-100 dark:bg-neutral-800;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .bulk-toolbar,
+    .advanced-panel,
+    .advanced-action-button,
+    .export-option,
+    .clear-button {
+        @apply transition-none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .bulk-toolbar {
+        @apply hidden;
+    }
+}
