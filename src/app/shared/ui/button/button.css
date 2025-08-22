@@ -10,10 +10,6 @@
     padding-inline: 0.875rem;
 }
 
-.btn__label {
-    @apply flex justify-center items-center gap-2 text-center;
-}
-
 /* Tamaños */
 .btn--sm {
     @apply text-xs min-h-8 px-3;
