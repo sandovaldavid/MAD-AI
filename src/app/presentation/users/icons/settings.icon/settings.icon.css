@@ -1,5 +1,0 @@
-@reference '../../../../../styles.css';
-
-.settings-icon {
-    @apply transition-colors duration-200 hover:text-primary-500;
-}
