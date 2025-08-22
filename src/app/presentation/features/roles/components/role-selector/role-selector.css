@@ -1,0 +1,369 @@
+@reference '../../../../../../styles.css';
+/* Role Selector Component Styles */
+
+/* Base Selector Styles */
+.role-selector {
+    @apply w-full;
+}
+
+/* Size Variants */
+.role-selector.size-sm {
+    @apply text-sm;
+}
+
+.role-selector.size-md {
+    @apply text-base;
+}
+
+.role-selector.size-lg {
+    @apply text-lg;
+}
+
+/* Selector Trigger (Dropdown Variant) */
+.selector-trigger {
+    @apply relative w-full cursor-pointer rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-3 py-2 text-left shadow-sm  focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors duration-200;
+}
+
+.selector-trigger.disabled {
+    @apply cursor-not-allowed opacity-50 bg-neutral-50 dark:bg-neutral-900;
+}
+
+.selector-trigger.error {
+    @apply border-error-300 dark:border-error-600 focus:border-error-500 focus:ring-error-500;
+}
+
+.selector-trigger.open {
+    @apply border-primary-500 ring-1 ring-primary-500;
+}
+
+.selector-trigger .placeholder {
+    @apply text-neutral-400 dark:text-neutral-500;
+}
+
+.selector-trigger .chevron {
+    @apply text-neutral-400 dark:text-neutral-500;
+}
+
+.selector-trigger .clear-button {
+    @apply text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 rounded-full p-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors duration-150;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    @apply bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 ring-1 ring-black/5;
+}
+
+.dropdown-content {
+    @apply rounded-lg overflow-hidden;
+}
+
+/* Search Container */
+.search-container .search-input {
+    @apply w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 placeholder-neutral-400 dark:placeholder-neutral-500 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none text-sm;
+}
+
+.search-container .search-icon {
+    @apply pointer-events-none;
+}
+
+/* Role Options */
+.role-option {
+    @apply px-3 py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 border-b border-neutral-100 dark:border-neutral-700 last:border-b-0 transition-colors duration-150;
+}
+
+.role-option.selected {
+    @apply bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300;
+}
+
+.role-option.focused {
+    @apply bg-neutral-100 dark:bg-neutral-600;
+}
+
+.role-option.hovered {
+    @apply bg-neutral-50 dark:bg-neutral-700;
+}
+
+.role-option.selected.focused {
+    @apply bg-primary-100 dark:bg-primary-800/30;
+}
+
+.role-checkbox {
+    @apply h-4 w-4 text-primary-600 focus:ring-primary-500 border-neutral-300 dark:border-neutral-600 rounded bg-white dark:bg-neutral-700;
+}
+
+/* List Variant */
+.role-list-item {
+    @apply p-3 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:border-primary-300 dark:hover:border-primary-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all duration-200;
+}
+
+.role-list-item.selected {
+    @apply border-primary-500 bg-primary-50 dark:bg-primary-900/20;
+}
+
+.role-list-item.disabled {
+    @apply cursor-not-allowed opacity-50;
+}
+
+/* Cards Variant */
+.role-card {
+    @apply p-4 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm transition-all duration-200 bg-white dark:bg-neutral-800;
+}
+
+.role-card.selected {
+    @apply border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-sm;
+}
+
+.role-card.disabled {
+    @apply cursor-not-allowed opacity-50;
+}
+
+.role-card .card-content {
+    @apply space-y-2;
+}
+
+/* Compact Variant */
+.role-compact-item {
+    @apply inline-flex items-center space-x-1 px-2 py-1 rounded-md text-sm border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-all duration-150;
+}
+
+.role-compact-item.selected {
+    @apply border-primary-500 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300;
+}
+
+.role-compact-item.disabled {
+    @apply cursor-not-allowed opacity-50;
+}
+
+.role-compact-item .role-name {
+    @apply font-medium;
+}
+
+/* Selected Role Tags */
+.selected-role-tag {
+    @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200;
+}
+
+/* Size Specific Adjustments */
+.role-selector.size-sm .selector-trigger {
+    @apply px-2.5 py-1.5 text-sm;
+}
+
+.role-selector.size-sm .role-option {
+    @apply px-2.5 py-1.5 text-sm;
+}
+
+.role-selector.size-sm .role-list-item {
+    @apply p-2;
+}
+
+.role-selector.size-sm .role-card {
+    @apply p-3;
+}
+
+.role-selector.size-lg .selector-trigger {
+    @apply px-4 py-3 text-lg;
+}
+
+.role-selector.size-lg .role-option {
+    @apply px-4 py-3;
+}
+
+.role-selector.size-lg .role-list-item {
+    @apply p-4;
+}
+
+.role-selector.size-lg .role-card {
+    @apply p-5;
+}
+
+/* Loading States */
+.loading-state {
+    @apply flex items-center justify-center py-8;
+}
+
+.loading-spinner {
+    @apply animate-spin h-6 w-6 border-2 border-current border-t-transparent rounded-full;
+}
+
+/* Error States */
+.error-state {
+    @apply text-center py-4 text-error-600;
+}
+
+.error-retry-button {
+    @apply mt-2 text-sm text-primary-600 hover:text-primary-700 underline;
+}
+
+/* Empty States */
+.empty-state {
+    @apply text-center py-8 text-neutral-500;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.slide-down {
+    animation: slideDown 0.2s ease-out;
+}
+
+.scale-in {
+    animation: scaleIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Focus Styles for Accessibility */
+.role-option:focus,
+.role-list-item:focus,
+.role-card:focus,
+.role-compact-item:focus {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-neutral-800;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .selector-trigger,
+    .role-option,
+    .role-list-item,
+    .role-card,
+    .role-compact-item {
+        @apply border-2;
+    }
+
+    .selected {
+        @apply ring-2 ring-current;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .selector-trigger,
+    .role-option,
+    .role-list-item,
+    .role-card,
+    .role-compact-item {
+        transition: none;
+    }
+
+    .chevron {
+        transition: none;
+    }
+
+    .loading-spinner {
+        animation: none;
+    }
+}
+
+/* Dark Mode Specific Adjustments */
+@media (prefers-color-scheme: dark) {
+    .dropdown-menu {
+        @apply shadow-2xl;
+    }
+
+    .role-option.selected {
+        @apply bg-primary-900/30;
+    }
+
+    .role-list-item.selected,
+    .role-card.selected {
+        @apply bg-primary-900/25;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .role-selector {
+        @apply border border-neutral-400;
+    }
+
+    .dropdown-menu {
+        @apply hidden;
+    }
+
+    .role-list-item,
+    .role-card {
+        @apply border border-neutral-400 bg-white text-neutral-900;
+    }
+
+    .selected-role-tag {
+        @apply bg-neutral-200 text-neutral-900;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .role-cards {
+        @apply grid-cols-1;
+    }
+
+    .dropdown-menu {
+        @apply left-0 right-0;
+    }
+
+    .role-selector.size-lg .selector-trigger {
+        @apply px-3 py-2 text-base;
+    }
+}
+
+/* Custom Scrollbar for Dropdown */
+.dropdown-menu .max-h-60 {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) transparent;
+}
+
+.dropdown-menu .max-h-60::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu .max-h-60::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dropdown-menu .max-h-60::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 3px;
+}
+
+.dropdown-menu .max-h-60::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+}
+
+/* Line Clamp Utility */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
