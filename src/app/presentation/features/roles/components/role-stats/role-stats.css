@@ -1,0 +1,210 @@
+@reference '../../../../../../styles.css';
+/* Role Stats Dashboard Styles */
+
+.role-stats-dashboard {
+    @apply space-y-6;
+}
+
+.role-stats-dashboard.compact {
+    @apply space-y-4;
+}
+
+/* Header */
+.stats-header {
+    @apply pb-4 border-b border-neutral-200 dark:border-neutral-700;
+}
+
+/* Main Stats Grid */
+.stats-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+}
+
+.role-stats-dashboard.compact .stats-grid {
+    @apply grid-cols-2 lg:grid-cols-4 gap-3;
+}
+
+/* Stat Cards */
+.stat-card {
+    @apply bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.stat-card.primary {
+    @apply border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20;
+}
+
+.stat-card.success {
+    @apply border-successful-200 dark:border-successful-800 bg-successful-50 dark:bg-successful-900/20;
+}
+
+.stat-card.info {
+    @apply border-info-200 dark:border-info-800 bg-info-50 dark:bg-info-900/20;
+}
+
+.stat-card.warning {
+    @apply border-warning-200 dark:border-warning-800 bg-warning-50 dark:bg-warning-900/20;
+}
+
+.stat-icon {
+    @apply mb-3;
+}
+
+.stat-card.primary .stat-icon {
+    @apply text-primary-600 dark:text-primary-400;
+}
+
+.stat-card.success .stat-icon {
+    @apply text-successful-600 dark:text-successful-400;
+}
+
+.stat-card.info .stat-icon {
+    @apply text-info-600 dark:text-info-400;
+}
+
+.stat-card.warning .stat-icon {
+    @apply text-warning-600 dark:text-warning-400;
+}
+
+.stat-content {
+    @apply space-y-1;
+}
+
+.stat-value {
+    @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100;
+}
+
+.role-stats-dashboard.compact .stat-value {
+    @apply text-xl;
+}
+
+.stat-label {
+    @apply text-sm font-medium text-neutral-600 dark:text-neutral-400;
+}
+
+.stat-subtitle {
+    @apply text-xs text-neutral-500 dark:text-neutral-500;
+}
+
+.stat-trend {
+    @apply flex items-center gap-1 text-xs font-medium;
+}
+
+.stat-trend.positive {
+    @apply text-successful-600 dark:text-successful-400;
+}
+
+.stat-trend.negative {
+    @apply text-error-600 dark:text-error-400;
+}
+
+/* Distribution Section */
+.distribution-section {
+    @apply bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-6;
+}
+
+.role-stats-dashboard.compact .distribution-section {
+    @apply p-4;
+}
+
+.distribution-grid {
+    @apply space-y-4;
+}
+
+.distribution-item {
+    @apply space-y-2;
+}
+
+.progress-bar {
+    @apply w-full bg-neutral-200 dark:bg-neutral-700 rounded-full h-2;
+}
+
+.progress-fill {
+    @apply h-full rounded-full transition-all duration-300;
+}
+
+/* Activity Section */
+.activity-section {
+    @apply bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-6;
+}
+
+.role-stats-dashboard.compact .activity-section {
+    @apply p-4;
+}
+
+.activity-list {
+    @apply space-y-3;
+}
+
+.activity-item {
+    @apply flex items-start gap-3;
+}
+
+.activity-icon {
+    @apply flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0 mt-0.5;
+}
+
+.activity-icon.success {
+    @apply bg-successful-100 dark:bg-successful-900/30 text-successful-600 dark:text-successful-400;
+}
+
+.activity-icon.info {
+    @apply bg-info-100 dark:bg-info-900/30 text-info-600 dark:text-info-400;
+}
+
+.activity-icon.danger {
+    @apply bg-error-100 dark:bg-error-900/30 text-error-600 dark:text-error-400;
+}
+
+.activity-icon.warning {
+    @apply bg-warning-100 dark:bg-warning-900/30 text-warning-600 dark:text-warning-400;
+}
+
+.activity-icon.primary {
+    @apply bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400;
+}
+
+.activity-icon.neutral {
+    @apply bg-neutral-100 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400;
+}
+
+.activity-content {
+    @apply flex-1 min-w-0;
+}
+
+/* Actions Section */
+.actions-section {
+    @apply bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg p-4;
+}
+
+.action-btn {
+    @apply inline-flex items-center gap-2 px-3 py-2 text-sm font-medium border rounded-md transition-colors focus:ring-2 focus:ring-offset-2;
+}
+
+.action-btn.primary {
+    @apply bg-primary-600 text-white border-primary-600 hover:bg-primary-700 focus:ring-primary-500;
+}
+
+.action-btn.secondary {
+    @apply bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:ring-neutral-500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-grid {
+        @apply grid-cols-2 gap-3;
+    }
+
+    .stat-value {
+        @apply text-xl;
+    }
+
+    .distribution-section,
+    .activity-section {
+        @apply p-4;
+    }
+}
+
+@media (max-width: 640px) {
+    .stats-grid {
+        @apply grid-cols-1 gap-3;
+    }
+}
