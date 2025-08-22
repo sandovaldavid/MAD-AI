@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
 import { RolesFacade } from '@application/facades/roles.facade';
-import type { RegisterData } from '@domain/types/auth/register-user.type';
+import type { RegisterRequest } from '@application/types/auth.types';
 
 import { Button } from '@shared/ui/button/button';
 import { FormField } from '@shared/ui/form-field/form-field';
@@ -159,14 +159,15 @@ export class RegisterForm {
 
         try {
             const formValue = this.registerForm.value;
-            const registerData: RegisterData = {
+            const registerData: RegisterRequest = {
                 username: formValue.username,
                 email: formValue.email,
                 password: formValue.password,
-                password_confirm: formValue.password_confirm,
-                first_name: formValue.first_name,
-                last_name: formValue.last_name,
-                role_id: this.showRoleSelection() ? formValue.role_id : null,
+                passwordConfirm: formValue.password_confirm,
+                firstName: formValue.first_name,
+                lastName: formValue.last_name,
+                acceptTerms: formValue.acceptTerms || false,
+                roleId: this.showRoleSelection() ? formValue.role_id : undefined,
             };
 
             await this.authFacade.register(registerData);
