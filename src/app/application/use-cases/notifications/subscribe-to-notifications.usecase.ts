@@ -8,24 +8,24 @@ import type { Notification } from '@domain/entities/notification.entity';
 
 /**
  * Subscribe to Notifications Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles notification subscription with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern adapted for reactive subscriptions with comprehensive validation.
- * 
+ *
  * @responsibilities
  * - Validate application-level rules for notification subscriptions
  * - Delegate to domain repository for the actual subscription
  * - Handle audit logging and side effects
  * - Normalize errors for consistent application layer handling
- * 
+ *
  * @architecture
  * - Application Layer orchestrator
  * - Uses domain repository through dependency injection
  * - Integrates with system clock for precise timestamping
  * - Follows adapted orchestration pattern for reactive operations
- * 
+ *
  * @version 1.0.0
  * @since 2024-01-01
  * @layer Application
@@ -38,7 +38,7 @@ export class SubscribeToNotifications {
 
     /**
      * Execute notification subscription orchestration with validation and audit logging
-     * 
+     *
      * @param callback - Function that receives notification updates
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Function to unsubscribe from changes
@@ -62,23 +62,27 @@ export class SubscribeToNotifications {
             return this.createAuditedUnsubscribe(unsubscribe, requesterId);
         } catch (error: unknown) {
             // Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'subscribe_to_notifications',
+                this.errorTransformer.transformError(error),
+                'NOTIFICATION_SUBSCRIPTION_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for notification subscription
-     * 
+     *
      * @description
      * Validates request parameters and basic business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param callback Callback function to validate
      * @param requesterId Requester ID to validate (optional)
      * @throws ApplicationError when validation fails
      */
     private validateApplicationRules(
-        callback: (notifications: Notification[]) => void, 
+        callback: (notifications: Notification[]) => void,
         requesterId?: number
     ): void {
         if (!callback || typeof callback !== 'function') {
@@ -91,7 +95,11 @@ export class SubscribeToNotifications {
 
         // Validate requester ID if provided
         if (requesterId !== undefined && requesterId !== null) {
-            if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+            if (
+                typeof requesterId !== 'number' ||
+                !Number.isInteger(requesterId) ||
+                requesterId <= 0
+            ) {
                 throw new ApplicationError(
                     'subscribe_to_notifications',
                     'INVALID_REQUESTER_ID_FORMAT',
@@ -103,10 +111,10 @@ export class SubscribeToNotifications {
 
     /**
      * Create audited callback wrapper
-     * 
+     *
      * @description
      * Wraps the original callback with audit logging to track notification updates.
-     * 
+     *
      * @param originalCallback Original callback function
      * @param requesterId ID of the requester for audit purposes
      * @returns Wrapped callback with audit logging
@@ -131,7 +139,7 @@ export class SubscribeToNotifications {
                     error: error instanceof Error ? error.message : 'Unknown error',
                     operation: 'subscribe_to_notifications',
                     feature: 'notifications',
-                    severity: 'HIGH'
+                    severity: 'HIGH',
                 });
             }
         };
@@ -139,10 +147,10 @@ export class SubscribeToNotifications {
 
     /**
      * Create audited unsubscribe function
-     * 
+     *
      * @description
      * Wraps the unsubscribe function with audit logging.
-     * 
+     *
      * @param originalUnsubscribe Original unsubscribe function
      * @param requesterId ID of the requester for audit purposes
      * @returns Wrapped unsubscribe function with audit logging
@@ -159,10 +167,10 @@ export class SubscribeToNotifications {
 
     /**
      * Handle side effects of subscription start
-     * 
+     *
      * @description
      * Manages audit logging when a new subscription is started.
-     * 
+     *
      * @param requesterId ID of user who started the subscription
      */
     private handleSubscriptionStartSideEffects(requesterId?: number): void {
@@ -173,16 +181,16 @@ export class SubscribeToNotifications {
             requesterId,
             operation: 'subscribe_to_notifications',
             feature: 'notifications',
-            severity: 'LOW'
+            severity: 'LOW',
         });
     }
 
     /**
      * Handle side effects of notification updates
-     * 
+     *
      * @description
      * Manages audit logging for each notification update received by subscription.
-     * 
+     *
      * @param notifications Current notifications
      * @param requesterId ID of the subscriber
      */
@@ -194,7 +202,7 @@ export class SubscribeToNotifications {
 
         // Calculate notification statistics
         const totalNotifications = notifications.length;
-        const unreadNotifications = notifications.filter(n => !n.isRead).length;
+        const unreadNotifications = notifications.filter((n) => !n.isRead).length;
 
         console.log(`[AUDIT] Notification subscription update`, {
             timestamp,
@@ -202,20 +210,20 @@ export class SubscribeToNotifications {
             notificationStats: {
                 total: totalNotifications,
                 unread: unreadNotifications,
-                read: totalNotifications - unreadNotifications
+                read: totalNotifications - unreadNotifications,
             },
             operation: 'subscribe_to_notifications_update',
             feature: 'notifications',
-            severity: 'LOW'
+            severity: 'LOW',
         });
     }
 
     /**
      * Handle side effects of unsubscribe
-     * 
+     *
      * @description
      * Manages audit logging when a subscription is terminated.
-     * 
+     *
      * @param requesterId ID of user who unsubscribed
      */
     private handleUnsubscribeSideEffects(requesterId?: number): void {
@@ -226,26 +234,7 @@ export class SubscribeToNotifications {
             requesterId,
             operation: 'unsubscribe_from_notifications',
             feature: 'notifications',
-            severity: 'LOW'
+            severity: 'LOW',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     * 
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'subscribe_to_notifications',
-            feature: 'notifications'
-        });
-        
-        throw new ApplicationError('subscribe_to_notifications', errorMessage, 'NOTIFICATION_SUBSCRIPTION_FAILED', error);
     }
 }

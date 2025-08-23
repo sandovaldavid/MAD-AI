@@ -8,26 +8,26 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 
 /**
  * Get User By Username Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user retrieval by username with validation,
  * security logging, and error normalization. This use case follows the orchestration
  * pattern with error normalization to ensure consistent user lookup workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate user retrieval with validation and side effects
  * - Validate application-level access rules
  * - Execute user lookup through domain repository
  * - Handle user lookup logging for security purposes
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (username format, access permissions)
  * 2. Delegates user lookup to domain repository
  * 3. Handles side effects (lookup logging, audit trail)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -39,7 +39,7 @@ export class GetUserByUsername {
 
     /**
      * Execute user lookup orchestration with validation and audit logging
-     * 
+     *
      * @param username - Username to search for
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to user entity
@@ -67,20 +67,23 @@ export class GetUserByUsername {
             this.handleUserLookupSideEffects(user, username, requesterId);
 
             return user;
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'get_user_by_username',
+                this.errorTransformer.transformError(error),
+                'USER_LOOKUP_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for user lookup by username
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param username Username to validate
      * @throws ApplicationError when validation fails
      */
@@ -120,10 +123,10 @@ export class GetUserByUsername {
                 'get_user_by_username',
                 'USERNAME_TOO_SHORT',
                 'Username must be at least 3 characters long',
-                { 
-                    providedUsername: username, 
+                {
+                    providedUsername: username,
                     length: trimmedUsername.length,
-                    minLength: 3
+                    minLength: 3,
                 }
             );
         }
@@ -133,10 +136,10 @@ export class GetUserByUsername {
                 'get_user_by_username',
                 'USERNAME_TOO_LONG',
                 'Username cannot exceed 50 characters',
-                { 
-                    providedUsername: username, 
+                {
+                    providedUsername: username,
                     length: trimmedUsername.length,
-                    maxLength: 50
+                    maxLength: 50,
                 }
             );
         }
@@ -144,18 +147,18 @@ export class GetUserByUsername {
 
     /**
      * Handle side effects after successful user lookup
-     * 
+     *
      * @description
      * Manages audit logging and other side effects related to user lookup operations.
      * This includes security logging for potential unauthorized access attempts.
-     * 
+     *
      * @param user Retrieved user entity
      * @param username Username used for lookup
      * @param requesterId ID of user making the request
      */
     private handleUserLookupSideEffects(user: User, username: string, requesterId?: number): void {
         const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-        
+
         // Log user lookup for security monitoring
         console.log('[User Lookup] User found by username', {
             timestamp: timestamp.toISOString(),
@@ -163,7 +166,7 @@ export class GetUserByUsername {
             searchedUsername: username,
             requesterId: requesterId || 'anonymous',
             action: 'get_user_by_username',
-            status: 'success'
+            status: 'success',
         });
 
         // Additional side effects can be added here:
@@ -172,24 +175,5 @@ export class GetUserByUsername {
         // - Rate limiting checks
         // - Security alerts for suspicious patterns
         // - Username enumeration protection
-    }
-
-    /**
-     * Normalize and rethrow errors for application layer consistency
-     * 
-     * @description
-     * Transforms domain and infrastructure errors into normalized ApplicationError
-     * instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'get_user_by_username',
-            feature: 'user'
-        });
-        
-        throw new ApplicationError('get_user_by_username', errorMessage, 'USER_LOOKUP_FAILED', error);
     }
 }

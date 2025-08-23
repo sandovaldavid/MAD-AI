@@ -59,7 +59,11 @@ export class GetRoleByName {
             return role;
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'get_role_by_name',
+                this.errorTransformer.transformError(error),
+                'ROLE_SEARCH_FAILED'
+            );
         }
     }
 
@@ -164,24 +168,5 @@ export class GetRoleByName {
             feature: 'roles',
             severity: 'LOW',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'get_role_by_name',
-            feature: 'roles',
-        });
-
-        throw new ApplicationError('get_role_by_name', errorMessage, 'ROLE_SEARCH_FAILED', error);
     }
 }

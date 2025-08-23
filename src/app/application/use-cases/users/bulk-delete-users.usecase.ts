@@ -46,7 +46,11 @@ export class BulkDeleteUsers {
 
             return results;
         } catch (error: unknown) {
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'bulk_delete_users',
+                this.errorTransformer.transformError(error),
+                'BULK_USER_DELETION_FAILED'
+            );
         }
     }
 
@@ -163,28 +167,5 @@ export class BulkDeleteUsers {
             failedUserIds: failedIds,
             severity: 'HIGH',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'bulk-delete-users',
-            feature: 'users',
-        });
-
-        throw new ApplicationError(
-            'bulk_delete_users',
-            errorMessage,
-            'BULK_USER_DELETION_FAILED'
-        , error);
     }
 }

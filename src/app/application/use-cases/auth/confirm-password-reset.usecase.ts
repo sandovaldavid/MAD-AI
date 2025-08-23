@@ -74,7 +74,11 @@ export class ConfirmPasswordReset {
             return resetResult.message;
         } catch (error) {
             // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'PASSWORD_RESET_CONFIRMATION');
+            throw new ApplicationError(
+                'confirm_password_reset',
+                this.errorTransformer.transformError(error),
+                'PASSWORD_RESET_CONFIRMATION_FAILED'
+            );
         }
     }
 
@@ -126,18 +130,6 @@ export class ConfirmPasswordReset {
         // - Security event logging
         // - Metrics collection
         // - Fraud detection updates
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'confirm-password-reset',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
     }
 
     /**

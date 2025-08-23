@@ -8,26 +8,26 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 
 /**
  * Get User By ID Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user retrieval by ID with validation,
  * security logging, and error normalization. This use case follows the orchestration
  * pattern with error normalization to ensure consistent user access workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate user retrieval with validation and side effects
  * - Validate application-level access rules
  * - Execute user retrieval through domain repository
  * - Handle user access logging for security purposes
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (ID format, access permissions)
  * 2. Delegates user retrieval to domain repository
  * 3. Handles side effects (access logging, audit trail)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -39,7 +39,7 @@ export class GetUserById {
 
     /**
      * Execute user retrieval orchestration with validation and audit logging
-     * 
+     *
      * @param id - User ID to retrieve
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to user entity
@@ -57,30 +57,29 @@ export class GetUserById {
             this.handleUserAccessSideEffects(user, requesterId);
 
             return user;
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'get_user_by_id',
+                this.errorTransformer.transformError(error),
+                'USER_RETRIEVAL_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for user retrieval
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param id User ID to validate
      * @throws ApplicationError when validation fails
      */
     private validateApplicationRules(id: number): void {
         if (id === undefined || id === null) {
-            throw new ApplicationError(
-                'get_user_by_id',
-                'User ID is required',
-                'MISSING_USER_ID'
-            );
+            throw new ApplicationError('get_user_by_id', 'User ID is required', 'MISSING_USER_ID');
         }
 
         if (!Number.isInteger(id) || id <= 0) {
@@ -94,7 +93,7 @@ export class GetUserById {
 
     /**
      * Handle side effects for successful user retrieval
-     * 
+     *
      * @param user Retrieved user entity
      * @param requesterId ID of the user making the request
      */
@@ -105,22 +104,7 @@ export class GetUserById {
             username: user.username,
             accessedBy: requesterId ?? 'system',
             timestamp: this.clock.nowDate().toISOString(),
-            operation: 'get_user_by_id'
-        });
-    }
-
-    /**
-     * Normalize domain errors to application errors with user context
-     * 
-     * @param error Original error from domain or infrastructure
-     * @throws ApplicationError with normalized error information
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
             operation: 'get_user_by_id',
-            feature: 'user'
         });
-        
-        throw new ApplicationError('get_user_by_id', errorMessage, 'USER_RETRIEVAL_FAILED', error);
     }
 }

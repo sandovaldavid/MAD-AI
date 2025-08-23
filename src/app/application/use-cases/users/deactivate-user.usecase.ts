@@ -61,7 +61,11 @@ export class DeactivateUser {
             await this.handleUserDeactivationSideEffects(deactivatedUser, requesterId, reason);
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'deactivate_user',
+                this.errorTransformer.transformError(error),
+                'USER_DEACTIVATION_FAILED'
+            );
         }
     }
 
@@ -129,24 +133,5 @@ export class DeactivateUser {
             reason,
             operation: 'user_deactivation',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'deactivate_user',
-            feature: 'user',
-        });
-
-        throw new ApplicationError('deactivate_user', errorMessage, 'USER_DEACTIVATION_FAILED', error);
     }
 }

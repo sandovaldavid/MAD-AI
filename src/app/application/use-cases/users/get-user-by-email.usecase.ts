@@ -8,26 +8,26 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 
 /**
  * Get User By Email Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user retrieval by email with validation,
  * security logging, and error normalization. This use case follows the orchestration
  * pattern with error normalization to ensure consistent user lookup workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate user retrieval with validation and side effects
  * - Validate application-level access rules
  * - Execute user lookup through domain repository
  * - Handle user lookup logging for security purposes
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (email format, access permissions)
  * 2. Delegates user lookup to domain repository
  * 3. Handles side effects (lookup logging, audit trail)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -39,7 +39,7 @@ export class GetUserByEmail {
 
     /**
      * Execute user lookup orchestration with validation and audit logging
-     * 
+     *
      * @param email - Email address to search for
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to user entity
@@ -67,20 +67,23 @@ export class GetUserByEmail {
             this.handleUserLookupSideEffects(user, email, requesterId);
 
             return user;
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'get_user_by_email',
+                this.errorTransformer.transformError(error),
+                'USER_LOOKUP_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for user lookup by email
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param email Email address to validate
      * @throws ApplicationError when validation fails
      */
@@ -120,10 +123,10 @@ export class GetUserByEmail {
                 'get_user_by_email',
                 'EMAIL_TOO_LONG',
                 'Email address cannot exceed 255 characters',
-                { 
-                    providedEmail: email, 
+                {
+                    providedEmail: email,
                     length: trimmedEmail.length,
-                    maxLength: 255
+                    maxLength: 255,
                 }
             );
         }
@@ -131,18 +134,18 @@ export class GetUserByEmail {
 
     /**
      * Handle side effects after successful user lookup
-     * 
+     *
      * @description
      * Manages audit logging and other side effects related to user lookup operations.
      * This includes security logging for potential unauthorized access attempts.
-     * 
+     *
      * @param user Retrieved user entity
      * @param email Email used for lookup
      * @param requesterId ID of user making the request
      */
     private handleUserLookupSideEffects(user: User, email: string, requesterId?: number): void {
         const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-        
+
         // Log user lookup for security monitoring
         console.log('[User Lookup] User found by email', {
             timestamp: timestamp.toISOString(),
@@ -150,7 +153,7 @@ export class GetUserByEmail {
             searchedEmail: email,
             requesterId: requesterId || 'anonymous',
             action: 'get_user_by_email',
-            status: 'success'
+            status: 'success',
         });
 
         // Additional side effects can be added here:
@@ -158,24 +161,5 @@ export class GetUserByEmail {
         // - Access pattern monitoring
         // - Rate limiting checks
         // - Security alerts for suspicious patterns
-    }
-
-    /**
-     * Normalize and rethrow errors for application layer consistency
-     * 
-     * @description
-     * Transforms domain and infrastructure errors into normalized ApplicationError
-     * instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'get_user_by_email',
-            feature: 'user'
-        });
-        
-        throw new ApplicationError('get_user_by_email', errorMessage, 'USER_LOOKUP_FAILED', error);
     }
 }

@@ -9,24 +9,24 @@ import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Deactivate Role Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles role deactivation with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with comprehensive validation for role deactivation operations.
- * 
+ *
  * @responsibilities
  * - Validate application-level rules for role deactivation
  * - Delegate to domain repository for the actual deactivation
  * - Handle audit logging and side effects
  * - Normalize errors for consistent application layer handling
- * 
+ *
  * @architecture
  * - Application Layer orchestrator
  * - Uses domain repository through dependency injection
  * - Integrates with system clock for precise timestamping
  * - Follows 4-step orchestration pattern
- * 
+ *
  * @version 1.0.0
  * @since 2024-01-01
  * @layer Application
@@ -40,7 +40,7 @@ export class DeactivateRole {
 
     /**
      * Execute role deactivation orchestration with validation and audit logging
-     * 
+     *
      * @param id - Role ID to deactivate
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to the deactivated Role entity
@@ -58,22 +58,31 @@ export class DeactivateRole {
             const deactivatedRole = await this.roleRepo.update(id, { isActive: false });
 
             // Step 4: Handle side effects
-            await this.handleRoleDeactivationSideEffects(id, currentRole, deactivatedRole, requesterId);
+            await this.handleRoleDeactivationSideEffects(
+                id,
+                currentRole,
+                deactivatedRole,
+                requesterId
+            );
 
             return deactivatedRole;
         } catch (error: unknown) {
             // Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'deactivate_role',
+                this.errorTransformer.transformError(error),
+                'ROLE_DEACTIVATION_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for role deactivation
-     * 
+     *
      * @description
      * Validates request parameters and basic business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param id Role ID to validate
      * @throws ApplicationError when validation fails
      */
@@ -97,18 +106,18 @@ export class DeactivateRole {
 
     /**
      * Validate role can be deactivated
-     * 
+     *
      * @description
      * Fetches the role and validates it can be deactivated according to business rules.
      * Prevents deactivation of already inactive roles and administrator role.
-     * 
+     *
      * @param id Role ID to validate
      * @returns Promise resolving to the current Role entity
      * @throws ApplicationError when role cannot be deactivated
      */
     private async validateRoleForDeactivation(id: number): Promise<Role> {
         const role = await this.roleRepo.getById(id);
-        
+
         if (!role.isActive) {
             throw new ApplicationError(
                 'deactivate_role',
@@ -131,20 +140,20 @@ export class DeactivateRole {
 
     /**
      * Handle side effects for successful role deactivation
-     * 
+     *
      * @description
      * Manages audit logging and other side effects after successful role deactivation.
      * Uses high-precision timestamps for accurate audit trails.
-     * 
+     *
      * @param id The deactivated role ID
      * @param currentRole The role state before deactivation
      * @param deactivatedRole The role state after deactivation
      * @param requesterId ID of user who performed the deactivation
      */
     private async handleRoleDeactivationSideEffects(
-        id: number, 
-        currentRole: Role, 
-        deactivatedRole: Role, 
+        id: number,
+        currentRole: Role,
+        deactivatedRole: Role,
         requesterId?: number
     ): Promise<void> {
         // Process domain events from the deactivated role entity
@@ -159,29 +168,12 @@ export class DeactivateRole {
                 name: deactivatedRole.name,
                 accessLevel: deactivatedRole.accessLevel,
                 wasActive: currentRole.isActive,
-                nowActive: deactivatedRole.isActive
+                nowActive: deactivatedRole.isActive,
             },
             requesterId,
             operation: 'deactivate_role',
             feature: 'roles',
-            severity: 'MEDIUM'
+            severity: 'MEDIUM',
         });
-    }    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     * 
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'deactivate_role',
-            feature: 'roles'
-        });
-        
-        throw new ApplicationError('deactivate_role', errorMessage, 'ROLE_DEACTIVATION_FAILED', error);
     }
 }

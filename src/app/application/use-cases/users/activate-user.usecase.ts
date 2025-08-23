@@ -8,26 +8,26 @@ import { DomainEventProcessor } from '@application/services/domain-event-process
 
 /**
  * Activate User Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user activation with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with error normalization to ensure consistent user activation workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate user activation with validation and side effects
  * - Validate application-level access rules
  * - Execute user activation through domain repository
  * - Handle activation audit logging for compliance purposes
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (user ID, activation permissions)
  * 2. Delegates user activation to domain repository
  * 3. Handles side effects (audit logging, notification triggers)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -40,7 +40,7 @@ export class ActivateUser {
 
     /**
      * Execute user activation orchestration with validation and audit logging
-     * 
+     *
      * @param userId - ID of the user to activate
      * @param requesterId - ID of the user making the request (for audit logging)
      * @param reason - Optional reason for activation (for audit trail)
@@ -60,20 +60,23 @@ export class ActivateUser {
 
             // Step 4: Handle side effects
             await this.handleUserActivationSideEffects(activatedUser, requesterId, reason);
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'activate_user',
+                this.errorTransformer.transformError(error),
+                'USER_ACTIVATION_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for user activation
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param userId User ID to validate
      * @param requesterId ID of user making the request
      * @throws ApplicationError when validation fails
@@ -105,32 +108,32 @@ export class ActivateUser {
                 userId,
                 requesterId,
                 action: 'activate_user',
-                type: 'self_activation'
+                type: 'self_activation',
             });
         }
     }
 
     /**
      * Handle side effects after successful user activation
-     * 
+     *
      * @description
      * Manages audit logging and other side effects related to user activation operations.
      * This includes compliance logging and notification triggers.
-     * 
+     *
      * @param activatedUserId ID of the activated user
      * @param requesterId ID of user making the request
      * @param reason Optional reason for activation
      */
     private async handleUserActivationSideEffects(
-        activatedUser: any, 
-        requesterId?: number, 
+        activatedUser: any,
+        requesterId?: number,
         reason?: string
     ): Promise<void> {
         // Process domain events from the activated user entity
         await this.eventProcessor.processEntityEvents(activatedUser);
 
         const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-        
+
         // Log user activation for audit trail
         console.log('[User Activation] User successfully activated', {
             timestamp: timestamp.toISOString(),
@@ -138,7 +141,7 @@ export class ActivateUser {
             requesterId: requesterId || 'system',
             reason: reason || 'No reason provided',
             action: 'activate_user',
-            status: 'success'
+            status: 'success',
         });
 
         // Additional side effects can be added here:
@@ -148,24 +151,5 @@ export class ActivateUser {
         // - Log to external audit systems
         // - Clear activation-related cache entries
         // - Send notifications to administrators
-    }
-
-    /**
-     * Normalize and rethrow errors for application layer consistency
-     * 
-     * @description
-     * Transforms domain and infrastructure errors into normalized ApplicationError
-     * instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'activate_user',
-            feature: 'user'
-        });
-        
-        throw new ApplicationError('activate_user', errorMessage, 'USER_ACTIVATION_FAILED', error);
     }
 }

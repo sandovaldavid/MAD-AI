@@ -64,7 +64,11 @@ export class CreateUser {
             return user;
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'create_user',
+                this.errorTransformer.transformError(error),
+                'USER_CREATION_FAILED'
+            );
         }
     }
 
@@ -140,20 +144,5 @@ export class CreateUser {
         // TODO: Send welcome email notification
         // TODO: Create user onboarding tasks
         // TODO: Notify administrators of new user creation
-    }
-
-    /**
-     * Normalize domain errors to application errors with user context
-     *
-     * @param error Original error from domain or infrastructure
-     * @throws ApplicationError with normalized error information
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'create_user',
-            feature: 'user',
-        });
-
-        throw new ApplicationError('create_user', errorMessage, 'USER_CREATION_FAILED', error);
     }
 }

@@ -62,7 +62,11 @@ export class DeleteRole {
             this.handleRoleDeletionSideEffects(id, role, requesterId);
         } catch (error: unknown) {
             // Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'delete_role',
+                this.errorTransformer.transformError(error),
+                'ROLE_DELETION_FAILED'
+            );
         }
     }
 
@@ -161,27 +165,5 @@ export class DeleteRole {
             feature: 'roles',
             severity: 'HIGH',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        // If it's already an ApplicationError, just re-throw it
-        if (error instanceof ApplicationError) {
-            throw error;
-        }
-
-        // Transform other errors using the error transformer
-        const errorMessage = this.errorTransformer.transformError(error as Error);
-
-        throw new ApplicationError('delete_role', errorMessage, 'ROLE_DELETION_FAILED');
     }
 }

@@ -62,7 +62,11 @@ export class UpdateRole {
             return updatedRole;
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'update_role',
+                this.errorTransformer.transformError(error),
+                'ROLE_UPDATE_FAILED'
+            );
         }
     }
 
@@ -133,7 +137,11 @@ export class UpdateRole {
 
         // Validate access level if provided
         if (patch.accessLevel !== undefined) {
-            console.log('Validate access level if provided: ', patch.accessLevel, typeof patch.accessLevel);
+            console.log(
+                'Validate access level if provided: ',
+                patch.accessLevel,
+                typeof patch.accessLevel
+            );
             if (
                 typeof patch.accessLevel !== 'number' ||
                 !Number.isInteger(patch.accessLevel) ||
@@ -184,23 +192,5 @@ export class UpdateRole {
             feature: 'roles',
             severity: 'MEDIUM',
         });
-    }
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'update_role',
-            feature: 'roles',
-        });
-
-        throw new ApplicationError('update_role', errorMessage, 'ROLE_UPDATE_FAILED', error);
     }
 }

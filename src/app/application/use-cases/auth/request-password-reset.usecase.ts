@@ -8,31 +8,31 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 
 /**
  * Request Password Reset Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles password reset requests with comprehensive validation,
  * rate limiting, and security considerations. This use case follows the orchestration
  * pattern with error normalization to ensure consistent password reset workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate password reset request with validation and side effects
  * - Validate application-level security rules (rate limiting)
  * - Execute password reset request through domain repository
  * - Handle security side effects (logging, monitoring)
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (rate limiting, system availability)
  * 2. Delegates password reset request to domain repository
  * 3. Handles side effects (security logging, rate limiting tracking)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @security
  * - Implements rate limiting to prevent abuse
  * - Always returns success message to prevent email enumeration
  * - Logs security events for monitoring
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -49,12 +49,12 @@ export class RequestPasswordReset {
 
     /**
      * Orchestrates password reset request with validation, delegation, and side effects
-     * 
+     *
      * @param request - Password reset request containing email
      * @returns Promise<string> - Success message
-     * 
+     *
      * @throws ApplicationError when request fails with normalized error message
-     * 
+     *
      * @example Basic password reset request
      * ```typescript
      * const message = await requestPasswordResetUC.execute({
@@ -75,10 +75,13 @@ export class RequestPasswordReset {
             await this.handlePasswordResetSideEffects(request, resetResult);
 
             return resetResult.message;
-
         } catch (error) {
             // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'PASSWORD_RESET_REQUEST');
+            throw new ApplicationError(
+                'request_password_reset',
+                this.errorTransformer.transformError(error),
+                this.extractErrorCode(error)
+            );
         }
     }
 
@@ -91,7 +94,7 @@ export class RequestPasswordReset {
 
         // Application-level validation: check if system is available
         const systemAvailable = await this.checkSystemAvailability();
-        
+
         if (!systemAvailable) {
             throw new ApplicationError(
                 'SYSTEM_UNAVAILABLE',
@@ -109,29 +112,21 @@ export class RequestPasswordReset {
         result: { message: string }
     ): Promise<void> {
         const requestTime = this.clock.nowEpochSeconds();
-        
+
         // Record request for rate limiting (always, even if email doesn't exist for security)
         this.recordRequest(request.email, requestTime);
 
         // Log request for security monitoring
-        console.log(`Password reset requested at ${new Date(requestTime * 1000).toISOString()} for: ${request.email}`);
+        console.log(
+            `Password reset requested at ${new Date(requestTime * 1000).toISOString()} for: ${
+                request.email
+            }`
+        );
 
         // Additional side effects could include:
         // - Security event logging
         // - Metrics collection
         // - Fraud detection updates
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, { 
-            feature: 'auth', 
-            operation: 'request-password-reset' 
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
     }
 
     /**
@@ -141,12 +136,12 @@ export class RequestPasswordReset {
         const now = Date.now();
         const normalizedEmail = email.toLowerCase().trim();
         const requests = RequestPasswordReset.recentRequests.get(normalizedEmail) || [];
-        
+
         // Clean old requests outside the window
-        const validRequests = requests.filter(timestamp => 
-            (now - timestamp * 1000) < RequestPasswordReset.rateLimitWindow
+        const validRequests = requests.filter(
+            (timestamp) => now - timestamp * 1000 < RequestPasswordReset.rateLimitWindow
         );
-        
+
         if (validRequests.length >= RequestPasswordReset.maxRequestsPerWindow) {
             throw new ApplicationError(
                 'RATE_LIMIT_EXCEEDED',
@@ -154,7 +149,7 @@ export class RequestPasswordReset {
                 'RATE_LIMIT_EXCEEDED'
             );
         }
-        
+
         // Update the stored requests
         RequestPasswordReset.recentRequests.set(normalizedEmail, validRequests);
     }

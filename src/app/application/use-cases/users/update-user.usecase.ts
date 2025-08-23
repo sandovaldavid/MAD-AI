@@ -10,26 +10,26 @@ import { DomainEventProcessor } from '@application/services/domain-event-process
 
 /**
  * Update User Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user updates with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with error normalization to ensure consistent user update workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate user updates with validation and side effects
  * - Validate application-level access rules
  * - Execute user update through domain repository
  * - Handle update audit logging for compliance purposes
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (user ID, patch data, permissions)
  * 2. Delegates user update to domain repository
  * 3. Handles side effects (audit logging, change tracking)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -42,14 +42,18 @@ export class UpdateUser {
 
     /**
      * Execute user update orchestration with validation and audit logging
-     * 
+     *
      * @param userId - ID of the user to update
      * @param patch - Update data patch containing fields to modify
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to updated user entity
      * @throws ApplicationError when user not found or update fails
      */
-    async execute(userId: number, patch: UpdateUserPatchContract, requesterId?: number): Promise<User> {
+    async execute(
+        userId: number,
+        patch: UpdateUserPatchContract,
+        requesterId?: number
+    ): Promise<User> {
         try {
             // Step 1: Validate application rules
             this.validateApplicationRules(userId, patch);
@@ -61,20 +65,23 @@ export class UpdateUser {
             await this.handleUserUpdateSideEffects(updatedUser, patch, requesterId);
 
             return updatedUser;
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'update_user',
+                this.errorTransformer.transformError(error),
+                'USER_UPDATE_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for user update
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param userId User ID to validate
      * @param patch Update patch to validate
      * @throws ApplicationError when validation fails
@@ -124,18 +131,18 @@ export class UpdateUser {
 
     /**
      * Handle side effects after successful user update
-     * 
+     *
      * @description
      * Manages audit logging and other side effects related to user update operations.
      * This includes change tracking and compliance logging.
-     * 
+     *
      * @param updatedUser Updated user entity
      * @param patch Update patch that was applied
      * @param requesterId ID of user making the request
      */
     private async handleUserUpdateSideEffects(
-        updatedUser: User, 
-        patch: UpdateUserPatchContract, 
+        updatedUser: User,
+        patch: UpdateUserPatchContract,
         requesterId?: number
     ): Promise<void> {
         // Process domain events from the updated user entity
@@ -143,7 +150,7 @@ export class UpdateUser {
 
         const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
         const changedFields = Object.keys(patch);
-        
+
         // Log user update for audit trail
         console.log('[User Update] User successfully updated', {
             timestamp: timestamp.toISOString(),
@@ -151,7 +158,7 @@ export class UpdateUser {
             changedFields,
             requesterId: requesterId || 'system',
             action: 'update_user',
-            status: 'success'
+            status: 'success',
         });
 
         // Additional side effects can be added here:
@@ -160,24 +167,5 @@ export class UpdateUser {
         // - Cache invalidation
         // - Event publishing for other services
         // - Compliance audit trail
-    }
-
-    /**
-     * Normalize and rethrow errors for application layer consistency
-     * 
-     * @description
-     * Transforms domain and infrastructure errors into normalized ApplicationError
-     * instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'update_user',
-            feature: 'user'
-        });
-        
-        throw new ApplicationError('update_user', errorMessage, 'USER_UPDATE_FAILED', error);
     }
 }

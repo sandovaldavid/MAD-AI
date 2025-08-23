@@ -73,7 +73,11 @@ export class Register {
             await this.handleRegistrationSideEffects(request);
         } catch (error) {
             // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'REGISTRATION');
+            throw new ApplicationError(
+                'register',
+                this.errorTransformer.transformError(error),
+                this.extractErrorCode(error)
+            );
         }
     }
 
@@ -114,18 +118,6 @@ export class Register {
         // For now, auto-login logic would be handled here if implemented
         // This would typically trigger the login use case with the new credentials
         console.log('Registration completed successfully');
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'register',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
     }
 
     /**

@@ -59,7 +59,11 @@ export class DeleteUser {
             this.handleUserDeletionSideEffects(userId, requesterId);
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'delete_user',
+                this.errorTransformer.transformError(error),
+                'USER_DELETION_FAILED'
+            );
         }
     }
 
@@ -139,24 +143,5 @@ export class DeleteUser {
         // - Trigger data cleanup jobs
         // - Log to external audit systems
         // - Update user metrics and analytics
-    }
-
-    /**
-     * Normalize and rethrow errors for application layer consistency
-     *
-     * @description
-     * Transforms domain and infrastructure errors into normalized ApplicationError
-     * instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'delete_user',
-            feature: 'user',
-        });
-
-        throw new ApplicationError('delete_user', errorMessage, 'USER_DELETION_FAILED', error);
     }
 }

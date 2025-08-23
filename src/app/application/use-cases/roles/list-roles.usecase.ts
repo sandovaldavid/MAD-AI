@@ -9,24 +9,24 @@ import type { ListRolesFilterContract } from '@domain/contracts/role.contract';
 
 /**
  * List Roles Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles role listing with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with comprehensive validation for filter parameters.
- * 
+ *
  * @responsibilities
  * - Validate application-level rules for role listing filters
  * - Delegate to domain repository for the actual listing
  * - Handle audit logging and side effects
  * - Normalize errors for consistent application layer handling
- * 
+ *
  * @architecture
  * - Application Layer orchestrator
  * - Uses domain repository through dependency injection
  * - Integrates with system clock for precise timestamping
  * - Follows 4-step orchestration pattern
- * 
+ *
  * @version 1.0.0
  * @since 2024-01-01
  * @layer Application
@@ -39,7 +39,7 @@ export class ListRoles {
 
     /**
      * Execute role listing orchestration with validation and audit logging
-     * 
+     *
      * @param filter - Optional filter criteria for role listing
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to array of Role entities
@@ -59,17 +59,21 @@ export class ListRoles {
             return roles;
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'list_roles',
+                this.errorTransformer.transformError(error),
+                'ROLE_LISTING_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for role listing
-     * 
+     *
      * @description
      * Validates request parameters and business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param filter Filter criteria to validate
      * @throws ApplicationError when validation fails
      */
@@ -111,18 +115,18 @@ export class ListRoles {
 
     /**
      * Handle side effects of role listing
-     * 
+     *
      * @description
      * Manages audit logging and other side effects after successful role listing.
      * Uses high-precision timestamps for accurate audit trails.
-     * 
+     *
      * @param filter The filter criteria used
      * @param roles The retrieved roles
      * @param requesterId ID of user who performed the listing
      */
     private handleRoleListingSideEffects(
-        filter: ListRolesFilterContract | undefined, 
-        roles: Role[], 
+        filter: ListRolesFilterContract | undefined,
+        roles: Role[],
         requesterId?: number
     ): void {
         const timestamp = this.clock.nowEpochSeconds();
@@ -132,34 +136,15 @@ export class ListRoles {
             filterCriteria: {
                 search: filter?.search,
                 active: filter?.active,
-                hasFilter: !!filter
+                hasFilter: !!filter,
             },
             resultCount: roles.length,
-            adminRolesCount: roles.filter(role => role.isAdministrator()).length,
-            activeRolesCount: roles.filter(role => role.isActive).length,
+            adminRolesCount: roles.filter((role) => role.isAdministrator()).length,
+            activeRolesCount: roles.filter((role) => role.isActive).length,
             requesterId,
             operation: 'list_roles',
             feature: 'roles',
-            severity: 'LOW'
+            severity: 'LOW',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     * 
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'list_roles',
-            feature: 'roles'
-        });
-        
-        throw new ApplicationError('list_roles', errorMessage, 'ROLE_LISTING_FAILED', error);
     }
 }

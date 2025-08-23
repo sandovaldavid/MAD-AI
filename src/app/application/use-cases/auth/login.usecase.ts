@@ -5,8 +5,6 @@ import type { SessionStorePort } from '@domain/repositories/session/session-stor
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { LoginRequest } from '@application/types/auth.types';
 import type { Session } from '@domain/entities/session.entity';
-import { ValidationError } from '@domain/errors/validation-error.entity';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { ApplicationError } from '@application/errors/application-error';
 import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
 
@@ -40,7 +38,6 @@ export class LoginWithCredentials {
     private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
     private readonly sessionStore = inject<SessionStorePort>(SESSION_STORE_PORT);
     private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
     private readonly eventProcessor = inject(DomainEventProcessor);
 
     /**
@@ -76,8 +73,9 @@ export class LoginWithCredentials {
 
             return session;
         } catch (error) {
-            // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'LOGIN');
+            // 4. Re-throw the original error - let the facade handle transformation
+            // The facade's error transformer will provide user-friendly messages
+            throw error;
         }
     }
 
@@ -115,31 +113,6 @@ export class LoginWithCredentials {
         // Log successful login for security auditing
         // Note: Audit logging would be coordinated here if we had an audit repository
         console.log(`User logged in: ${session.user.email} at ${new Date().toISOString()}`);
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'login',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
-    }
-
-    /**
-     * Extracts error code from various error types
-     */
-    private extractErrorCode(error: unknown): string {
-        if (error instanceof ValidationError) {
-            return error.code;
-        }
-        if (error instanceof Error && 'code' in error) {
-            return String(error.code);
-        }
-        return 'UNKNOWN_ERROR';
     }
 
     /**

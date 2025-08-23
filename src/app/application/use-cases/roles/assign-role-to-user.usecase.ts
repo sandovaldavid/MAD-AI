@@ -12,25 +12,25 @@ import type { User } from '@domain/entities/user.entity';
 
 /**
  * Assign Role to User Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles role assignment to users with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with comprehensive validation for role assignment operations.
- * 
+ *
  * @responsibilities
  * - Validate application-level rules for role assignments
  * - Ensure both user and role exist and are active
  * - Delegate to domain repository for the actual assignment
  * - Handle audit logging and side effects
  * - Normalize errors for consistent application layer handling
- * 
+ *
  * @architecture
  * - Application Layer orchestrator
  * - Uses domain repositories through dependency injection
  * - Integrates with system clock for precise timestamping
  * - Follows 4-step orchestration pattern
- * 
+ *
  * @version 1.0.0
  * @since 2024-01-01
  * @layer Application
@@ -45,7 +45,7 @@ export class AssignRoleToUser {
 
     /**
      * Execute role assignment orchestration with validation and audit logging
-     * 
+     *
      * @param input - Role assignment contract with userId, roleId, and assignedByUserId
      * @returns Promise resolving when assignment is complete
      * @throws ApplicationError when validation fails or assignment fails
@@ -65,17 +65,21 @@ export class AssignRoleToUser {
             await this.handleRoleAssignmentSideEffects(input, user, role);
         } catch (error: unknown) {
             // Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'assign_role_to_user',
+                this.errorTransformer.transformError(error),
+                'ROLE_ASSIGNMENT_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for role assignment
-     * 
+     *
      * @description
      * Validates request parameters and basic business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param input Role assignment contract to validate
      * @throws ApplicationError when validation fails
      */
@@ -96,7 +100,11 @@ export class AssignRoleToUser {
             );
         }
 
-        if (typeof input.userId !== 'number' || !Number.isInteger(input.userId) || input.userId <= 0) {
+        if (
+            typeof input.userId !== 'number' ||
+            !Number.isInteger(input.userId) ||
+            input.userId <= 0
+        ) {
             throw new ApplicationError(
                 'assign_role_to_user',
                 'INVALID_USER_ID_FORMAT',
@@ -112,7 +120,11 @@ export class AssignRoleToUser {
             );
         }
 
-        if (typeof input.roleId !== 'number' || !Number.isInteger(input.roleId) || input.roleId <= 0) {
+        if (
+            typeof input.roleId !== 'number' ||
+            !Number.isInteger(input.roleId) ||
+            input.roleId <= 0
+        ) {
             throw new ApplicationError(
                 'assign_role_to_user',
                 'INVALID_ROLE_ID_FORMAT',
@@ -121,7 +133,11 @@ export class AssignRoleToUser {
         }
 
         if (input.assignedByUserId !== undefined && input.assignedByUserId !== null) {
-            if (typeof input.assignedByUserId !== 'number' || !Number.isInteger(input.assignedByUserId) || input.assignedByUserId <= 0) {
+            if (
+                typeof input.assignedByUserId !== 'number' ||
+                !Number.isInteger(input.assignedByUserId) ||
+                input.assignedByUserId <= 0
+            ) {
                 throw new ApplicationError(
                     'assign_role_to_user',
                     'INVALID_ASSIGNED_BY_USER_ID_FORMAT',
@@ -133,19 +149,21 @@ export class AssignRoleToUser {
 
     /**
      * Validate entities exist and are eligible for assignment
-     * 
+     *
      * @description
      * Fetches user and role entities and validates they exist and meet assignment criteria.
-     * 
+     *
      * @param input Role assignment contract
      * @returns Promise resolving to validated user and role entities
      * @throws ApplicationError when entities don't exist or aren't eligible
      */
-    private async validateEntitiesForAssignment(input: RoleAssignmentContract): Promise<{ user: User; role: Role }> {
+    private async validateEntitiesForAssignment(
+        input: RoleAssignmentContract
+    ): Promise<{ user: User; role: Role }> {
         // Fetch both entities in parallel for efficiency
         const [user, role] = await Promise.all([
             this.userRepo.getById(input.userId),
-            this.roleRepo.getById(input.roleId)
+            this.roleRepo.getById(input.roleId),
         ]);
 
         // Validate user is active
@@ -171,14 +189,14 @@ export class AssignRoleToUser {
 
     /**
      * Handle side effects for successful role assignment
-     * 
+     *
      * @param input The role assignment input data
      * @param user The user entity that received the role
      * @param role The role entity that was assigned
      */
     private async handleRoleAssignmentSideEffects(
-        input: RoleAssignmentContract, 
-        user: User, 
+        input: RoleAssignmentContract,
+        user: User,
         role: Role
     ): Promise<void> {
         // Process domain events from the user entity (role assignment events)
@@ -194,33 +212,16 @@ export class AssignRoleToUser {
             user: {
                 username: user.username,
                 email: user.email,
-                isActive: user.active
+                isActive: user.active,
             },
             role: {
                 name: role.name,
                 accessLevel: role.accessLevel,
-                isActive: role.isActive
+                isActive: role.isActive,
             },
             operation: 'assign_role_to_user',
             feature: 'roles',
-            severity: 'MEDIUM'
+            severity: 'MEDIUM',
         });
-    }    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     * 
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'assign_role_to_user',
-            feature: 'roles'
-        });
-        
-        throw new ApplicationError('assign_role_to_user', errorMessage, 'ROLE_ASSIGNMENT_FAILED', error);
     }
 }

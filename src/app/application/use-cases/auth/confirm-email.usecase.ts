@@ -67,7 +67,11 @@ export class ConfirmEmail {
             return confirmationResult.message;
         } catch (error) {
             // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'EMAIL_CONFIRMATION');
+            throw new ApplicationError(
+                'confirm_email',
+                this.errorTransformer.transformError(error),
+                'EMAIL_CONFIRMATION_FAILED'
+            );
         }
     }
 
@@ -116,18 +120,6 @@ export class ConfirmEmail {
         // - Updating user analytics
         // - Triggering post-confirmation workflows
         // - Security event logging
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'confirm-email',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
     }
 
     /**

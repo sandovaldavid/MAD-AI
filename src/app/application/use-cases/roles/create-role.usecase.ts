@@ -60,7 +60,11 @@ export class CreateRole {
 
             return role;
         } catch (error: unknown) {
-            throw this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'create_role',
+                this.errorTransformer.transformError(error),
+                'ROLE_CREATION_FAILED'
+            );
         }
     }
 
@@ -137,22 +141,5 @@ export class CreateRole {
             feature: 'roles',
             severity: 'MEDIUM',
         });
-    }    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     *
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     *
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'create_role',
-            feature: 'roles',
-        });
-
-        throw new ApplicationError('create_role', errorMessage, 'ROLE_CREATION_FAILED', error);
     }
 }

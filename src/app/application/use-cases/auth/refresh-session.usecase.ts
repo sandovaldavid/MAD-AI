@@ -67,7 +67,11 @@ export class RefreshSession {
             return refreshedSession;
         } catch (error) {
             // 4. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'SESSION_REFRESH');
+            throw new ApplicationError(
+                'refresh_session',
+                this.errorTransformer.transformError(error),
+                this.extractErrorCode(error)
+            );
         }
     }
 
@@ -178,18 +182,6 @@ export class RefreshSession {
         // For now, we delegate this validation to the domain repository
         // which will throw appropriate errors if refresh token is invalid
         return false;
-    }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'refresh-session',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
     }
 
     /**

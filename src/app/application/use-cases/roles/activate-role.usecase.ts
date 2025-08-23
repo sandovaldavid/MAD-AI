@@ -8,24 +8,24 @@ import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Activate Role Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles role activation with validation,
  * audit logging, and error normalization. This use case follows the orchestration
  * pattern with comprehensive validation for role activation operations.
- * 
+ *
  * @responsibilities
  * - Validate application-level rules for role activation
  * - Delegate to domain repository for the actual activation
  * - Handle audit logging and side effects
  * - Normalize errors for consistent application layer handling
- * 
+ *
  * @architecture
  * - Application Layer orchestrator
  * - Uses domain repository through dependency injection
  * - Integrates with system clock for precise timestamping
  * - Follows 4-step orchestration pattern
- * 
+ *
  * @version 1.0.0
  * @since 2024-01-01
  * @layer Application
@@ -38,7 +38,7 @@ export class ActivateRole {
 
     /**
      * Execute role activation orchestration with validation and audit logging
-     * 
+     *
      * @param id - Role ID to activate
      * @param requesterId - ID of the user making the request (for audit logging)
      * @returns Promise resolving to the activated Role entity
@@ -61,17 +61,21 @@ export class ActivateRole {
             return activatedRole;
         } catch (error: unknown) {
             // Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'activate_role',
+                this.errorTransformer.transformError(error),
+                'ROLE_ACTIVATION_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for role activation
-     * 
+     *
      * @description
      * Validates request parameters and basic business rules specific to the application layer.
      * Domain validation is handled by the repository layer.
-     * 
+     *
      * @param id Role ID to validate
      * @throws ApplicationError when validation fails
      */
@@ -95,17 +99,17 @@ export class ActivateRole {
 
     /**
      * Validate role can be activated
-     * 
+     *
      * @description
      * Fetches the role and validates it can be activated according to business rules.
-     * 
+     *
      * @param id Role ID to validate
      * @returns Promise resolving to the current Role entity
      * @throws ApplicationError when role cannot be activated
      */
     private async validateRoleForActivation(id: number): Promise<Role> {
         const role = await this.roleRepo.getById(id);
-        
+
         if (role.isActive) {
             throw new ApplicationError(
                 'activate_role',
@@ -119,20 +123,20 @@ export class ActivateRole {
 
     /**
      * Handle side effects of role activation
-     * 
+     *
      * @description
      * Manages audit logging and other side effects after successful role activation.
      * Uses high-precision timestamps for accurate audit trails.
-     * 
+     *
      * @param id The activated role ID
      * @param currentRole The role state before activation
      * @param activatedRole The role state after activation
      * @param requesterId ID of user who performed the activation
      */
     private handleRoleActivationSideEffects(
-        id: number, 
-        currentRole: Role, 
-        activatedRole: Role, 
+        id: number,
+        currentRole: Role,
+        activatedRole: Role,
         requesterId?: number
     ): void {
         const timestamp = this.clock.nowEpochSeconds();
@@ -144,31 +148,12 @@ export class ActivateRole {
                 name: activatedRole.name,
                 accessLevel: activatedRole.accessLevel,
                 wasActive: currentRole.isActive,
-                nowActive: activatedRole.isActive
+                nowActive: activatedRole.isActive,
             },
             requesterId,
             operation: 'activate_role',
             feature: 'roles',
-            severity: 'MEDIUM'
+            severity: 'MEDIUM',
         });
-    }
-
-    /**
-     * Transform and normalize errors for consistent handling across the application layer
-     * 
-     * @description
-     * Uses the ApplicationErrorTransformer to convert domain/infrastructure errors into
-     * ApplicationError instances for consistent error handling across the application layer.
-     * 
-     * @param error Original error from domain or infrastructure layers
-     * @throws ApplicationError Normalized error for application consumption
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'activate_role',
-            feature: 'roles'
-        });
-        
-        throw new ApplicationError('activate_role', errorMessage, 'ROLE_ACTIVATION_FAILED', error);
     }
 }

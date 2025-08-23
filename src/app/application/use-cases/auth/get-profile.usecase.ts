@@ -9,30 +9,30 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 
 /**
  * Get User Profile Use Case
- * 
+ *
  * @description
  * Application layer orchestrator that handles user profile retrieval with session validation,
  * authentication checks, and security considerations. This use case follows the orchestration
  * pattern with error normalization to ensure consistent profile access workflow.
- * 
+ *
  * @responsibilities
  * - Orchestrate profile retrieval with validation and side effects
  * - Validate application-level session rules
  * - Execute profile retrieval through domain repository
  * - Handle session validation and authentication requirements
  * - Normalize errors for application layer consumption
- * 
+ *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (session validity, authentication)
  * 2. Delegates profile retrieval to domain repository
  * 3. Handles side effects (activity logging, cache updates)
  * 4. Normalizes errors for consistent error handling
- * 
+ *
  * @performance
  * - Validates session before making API calls
  * - Logs user activity for analytics
- * 
+ *
  * @since 1.0.0
  * @layer Application
  */
@@ -45,10 +45,9 @@ export class GetProfile {
 
     // Simple in-memory cache for profile data (in production, consider more sophisticated caching)
 
-
     /**
      * Execute profile retrieval orchestration with session validation
-     * 
+     *
      * @param deviceInfo Optional device information for security logging
      * @returns Promise resolving to user profile
      * @throws ApplicationError when session is invalid or profile inaccessible
@@ -65,74 +64,57 @@ export class GetProfile {
             this.handleProfileSideEffects(user, deviceInfo);
 
             return user;
-
         } catch (error: unknown) {
             // Step 4: Normalize errors for application layer
-            this.normalizeAndRethrow(error);
+            throw new ApplicationError(
+                'get_profile',
+                this.errorTransformer.transformError(error),
+                'PROFILE_RETRIEVAL_FAILED'
+            );
         }
     }
 
     /**
      * Validate application-level rules for profile access
-     * 
+     *
      * @description
      * Validates that user has a valid session before attempting profile retrieval.
      * This prevents unnecessary API calls for unauthenticated users.
-     * 
+     *
      * @throws ApplicationError when session is invalid or expired
      */
     private async validateApplicationRules(): Promise<void> {
         const session = await this.sessionStore.readAll();
-        
+
         if (!session || !session.tokens) {
-            throw new ApplicationError(
-                'get_profile',
-                'No active session found',
-                'NO_SESSION'
-            );
+            throw new ApplicationError('get_profile', 'No active session found', 'NO_SESSION');
         }
 
         const accessExp = session.tokens.accessExp;
         if (accessExp && accessExp < this.clock.nowEpochSeconds()) {
-            throw new ApplicationError(
-                'get_profile',
-                'Session has expired',
-                'SESSION_EXPIRED'
-            );
+            throw new ApplicationError('get_profile', 'Session has expired', 'SESSION_EXPIRED');
         }
     }
 
     /**
      * Handle side effects for successful profile retrieval
-     * 
+     *
      * @param user Retrieved user profile
      * @param deviceInfo Optional device information for security logging
      */
     private handleProfileSideEffects(
-        user: User, 
+        user: User,
         deviceInfo?: { userAgent: string; platform: string }
     ): void {
         // Log profile access for security monitoring
-        console.log(`Profile accessed for user ${user.id} at ${this.clock.nowDate().toISOString()}`, {
-            userId: user.id,
-            username: user.username,
-            timestamp: this.clock.nowDate().toISOString(),
-            deviceInfo: deviceInfo ?? null
-        });
-    }
-
-    /**
-     * Normalize domain errors to application errors with auth context
-     * 
-     * @param error Original error from domain or infrastructure
-     * @throws ApplicationError with normalized error information
-     */
-    private normalizeAndRethrow(error: unknown): never {
-        const errorMessage = this.errorTransformer.transformError(error, {
-            operation: 'get_profile',
-            feature: 'auth'
-        });
-        
-        throw new ApplicationError('get_profile', errorMessage, 'PROFILE_RETRIEVAL_FAILED', error);
+        console.log(
+            `Profile accessed for user ${user.id} at ${this.clock.nowDate().toISOString()}`,
+            {
+                userId: user.id,
+                username: user.username,
+                timestamp: this.clock.nowDate().toISOString(),
+                deviceInfo: deviceInfo ?? null,
+            }
+        );
     }
 }

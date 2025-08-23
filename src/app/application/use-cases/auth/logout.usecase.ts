@@ -94,7 +94,11 @@ export class Logout {
             await this.handleLogoutSideEffects(request, sessionData);
         } catch (error) {
             // 5. Normalize and re-throw error
-            throw this.normalizeAndRethrow(error, 'LOGOUT');
+            throw new ApplicationError(
+                'logout',
+                this.errorTransformer.transformError(error),
+                this.extractErrorCode(error)
+            );
         }
     }
 
@@ -157,19 +161,6 @@ export class Logout {
             console.log('Logout from all devices completed');
         }
     }
-
-    /**
-     * Normalizes errors using the error transformer
-     */
-    private normalizeAndRethrow(error: unknown, operation: string): never {
-        const message = this.errorTransformer.transformError(error, {
-            feature: 'auth',
-            operation: 'logout',
-        });
-        const code = this.extractErrorCode(error);
-        throw new ApplicationError(`${operation}_FAILED`, message, code, error);
-    }
-
     /**
      * Validates multi-device logout permissions
      */
