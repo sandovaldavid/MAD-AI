@@ -15,7 +15,7 @@ export const NAV_SECTIONS: NavSection[] = [
             {
                 id: 'users',
                 label: 'Usuarios',
-                icon: 'users',
+                icon: 'user-group',
                 route: '/users',
                 activeMatch: '/users',
                 requireRoles: ['admin', 'manager'],
@@ -44,7 +44,7 @@ export const NAV_SECTIONS: NavSection[] = [
             {
                 id: 'settings',
                 label: 'Configuración',
-                icon: 'settings',
+                icon: 'cog-6-tooth',
                 route: '/settings',
                 activeMatch: '/settings',
                 requireRoles: ['admin'],
@@ -65,7 +65,7 @@ export const NAV_SECTIONS: NavSection[] = [
             {
                 id: 'analytics',
                 label: 'Analítica',
-                icon: 'chart-line',
+                icon: 'chart-pie',
                 route: '/analytics',
                 activeMatch: '/analytics',
             },
