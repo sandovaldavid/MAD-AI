@@ -3,6 +3,7 @@ import {
     CreateUserContract,
     UpdateUserPatchContract,
     UserListFilterContract,
+    ChangePasswordContract,
 } from '@domain/contracts/user.contract';
 
 /**
@@ -272,6 +273,38 @@ export interface UserRepository {
      * ```
      */
     getByUsername(username: string): Promise<User | null>;
+
+    /**
+     * Cambia la contraseña del usuario autenticado.
+     *
+     * @description Permite a un usuario cambiar su contraseña actual.
+     * @param request - Datos de cambio de contraseña
+     * @returns Promise que resuelve cuando el cambio fue exitoso
+     * @throws {ValidationError} Si los datos son inválidos
+     * @throws {UnauthorizedError} Si el usuario no está autenticado
+     * @throws {NetworkError} Si el servicio no está disponible
+     * @businessRules
+     * - Debe validar la contraseña actual
+     * - Debe cumplir reglas de complejidad
+     * - Debe confirmar la nueva contraseña
+     * - Debe registrar el cambio para auditoría
+     */
+    /**
+     * Cambia la contraseña del usuario autenticado.
+     *
+     * @description Permite a un usuario cambiar su contraseña actual.
+     * @param contract - Datos de cambio de contraseña (dominio)
+     * @returns Promise que resuelve cuando el cambio fue exitoso
+     * @throws {ValidationError} Si los datos son inválidos
+     * @throws {UnauthorizedError} Si el usuario no está autenticado
+     * @throws {NetworkError} Si el servicio no está disponible
+     * @businessRules
+     * - Debe validar la contraseña actual
+     * - Debe cumplir reglas de complejidad
+     * - Debe confirmar la nueva contraseña
+     * - Debe registrar el cambio para auditoría
+     */
+    changePassword(contract: ChangePasswordContract): Promise<void>;
 
     /**
      * Creates a new user account.
