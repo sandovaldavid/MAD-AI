@@ -2,12 +2,12 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { CommonModule } from '@angular/common';
 
 import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
-import { Button } from '@shared/ui/button/button';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-nav-rail-toggler',
     standalone: true,
-    imports: [CommonModule, Button],
+    imports: [CommonModule, Icon],
     templateUrl: './nav-rail-toggler.html',
     styleUrl: './nav-rail-toggler.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

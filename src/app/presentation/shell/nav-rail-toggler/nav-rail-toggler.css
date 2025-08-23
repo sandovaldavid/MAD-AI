@@ -1,13 +1,72 @@
 @reference '../../../../styles.css';
 
 .nav-rail-toggler {
-    @apply w-full justify-start gap-3;
+    @apply flex items-center justify-center w-8 h-8 p-1;
+    @apply bg-white dark:bg-primary-800 border-2 border-primary-300 dark:border-primary-700 text-primary-700 dark:text-primary-300
+    rounded-full outline-none cursor-pointer;
+    @apply hover:bg-primary-50 dark:hover:bg-primary-700
+    hover:border-primary-400 dark:hover:border-primary-600
+    hover:shadow-lg hover:shadow-primary-300/30 dark:hover:shadow-primary-700/30
+    hover:scale-110;
+    @apply focus-visible:ring-2 focus-visible:ring-primary-500/50 
+    dark:focus-visible:ring-primary-400/50 focus-visible:ring-offset-2;
+    @apply active:scale-95 active:bg-primary-100 dark:active:bg-primary-600;
+    @apply transition-all duration-200 ease-in-out;
+    /* Reset button defaults */
+    background-image: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    margin: 0;
+    /* Ensure proper isolation */
+    isolation: isolate;
+    position: relative;
+    z-index: 4;
+    /* Override any inherited button styles */
+    min-width: 32px;
+    min-height: 32px;
+    /* Enhanced shadow for floating effect */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .nav-rail-toggler__icon {
-    @apply text-lg font-mono;
+    @apply w-5 h-5 transition-all duration-200 ease-in-out;
+    @apply text-current;
 }
 
+.nav-rail-toggler:hover .nav-rail-toggler__icon {
+    @apply rotate-12;
+}
+
+.nav-rail-toggler:active .nav-rail-toggler__icon {
+    @apply scale-90 rotate-0;
+}
+
+/* Ensure no text styles are applied */
 .nav-rail-toggler__text {
-    @apply text-sm font-medium;
+    display: none;
+}
+
+/* Force override any ui-button styles that might leak through */
+.nav-rail-toggler {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    padding: 0.25rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 50% !important;
+}
+
+/* Animation for better UX */
+@media (prefers-reduced-motion: reduce) {
+    .nav-rail-toggler,
+    .nav-rail-toggler__icon {
+        transition: none;
+    }
+
+    .nav-rail-toggler:hover .nav-rail-toggler__icon {
+        transform: none;
+    }
 }
