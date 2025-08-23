@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { NgOptimizedImage } from '@angular/common';
 import { AuthFacade } from '@application/facades/auth.facade';
 
 import { RegisterForm } from '../../forms/register-form/register-form';
@@ -11,7 +12,7 @@ import { Icon } from '@shared/ui/icon/icon';
     templateUrl: './register.html',
     styleUrl: './register.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [RegisterForm, Icon],
+    imports: [RegisterForm, Icon, NgOptimizedImage],
 })
 export class Register implements OnInit {
     private router = inject(Router);
