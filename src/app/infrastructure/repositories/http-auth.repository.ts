@@ -16,7 +16,7 @@ import { ClockPort } from '@domain/repositories/system/clock.repository';
 import { TOKEN_STORE_PORT, CLOCK_PORT } from '../../di/tokens';
 import { AUTH_USER_STORE_PORT } from '../../di/tokens';
 import { InfraErrorToDomainMapper } from '../errors/infra-to-domain.mapper';
-import type { InfraError } from '../errors/http-to-infra.mapper';
+import { mapHttpErrorToInfra } from '../errors/http-to-infra.mapper';
 import {
     LoginRequestDTO,
     LoginResponseDTO,
@@ -129,29 +129,32 @@ export class HttpAuthRepository implements AuthRepository {
             console.log('🔥 HttpAuthRepository.login - Session created successfully');
 
             return session;
-        } catch (infraError: unknown) {
-            console.error('🔥 HttpAuthRepository.login - ERROR CAUGHT:', infraError);
-            console.error('🔥 HttpAuthRepository.login - Error type:', typeof infraError);
+        } catch (httpError) {
+            console.error('🔥 HttpAuthRepository.login - ERROR CAUGHT:', httpError);
+            console.error('🔥 HttpAuthRepository.login - Error type:', typeof httpError);
             console.error(
                 '🔥 HttpAuthRepository.login - Error constructor:',
-                (infraError as any)?.constructor?.name
+                (httpError as any)?.constructor?.name
             );
             console.error(
                 '🔥 HttpAuthRepository.login - Error message:',
-                (infraError as any)?.message
+                (httpError as any)?.message
             );
-            console.error('🔥 HttpAuthRepository.login - Error stack:', (infraError as any)?.stack);
+            console.error('🔥 HttpAuthRepository.login - Error stack:', (httpError as any)?.stack);
 
             // Check if this is already a ValidationError from domain layer (value object creation)
-            if (infraError instanceof ValidationError) {
+            if (httpError instanceof ValidationError) {
                 console.error(
                     '🔥 HttpAuthRepository.login - This is a ValidationError from domain layer, rethrowing as-is'
                 );
-                throw infraError;
+                throw httpError;
             }
 
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            console.error('🔥 HttpAuthRepository.login - Mapped to InfraError:', infraError);
+            
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'LOGIN',
                 entityType: 'User',
                 field: 'credentials',
@@ -166,17 +169,18 @@ export class HttpAuthRepository implements AuthRepository {
             const dto = await firstValueFrom(this.http.get<MeResponseDTO>(`${API}/me/`));
             this.writeUserSnapshotFromMe(dto);
             return AuthMapper.meToEntity(dto);
-        } catch (infraError: unknown) {
+        } catch (httpError: unknown) {
             // Check if this is an authentication error and clear tokens
-            const errorStatus = (infraError as any)?.status;
+            const errorStatus = (httpError as any)?.status;
             if (errorStatus === 401 || errorStatus === 403) {
                 console.log('🔥 HttpAuthRepository.me - Clearing tokens due to auth error');
                 this.tokenStore.clear();
                 this.userStore.clear();
             }
 
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'GET_CURRENT_USER',
                 entityType: 'User',
                 field: 'authentication',
@@ -221,14 +225,15 @@ export class HttpAuthRepository implements AuthRepository {
                 accessExpEpochSeconds: tokens.accessExp,
                 user,
             });
-        } catch (infraError: unknown) {
+        } catch (httpError: unknown) {
             // Clear tokens when refresh fails to prevent retry loops with invalid tokens
             console.log('🔥 HttpAuthRepository.refresh - Clearing tokens due to refresh failure');
             this.tokenStore.clear();
             this.userStore.clear();
 
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'REFRESH_TOKEN',
                 entityType: 'Session',
                 field: 'refreshToken',
@@ -245,9 +250,9 @@ export class HttpAuthRepository implements AuthRepository {
                     refresh_token: t?.refreshToken,
                 } as LogoutRequestDTO)
             );
-        } catch (infraError: unknown) {
+        } catch (httpError: unknown) {
             // For logout, we log errors but don't rethrow since clearing tokens is more important
-            console.warn('Logout request failed:', infraError);
+            console.warn('Logout request failed:', httpError);
         } finally {
             this.tokenStore.clear();
             this.userStore.clear();
@@ -270,9 +275,10 @@ export class HttpAuthRepository implements AuthRepository {
             );
             // Registration successful - no session or tokens returned
             this.writeUserSnapshotFromLogin(dto.user);
-        } catch (infraError: unknown) {
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+        } catch (httpError: unknown) {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'REGISTER_USER',
                 entityType: 'User',
                 field: 'registration',
@@ -303,9 +309,10 @@ export class HttpAuthRepository implements AuthRepository {
             // * Nota: la UI debería llamar a facade.confirmEmail(...) y luego refreshProfile()
 
             return { message: res.message };
-        } catch (infraError: unknown) {
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+        } catch (httpError: unknown) {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'CONFIRM_EMAIL',
                 entityType: 'User',
                 field: 'emailConfirmation',
@@ -321,9 +328,10 @@ export class HttpAuthRepository implements AuthRepository {
                 this.http.post<ResetPasswordResponseDTO>(`${API}/reset-password/`, body)
             );
             return { message: dto.message };
-        } catch (infraError: unknown) {
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+        } catch (httpError: unknown) {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'REQUEST_PASSWORD_RESET',
                 entityType: 'User',
                 field: 'email',
@@ -346,9 +354,10 @@ export class HttpAuthRepository implements AuthRepository {
                 )
             );
             return { message: dto.message };
-        } catch (infraError: unknown) {
-            // Transform infrastructure errors to domain errors
-            const domainError = this.errorMapper.mapError(infraError as InfraError, {
+        } catch (httpError: unknown) {
+            // Transform HTTP error to infrastructure error, then to domain error
+            const infraError = mapHttpErrorToInfra(httpError as any);
+            const domainError = this.errorMapper.mapError(infraError, {
                 operation: 'CONFIRM_PASSWORD_RESET',
                 entityType: 'User',
                 field: 'passwordReset',
