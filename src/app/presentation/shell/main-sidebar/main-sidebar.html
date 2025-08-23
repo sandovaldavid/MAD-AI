@@ -4,18 +4,23 @@
     [class.main-sidebar--collapsed]="isCollapsed()"
     [attr.aria-label]="sidebarAriaLabel()"
     role="navigation">
-    <!-- Sidebar Header with Toggle -->
+    <!-- Sidebar Header -->
     <div class="main-sidebar__header">
         <!-- Logo/Brand Area -->
         <div class="main-sidebar__brand" [class.main-sidebar__brand--collapsed]="isCollapsed()">
             @if (!isCollapsed()) {
-            <h1 class="main-sidebar__title">MAD-AI</h1>
+            <div class="main-sidebar__brand-content">
+                <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon" />
+                <h1 class="main-sidebar__title">MAD-AI</h1>
+            </div>
             } @else {
-            <span class="main-sidebar__logo">🤖</span>
+            <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon--collapsed" />
             }
         </div>
+    </div>
 
-        <!-- Toggle Button -->
+    <!-- Toggle Button - Positioned on the edge -->
+    <div class="main-sidebar__toggle-wrapper">
         <app-nav-rail-toggler [collapsed]="isCollapsed()" (toggled)="onToggleCollapse()" />
     </div>
 

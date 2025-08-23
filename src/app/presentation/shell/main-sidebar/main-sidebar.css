@@ -1,55 +1,86 @@
 @reference '../../../../styles.css';
 
 .main-sidebar {
-    @apply fixed left-0 top-0 h-full bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-700;
+    @apply fixed left-0 top-0 h-full bg-primary-50 dark:bg-primary-950 
+    border-r border-primary-200 dark:border-primary-800;
     @apply flex flex-col z-30 transition-all duration-300 ease-in-out;
+    @apply shadow-lg shadow-primary-200/20 dark:shadow-primary-900/50;
     width: 280px; /* Expanded width */
 }
 
 .main-sidebar--collapsed {
-    width: 64px; /* Collapsed width */
+    width: 72px; /* Slightly wider collapsed width for better touch targets */
 }
 
 /* Header section */
 .main-sidebar__header {
-    @apply flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700;
-    min-height: 64px;
+    @apply flex items-center justify-center p-4 border-b border-primary-200 dark:border-primary-800;
+    @apply bg-primary-100 dark:bg-primary-900;
+    min-height: 72px; /* Slightly taller header */
+}
+
+/* Toggle button wrapper - positioned on the edge */
+.main-sidebar__toggle-wrapper {
+    @apply absolute top-5 z-50;
+    right: -18px; /* Half of the button width (32px/2) to center it on the edge */
+    @apply transition-all duration-300 ease-in-out;
+}
+
+.main-sidebar--collapsed .main-sidebar__toggle-wrapper {
+    right: -18px; /* Keep the same position when collapsed */
 }
 
 .main-sidebar__brand {
-    @apply flex items-center gap-3 transition-all duration-200;
+    @apply flex items-center transition-all duration-300;
 }
 
 .main-sidebar__brand--collapsed {
     @apply justify-center;
 }
 
-.main-sidebar__title {
-    @apply text-xl font-bold text-primary-800 dark:text-primary-200;
-    @apply transition-opacity duration-200;
+.main-sidebar__brand-content {
+    @apply flex items-center gap-3;
 }
 
-.main-sidebar__logo {
-    @apply text-2xl flex-shrink-0;
+.main-sidebar__brand-icon {
+    @apply text-primary-600 dark:text-primary-400 flex-shrink-0;
+}
+
+.main-sidebar__brand-icon--collapsed {
+    @apply text-primary-600 dark:text-primary-400 flex-shrink-0;
+}
+
+.main-sidebar__title {
+    @apply text-xl font-bold text-primary-800 dark:text-primary-200;
+    @apply transition-all duration-300;
+    letter-spacing: 0.5px;
 }
 
 /* Content section */
 .main-sidebar__content {
     @apply flex-1 overflow-y-auto overflow-x-hidden;
+    @apply bg-gradient-to-b from-primary-50 to-primary-100 
+    dark:from-primary-950 dark:to-primary-900;
 }
 
 .main-sidebar__nav {
-    @apply p-2;
+    @apply p-3;
 }
 
 /* Footer section */
 .main-sidebar__footer {
-    @apply border-t border-neutral-200 dark:border-neutral-700;
+    @apply border-t border-primary-200/60 dark:border-primary-800/60;
+    @apply bg-gradient-to-t from-primary-100 to-primary-50 
+    dark:from-primary-900 dark:to-primary-950;
+    /* Isolate footer styles to prevent bleeding */
+    isolation: isolate;
+    position: relative;
+    z-index: 2;
 }
 
 /* Scrollbar styling */
 .main-sidebar__content::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
 }
 
 .main-sidebar__content::-webkit-scrollbar-track {
@@ -57,11 +88,11 @@
 }
 
 .main-sidebar__content::-webkit-scrollbar-thumb {
-    @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
+    @apply bg-primary-300 dark:bg-primary-700 rounded-full;
 }
 
 .main-sidebar__content::-webkit-scrollbar-thumb:hover {
-    @apply bg-neutral-400 dark:bg-neutral-500;
+    @apply bg-primary-400 dark:bg-primary-600;
 }
 
 /* Focus and accessibility */
@@ -69,7 +100,52 @@
     @apply outline-none;
 }
 
-/* Animation for content visibility */
+/* Responsive behavior */
+@media (max-width: 1024px) {
+    .main-sidebar {
+        @apply shadow-xl shadow-primary-300/40 dark:shadow-primary-900/80;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-sidebar {
+        @apply -translate-x-full;
+    }
+
+    .main-sidebar--collapsed {
+        @apply -translate-x-full;
+    }
+
+    /* Show sidebar on mobile when needed */
+    .main-sidebar--mobile-open {
+        @apply translate-x-0;
+    }
+}
+
+/* Animation for better UX */
 .main-sidebar--collapsed .main-sidebar__title {
-    @apply opacity-0;
+    @apply opacity-0 scale-95;
+}
+
+.main-sidebar__brand-icon,
+.main-sidebar__brand-icon--collapsed {
+    @apply transition-transform duration-200;
+}
+
+.main-sidebar:hover .main-sidebar__brand-icon,
+.main-sidebar:hover .main-sidebar__brand-icon--collapsed {
+    @apply scale-110;
+}
+
+/* Backdrop for mobile */
+@media (max-width: 768px) {
+    .main-sidebar::before {
+        content: '';
+        @apply fixed inset-0 bg-black/50 -z-10 opacity-0 pointer-events-none;
+        transition: opacity 300ms ease-in-out;
+    }
+
+    .main-sidebar--mobile-open::before {
+        @apply opacity-100 pointer-events-auto;
+    }
 }
