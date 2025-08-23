@@ -160,8 +160,8 @@ export class AuthFacade {
             this._loading.set(true);
         }
 
-        // Clear any previous auth state completely before login attempt
-        this.clearAuthStateCompletely();
+        // Clear any previous auth state but preserve loading state during operation
+        this.clearAuthStateForNewOperation();
 
         try {
             const session = await this.loginUC.execute(request);
@@ -461,6 +461,20 @@ export class AuthFacade {
      * Clear all auth state including session and user data
      * This is more aggressive than clearAuthState and is used
      * when we need to ensure completely clean state
+     */
+    /**
+     * Clear authentication state without affecting loading state
+     * Used during login process to clear previous errors/data while preserving loading
+     */
+    private clearAuthStateForNewOperation(): void {
+        this._authError.set(null);
+        this._session.set(null);
+        this._user.set(null);
+    }
+
+    /**
+     * Clear authentication state completely including loading state
+     * Used for complete cleanup (logout, initialization, etc.)
      */
     clearAuthStateCompletely(): void {
         this._authError.set(null);
