@@ -64,25 +64,29 @@ export class LoginForm {
     async submit() {
         if (this.form.valid) {
             if (!this.auth()) return;
-            
-            // Clear any previous error state before attempting login
-            this.auth()!.clearAuthState();
-            
+
+            // Clear any previous error state completely before attempting login
+            this.auth()!.clearAuthStateCompletely();
+
             const { identity, password, remember } = this.form.value;
             const identifierValue = identity?.trim() ?? '';
             const identifier: Identifier = identifierValue.includes('@')
                 ? { type: 'email', value: identifierValue }
                 : { type: 'username', value: identifierValue };
-            try {
-                await this.auth()!.login({
-                    identifier,
-                    password: password ?? '',
-                    rememberMe: remember ?? false
-                });
+
+            // Attempt login - facade will handle errors internally via signals
+            await this.auth()!.login({
+                identifier,
+                password: password ?? '',
+                rememberMe: remember ?? false,
+            });
+
+            // Check if login was successful by checking if user is authenticated
+            // If there's an error, it will be shown through the auth facade's error signal
+            if (this.auth()!.isAuthenticated()) {
                 await this.router.navigateByUrl('/dashboard');
-            } catch (e) {
-                // El error ya se maneja en el facade
             }
+            // If login failed, the error will be displayed automatically through the auth facade
         } else {
             this.form.markAllAsTouched();
         }
