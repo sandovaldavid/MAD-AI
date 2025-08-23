@@ -21,7 +21,7 @@ export class Register implements OnInit {
     ngOnInit(): void {
         // Clear any previous auth errors and loading state when entering register page
         // This ensures clean state for registration process
-        this.auth.clearAuthState();
+        this.auth.clearAuthStateCompletely();
     }
 
     onRegistrationSuccess() {
