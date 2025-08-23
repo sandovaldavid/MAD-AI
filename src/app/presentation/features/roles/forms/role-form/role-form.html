@@ -55,10 +55,13 @@
             @if (mode() === 'edit') {
             <div class="form-field">
                 <label class="form-label">Estado del Rol</label>
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" formControlName="isActive" class="form-checkbox" />
-                    <span class="text-sm text-neutral-700 dark:text-neutral-300">Rol activo</span>
-                </label>
+                <ui-toggle
+                    [checked]="roleForm.get('isActive')?.value || false"
+                    label="Rol activo"
+                    color="successful"
+                    size="md"
+                    (toggle)="onToggleActiveStatus($event)">
+                </ui-toggle>
             </div>
             }
         </form>

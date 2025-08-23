@@ -13,6 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RolesFacade } from '@application/facades/roles.facade';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleModel } from '../../models/role.model';
+import { Toggle } from '../../../../../shared/ui/toggle/toggle';
 
 type FormMode = 'create' | 'edit';
 
@@ -26,7 +27,7 @@ interface RoleFormData {
 @Component({
     selector: 'app-role-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RoleCard],
+    imports: [CommonModule, ReactiveFormsModule, RoleCard, Toggle],
     templateUrl: './role-form.html',
     styleUrl: './role-form.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -171,6 +172,12 @@ export class RoleFormComponent {
             if (field.errors?.['max']) return `El valor máximo es ${field.errors['max'].max}`;
         }
         return null;
+    }
+
+    // Handle toggle status change
+    onToggleActiveStatus(isActive: boolean): void {
+        this.roleForm.patchValue({ isActive });
+        this.roleForm.markAsTouched();
     }
 
     // Event handlers for role-card (disabled in preview mode)
