@@ -3,20 +3,19 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
-import { ThemeService } from '@core/cross-cutting/ui-state/theme.service';
-import { Button } from '@shared/ui/button/button';
+import { Icon } from '@shared/ui/icon/icon';
+import { ThemeToggle } from '@shared/ui/theme-toggle/theme-toggle';
 
 @Component({
     selector: 'app-nav-rail-footer',
     standalone: true,
-    imports: [CommonModule, Button],
+    imports: [CommonModule, Icon, ThemeToggle],
     templateUrl: './nav-rail-footer.html',
     styleUrl: './nav-rail-footer.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavRailFooter {
     protected authFacade = inject(AuthFacade);
-    private themeService = inject(ThemeService);
     private router = inject(Router);
 
     // Inputs
@@ -24,19 +23,10 @@ export class NavRailFooter {
 
     // Computed properties
     readonly user = computed(() => this.authFacade.user());
-    readonly isDarkMode = computed(() => this.themeService.isDarkMode());
-
-    readonly themeButtonLabel = computed(() =>
-        this.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
-    );
 
     readonly profileButtonLabel = computed(
         () => `Perfil de ${this.user()?.firstName || 'usuario'}`
     );
-
-    onThemeToggle(): void {
-        this.themeService.toggleTheme();
-    }
 
     onProfileClick(): void {
         this.router.navigate(['/profile']);

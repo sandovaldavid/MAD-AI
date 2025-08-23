@@ -1,59 +1,44 @@
 <div class="nav-rail-footer">
     <!-- Theme Toggle -->
-    <ui-button
-        variant="ghost"
-        size="sm"
-        [attr.aria-label]="themeButtonLabel()"
-        class="nav-rail-footer__action"
-        [class.nav-rail-footer__action--collapsed]="collapsed()"
-        (clicked)="onThemeToggle()">
-        <span class="nav-rail-footer__icon">
-            {{ isDarkMode() ? '☀️' : '🌙' }}
-        </span>
-        @if (!collapsed()) {
-        <span class="nav-rail-footer__text">
-            {{ isDarkMode() ? 'Modo claro' : 'Modo oscuro' }}
-        </span>
-        }
-    </ui-button>
+    <div class="nav-rail-footer__theme-section">
+        <ui-theme-toggle />
+    </div>
 
     <!-- User Menu / Profile -->
     @if (user()) {
-    <ui-button
-        variant="ghost"
-        size="sm"
+    <button
+        type="button"
         [attr.aria-label]="profileButtonLabel()"
-        class="nav-rail-footer__action"
+        class="nav-rail-footer__action nav-rail-footer__action--profile"
         [class.nav-rail-footer__action--collapsed]="collapsed()"
-        (clicked)="onProfileClick()">
-        <span class="nav-rail-footer__icon"> 👤 </span>
+        (click)="onProfileClick()">
+        <ui-icon name="user-circle" size="md" class="nav-rail-footer__icon" />
         @if (!collapsed()) {
         <span class="nav-rail-footer__text">
             {{ user()?.firstName }}
         </span>
         }
-    </ui-button>
+    </button>
     }
 
     <!-- Logout -->
-    <ui-button
-        variant="ghost"
-        size="sm"
+    <button
+        type="button"
         [attr.aria-label]="'Cerrar sesión'"
         class="nav-rail-footer__action nav-rail-footer__action--danger"
         [class.nav-rail-footer__action--collapsed]="collapsed()"
         [disabled]="authFacade.loading()"
-        (clicked)="onLogout()">
-        <span class="nav-rail-footer__icon"> 🚪 </span>
+        (click)="onLogout()">
+        <ui-icon name="logout" size="md" class="nav-rail-footer__icon" />
         @if (!collapsed()) {
-        <span class="nav-rail-footer__text"> Salir </span>
+        <span class="nav-rail-footer__text">Salir</span>
         }
-    </ui-button>
+    </button>
 
     <!-- Version (only when expanded) -->
     @if (!collapsed()) {
     <div class="nav-rail-footer__version">
-        <span class="text-xs text-neutral-500 dark:text-neutral-400"> v1.0.0 </span>
+        <span class="nav-rail-footer__version-text">v1.0.0</span>
     </div>
     }
 </div>
