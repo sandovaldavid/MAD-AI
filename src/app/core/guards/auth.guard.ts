@@ -3,9 +3,9 @@ import { inject } from '@angular/core';
 import { AuthFacade } from '../../application/facades/auth.facade';
 
 /**
- * Auth Guard - Clean Architecture Compliant
+ * Auth Guards - Clean Architecture Compliant
  * 
- * @description Pure technical guard that only verifies authentication state
+ * @description Pure technical guards that only verify authentication state
  * without containing business logic. Delegates to Application layer (AuthFacade)
  * for authentication verification following Clean Architecture principles.
  * 
@@ -18,6 +18,10 @@ import { AuthFacade } from '../../application/facades/auth.facade';
  * - NO direct repository injection (violates dependency rule)
  * - NO business logic in Core layer
  * - Uses AuthFacade as single point of authentication state
+ */
+
+/**
+ * Helper function to check if user is authenticated
  */
 const checkAuth = async (): Promise<boolean | UrlTree> => {
     const router = inject(Router);
@@ -41,5 +45,36 @@ const checkAuth = async (): Promise<boolean | UrlTree> => {
     return router.parseUrl('/auth/login');
 };
 
+/**
+ * Helper function to check if user is NOT authenticated (for auth pages)
+ */
+const checkNoAuth = async (): Promise<boolean | UrlTree> => {
+    const router = inject(Router);
+    const authFacade = inject(AuthFacade);
+
+    // Ensure session restoration has been attempted
+    if (!authFacade.sessionRestoreAttempted()) {
+        await authFacade.initializeAuth();
+    }
+
+    // Simple technical check - delegate to Application layer
+    const isAuthenticated = authFacade.isAuthenticated();
+    
+    if (!isAuthenticated) {
+        return true; // Allow access to auth pages when not authenticated
+    }
+
+    // For authenticated users, redirect to dashboard
+    return router.parseUrl('/dashboard');
+};
+
+/**
+ * Guard for protected routes - requires authentication
+ */
 export const authGuard: CanActivateFn = (_route, _state) => checkAuth();
 export const authChildGuard: CanActivateChildFn = (_route, _state) => checkAuth();
+
+/**
+ * Guard for auth pages - blocks access when already authenticated
+ */
+export const noAuthGuard: CanActivateFn = (_route, _state) => checkNoAuth();
