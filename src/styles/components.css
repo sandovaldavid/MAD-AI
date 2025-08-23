@@ -59,7 +59,7 @@
 }
 
 .container-image {
-    @apply hidden lg:flex flex-1 items-center justify-center overflow-hidden;
+    @apply hidden lg:flex flex-1 items-center justify-center overflow-hidden relative;
 }
 
 /* Enhanced Shadow Styles */
@@ -97,6 +97,19 @@
 
 .image-content {
     @apply relative z-10 flex flex-col items-center justify-center text-center h-full max-h-full;
+}
+
+/* Optimized image loading states */
+.image-loading-placeholder {
+    @apply absolute inset-0 bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200
+    dark:from-neutral-700 dark:via-neutral-600 dark:to-neutral-700;
+    background-size: 200% 100%;
+    animation: loading-shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 /* Responsive Card Styles */
