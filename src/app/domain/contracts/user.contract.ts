@@ -149,3 +149,25 @@ export interface UpdateUserPatchContract {
     /** Updated active status */
     isActive?: boolean;
 }
+
+/**
+ * Contracto de dominio para cambio de contraseña de usuario autenticado.
+ *
+ * @description Este contrato encapsula los datos necesarios para que un usuario cambie su contraseña actual.
+ * @example
+ * const change: ChangePasswordContract = {
+ *   currentPassword: 'oldPass123',
+ *   newPassword: 'newPass456',
+ *   newPasswordConfirm: 'newPass456'
+ * };
+ * @since 1.0.0
+ * @domain User Management
+ */
+export interface ChangePasswordContract {
+    /** Contraseña actual del usuario */
+    currentPassword: string;
+    /** Nueva contraseña deseada */
+    newPassword: string;
+    /** Confirmación de la nueva contraseña */
+    newPasswordConfirm: string;
+}
