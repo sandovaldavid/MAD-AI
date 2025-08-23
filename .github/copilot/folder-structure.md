@@ -1,277 +1,526 @@
-# Project Folders Structure Blueprint: MAD-AI
+# Project Folders Structure Blueprint
 
-**Generated:** August 22, 2025
-
----
-
-## Initial Auto-detection Phase
-
--   **Project Type:** Angular (detected via `angular.json`, `package.json`, strict TypeScript, feature-based UI structure)
--   **Monorepo:** Not detected (single Angular app)
--   **Microservices:** Not detected (single frontend project)
--   **Frontend Components:** Present (feature-based UI, shared components, styles, assets)
+**Document Version:** 1.0  
+**Generated:** December 2024  
+**Project:** MAD-AI (Angular + Clean Architecture + DDD)  
+**Purpose:** Comprehensive folder structure documentation and organizational guidelines
 
 ---
 
-## 1. Structural Overview
+## Table of Contents
 
-MAD-AI is organized by Clean Architecture principles, with layered separation (Presentation, Application, Domain, Infrastructure, Core, Shared) and feature-based grouping. The rationale is modularity, testability, and extensibility. Cross-cutting concerns are centralized in Core, and reusable assets/components in Shared.
-
----
-
-## 2. Directory Visualization (Markdown List, Depth 5)
-
--   MAD-AI/
-    -   .angular/
-    -   .github/
-        -   prompts/
-    -   .vscode/
-    -   dist/
-        -   MAD-AI/
-            -   browser/
-        -   test-out/
-            -   e7aa00b0-fd04-4bbf-a3ce-079155bdf530/
-    -   docs/
-        -   styles_guide.md
-        -   workflow.md
-    -   public/
-        -   bg-placeholder.jpg
-        -   favicon.ico
-    -   scripts/
-        -   lint-icons.cjs
-    -   src/
-        -   app/
-            -   application/
-                -   errors/
-                -   facades/
-                -   services/
-                -   types/
-                -   use-cases/
-            -   core/
-                -   cross-cutting/
-                -   guards/
-                -   interceptors/
-            -   di/
-            -   domain/
-                -   contracts/
-                -   entities/
-                -   enums/
-                -   errors/
-                -   events/
-                -   repositories/
-                -   value-objects/
-            -   infrastructure/
-                -   dtos/
-                -   errors/
-                -   http/
-                -   mappers/
-                -   repositories/
-                -   services/
-            -   presentation/
-                -   features/
-                    -   auth/
-                    -   dashboard/
-                    -   not-found/
-                    -   roles/
-                -   layouts/
-                -   navigation/
-                -   shell/
-            -   shared/
-                -   assets/
-                -   components/
-                    -   error-view/
-                    -   page-header/
-                    -   toast/
-                -   types/
-                -   ui/
-        -   env/
-            -   environment.prod.ts
-            -   environment.ts
-        -   styles/
-            -   colors.css
-            -   components.css
-            -   globals.css
-            -   skeleton.css
-        -   types/
-            -   svg-raw.d.ts
-        -   index.html
-        -   main.server.ts
-        -   main.ts
-        -   server.ts
-        -   styles.css
-        -   test.ts
-    -   angular.json
-    -   karma.conf.cjs
-    -   package-lock.json
-    -   package.json
-    -   tsconfig.app.json
-    -   tsconfig.json
-    -   tsconfig.spec.json
-    -   README.md
+1. [Executive Summary](#executive-summary)
+2. [Project Structure Overview](#project-structure-overview)
+3. [Root Directory Structure](#root-directory-structure)
+4. [Source Code Organization](#source-code-organization)
+5. [Clean Architecture Layer Mapping](#clean-architecture-layer-mapping)
+6. [Feature Organization Patterns](#feature-organization-patterns)
+7. [File Naming Conventions](#file-naming-conventions)
+8. [Directory Guidelines](#directory-guidelines)
+9. [Shared Resources Organization](#shared-resources-organization)
+10. [Infrastructure and Tooling](#infrastructure-and-tooling)
+11. [Documentation Structure](#documentation-structure)
+12. [Templates and Examples](#templates-and-examples)
 
 ---
 
-## 3. Key Directory Analysis
+## Executive Summary
 
-### src/app/
+The MAD-AI project follows a meticulously organized folder structure that enforces Clean Architecture principles with Domain-Driven Design (DDD) patterns. The structure promotes maintainability, scalability, and clear separation of concerns across **124 directories** containing **364 source files** (TypeScript, HTML, CSS).
 
--   **application/**: Business logic, use cases, facades, error handling, types
--   **core/**: Cross-cutting concerns (guards, interceptors, utilities)
--   **di/**: Dependency injection providers and tokens
--   **domain/**: Domain models, entities, contracts, events, repositories
--   **infrastructure/**: Data access, DTOs, mappers, services
--   **presentation/**: UI features, layouts, navigation, shell
--   **shared/**: Reusable assets, components, types, UI elements
-
-### src/env/
-
--   Environment configuration files
-
-### src/styles/
-
--   Global and modular CSS files, color palette, skeleton loaders
-
-### src/types/
-
--   TypeScript type definitions
-
-### public/
-
--   Static assets (images, favicon)
-
-### docs/
-
--   Documentation (style guide, workflow)
-
-### scripts/
-
--   Utility scripts (icon linting)
+### Key Architectural Principles
+- **Layer Separation**: Clear boundaries between domain, application, infrastructure, and presentation layers
+- **Feature-First Organization**: Business capabilities organized as self-contained feature modules
+- **Shared Resource Management**: Centralized UI components, utilities, and cross-cutting concerns
+- **Convention-Based Structure**: Consistent naming and organization patterns throughout the codebase
 
 ---
 
-## 4. File Placement Patterns
-
--   **Configuration Files**: Root (`angular.json`, `karma.conf.cjs`, `tsconfig*.json`), environment (`src/env/`)
--   **Model/Entity Definitions**: `src/app/domain/entities/`
--   **DTOs**: `src/app/infrastructure/dtos/`
--   **Business Logic**: `src/app/application/services/`, `src/app/application/use-cases/`
--   **Interfaces/Contracts**: `src/app/domain/contracts/`
--   **Test Files**: Co-located with features/components or in output (`dist/test-out/`)
--   **Documentation**: `docs/`, README.md
--   **UI Components**: `src/app/shared/components/`, `src/app/presentation/features/`
--   **Assets**: `public/`, `src/app/shared/assets/`
--   **Styles**: `src/styles/`, `src/app/shared/ui/`
-
----
-
-## 5. Naming and Organization Conventions
-
--   **File Naming**: PascalCase for classes/components, camelCase for variables/methods, kebab-case for assets/styles
--   **Folder Naming**: Lowercase, hyphenated for features/components, plural for collections (e.g., `entities/`, `services/`)
--   **Type Indicators**: Suffixes like `.entity.ts`, `.service.ts`, `.facade.ts`, `.guard.ts`, `.dto.ts`
--   **Co-location**: Related files grouped by feature or domain
--   **Cross-cutting Concerns**: Centralized in `core/`
-
----
-
-## 6. Navigation and Development Workflow
-
--   **Entry Points**: `src/main.ts` (app bootstrap), `src/app/presentation/` (UI features)
--   **Add New Features**: Create folder in `src/app/presentation/features/` and corresponding logic in `application/`, `domain/`, `infrastructure/`
--   **Extend Functionality**: Add use cases/services in `application/`, entities/contracts in `domain/`, repositories/services in `infrastructure/`
--   **Add Tests**: Co-locate with feature/component or add to output test folder
--   **Modify Configurations**: Update files in root or `src/env/`
--   **Dependency Patterns**: DI via `di/`, imports via path aliases in `tsconfig.json`
-
--   **Content Statistics**:
-    -   Presentation/features: 4 main features
-    -   Shared/components: 3 main component groups
-    -   Domain/entities: 4 main entities
-    -   Infrastructure/repositories: 3 main repositories
-    -   Application/facades: 5 facades
-    -   Core/guards: 5 guards
-    -   Styles: 4 main CSS files
-
----
-
-## 7. Build and Output Organization
-
--   **Build Configs**: `angular.json`, `karma.conf.cjs`, scripts in `package.json`
--   **Output Structure**: `dist/` for builds, `dist/test-out/` for test outputs
--   **Environment Builds**: Configs in `src/env/`, production vs. development in `angular.json`
-
----
-
-## 8. Technology-Specific Organization
-
--   **Angular**: Feature-based UI, layered architecture, standalone/shared components, strict TypeScript
--   **Node.js**: Scripts in `scripts/`, npm-based build/test
-
----
-
-## 9. Extension and Evolution
-
--   **Extension Points**: Add features in `presentation/features/`, new entities/contracts in `domain/`, new services/repositories in `application/` and `infrastructure/`
--   **Scalability**: Structure supports adding new features, breaking down large modules, code splitting via feature folders
--   **Refactoring**: Move logic between layers, update contracts, co-locate related files
-
----
-
-## 10. Structure Templates
-
-### New Feature Template
+## Project Structure Overview
 
 ```
-features/
-  new-feature/
-    components/
-    forms/
-    mappers/
-    pages/
-    new-feature.routes.ts
+MAD-AI/
+├── 📁 .github/                    # GitHub workflows and templates
+├── 📁 .angular/                   # Angular CLI cache and build artifacts
+├── 📁 docs/                       # Project documentation
+├── 📁 public/                     # Static assets and resources
+├── 📁 scripts/                    # Build scripts and tooling
+├── 📁 src/                        # Source code (main application)
+├── 📄 angular.json                # Angular CLI configuration
+├── 📄 package.json                # Dependencies and scripts
+├── 📄 tsconfig.json               # TypeScript configuration
+└── 📄 README.md                   # Project overview
 ```
 
--   Add corresponding use cases/services in `application/`, entities/contracts in `domain/`, repositories/services in `infrastructure/`
+### Statistics
+- **Total Directories**: 124
+- **Source Files**: 364 (TS/HTML/CSS)
+- **Architecture Layers**: 7 main layers
+- **Feature Modules**: 4 business domains
+- **Shared Components**: 6 UI component families
 
-### New Component Template
+---
+
+## Root Directory Structure
+
+### Development Infrastructure
+```
+├── 📁 .github/
+│   ├── instructions/              # Copilot AI instructions
+│   └── workflows/                 # CI/CD pipeline definitions
+├── 📁 .angular/                   # Angular CLI generated files
+├── 📁 scripts/
+│   └── lint-icons.cjs             # Custom SVG icon linting
+```
+
+### Documentation and Assets
+```
+├── 📁 docs/
+│   ├── styles_guide.md            # UI/UX style guidelines
+│   └── workflow.md                # Development workflow
+├── 📁 public/
+│   ├── bg-placeholder.webp        # Static images
+│   └── favicon.ico                # Browser icon
+```
+
+### Configuration Files
+```
+├── 📄 angular.json                # Angular workspace configuration
+├── 📄 karma.conf.cjs              # Testing framework config
+├── 📄 package.json                # NPM dependencies
+├── 📄 tsconfig.json               # TypeScript compiler config
+├── 📄 tsconfig.app.json           # App-specific TS config
+└── 📄 tsconfig.spec.json          # Test-specific TS config
+```
+
+---
+
+## Source Code Organization
+
+### Primary Source Structure
+```
+src/
+├── 📄 index.html                  # Main HTML template
+├── 📄 main.ts                     # Application bootstrap
+├── 📄 main.server.ts              # SSR bootstrap
+├── 📄 server.ts                   # Express server setup
+├── 📄 styles.css                  # Global styles
+├── 📁 app/                        # Main application code
+├── 📁 env/                        # Environment configurations
+├── 📁 styles/                     # CSS architecture
+└── 📁 types/                      # Global type definitions
+```
+
+### Application Architecture (`src/app/`)
+```
+app/
+├── 📄 app.ts                      # Root component
+├── 📄 app.html                    # Root template
+├── 📄 app.css                     # Root styles
+├── 📄 app.config.ts               # Application configuration
+├── 📄 app.routes.ts               # Routing configuration
+├── 📁 application/                # Application layer (Clean Architecture)
+├── 📁 core/                       # Cross-cutting concerns
+├── 📁 di/                         # Dependency injection setup
+├── 📁 domain/                     # Domain layer (business logic)
+├── 📁 infrastructure/             # Infrastructure layer (external concerns)
+├── 📁 presentation/               # Presentation layer (UI)
+└── 📁 shared/                     # Shared resources and utilities
+```
+
+---
+
+## Clean Architecture Layer Mapping
+
+### Layer 1: Domain (`src/app/domain/`)
+**Purpose**: Core business logic and rules, framework-agnostic
+
+```
+domain/
+├── contracts/                     # Interfaces and ports
+│   ├── auth.contract.ts
+│   ├── role.contract.ts
+│   ├── user.contract.ts
+│   ├── export.port.ts
+│   └── session-store.contract.ts
+├── entities/                      # Business entities
+│   ├── notification.entity.ts
+│   ├── role.entity.ts
+│   └── user.entity.ts
+├── enums/                         # Domain enumerations
+├── errors/                        # Domain-specific errors
+├── events/                        # Domain events
+├── repositories/                  # Repository interfaces
+└── value-objects/                 # Value objects
+```
+
+### Layer 2: Application (`src/app/application/`)
+**Purpose**: Application services and use cases orchestration
+
+```
+application/
+├── facades/                       # Application service facades
+│   ├── auth.facade.ts
+│   ├── notifications.facade.ts
+│   ├── roles.facade.ts
+│   └── users.facade.ts
+├── services/                      # Application services
+│   ├── domain-event-processor.service.ts
+│   └── role-export.service.ts
+├── types/                         # Application-layer types
+│   ├── auth.types.ts
+│   ├── facade-opts.ts
+│   ├── notifications.types.ts
+│   └── user.types.ts
+├── use-cases/                     # Business use case implementations
+│   ├── auth/
+│   ├── notifications/
+│   ├── roles/
+│   └── users/
+└── errors/                        # Application error handling
+    ├── application-error.ts
+    ├── application-error.transformer.ts
+    └── feature-handlers/
+```
+
+### Layer 3: Infrastructure (`src/app/infrastructure/`)
+**Purpose**: External systems integration and technical implementations
+
+```
+infrastructure/
+├── dtos/                          # Data transfer objects
+├── errors/                        # Infrastructure error handling
+├── http/                          # HTTP client implementations
+├── mappers/                       # Data mapping utilities
+├── repositories/                  # Repository implementations
+└── services/                      # External service integrations
+```
+
+### Layer 4: Presentation (`src/app/presentation/`)
+**Purpose**: User interface and presentation logic
+
+```
+presentation/
+├── features/                      # Feature-specific UI modules
+│   ├── auth/                      # Authentication UI
+│   ├── dashboard/                 # Dashboard UI
+│   ├── not-found/                 # 404 error page
+│   ├── roles/                     # Role management UI
+│   └── secured.routes.ts          # Protected routing
+├── layouts/                       # Page layout components
+├── navigation/                    # Navigation components
+└── shell/                         # Application shell
+```
+
+---
+
+## Feature Organization Patterns
+
+### Feature Module Structure
+Each feature follows a consistent internal organization:
+
+```
+feature-name/
+├── components/                    # Feature-specific components
+│   ├── feature-list/
+│   ├── feature-form/
+│   └── feature-detail/
+├── pages/                         # Route-level page components
+│   ├── feature-list.page.ts
+│   ├── feature-create.page.ts
+│   └── feature-edit.page.ts
+├── services/                      # Feature-specific services
+├── types/                         # Feature-specific types
+└── feature.routes.ts              # Feature routing configuration
+```
+
+### Example: Authentication Feature
+```
+auth/
+├── components/
+│   ├── login-form/
+│   ├── register-form/
+│   └── password-reset/
+├── pages/
+│   ├── login.page.ts
+│   ├── register.page.ts
+│   └── password-reset.page.ts
+└── auth.routes.ts
+```
+
+---
+
+## File Naming Conventions
+
+### Component Files
+```
+component-name/
+├── component-name.ts              # Component class
+├── component-name.html            # Template
+├── component-name.css             # Styles
+├── component-name.spec.ts         # Unit tests
+└── index.ts                       # Barrel export
+```
+
+### Service and Utility Files
+```
+service-name.service.ts            # Angular services
+utility-name.util.ts               # Utility functions
+helper-name.helper.ts              # Helper functions
+mapper-name.mapper.ts              # Data mappers
+contract-name.contract.ts          # Domain contracts
+entity-name.entity.ts              # Domain entities
+```
+
+### Route and Configuration Files
+```
+feature-name.routes.ts             # Routing configuration
+feature-name.config.ts             # Feature configuration
+feature-name.types.ts              # Type definitions
+feature-name.constants.ts          # Constants
+```
+
+---
+
+## Directory Guidelines
+
+### Core Principles
+
+1. **Layer Separation**: Never import from higher layers to lower layers
+2. **Feature Cohesion**: Keep related functionality grouped together
+3. **Shared Resources**: Centralize reusable components and utilities
+4. **Clear Boundaries**: Use index.ts files for controlled exports
+
+### Naming Rules
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Directories | kebab-case | `user-management/` |
+| Components | PascalCase files | `UserCard.ts` |
+| Services | camelCase + .service | `userAuth.service.ts` |
+| Types | camelCase + .types | `userAuth.types.ts` |
+| Constants | UPPER_CASE | `API_ENDPOINTS.ts` |
+
+### Directory Structure Rules
+
+#### ✅ Correct Patterns
+```
+# Feature-first organization
+presentation/features/auth/components/login-form/
+
+# Clear layer separation
+domain/entities/user.entity.ts
+application/facades/user.facade.ts
+infrastructure/repositories/user.repository.ts
+
+# Shared resource centralization
+shared/ui/button/
+shared/components/error-view/
+```
+
+#### ❌ Avoid These Patterns
+```
+# Cross-layer imports
+domain/entities/importing-from-infrastructure.ts
+
+# Scattered utilities
+random-util-in-feature-folder.ts
+
+# Deep nesting without purpose
+deep/nested/structure/without/clear/purpose/
+```
+
+---
+
+## Shared Resources Organization
+
+### UI Components (`src/app/shared/ui/`)
+**Purpose**: Reusable UI building blocks
+
+```
+ui/
+├── button/                        # Button variations
+├── form-field/                    # Form input components
+├── icon/                          # Icon system
+├── input/                         # Input field variants
+├── theme-toggle/                  # Dark/light mode toggle
+└── bulk-actions-toolbar/          # Bulk action controls
+```
+
+### Shared Components (`src/app/shared/components/`)
+**Purpose**: Complex reusable components
 
 ```
 components/
-  NewComponent/
-    new-component.ts
-    new-component.html
-    new-component.css
-    new-component.spec.ts
+├── toast/                         # Notification system
+│   ├── types/                     # Toast type definitions
+│   ├── services/                  # Toast service
+│   ├── mappers/                   # Data mapping
+│   ├── enums/                     # Toast enumerations
+│   ├── models/                    # Toast models
+│   ├── toast-item/                # Individual toast component
+│   └── toast-container/           # Toast container
+├── error-view/                    # Error display components
+│   ├── components/
+│   │   ├── error-icon/
+│   │   ├── error-actions/
+│   │   └── error-details/
+│   └── error-display/
+├── page-header/                   # Page header component
+└── optimized-image/               # Image optimization component
 ```
 
-### New Service Template
+### Assets (`src/app/shared/assets/`)
+**Purpose**: Static resources and icons
 
 ```
-services/
-  new-service.service.ts
-  new-service.interface.ts
-```
-
--   Register in DI via `di/`
-
-### New Test Structure
-
-```
-feature/
-  components/
-    component.spec.ts
-  forms/
-    form.spec.ts
+assets/
+└── icons/
+    ├── outline/                   # Outline icon variants
+    └── filled/                    # Filled icon variants
 ```
 
 ---
 
-## 11. Structure Enforcement
+## Infrastructure and Tooling
 
--   **Validation**: Linting via Angular CLI, strict TypeScript, path aliases
--   **Documentation**: Style guide in `docs/styles_guide.md`, workflow in `docs/workflow.md`, architectural decisions in `Project_Architecture_Blueprint.md`
--   **Evolution**: Update blueprint after major refactors or new feature additions
+### Cross-Cutting Concerns (`src/app/core/`)
+```
+core/
+├── cross-cutting/                 # Shared utilities
+│   ├── http/                      # HTTP utilities
+│   ├── ui-state/                  # UI state management
+│   └── utilities/                 # General utilities
+├── guards/                        # Route guards
+│   ├── auth.guard.ts
+│   ├── email-confirmed.guard.ts
+│   ├── matchers.guard.ts
+│   └── role.guard.ts
+└── interceptors/                  # HTTP interceptors
+    ├── error.interceptor.ts
+    └── http-error.interceptor.ts
+```
+
+### Dependency Injection (`src/app/di/`)
+**Purpose**: Centralized DI configuration
+
+```
+di/
+├── provide-auth.ts                # Authentication providers
+├── provide-domain-events.ts       # Domain event providers
+├── provide-export.ts              # Export service providers
+├── provide-icons.ts               # Icon system providers
+├── provide-notifications.ts       # Notification providers
+├── provide-roles.ts               # Role management providers
+├── provide-users.ts               # User management providers
+└── tokens.ts                      # DI tokens
+```
 
 ---
 
-**Maintain this blueprint as the project evolves. Last updated: August 22, 2025.**
+## Documentation Structure
+
+### Project Documentation (`docs/`)
+```
+docs/
+├── styles_guide.md                # UI/UX guidelines
+└── workflow.md                    # Development workflow
+```
+
+### Generated Documentation
+```
+# Auto-generated during build
+Project_Architecture_Blueprint.md
+Technology_Stack_Blueprint.md
+Project_Folders_Structure_Blueprint.md
+```
+
+---
+
+## Templates and Examples
+
+### New Feature Template
+When creating a new feature, follow this structure:
+
+```bash
+# Create feature structure
+mkdir -p src/app/presentation/features/new-feature/{components,pages,services,types}
+mkdir -p src/app/application/use-cases/new-feature
+mkdir -p src/app/domain/entities
+mkdir -p src/app/infrastructure/repositories
+
+# Create core files
+touch src/app/presentation/features/new-feature/new-feature.routes.ts
+touch src/app/application/facades/new-feature.facade.ts
+touch src/app/domain/contracts/new-feature.contract.ts
+touch src/app/infrastructure/repositories/new-feature.repository.ts
+touch src/app/di/provide-new-feature.ts
+```
+
+### Component Template
+```typescript
+// src/app/shared/ui/new-component/new-component.ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+
+@Component({
+  selector: 'app-new-component',
+  templateUrl: './new-component.html',
+  styleUrls: ['./new-component.css'],
+  standalone: true
+})
+export class NewComponent {
+  @Input() data: any;
+  @Output() action = new EventEmitter<any>();
+}
+```
+
+### Service Template
+```typescript
+// src/app/application/services/new-service.service.ts
+import { Injectable } from '@angular/core';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class NewService {
+  // Service implementation
+}
+```
+
+### Folder Creation Checklist
+
+When adding new functionality:
+
+- [ ] Create feature folder in appropriate layer
+- [ ] Add barrel exports (`index.ts`)
+- [ ] Update DI providers if needed
+- [ ] Add to routing configuration
+- [ ] Create corresponding test files
+- [ ] Update documentation
+
+---
+
+## Best Practices Summary
+
+### Organizational Principles
+1. **Layer Separation**: Maintain clean boundaries between architectural layers
+2. **Feature Cohesion**: Group related functionality together
+3. **Shared Resources**: Centralize reusable components and utilities
+4. **Clear Exports**: Use barrel files for controlled module exports
+
+### Maintenance Guidelines
+1. **Regular Cleanup**: Remove unused files and directories
+2. **Consistent Naming**: Follow established naming conventions
+3. **Documentation**: Keep folder structure documentation updated
+4. **Architecture Compliance**: Validate layer dependencies regularly
+
+### Development Workflow
+1. **Plan Structure**: Design folder organization before implementation
+2. **Follow Templates**: Use established patterns for new features
+3. **Review Changes**: Validate structural changes against architecture
+4. **Update Documentation**: Keep structure documentation current
+
+---
+
+**Last Updated**: December 2024  
+**Next Review**: Quarterly or when major structural changes occur
