@@ -86,6 +86,9 @@ export class AuthFacade {
     /** Current error state */
     private readonly _authError = signal<string | null>(null);
 
+    /** Flag to track if session restoration has been attempted */
+    private readonly _sessionRestoreAttempted = signal(false);
+
     // ============================================================================
     // Public Computed Properties (Reactive State)
     // ============================================================================
@@ -105,6 +108,9 @@ export class AuthFacade {
     /** Whether user is authenticated */
     readonly isAuthenticated = computed(() => !!this._user());
 
+    /** Whether session restoration has been attempted */
+    readonly sessionRestoreAttempted = computed(() => this._sessionRestoreAttempted());
+
     /** User display name for UI */
     readonly userDisplayName = computed(() => {
         const user = this._user();
@@ -118,6 +124,31 @@ export class AuthFacade {
     });
 
     // ============================================================================
+    // Initialization and State Management Operations
+    // ============================================================================
+
+    /**
+     * Initialize authentication state from storage
+     * Uses the existing refreshProfile use case following Clean Architecture
+     */
+    async initializeAuth(): Promise<void> {
+        if (this._sessionRestoreAttempted()) {
+            return; // Already attempted
+        }
+
+        this._sessionRestoreAttempted.set(true);
+
+        try {
+            // Use existing use case instead of accessing storage directly
+            // This follows Clean Architecture by delegating to use cases
+            await this.refreshProfile({ skipLoading: true });
+        } catch (error) {
+            // If profile refresh fails (no tokens or expired), ensure clean state
+            this.clearAuthStateCompletely();
+        }
+    }
+
+    // ============================================================================
     // Authentication Operations
     // ============================================================================
 
@@ -128,7 +159,9 @@ export class AuthFacade {
         if (!opts?.skipLoading) {
             this._loading.set(true);
         }
-        this._authError.set(null);
+
+        // Clear any previous auth state completely before login attempt
+        this.clearAuthStateCompletely();
 
         try {
             const session = await this.loginUC.execute(request);
@@ -145,15 +178,28 @@ export class AuthFacade {
             // DEBUG: Log the original error to console for debugging
             console.error('🔥 AuthFacade Login Error - Original Error:', error);
             console.error('🔥 AuthFacade Login Error - Error Type:', typeof error);
-            console.error('🔥 AuthFacade Login Error - Error Constructor:', error?.constructor?.name);
+            console.error(
+                '🔥 AuthFacade Login Error - Error Constructor:',
+                error?.constructor?.name
+            );
             console.error('🔥 AuthFacade Login Error - Error Message:', error?.message);
             console.error('🔥 AuthFacade Login Error - Error Stack:', error?.stack);
-            
-            const errorMessage = this.errorTransformer.transformError(error as Error);
+
+            // Transform error to user-friendly message
+            const errorMessage = this.errorTransformer.transformError(error as Error, {
+                feature: 'auth',
+                operation: 'login',
+            });
             console.error('🔥 AuthFacade Login Error - Transformed Message:', errorMessage);
-            
+
             this._authError.set(errorMessage);
-            throw error;
+
+            // Clear session state on login failure to ensure clean state
+            this._session.set(null);
+            this._user.set(null);
+
+            // Don't re-throw - the error message is already set for the UI
+            // The UI will display the error through the error signal
         } finally {
             if (!opts?.skipLoading) {
                 this._loading.set(false);
@@ -412,6 +458,18 @@ export class AuthFacade {
     }
 
     /**
+     * Clear all auth state including session and user data
+     * This is more aggressive than clearAuthState and is used
+     * when we need to ensure completely clean state
+     */
+    clearAuthStateCompletely(): void {
+        this._authError.set(null);
+        this._loading.set(false);
+        this._session.set(null);
+        this._user.set(null);
+    }
+
+    /**
      * Reset facade state (useful for testing or logout)
      */
     reset(): void {
@@ -419,5 +477,6 @@ export class AuthFacade {
         this._user.set(null);
         this._session.set(null);
         this._authError.set(null);
+        this._sessionRestoreAttempted.set(false);
     }
 }
