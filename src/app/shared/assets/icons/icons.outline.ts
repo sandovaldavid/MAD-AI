@@ -55,6 +55,15 @@ import {
     download,
     tableCells,
     xCircle,
+    chartBar,
+    chartPie,
+    chevronLeft,
+    cog6Tooth,
+    cpuChip,
+    home,
+    logout,
+    userCircle,
+    folder,
 } from './outline';
 
 export const ICONS_CORE_OUTLINE = {
@@ -114,4 +123,13 @@ export const ICONS_CORE_OUTLINE = {
     'outline/download': download,
     'outline/table-cells': tableCells,
     'outline/x-circle': xCircle,
+    'outline/chart-bar': chartBar,
+    'outline/chart-pie': chartPie,
+    'outline/chevron-left': chevronLeft,
+    'outline/cog-6-tooth': cog6Tooth,
+    'outline/cpu-chip': cpuChip,
+    'outline/home': home,
+    'outline/logout': logout,
+    'outline/user-circle': userCircle,
+    'outline/folder': folder,
 } as const;
