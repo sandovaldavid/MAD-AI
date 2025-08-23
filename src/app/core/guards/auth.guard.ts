@@ -23,6 +23,11 @@ const checkAuth = async (): Promise<boolean | UrlTree> => {
     const router = inject(Router);
     const authFacade = inject(AuthFacade);
 
+    // Ensure session restoration has been attempted
+    if (!authFacade.sessionRestoreAttempted()) {
+        await authFacade.initializeAuth();
+    }
+
     // Simple technical check - delegate to Application layer
     const isAuthenticated = authFacade.isAuthenticated();
     
@@ -30,17 +35,10 @@ const checkAuth = async (): Promise<boolean | UrlTree> => {
         return true;
     }
 
-    // Attempt to restore session if possible
-    try {
-        await authFacade.refreshProfile();
-        return authFacade.isAuthenticated() 
-            ? true 
-            : router.parseUrl('/auth/login');
-    } catch {
-        // Clear auth state on failed refresh to prevent stale errors
-        authFacade.clearAuthState();
-        return router.parseUrl('/auth/login');
-    }
+    // For unauthenticated state, redirect to login
+    // The auth interceptor and facade already handle token refresh logic
+    authFacade.clearAuthStateCompletely();
+    return router.parseUrl('/auth/login');
 };
 
 export const authGuard: CanActivateFn = (_route, _state) => checkAuth();
