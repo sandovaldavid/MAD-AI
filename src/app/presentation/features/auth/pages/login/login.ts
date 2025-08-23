@@ -16,6 +16,7 @@ export class Login implements OnInit {
     ngOnInit(): void {
         // Clear any previous auth errors and loading state when entering login page
         // This fixes the issue where expired session errors persist on login form
-        this.auth.clearAuthState();
+        // Use the more aggressive clear method to ensure completely clean state
+        this.auth.clearAuthStateCompletely();
     }
 }
