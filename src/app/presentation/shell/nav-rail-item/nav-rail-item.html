@@ -11,8 +11,10 @@
     (blur)="onBlur()"
     (click)="onClick()">
     <div class="nav-rail-item__icon">
-        <!-- Using a simple icon placeholder for now -->
-        <span class="icon">📊</span>
+        <ui-icon 
+            [name]="item().icon" 
+            size="md"
+            class="nav-rail-item__icon-element" />
     </div>
 
     @if (!collapsed()) {
@@ -25,7 +27,13 @@
 <!-- Tooltip for collapsed state -->
 @if (collapsed() && showTooltip()) {
 <div [id]="tooltipId()" role="tooltip" class="nav-rail-tooltip">
-    {{ item().label }}
+    <div class="nav-rail-tooltip__content">
+        <ui-icon 
+            [name]="item().icon" 
+            size="sm"
+            class="nav-rail-tooltip__icon" />
+        <span class="nav-rail-tooltip__text">{{ item().label }}</span>
+    </div>
     @if (item().badge) {
     <span class="nav-rail-tooltip__badge">{{ item().badge }}</span>
     }

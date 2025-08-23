@@ -1,17 +1,27 @@
 @reference '../../../../styles.css';
 
 .nav-rail-item {
-    @apply relative flex items-center gap-3 w-full px-3 py-2 
-    text-neutral-700 dark:text-neutral-300 rounded-xl 
-    transition-all duration-150 hover:bg-neutral-100 dark:hover:bg-neutral-800
+    @apply relative flex items-center gap-3 w-full px-3 py-2.5 
+    text-primary-700 dark:text-primary-300 rounded-xl 
+    transition-all duration-200 hover:bg-primary-200/70 dark:hover:bg-primary-800/70
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25
     dark:focus-visible:ring-primary-400/25;
-    min-height: 2.5rem;
+    min-height: 2.75rem;
+    /* Isolate navigation item styles */
+    isolation: isolate;
+    position: relative;
+    z-index: 1;
 }
 
 .nav-rail-item--active {
-    @apply bg-primary-50 dark:bg-primary-950/50 text-primary-700 dark:text-primary-400
-    border-r-2 border-primary-500 dark:border-primary-400;
+    @apply bg-primary-300/80 dark:bg-primary-700/80 text-primary-800 dark:text-primary-200
+    shadow-sm shadow-primary-400/20 dark:shadow-primary-600/20;
+}
+
+.nav-rail-item--active::before {
+    content: '';
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 
+    bg-primary-600 dark:bg-primary-400 rounded-r-full;
 }
 
 .nav-rail-item--collapsed {
@@ -19,29 +29,48 @@
 }
 
 .nav-rail-item__icon {
-    @apply flex-shrink-0 w-5 h-5 flex items-center justify-center;
+    @apply flex-shrink-0 w-6 h-6 flex items-center justify-center;
+}
+
+.nav-rail-item__icon-element {
+    @apply transition-transform duration-200;
+}
+
+.nav-rail-item:hover .nav-rail-item__icon-element {
+    @apply scale-110;
 }
 
 .nav-rail-item__label {
-    @apply flex-1 font-medium text-sm truncate transition-opacity duration-150;
+    @apply flex-1 font-medium text-sm truncate transition-opacity duration-200;
 }
 
 .nav-rail-item__badge {
-    @apply flex-shrink-0 bg-error-500 text-white text-xs px-1.5 py-0.5 rounded-full
-    min-w-5 h-5 flex items-center justify-center font-medium;
+    @apply flex-shrink-0 bg-error-500 text-white text-xs px-2 py-1 rounded-full
+    min-w-5 h-5 flex items-center justify-center font-semibold
+    shadow-sm;
 }
 
 /* Tooltip */
 .nav-rail-tooltip {
-    @apply absolute left-full ml-2 px-3 py-2 bg-neutral-900 dark:bg-neutral-100
-    text-white dark:text-neutral-900 text-sm font-medium rounded-lg
-    shadow-lg z-50 whitespace-nowrap pointer-events-none
-    opacity-0 translate-x-1 transition-all duration-200;
+    @apply absolute left-full ml-3 z-50 whitespace-nowrap pointer-events-none bg-primary-800 dark:bg-primary-200 text-white dark:text-primary-900
+    rounded-lg shadow-lg border border-primary-700 dark:border-primary-300 opacity-0 -translate-x-2 -translate-y-10 transition-all duration-200;
     animation: tooltipShow 200ms ease-out forwards;
 }
 
+.nav-rail-tooltip__content {
+    @apply flex items-center gap-2 px-3 py-2;
+}
+
+.nav-rail-tooltip__icon {
+    @apply flex-shrink-0;
+}
+
+.nav-rail-tooltip__text {
+    @apply text-sm font-medium;
+}
+
 .nav-rail-tooltip__badge {
-    @apply ml-2 bg-error-500 text-white text-xs px-1.5 py-0.5 rounded-full;
+    @apply ml-2 bg-error-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-4 h-4 flex items-center justify-center font-semibold;
 }
 
 @keyframes tooltipShow {
@@ -55,10 +84,11 @@
 @media (prefers-reduced-motion: reduce) {
     .nav-rail-item,
     .nav-rail-item__label,
-    .nav-rail-tooltip {
+    .nav-rail-tooltip,
+    .nav-rail-item__icon-element {
         transition: none;
     }
-    
+
     .nav-rail-tooltip {
         animation: none;
         opacity: 1;

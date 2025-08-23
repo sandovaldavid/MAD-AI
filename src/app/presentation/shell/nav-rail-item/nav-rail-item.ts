@@ -4,11 +4,12 @@ import { RouterModule } from '@angular/router';
 
 import { NavItem } from '@presentation/navigation/types';
 import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
+import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
     selector: 'app-nav-rail-item',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, Icon],
     templateUrl: './nav-rail-item.html',
     styleUrl: './nav-rail-item.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
