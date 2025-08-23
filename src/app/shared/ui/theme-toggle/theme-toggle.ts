@@ -6,21 +6,7 @@ import { Icon } from '@shared/ui/icon/icon';
     selector: 'ui-theme-toggle',
     standalone: true,
     imports: [Icon],
-    template: `
-        <button
-            type="button"
-            class="theme-toggle"
-            (click)="onToggle()"
-            [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
-            [attr.aria-pressed]="isDarkMode()"
-        >
-            <ui-icon
-                [name]="isDarkMode() ? 'outline/sun' : 'outline/moon'"
-                size="md"
-                class="theme-toggle__icon"
-            />
-        </button>
-    `,
+    templateUrl: './theme-toggle.html',
     styleUrl: './theme-toggle.css',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })

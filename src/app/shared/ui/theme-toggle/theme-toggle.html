@@ -1,0 +1,11 @@
+<button
+    type="button"
+    class="theme-toggle"
+    (click)="onToggle()"
+    [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+    [attr.aria-pressed]="isDarkMode()">
+    <ui-icon
+        [name]="isDarkMode() ? 'outline/sun' : 'outline/moon'"
+        size="md"
+        class="theme-toggle__icon" />
+</button>
