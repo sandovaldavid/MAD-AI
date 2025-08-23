@@ -49,6 +49,7 @@ import type {
     CreateUserContract,
     UpdateUserPatchContract,
     UserListFilterContract,
+    ChangePasswordContract,
 } from '@domain/contracts/user.contract';
 import type {
     CreateUserRequestDTO,
@@ -66,7 +67,6 @@ import type {
 import { UserMapper } from '../mappers/user.mapper';
 import { environment } from '@env/environment';
 import { InfraErrorToDomainMapper } from '../errors/infra-to-domain.mapper';
-import type { InfraError } from '../errors/http-to-infra.mapper';
 
 /**
  * HTTP-based implementation of UserRepository.
@@ -599,6 +599,34 @@ export class HttpUserRepository implements UserRepository {
     }
 
     // --- Private Helper Methods ---
+
+    /**
+     * Cambia la contraseña del usuario autenticado.
+     *
+     * @param request - Datos de cambio de contraseña
+     * @returns Promise que resuelve cuando el cambio fue exitoso
+     * @throws {Error} Si la API falla o los datos son inválidos
+     * @apiEndpoint POST /auth/users/change-password/
+     * @apiRequest ChangePasswordRequestDTO
+     * @apiResponse 200 OK
+     */
+    async changePassword(contract: ChangePasswordContract): Promise<void> {
+        try {
+            // Mapear contract de dominio a DTO de infraestructura
+            const dto: ChangePasswordRequestDTO = {
+                current_password: contract.currentPassword,
+                new_password: contract.newPassword,
+                new_password_confirm: contract.newPasswordConfirm,
+            };
+            await firstValueFrom(
+                this.http
+                    .post<ChangePasswordResponseDTO>(`${this.baseUrl}/change-password/`, dto)
+                    .pipe(catchError(this.handleHttpError))
+            );
+        } catch (error) {
+            throw this.transformError(error, 'CHANGE_PASSWORD');
+        }
+    }
 
     /**
      * Builds HTTP query parameters from filter contract.
