@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { LoginForm } from '@presentation/features/auth/forms/login-form/login-form';
 import { AuthFacade } from '@application/facades/auth.facade';
 
