@@ -1,8 +1,6 @@
 import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
 import { AuthFacade } from '@application/facades/auth.facade';
-import { TOKEN_STORE_PORT } from '@di/tokens';
-import type { TokenStorePort } from '@domain/repositories/session/session-store.repository';
 import { ReturnUrlService } from '../cross-cutting/utilities/return-url.service';
 
 /**
@@ -12,33 +10,20 @@ import { ReturnUrlService } from '../cross-cutting/utilities/return-url.service'
 export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
-    const tokenStore = inject<TokenStorePort>(TOKEN_STORE_PORT);
-    const returnUrlService = inject(ReturnUrlService);
 
-    // Si ya hay user en memoria -> bloquear
-    if (auth.user()) {
-        // Guarda la URL actual para retorno si el usuario está autenticado
-        returnUrlService.set(router.url);
+    // Ensure authentication state is properly initialized
+    if (!auth.sessionRestoreAttempted()) {
+        await auth.initializeAuth();
+    }
+
+    // Si ya hay user autenticado -> bloquear acceso a auth pages
+    if (auth.isAuthenticated()) {
+        console.log('🔒 guestOnly guard: User is authenticated, redirecting to dashboard');
         return router.parseUrl('/dashboard');
     }
 
-    // Si hay token guardado pero aún no cargamos perfil, intenta cargarlo
-    const tokens = await tokenStore.read();
-    const hasToken = !!tokens?.accessToken;
-    if (hasToken) {
-        try {
-            await auth.refreshProfile();
-        } catch {
-            // Clear auth state on failed refresh to prevent stale errors
-            auth.clearAuthState();
-        }
-        if (auth.user()) {
-            returnUrlService.set(router.url);
-            return router.parseUrl('/dashboard');
-        }
-    }
-
-    // Usuario invitado: permitir
+    // Usuario invitado: permitir acceso a auth pages
+    console.log('✅ guestOnly guard: User is not authenticated, allowing access to auth pages');
     return true;
 };
 
@@ -49,24 +34,22 @@ export const guestOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
 export const authOnly: CanMatchFn = async (): Promise<boolean | UrlTree> => {
     const auth = inject(AuthFacade);
     const router = inject(Router);
-    const tokenStore = inject<TokenStorePort>(TOKEN_STORE_PORT);
     const returnUrlService = inject(ReturnUrlService);
 
-    if (auth.user()) return true;
-
-    const tokens = await tokenStore.read();
-    const hasToken = !!tokens?.accessToken;
-    if (hasToken) {
-        try {
-            await auth.refreshProfile();
-        } catch {
-            // Clear auth state on failed refresh to prevent stale errors
-            auth.clearAuthState();
-        }
-        if (auth.user()) return true;
+    // Ensure authentication state is properly initialized
+    if (!auth.sessionRestoreAttempted()) {
+        await auth.initializeAuth();
     }
 
-    // Guarda la URL actual para retorno si el usuario no está autenticado
+    // Si el usuario está autenticado -> permitir
+    if (auth.isAuthenticated()) {
+        console.log('✅ authOnly guard: User is authenticated, allowing access');
+        return true;
+    }
+
+    // Usuario no autenticado -> redirigir a login
+    console.log('🔒 authOnly guard: User is not authenticated, redirecting to login');
+    // Guarda la URL actual para retorno después del login
     returnUrlService.set(router.url);
     return router.parseUrl('/auth/login');
 };
