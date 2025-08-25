@@ -1,0 +1,6 @@
+FROM cypress/included:13.7.3
+WORKDIR /e2e
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+CMD ["npx", "cypress", "run"]
