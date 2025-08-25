@@ -1,0 +1,19 @@
+services:
+  jest:
+    build:
+      context: .
+      dockerfile: Dockerfile.jest
+    command: npm run test
+    volumes:
+      - jest_data:/app
+  cypress:
+    build:
+      context: .
+      dockerfile: Dockerfile.cypress
+    command: npx cypress run
+    volumes:
+      - cypress_data:/e2e
+
+volumes:
+  jest_data:
+  cypress_data:
