@@ -1,7 +1,7 @@
 export interface DeactivateUserRequestDTO {
-    reason: string;
+  reason: string;
 }
 
 export interface DeactivateUserResponseDTO {
-    message: string;
+  message: string;
 }

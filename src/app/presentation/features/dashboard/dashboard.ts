@@ -8,73 +8,73 @@ import { AuthFacade } from '@application/facades/auth.facade';
 import { User } from '@domain/entities/user.entity';
 
 @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.html',
-    styleUrl: './dashboard.css',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [Button, Icon],
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Button, Icon],
 })
 export class Dashboard {
-    readonly User: User | null;
-    readonly username: string | undefined;
-    protected readonly titlePage = 'Dashboard';
+  readonly User: User | null;
+  readonly username: string | undefined;
+  protected readonly titlePage = 'Dashboard';
 
-    constructor(
-        private titleService: TitleService,
-        private breadcrumbService: BreadcrumbService,
-        public authFacade: AuthFacade,
-        private router: Router
-    ) {
-        this.User = this.authFacade.user();
-        this.username = this.User?.username;
-    }
+  constructor(
+    private titleService: TitleService,
+    private breadcrumbService: BreadcrumbService,
+    public authFacade: AuthFacade,
+    private router: Router
+  ) {
+    this.User = this.authFacade.user();
+    this.username = this.User?.username;
+  }
 
-    async ngOnInit(): Promise<void> {
-        this.titleService.setTitle(this.titlePage);
-        this.breadcrumbService.setBreadcrumbs([{ label: this.titlePage, icon: 'user' }]);
-        await this.authFacade.refreshProfile();
-    }
+  async ngOnInit(): Promise<void> {
+    this.titleService.setTitle(this.titlePage);
+    this.breadcrumbService.setBreadcrumbs([{ label: this.titlePage, icon: 'user' }]);
+    await this.authFacade.refreshProfile();
+  }
 
-    async logout() {
-        await this.authFacade.logout();
-        await this.router.navigateByUrl('/auth/login');
-    }
+  async logout() {
+    await this.authFacade.logout();
+    await this.router.navigateByUrl('/auth/login');
+  }
 
-    // Métodos para las acciones rápidas
-    onProfileAction(): void {
-        // TODO: Implementar navegación al perfil
-        console.log('Navegar al perfil de usuario');
-    }
+  // Métodos para las acciones rápidas
+  onProfileAction(): void {
+    // TODO: Implementar navegación al perfil
+    console.log('Navegar al perfil de usuario');
+  }
 
-    onSettingsAction(): void {
-        // TODO: Implementar navegación a configuración
-        console.log('Navegar a configuración');
-    }
+  onSettingsAction(): void {
+    // TODO: Implementar navegación a configuración
+    console.log('Navegar a configuración');
+  }
 
-    onHelpAction(): void {
-        // TODO: Implementar navegación a ayuda
-        console.log('Navegar a ayuda');
-    }
+  onHelpAction(): void {
+    // TODO: Implementar navegación a ayuda
+    console.log('Navegar a ayuda');
+  }
 
-    // Método para obtener el saludo basado en la hora del día
-    getGreeting(): string {
-        const hour = new Date().getHours();
-        if (hour < 12) {
-            return '¡Buenos días!';
-        } else if (hour < 18) {
-            return '¡Buenas tardes!';
-        } else {
-            return '¡Buenas noches!';
-        }
+  // Método para obtener el saludo basado en la hora del día
+  getGreeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return '¡Buenos días!';
+    } else if (hour < 18) {
+      return '¡Buenas tardes!';
+    } else {
+      return '¡Buenas noches!';
     }
+  }
 
-    // Método para obtener la fecha actual formateada
-    getCurrentDate(): string {
-        return new Date().toLocaleDateString('es-ES', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        });
-    }
+  // Método para obtener la fecha actual formateada
+  getCurrentDate(): string {
+    return new Date().toLocaleDateString('es-ES', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
 }

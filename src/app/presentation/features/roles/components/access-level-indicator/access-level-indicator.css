@@ -3,413 +3,413 @@
 
 /* Base Component Styles */
 .access-level-indicator {
-    @apply inline-flex items-center transition-all duration-200;
+  @apply inline-flex items-center transition-all duration-200;
 }
 
 /* Badge Variant Styles */
 .variant-badge {
-    @apply px-2.5 py-0.5 rounded-full text-xs font-medium border;
+  @apply px-2.5 py-0.5 rounded-full text-xs font-medium border;
 }
 
 /* Chip Variant Styles */
 .variant-chip {
-    @apply px-3 py-1 rounded-lg text-sm font-medium border;
+  @apply px-3 py-1 rounded-lg text-sm font-medium border;
 }
 
 /* Bar Variant Styles */
 .variant-bar {
-    @apply w-full;
+  @apply w-full;
 }
 
 .progress-container {
-    @apply w-full bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden;
+  @apply w-full bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden;
 }
 
 .progress-bar {
-    @apply h-full transition-all duration-500 ease-out rounded-full;
+  @apply h-full transition-all duration-500 ease-out rounded-full;
 }
 
 /* Progress bar heights by size */
 .progress-bar.size-xs {
-    @apply h-1;
+  @apply h-1;
 }
 
 .progress-bar.size-sm {
-    @apply h-1.5;
+  @apply h-1.5;
 }
 
 .progress-bar.size-md {
-    @apply h-2;
+  @apply h-2;
 }
 
 .progress-bar.size-lg {
-    @apply h-3;
+  @apply h-3;
 }
 
 .progress-bar.size-xl {
-    @apply h-4;
+  @apply h-4;
 }
 
 /* Circle Variant Styles */
 .variant-circle {
-    @apply rounded-full border-2 flex items-center justify-center;
+  @apply rounded-full border-2 flex items-center justify-center;
 }
 
 /* Minimal Variant Styles */
 .variant-minimal {
-    @apply text-xs font-medium;
+  @apply text-xs font-medium;
 }
 
 /* Access Level Color Classes */
 .level-1 {
-    @apply bg-primary-100 text-primary-800 border-primary-200 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-800;
+  @apply bg-primary-100 text-primary-800 border-primary-200 dark:bg-primary-900 dark:text-primary-200 dark:border-primary-800;
 }
 
 .level-1-icon {
-    @apply text-primary-600 dark:text-primary-400;
+  @apply text-primary-600 dark:text-primary-400;
 }
 
 .level-1-bg {
-    @apply bg-primary-50 dark:bg-primary-900/20;
+  @apply bg-primary-50 dark:bg-primary-900/20;
 }
 
 .level-1-ring {
-    @apply ring-primary-500/20 dark:ring-primary-400/20;
+  @apply ring-primary-500/20 dark:ring-primary-400/20;
 }
 
 .level-2 {
-    @apply bg-secondary-100 text-secondary-800 border-secondary-200 dark:bg-secondary-900 dark:text-secondary-200 dark:border-secondary-800;
+  @apply bg-secondary-100 text-secondary-800 border-secondary-200 dark:bg-secondary-900 dark:text-secondary-200 dark:border-secondary-800;
 }
 
 .level-2-icon {
-    @apply text-secondary-600 dark:text-secondary-400;
+  @apply text-secondary-600 dark:text-secondary-400;
 }
 
 .level-2-bg {
-    @apply bg-secondary-50 dark:bg-secondary-900/20;
+  @apply bg-secondary-50 dark:bg-secondary-900/20;
 }
 
 .level-2-ring {
-    @apply ring-secondary-500/20 dark:ring-secondary-400/20;
+  @apply ring-secondary-500/20 dark:ring-secondary-400/20;
 }
 
 .level-3 {
-    @apply bg-info-100 text-info-800 border-info-200 dark:bg-info-900 dark:text-info-200 dark:border-info-800;
+  @apply bg-info-100 text-info-800 border-info-200 dark:bg-info-900 dark:text-info-200 dark:border-info-800;
 }
 
 .level-3-icon {
-    @apply text-info-600 dark:text-info-400;
+  @apply text-info-600 dark:text-info-400;
 }
 
 .level-3-bg {
-    @apply bg-info-50 dark:bg-info-900/20;
+  @apply bg-info-50 dark:bg-info-900/20;
 }
 
 .level-3-ring {
-    @apply ring-info-500/20 dark:ring-info-400/20;
+  @apply ring-info-500/20 dark:ring-info-400/20;
 }
 
 .level-4 {
-    @apply bg-warning-100 text-warning-800 border-warning-200 dark:bg-warning-900 dark:text-warning-200 dark:border-warning-800;
+  @apply bg-warning-100 text-warning-800 border-warning-200 dark:bg-warning-900 dark:text-warning-200 dark:border-warning-800;
 }
 
 .level-4-icon {
-    @apply text-warning-600 dark:text-warning-400;
+  @apply text-warning-600 dark:text-warning-400;
 }
 
 .level-4-bg {
-    @apply bg-warning-50 dark:bg-warning-900/20;
+  @apply bg-warning-50 dark:bg-warning-900/20;
 }
 
 .level-4-ring {
-    @apply ring-warning-500/20 dark:ring-warning-400/20;
+  @apply ring-warning-500/20 dark:ring-warning-400/20;
 }
 
 .level-5 {
-    @apply bg-neutral-100 text-neutral-800 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700;
+  @apply bg-neutral-100 text-neutral-800 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700;
 }
 
 .level-5-icon {
-    @apply text-neutral-600 dark:text-neutral-400;
+  @apply text-neutral-600 dark:text-neutral-400;
 }
 
 .level-5-bg {
-    @apply bg-neutral-50 dark:bg-neutral-800/20;
+  @apply bg-neutral-50 dark:bg-neutral-800/20;
 }
 
 .level-5-ring {
-    @apply ring-neutral-500/20 dark:ring-neutral-400/20;
+  @apply ring-neutral-500/20 dark:ring-neutral-400/20;
 }
 
 /* Size Variants */
 .size-xs {
-    @apply text-xs;
+  @apply text-xs;
 }
 
 .size-sm {
-    @apply text-sm;
+  @apply text-sm;
 }
 
 .size-md {
-    @apply text-sm;
+  @apply text-sm;
 }
 
 .size-lg {
-    @apply text-base;
+  @apply text-base;
 }
 
 .size-xl {
-    @apply text-lg;
+  @apply text-lg;
 }
 
 /* Circle size variants */
 .circle-xs {
-    @apply w-6 h-6;
+  @apply w-6 h-6;
 }
 
 .circle-sm {
-    @apply w-8 h-8;
+  @apply w-8 h-8;
 }
 
 .circle-md {
-    @apply w-10 h-10;
+  @apply w-10 h-10;
 }
 
 .circle-lg {
-    @apply w-12 h-12;
+  @apply w-12 h-12;
 }
 
 .circle-xl {
-    @apply w-16 h-16;
+  @apply w-16 h-16;
 }
 
 /* Icon container styles for chip variant */
 .icon-container {
-    @apply p-1 rounded-full;
+  @apply p-1 rounded-full;
 }
 
 .icon-container.size-xs {
-    @apply p-0.5;
+  @apply p-0.5;
 }
 
 .icon-container.size-sm {
-    @apply p-1;
+  @apply p-1;
 }
 
 .icon-container.size-md {
-    @apply p-1.5;
+  @apply p-1.5;
 }
 
 .icon-container.size-lg {
-    @apply p-2;
+  @apply p-2;
 }
 
 .icon-container.size-xl {
-    @apply p-2.5;
+  @apply p-2.5;
 }
 
 /* Hover Effects */
 .access-level-indicator:hover {
-    @apply transform scale-105;
+  @apply transform scale-105;
 }
 
 .variant-circle:hover {
-    @apply shadow-md;
+  @apply shadow-md;
 }
 
 .variant-bar:hover .progress-bar {
-    @apply shadow-sm;
+  @apply shadow-sm;
 }
 
 /* Focus States for Accessibility */
 .access-level-indicator:focus-visible {
-    @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+  @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
 }
 
 .level-1:focus-visible {
-    @apply ring-primary-500;
+  @apply ring-primary-500;
 }
 
 .level-2:focus-visible {
-    @apply ring-secondary-500;
+  @apply ring-secondary-500;
 }
 
 .level-3:focus-visible {
-    @apply ring-info-500;
+  @apply ring-info-500;
 }
 
 .level-4:focus-visible {
-    @apply ring-warning-500;
+  @apply ring-warning-500;
 }
 
 .level-5:focus-visible {
-    @apply ring-neutral-500;
+  @apply ring-neutral-500;
 }
 
 /* Tooltip Styles */
 .access-level-tooltip {
-    @apply pointer-events-none opacity-0 transition-opacity duration-200;
+  @apply pointer-events-none opacity-0 transition-opacity duration-200;
 }
 
 .access-level-indicator:hover .access-level-tooltip {
-    @apply opacity-100;
+  @apply opacity-100;
 }
 
 /* Animation Classes */
 .fade-in {
-    animation: fadeIn 0.2s ease-in-out;
+  animation: fadeIn 0.2s ease-in-out;
 }
 
 .scale-in {
-    animation: scaleIn 0.2s ease-out;
+  animation: scaleIn 0.2s ease-out;
 }
 
 .slide-in {
-    animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Progress Bar Animation */
 .progress-bar-animated {
-    position: relative;
-    overflow: hidden;
+  position: relative;
+  overflow: hidden;
 }
 
 .progress-bar-animated::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: shimmer 2s infinite;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-    0% {
-        left: -100%;
-    }
-    100% {
-        left: 100%;
-    }
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 /* Compact Mode Adjustments */
 .compact .variant-badge {
-    @apply px-2 py-0.5 text-xs;
+  @apply px-2 py-0.5 text-xs;
 }
 
 .compact .variant-chip {
-    @apply px-2 py-0.5 text-xs;
+  @apply px-2 py-0.5 text-xs;
 }
 
 .compact .icon-container {
-    @apply p-0.5;
+  @apply p-0.5;
 }
 
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
-    .access-level-indicator {
-        @apply border-2 border-current;
-    }
+  .access-level-indicator {
+    @apply border-2 border-current;
+  }
 
-    .progress-container {
-        @apply border border-current;
-    }
+  .progress-container {
+    @apply border border-current;
+  }
 }
 
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
-    .access-level-indicator {
-        transition: none;
-    }
+  .access-level-indicator {
+    transition: none;
+  }
 
-    .progress-bar {
-        transition: none;
-    }
+  .progress-bar {
+    transition: none;
+  }
 
-    .access-level-indicator:hover {
-        transform: none;
-    }
+  .access-level-indicator:hover {
+    transform: none;
+  }
 
-    .progress-bar-animated::after {
-        animation: none;
-    }
+  .progress-bar-animated::after {
+    animation: none;
+  }
 }
 
 /* Print Styles */
 @media print {
-    .access-level-indicator {
-        @apply border border-neutral-400 text-neutral-900 bg-white;
-    }
+  .access-level-indicator {
+    @apply border border-neutral-400 text-neutral-900 bg-white;
+  }
 
-    .progress-bar {
-        @apply bg-neutral-400;
-    }
+  .progress-bar {
+    @apply bg-neutral-400;
+  }
 }
 
 /* Screen Reader Only Content */
 .sr-only {
-    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
-    clip: rect(0, 0, 0, 0);
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  clip: rect(0, 0, 0, 0);
 }
 
 /* Error State for Invalid Levels */
 .invalid-level {
-    @apply bg-error-100 text-error-800 border-error-200 dark:bg-error-900 dark:text-error-200 dark:border-error-800;
+  @apply bg-error-100 text-error-800 border-error-200 dark:bg-error-900 dark:text-error-200 dark:border-error-800;
 }
 
 .invalid-level-icon {
-    @apply text-error-600 dark:text-error-400;
+  @apply text-error-600 dark:text-error-400;
 }
 
 /* Loading State */
 .loading {
-    @apply animate-pulse opacity-75;
+  @apply animate-pulse opacity-75;
 }
 
 .loading .progress-bar {
-    @apply bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200 dark:from-neutral-700 dark:via-neutral-600 dark:to-neutral-700;
-    background-size: 200% 100%;
-    animation: loading-shimmer 1.5s infinite;
+  @apply bg-gradient-to-r from-neutral-200 via-neutral-300 to-neutral-200 dark:from-neutral-700 dark:via-neutral-600 dark:to-neutral-700;
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s infinite;
 }
 
 @keyframes loading-shimmer {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
-    }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

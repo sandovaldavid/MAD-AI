@@ -2,77 +2,77 @@
 
 /* Custom login page specific styles */
 .login-page {
-    @apply min-h-screen;
+  @apply min-h-screen;
 }
 
 /* Enhanced container that uses global styles */
 .login-container {
-    @apply flex flex-col lg:flex-row w-full h-full;
+  @apply flex flex-col lg:flex-row w-full h-full;
 }
 
 /* Brand logo animation */
 .brand-logo {
-    @apply transform transition-transform duration-300 hover:scale-105;
+  @apply transform transition-transform duration-300 hover:scale-105;
 }
 
 /* Form animations and enhancements */
 .login-form-container {
-    @apply transform transition-all duration-500 ease-out;
+  @apply transform transition-all duration-500 ease-out;
 }
 
 .login-form-container:hover {
-    @apply scale-[1.02];
+  @apply scale-[1.02];
 }
 
 /* Image side enhancements */
 .image-side {
-    @apply relative overflow-hidden;
+  @apply relative overflow-hidden;
 }
 
 .image-backdrop {
-    @apply absolute inset-0 bg-gradient-to-t from-primary-600/30 to-transparent;
+  @apply absolute inset-0 bg-gradient-to-t from-primary-600/30 to-transparent;
 }
 
 /* Responsive breakpoints enhancement */
 @media (max-width: 1023px) {
-    .container-auth {
-        @apply flex-col items-center justify-center;
-    }
+  .container-auth {
+    @apply flex-col items-center justify-center;
+  }
 
-    .container-image {
-        @apply hidden;
-    }
+  .container-image {
+    @apply hidden;
+  }
 
-    .container-form {
-        @apply flex-1;
-    }
+  .container-form {
+    @apply flex-1;
+  }
 }
 
 @media (min-width: 1024px) {
-    .container-auth {
-        @apply flex-row;
-    }
+  .container-auth {
+    @apply flex-row;
+  }
 
-    .container-form {
-        @apply flex-1 max-w-[45%];
-    }
+  .container-form {
+    @apply flex-1 max-w-[45%];
+  }
 
-    .container-image {
-        @apply flex flex-1;
-    }
+  .container-image {
+    @apply flex flex-1;
+  }
 }
 
 /* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
-    .brand-logo,
-    .login-form-container {
-        @apply transition-none;
-    }
+  .brand-logo,
+  .login-form-container {
+    @apply transition-none;
+  }
 }
 
 /* Focus improvements for keyboard navigation */
 .card-auth-form:focus-within {
-    @apply ring-2 ring-primary-500/20 ring-offset-2 ring-offset-transparent;
+  @apply ring-2 ring-primary-500/20 ring-offset-2 ring-offset-transparent;
 }
 
 /* ===============================================
@@ -80,26 +80,30 @@
    =============================================== */
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-    from { 
-        opacity: 0; 
-        transform: translateY(20px); 
-    }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Animation classes */
 .card-responsive {
-    animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .card-auth-form {
-    animation: slideUp 0.6s ease-out 0.2s both;
+  animation: slideUp 0.6s ease-out 0.2s both;
 }

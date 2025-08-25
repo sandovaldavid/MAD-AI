@@ -10,52 +10,47 @@ const RETRIED = 'x-auth-retried';
 const AUTH_API_PREFIX = `${environment.API_URL}/auth/`;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const orch = inject(AuthHttpOrchestrator);
-    const router = inject(Router);
-    const returnUrl = inject(ReturnUrlService);
+  const orch = inject(AuthHttpOrchestrator);
+  const router = inject(Router);
+  const returnUrl = inject(ReturnUrlService);
 
-    const withHeader = (rq: HttpRequest<any>, h: { Authorization?: string } | null) =>
-        h?.Authorization ? rq.clone({ setHeaders: h }) : rq;
+  const withHeader = (rq: HttpRequest<any>, h: { Authorization?: string } | null) =>
+    h?.Authorization ? rq.clone({ setHeaders: h }) : rq;
 
-    return orch.ensureFreshAccess$().pipe(
-        switchMap((h) =>
-            next(withHeader(req, h)).pipe(
-                catchError((err) => {
-                    // Reintento una vez si 401 - solo para endpoints no-auth
-                    if (
-                        err instanceof HttpErrorResponse &&
-                        err.status === 401 &&
-                        !req.headers.has(RETRIED) &&
-                        !req.url.startsWith(AUTH_API_PREFIX)
-                    ) {
-                        return orch
-                            .forceRefreshOnce$()
-                            .pipe(
-                                switchMap((h2) =>
-                                    next(
-                                        withHeader(
-                                            req.clone({ setHeaders: { [RETRIED]: '1' } }),
-                                            h2
-                                        )
-                                    )
-                                )
-                            );
-                    }
+  return orch.ensureFreshAccess$().pipe(
+    switchMap((h) =>
+      next(withHeader(req, h)).pipe(
+        catchError((err) => {
+          // Reintento una vez si 401 - solo para endpoints no-auth
+          if (
+            err instanceof HttpErrorResponse &&
+            err.status === 401 &&
+            !req.headers.has(RETRIED) &&
+            !req.url.startsWith(AUTH_API_PREFIX)
+          ) {
+            return orch
+              .forceRefreshOnce$()
+              .pipe(
+                switchMap((h2) =>
+                  next(withHeader(req.clone({ setHeaders: { [RETRIED]: '1' } }), h2))
+                )
+              );
+          }
 
-                    // Si sigue 401 (y no es un endpoint de auth), mandamos a login
-                    if (
-                        err instanceof HttpErrorResponse &&
-                        err.status === 401 &&
-                        !req.url.startsWith(AUTH_API_PREFIX)
-                    ) {
-                        const current = router.url; // incluye querystring actual
-                        returnUrl.set(current);
-                        router.navigate(['/auth/login'], { queryParams: { returnUrl: current } });
-                    }
+          // Si sigue 401 (y no es un endpoint de auth), mandamos a login
+          if (
+            err instanceof HttpErrorResponse &&
+            err.status === 401 &&
+            !req.url.startsWith(AUTH_API_PREFIX)
+          ) {
+            const current = router.url; // incluye querystring actual
+            returnUrl.set(current);
+            router.navigate(['/auth/login'], { queryParams: { returnUrl: current } });
+          }
 
-                    return throwError(() => err);
-                })
-            )
-        )
-    );
+          return throwError(() => err);
+        })
+      )
+    )
+  );
 };

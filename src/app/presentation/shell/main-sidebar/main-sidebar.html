@@ -1,41 +1,41 @@
 <!-- Desktop Sidebar Container -->
 <aside
-    class="main-sidebar"
-    [class.main-sidebar--collapsed]="isCollapsed()"
-    [attr.aria-label]="sidebarAriaLabel()"
-    role="navigation">
-    <!-- Sidebar Header -->
-    <div class="main-sidebar__header">
-        <!-- Logo/Brand Area -->
-        <div class="main-sidebar__brand" [class.main-sidebar__brand--collapsed]="isCollapsed()">
-            @if (!isCollapsed()) {
-            <div class="main-sidebar__brand-content">
-                <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon" />
-                <h1 class="main-sidebar__title">MAD-AI</h1>
-            </div>
-            } @else {
-            <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon--collapsed" />
-            }
+  class="main-sidebar"
+  [class.main-sidebar--collapsed]="isCollapsed()"
+  [attr.aria-label]="sidebarAriaLabel()"
+  role="navigation">
+  <!-- Sidebar Header -->
+  <div class="main-sidebar__header">
+    <!-- Logo/Brand Area -->
+    <div class="main-sidebar__brand" [class.main-sidebar__brand--collapsed]="isCollapsed()">
+      @if (!isCollapsed()) {
+        <div class="main-sidebar__brand-content">
+          <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon" />
+          <h1 class="main-sidebar__title">MAD-AI</h1>
         </div>
+      } @else {
+        <ui-icon name="cpu-chip" size="lg" class="main-sidebar__brand-icon--collapsed" />
+      }
     </div>
+  </div>
 
-    <!-- Toggle Button - Positioned on the edge -->
-    <div class="main-sidebar__toggle-wrapper">
-        <app-nav-rail-toggler [collapsed]="isCollapsed()" (toggled)="onToggleCollapse()" />
-    </div>
+  <!-- Toggle Button - Positioned on the edge -->
+  <div class="main-sidebar__toggle-wrapper">
+    <app-nav-rail-toggler [collapsed]="isCollapsed()" (toggled)="onToggleCollapse()" />
+  </div>
 
-    <!-- Sidebar Content -->
-    <div class="main-sidebar__content">
-        <!-- Navigation Sections -->
-        <nav class="main-sidebar__nav" role="navigation" aria-label="Navegación principal">
-            @for (section of navigationSections(); track section.id) {
-            <app-nav-rail-section [section]="section" [collapsed]="isCollapsed()" />
-            }
-        </nav>
-    </div>
+  <!-- Sidebar Content -->
+  <div class="main-sidebar__content">
+    <!-- Navigation Sections -->
+    <nav class="main-sidebar__nav" role="navigation" aria-label="Navegación principal">
+      @for (section of navigationSections(); track section.id) {
+        <app-nav-rail-section [section]="section" [collapsed]="isCollapsed()" />
+      }
+    </nav>
+  </div>
 
-    <!-- Sidebar Footer -->
-    <div class="main-sidebar__footer">
-        <app-nav-rail-footer [collapsed]="isCollapsed()" />
-    </div>
+  <!-- Sidebar Footer -->
+  <div class="main-sidebar__footer">
+    <app-nav-rail-footer [collapsed]="isCollapsed()" />
+  </div>
 </aside>

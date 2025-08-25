@@ -1,29 +1,29 @@
 <div class="optimized-image-container" [style.aspect-ratio]="aspectRatio">
-    <img
-        [ngSrc]="responsiveSource"
-        [ngSrcset]="srcSet"
-        [sizes]="sizes"
-        [alt]="alt"
-        [width]="width"
-        [height]="height"
-        [priority]="priority"
-        [loading]="priority ? undefined : loading"
-        [class]="imageClass"
-        [attr.data-loaded]="imageLoaded"
-        (load)="onImageLoad()"
-        (error)="onImageError()"
-        #imageEl />
+  <img
+    [ngSrc]="responsiveSource"
+    [ngSrcset]="srcSet"
+    [sizes]="sizes"
+    [alt]="alt"
+    [width]="width"
+    [height]="height"
+    [priority]="priority"
+    [loading]="priority ? undefined : loading"
+    [class]="imageClass"
+    [attr.data-loaded]="imageLoaded"
+    (load)="onImageLoad()"
+    (error)="onImageError()"
+    #imageEl />
 
-    <!-- Loading placeholder -->
-    <div class="image-placeholder" [class.hidden]="imageLoaded || imageError">
-        <div class="placeholder-skeleton"></div>
-    </div>
+  <!-- Loading placeholder -->
+  <div class="image-placeholder" [class.hidden]="imageLoaded || imageError">
+    <div class="placeholder-skeleton"></div>
+  </div>
 
-    <!-- Error fallback -->
-    <div class="image-error" [class.hidden]="!imageError">
-        <div class="error-content">
-            <div class="error-icon">📷</div>
-            <span class="error-text">Error al cargar imagen</span>
-        </div>
+  <!-- Error fallback -->
+  <div class="image-error" [class.hidden]="!imageError">
+    <div class="error-content">
+      <div class="error-icon">📷</div>
+      <span class="error-text">Error al cargar imagen</span>
     </div>
+  </div>
 </div>

@@ -1,175 +1,177 @@
 @reference '../../../../styles.css';
 
 .nav-rail-footer {
-    @apply flex flex-col gap-1 p-2 items-center border-t border-primary-200/60 dark:border-primary-800/60 bg-gradient-to-t from-primary-100 to-primary-50     dark:from-primary-900 dark:to-primary-950;
-    backdrop-filter: blur(8px);
+  @apply flex flex-col gap-1 p-2 items-center border-t border-primary-200/60 dark:border-primary-800/60 bg-gradient-to-t from-primary-100 to-primary-50     dark:from-primary-900 dark:to-primary-950;
+  backdrop-filter: blur(8px);
 }
 
 /* Theme section for expanded and collapsed state */
 .nav-rail-footer__theme-section {
-    @apply flex justify-center mb-1 p-1;
+  @apply flex justify-center mb-1 p-1;
 }
 
 /* Override theme-toggle styles when inside footer */
 .nav-rail-footer__theme-section .theme-toggle {
-    @apply bg-primary-200/60 dark:bg-primary-800/60 
+  @apply bg-primary-200/60 dark:bg-primary-800/60 
     border-primary-300/50 dark:border-primary-700/50
     hover:bg-primary-300/70 dark:hover:bg-primary-700/70
     shadow-sm shadow-primary-300/20 dark:shadow-primary-700/20;
-    min-width: 2.25rem;
-    height: 2.25rem;
-    padding: 0.375rem;
-    transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out,
-        box-shadow 200ms ease-in-out;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0.375rem;
+  transition:
+    background-color 200ms ease-in-out,
+    border-color 200ms ease-in-out,
+    box-shadow 200ms ease-in-out;
 }
 
 .nav-rail-footer__theme-section .theme-toggle:hover {
-    @apply shadow-md shadow-primary-300/30 dark:shadow-primary-600/30;
+  @apply shadow-md shadow-primary-300/30 dark:shadow-primary-600/30;
 }
 
 /* Asegurar que el icono no tiemble en el contexto del footer */
 .nav-rail-footer__theme-section .theme-toggle__icon {
-    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-rail-footer__theme-section .theme-toggle:hover .theme-toggle__icon {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* Action buttons - Override any inherited styles */
 .nav-rail-footer__action {
-    @apply relative flex items-center w-full justify-start gap-2.5 
+  @apply relative flex items-center w-full justify-start gap-2.5 
     text-primary-600 dark:text-primary-400
     bg-transparent border-0 outline-none
     transition-all duration-200 ease-in-out;
-    @apply hover:bg-primary-200/80 dark:hover:bg-primary-800/80
+  @apply hover:bg-primary-200/80 dark:hover:bg-primary-800/80
     hover:text-primary-800 dark:hover:text-primary-200
     hover:shadow-sm hover:shadow-primary-300/30 dark:hover:shadow-primary-700/30;
-    @apply focus-visible:ring-2 focus-visible:ring-primary-500/40 
+  @apply focus-visible:ring-2 focus-visible:ring-primary-500/40 
     dark:focus-visible:ring-primary-400/40 focus-visible:ring-offset-1;
-    @apply rounded-lg px-3 py-2;
-    min-height: 2.25rem;
-    /* Reset any button styles that might interfere */
-    border-radius: 0.5rem;
-    font-weight: 500;
-    font-size: 0.875rem;
+  @apply rounded-lg px-3 py-2;
+  min-height: 2.25rem;
+  /* Reset any button styles that might interfere */
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.875rem;
 }
 
 .nav-rail-footer__action--collapsed {
-    @apply justify-center px-2 w-10 h-10;
-    min-height: 2.5rem;
+  @apply justify-center px-2 w-10 h-10;
+  min-height: 2.5rem;
 }
 
 .nav-rail-footer__action--danger {
-    @apply text-error-600 dark:text-error-400;
+  @apply text-error-600 dark:text-error-400;
 }
 
 .nav-rail-footer__action--danger:hover {
-    @apply bg-error-50/90 text-error-700 
+  @apply bg-error-50/90 text-error-700 
     dark:bg-error-950/80 dark:text-error-300
     shadow-sm shadow-error-200/40 dark:shadow-error-800/40;
 }
 
 /* Icon and text layout */
 .nav-rail-footer__icon {
-    @apply flex-shrink-0 w-5 h-5 transition-all duration-200;
+  @apply flex-shrink-0 w-5 h-5 transition-all duration-200;
 }
 
 .nav-rail-footer__action:hover .nav-rail-footer__icon {
-    @apply scale-110 text-current;
+  @apply scale-110 text-current;
 }
 
 .nav-rail-footer__action:active .nav-rail-footer__icon {
-    @apply scale-95;
+  @apply scale-95;
 }
 
 .nav-rail-footer__text {
-    @apply text-sm font-medium truncate transition-opacity duration-200;
-    line-height: 1.25;
+  @apply text-sm font-medium truncate transition-opacity duration-200;
+  line-height: 1.25;
 }
 
 /* Ensure text doesn't interfere with other elements */
 .nav-rail-footer__action--collapsed .nav-rail-footer__text {
-    @apply hidden;
+  @apply hidden;
 }
 
 /* Version info */
 .nav-rail-footer__version {
-    @apply mt-1 px-2 py-1.5 w-full text-center bg-primary-200/60 dark:bg-primary-800/60 rounded-md border border-primary-300/40 dark:border-primary-700/40;
+  @apply mt-1 px-2 py-1.5 w-full text-center bg-primary-200/60 dark:bg-primary-800/60 rounded-md border border-primary-300/40 dark:border-primary-700/40;
 }
 
 .nav-rail-footer__version-text {
-    @apply text-xs text-primary-600/80 dark:text-primary-400/80 
+  @apply text-xs text-primary-600/80 dark:text-primary-400/80 
     font-mono font-medium;
 }
 
 /* Isolation and containment */
 .nav-rail-footer {
-    isolation: isolate;
-    contain: layout style;
+  isolation: isolate;
+  contain: layout style;
 }
 
 /* Prevent bleeding of styles from parent components */
 .nav-rail-footer * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 /* Specific overrides for ui-button when used inside footer */
 .nav-rail-footer .nav-rail-footer__action {
-    /* Force our styles over any ui-button styles */
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
+  /* Force our styles over any ui-button styles */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .nav-rail-footer .nav-rail-footer__action:hover {
-    background: rgb(from var(--color-primary-200) r g b / 0.8) !important;
+  background: rgb(from var(--color-primary-200) r g b / 0.8) !important;
 }
 
 .nav-rail-footer .nav-rail-footer__action:focus {
-    box-shadow: 0 0 0 2px rgb(from var(--color-primary-500) r g b / 0.4) !important;
+  box-shadow: 0 0 0 2px rgb(from var(--color-primary-500) r g b / 0.4) !important;
 }
 
 .dark .nav-rail-footer .nav-rail-footer__action:hover {
-    background: rgb(from var(--color-primary-800) r g b / 0.8) !important;
+  background: rgb(from var(--color-primary-800) r g b / 0.8) !important;
 }
 
 .dark .nav-rail-footer .nav-rail-footer__action:focus {
-    box-shadow: 0 0 0 2px rgb(from var(--color-primary-400) r g b / 0.4) !important;
+  box-shadow: 0 0 0 2px rgb(from var(--color-primary-400) r g b / 0.4) !important;
 }
 
 /* Responsive behavior */
 @media (max-width: 768px) {
-    .nav-rail-footer {
-        @apply px-3 py-3 gap-2;
-    }
+  .nav-rail-footer {
+    @apply px-3 py-3 gap-2;
+  }
 
-    .nav-rail-footer__action {
-        @apply py-2.5 px-3;
-        min-height: 2.75rem;
-    }
+  .nav-rail-footer__action {
+    @apply py-2.5 px-3;
+    min-height: 2.75rem;
+  }
 
-    .nav-rail-footer__action--collapsed {
-        @apply w-12 h-12 justify-center;
-        min-height: 3rem;
-    }
+  .nav-rail-footer__action--collapsed {
+    @apply w-12 h-12 justify-center;
+    min-height: 3rem;
+  }
 }
 
 /* Animation improvements */
 @media (prefers-reduced-motion: reduce) {
-    .nav-rail-footer__action,
-    .nav-rail-footer__icon,
-    .nav-rail-footer__text {
-        transition: none;
-    }
+  .nav-rail-footer__action,
+  .nav-rail-footer__icon,
+  .nav-rail-footer__text {
+    transition: none;
+  }
 }
 
 /* Ensure proper stacking context */
 .nav-rail-footer {
-    z-index: 1;
+  z-index: 1;
 }
 
 .nav-rail-footer__action {
-    z-index: 2;
-    position: relative;
+  z-index: 2;
+  position: relative;
 }

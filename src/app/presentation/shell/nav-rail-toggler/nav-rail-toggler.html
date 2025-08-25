@@ -1,11 +1,11 @@
 <button
-    type="button"
-    [attr.aria-expanded]="!collapsed()"
-    [attr.aria-label]="buttonLabel()"
-    class="nav-rail-toggler"
-    (click)="onToggle()">
-    <ui-icon 
-        [name]="collapsed() ? 'chevron-right' : 'chevron-left'"
-        size="md"
-        class="nav-rail-toggler__icon" />
+  type="button"
+  [attr.aria-expanded]="!collapsed()"
+  [attr.aria-label]="buttonLabel()"
+  class="nav-rail-toggler"
+  (click)="onToggle()">
+  <ui-icon
+    [name]="collapsed() ? 'chevron-right' : 'chevron-left'"
+    size="md"
+    class="nav-rail-toggler__icon" />
 </button>

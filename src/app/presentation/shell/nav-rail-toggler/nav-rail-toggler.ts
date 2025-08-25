@@ -5,25 +5,25 @@ import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
 import { Icon } from '@shared/ui/icon/icon';
 
 @Component({
-    selector: 'app-nav-rail-toggler',
-    standalone: true,
-    imports: [CommonModule, Icon],
-    templateUrl: './nav-rail-toggler.html',
-    styleUrl: './nav-rail-toggler.css',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-nav-rail-toggler',
+  standalone: true,
+  imports: [CommonModule, Icon],
+  templateUrl: './nav-rail-toggler.html',
+  styleUrl: './nav-rail-toggler.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavRailToggler {
-    private layoutService = inject(LayoutService);
+  private layoutService = inject(LayoutService);
 
-    // Inputs
-    collapsed = input.required<boolean>();
+  // Inputs
+  collapsed = input.required<boolean>();
 
-    // Computed properties
-    readonly buttonLabel = computed(() =>
-        this.collapsed() ? 'Expandir navegación' : 'Contraer navegación'
-    );
+  // Computed properties
+  readonly buttonLabel = computed(() =>
+    this.collapsed() ? 'Expandir navegación' : 'Contraer navegación'
+  );
 
-    onToggle(): void {
-        this.layoutService.toggleSidebarCollapsed();
-    }
+  onToggle(): void {
+    this.layoutService.toggleSidebarCollapsed();
+  }
 }

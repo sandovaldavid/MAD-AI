@@ -31,104 +31,103 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
  */
 @Injectable({ providedIn: 'root' })
 export class ClearNotifications {
-    private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute notification clearing orchestration with validation and audit logging
-     *
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving when clearing is complete
-     * @throws ApplicationError when validation fails or clearing fails
-     */
-    async execute(requesterId?: number): Promise<void> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(requesterId);
+  /**
+   * Execute notification clearing orchestration with validation and audit logging
+   *
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving when clearing is complete
+   * @throws ApplicationError when validation fails or clearing fails
+   */
+  async execute(requesterId?: number): Promise<void> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(requesterId);
 
-            // Step 2: Get current notifications for audit logging before clearing
-            const currentNotifications = this.notificationPort.snapshot();
+      // Step 2: Get current notifications for audit logging before clearing
+      const currentNotifications = this.notificationPort.snapshot();
 
-            // Step 3: Delegate to domain repository for clearing
-            this.notificationPort.clear();
+      // Step 3: Delegate to domain repository for clearing
+      this.notificationPort.clear();
 
-            // Step 4: Handle side effects
-            this.handleNotificationClearingSideEffects(currentNotifications, requesterId);
-        } catch (error: unknown) {
-            // Normalize errors for application layer
-            throw new ApplicationError(
-                'clear_notifications',
-                this.errorTransformer.transformError(error),
-                'NOTIFICATION_CLEARING_FAILED'
-            );
-        }
+      // Step 4: Handle side effects
+      this.handleNotificationClearingSideEffects(currentNotifications, requesterId);
+    } catch (error: unknown) {
+      // Normalize errors for application layer
+      throw new ApplicationError(
+        'clear_notifications',
+        this.errorTransformer.transformError(error),
+        'NOTIFICATION_CLEARING_FAILED'
+      );
     }
+  }
 
-    /**
-     * Validate application-level rules for notification clearing
-     *
-     * @description
-     * Validates request parameters and basic business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param requesterId Requester ID to validate (optional)
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(requesterId?: number): void {
-        // Validate requester ID if provided
-        if (requesterId !== undefined && requesterId !== null) {
-            if (
-                typeof requesterId !== 'number' ||
-                !Number.isInteger(requesterId) ||
-                requesterId <= 0
-            ) {
-                throw new ApplicationError(
-                    'clear_notifications',
-                    'INVALID_REQUESTER_ID_FORMAT',
-                    'Requester ID must be a positive integer when provided'
-                );
-            }
-        }
+  /**
+   * Validate application-level rules for notification clearing
+   *
+   * @description
+   * Validates request parameters and basic business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param requesterId Requester ID to validate (optional)
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(requesterId?: number): void {
+    // Validate requester ID if provided
+    if (requesterId !== undefined && requesterId !== null) {
+      if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+        throw new ApplicationError(
+          'clear_notifications',
+          'INVALID_REQUESTER_ID_FORMAT',
+          'Requester ID must be a positive integer when provided'
+        );
+      }
     }
+  }
 
-    /**
-     * Handle side effects of notification clearing
-     *
-     * @description
-     * Manages audit logging and other side effects after successful notification clearing.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param clearedNotifications The notifications that were cleared
-     * @param requesterId ID of user who performed the clearing
-     */
-    private handleNotificationClearingSideEffects(
-        clearedNotifications: any[],
-        requesterId?: number
-    ): void {
-        const timestamp = this.clock.nowEpochSeconds();
+  /**
+   * Handle side effects of notification clearing
+   *
+   * @description
+   * Manages audit logging and other side effects after successful notification clearing.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param clearedNotifications The notifications that were cleared
+   * @param requesterId ID of user who performed the clearing
+   */
+  private handleNotificationClearingSideEffects(
+    clearedNotifications: any[],
+    requesterId?: number
+  ): void {
+    const timestamp = this.clock.nowEpochSeconds();
 
-        // Calculate statistics of cleared notifications
-        const totalCleared = clearedNotifications.length;
-        const clearedByType = clearedNotifications.reduce((acc, n) => {
-            acc[n.type] = (acc[n.type] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
+    // Calculate statistics of cleared notifications
+    const totalCleared = clearedNotifications.length;
+    const clearedByType = clearedNotifications.reduce(
+      (acc, n) => {
+        acc[n.type] = (acc[n.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-        const unreadCleared = clearedNotifications.filter((n) => !n.isRead).length;
+    const unreadCleared = clearedNotifications.filter((n) => !n.isRead).length;
 
-        console.log(`[AUDIT] All notifications cleared`, {
-            timestamp,
-            requesterId,
-            clearedStatistics: {
-                totalCleared,
-                unreadCleared,
-                readCleared: totalCleared - unreadCleared,
-                clearedByType,
-            },
-            operation: 'clear_notifications',
-            feature: 'notifications',
-            severity: 'MEDIUM',
-        });
-    }
+    console.log(`[AUDIT] All notifications cleared`, {
+      timestamp,
+      requesterId,
+      clearedStatistics: {
+        totalCleared,
+        unreadCleared,
+        readCleared: totalCleared - unreadCleared,
+        clearedByType,
+      },
+      operation: 'clear_notifications',
+      feature: 'notifications',
+      severity: 'MEDIUM',
+    });
+  }
 }

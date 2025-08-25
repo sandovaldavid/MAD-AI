@@ -1,272 +1,272 @@
 /* Base skeleton animation */
 .skeleton-base {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded;
 }
 
 /* Text-specific skeleton with proper proportions */
 .skeleton-text {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded h-4 leading-none;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded h-4 leading-none;
 }
 
 /* Alternative shimmer animation */
 .skeleton-shimmer {
-    @apply bg-neutral-200 dark:bg-neutral-700 rounded relative overflow-hidden;
-    animation: shimmer 2s infinite;
+  @apply bg-neutral-200 dark:bg-neutral-700 rounded relative overflow-hidden;
+  animation: shimmer 2s infinite;
 }
 
 .skeleton-shimmer::after {
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
-    content: '';
-    animation: shimmer-move 2s infinite;
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
+  content: '';
+  animation: shimmer-move 2s infinite;
 }
 
 /* Fade animation variant */
 .skeleton-fade {
-    @apply bg-neutral-200 dark:bg-neutral-700 rounded;
-    animation: fade 1.5s ease-in-out infinite alternate;
+  @apply bg-neutral-200 dark:bg-neutral-700 rounded;
+  animation: fade 1.5s ease-in-out infinite alternate;
 }
 
 /* Circle shapes with size variants */
 .skeleton-circle {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full aspect-square;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full aspect-square;
 }
 
 .skeleton-circle--sm {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-8 h-8;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-8 h-8;
 }
 
 .skeleton-circle--md {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-10 h-10;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-10 h-10;
 }
 
 .skeleton-circle--lg {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-12 h-12;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-12 h-12;
 }
 
 .skeleton-circle--xl {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-16 h-16;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-full w-16 h-16;
 }
 
 /* Rectangle shapes with size variants */
 .skeleton-rectangle {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg;
 }
 
 .skeleton-rectangle--sm {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-20;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-20;
 }
 
 .skeleton-rectangle--md {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-32;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-32;
 }
 
 .skeleton-rectangle--lg {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-48;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-48;
 }
 
 .skeleton-rectangle--xl {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-64;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-lg h-64;
 }
 
 /* UI element specific skeletons */
 .skeleton-card {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-xl p-6 space-y-4;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded-xl p-6 space-y-4;
 }
 
 .skeleton-badge {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 w-16 rounded-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 w-16 rounded-full;
 }
 
 .skeleton-button {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-9 w-24 rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-9 w-24 rounded-xl;
 }
 
 .skeleton-button--sm {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-8 w-20 rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-8 w-20 rounded-xl;
 }
 
 .skeleton-button--lg {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-28 rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-28 rounded-xl;
 }
 
 /* Text size variants */
 .skeleton-text--sm {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-3 rounded;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-3 rounded;
 }
 
 .skeleton-text--lg {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-5 rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-5 rounded-lg;
 }
 
 .skeleton-text--xl {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 rounded-lg;
 }
 
 /* Avatar skeletons */
 .skeleton-avatar {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-10 h-10 rounded-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-10 h-10 rounded-full;
 }
 
 .skeleton-avatar--sm {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-8 h-8 rounded-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-8 h-8 rounded-full;
 }
 
 .skeleton-avatar--lg {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-12 h-12 rounded-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-12 h-12 rounded-full;
 }
 
 .skeleton-avatar--xl {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-16 h-16 rounded-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse w-16 h-16 rounded-full;
 }
 
 /* Form element skeletons */
 .skeleton-input {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-full rounded-xl;
 }
 
 .skeleton-textarea {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-24 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-24 w-full rounded-xl;
 }
 
 .skeleton-select {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-10 w-full rounded-xl;
 }
 
 /* Layout skeletons */
 .skeleton-header {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-16 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-16 w-full rounded-xl;
 }
 
 .skeleton-content {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-96 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-96 w-full rounded-xl;
 }
 
 .skeleton-footer {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-12 w-full rounded-xl;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-12 w-full rounded-xl;
 }
 
 /* Table skeletons */
 .skeleton-table-row {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-12 w-full;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-12 w-full;
 }
 
 .skeleton-table-cell {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 flex-1 mx-2;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse h-6 flex-1 mx-2;
 }
 
 /* Image skeletons */
 .skeleton-image {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-video w-full rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-video w-full rounded-lg;
 }
 
 .skeleton-image--square {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-square w-full rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-square w-full rounded-lg;
 }
 
 .skeleton-image--portrait {
-    @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-[3/4] w-full rounded-lg;
+  @apply bg-neutral-200 dark:bg-neutral-700 animate-pulse aspect-[3/4] w-full rounded-lg;
 }
 
 /* Keyframe animations */
 @keyframes shimmer {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes shimmer-move {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes fade {
-    0% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0.5;
-    }
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 
 /* Responsive utilities */
 @media (max-width: 640px) {
-    .skeleton-card {
-        @apply p-4 space-y-3;
-    }
+  .skeleton-card {
+    @apply p-4 space-y-3;
+  }
 
-    .skeleton-button,
-    .skeleton-button--sm,
-    .skeleton-button--lg {
-        @apply w-full;
-    }
+  .skeleton-button,
+  .skeleton-button--sm,
+  .skeleton-button--lg {
+    @apply w-full;
+  }
 
-    .skeleton-content {
-        @apply h-64;
-    }
+  .skeleton-content {
+    @apply h-64;
+  }
 }
 
 /* Accessibility - Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
-    .skeleton-base,
-    .skeleton-text,
-    .skeleton-circle,
-    .skeleton-circle--sm,
-    .skeleton-circle--md,
-    .skeleton-circle--lg,
-    .skeleton-circle--xl,
-    .skeleton-rectangle,
-    .skeleton-rectangle--sm,
-    .skeleton-rectangle--md,
-    .skeleton-rectangle--lg,
-    .skeleton-rectangle--xl,
-    .skeleton-card,
-    .skeleton-badge,
-    .skeleton-button,
-    .skeleton-button--sm,
-    .skeleton-button--lg,
-    .skeleton-text--sm,
-    .skeleton-text--lg,
-    .skeleton-text--xl,
-    .skeleton-avatar,
-    .skeleton-avatar--sm,
-    .skeleton-avatar--lg,
-    .skeleton-avatar--xl,
-    .skeleton-input,
-    .skeleton-textarea,
-    .skeleton-select,
-    .skeleton-header,
-    .skeleton-content,
-    .skeleton-footer,
-    .skeleton-table-row,
-    .skeleton-table-cell,
-    .skeleton-image,
-    .skeleton-image--square,
-    .skeleton-image--portrait {
-        animation: none;
-        @apply opacity-60;
-    }
+  .skeleton-base,
+  .skeleton-text,
+  .skeleton-circle,
+  .skeleton-circle--sm,
+  .skeleton-circle--md,
+  .skeleton-circle--lg,
+  .skeleton-circle--xl,
+  .skeleton-rectangle,
+  .skeleton-rectangle--sm,
+  .skeleton-rectangle--md,
+  .skeleton-rectangle--lg,
+  .skeleton-rectangle--xl,
+  .skeleton-card,
+  .skeleton-badge,
+  .skeleton-button,
+  .skeleton-button--sm,
+  .skeleton-button--lg,
+  .skeleton-text--sm,
+  .skeleton-text--lg,
+  .skeleton-text--xl,
+  .skeleton-avatar,
+  .skeleton-avatar--sm,
+  .skeleton-avatar--lg,
+  .skeleton-avatar--xl,
+  .skeleton-input,
+  .skeleton-textarea,
+  .skeleton-select,
+  .skeleton-header,
+  .skeleton-content,
+  .skeleton-footer,
+  .skeleton-table-row,
+  .skeleton-table-cell,
+  .skeleton-image,
+  .skeleton-image--square,
+  .skeleton-image--portrait {
+    animation: none;
+    @apply opacity-60;
+  }
 
-    .skeleton-shimmer,
-    .skeleton-fade {
-        animation: none;
-        @apply opacity-60;
-    }
+  .skeleton-shimmer,
+  .skeleton-fade {
+    animation: none;
+    @apply opacity-60;
+  }
 
-    .skeleton-shimmer::after {
-        display: none;
-    }
+  .skeleton-shimmer::after {
+    display: none;
+  }
 }
 
 /* Dark mode enhancements */
 @media (prefers-color-scheme: dark) {
-    .skeleton-shimmer::after {
-        @apply bg-gradient-to-r from-transparent via-neutral-500/10 to-transparent;
-    }
+  .skeleton-shimmer::after {
+    @apply bg-gradient-to-r from-transparent via-neutral-500/10 to-transparent;
+  }
 }

@@ -1,18 +1,18 @@
 <div class="nav-rail-section">
-    @if (!collapsed() && section().title) {
+  @if (!collapsed() && section().title) {
     <h3 class="nav-rail-section__title">{{ section().title }}</h3>
-    }
+  }
 
-    <ul class="nav-rail-section__items" role="list">
-        @for (item of section().items; track item.id) {
-        <li role="listitem">
-            <app-nav-rail-item
-                [item]="item"
-                [collapsed]="collapsed()"
-                [active]="navigationService.isItemActive(item)"
-                (hover)="onItemHover($event)"
-                (leave)="onItemLeave()" />
-        </li>
-        }
-    </ul>
+  <ul class="nav-rail-section__items" role="list">
+    @for (item of section().items; track item.id) {
+      <li role="listitem">
+        <app-nav-rail-item
+          [item]="item"
+          [collapsed]="collapsed()"
+          [active]="navigationService.isItemActive(item)"
+          (hover)="onItemHover($event)"
+          (leave)="onItemLeave()" />
+      </li>
+    }
+  </ul>
 </div>

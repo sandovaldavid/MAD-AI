@@ -1,130 +1,137 @@
 <!-- Access Level Indicator Component -->
 <div
-    [class]="containerClasses()"
-    [title]="showTooltip() ? tooltipText() : undefined"
-    [attr.aria-label]="tooltipText()"
-    role="img">
-    <!-- Badge Variant -->
-    @if (variant() === 'badge') {
+  [class]="containerClasses()"
+  [title]="showTooltip() ? tooltipText() : undefined"
+  [attr.aria-label]="tooltipText()"
+  role="img">
+  <!-- Badge Variant -->
+  @if (variant() === 'badge') {
     <div class="flex items-center gap-1.5">
-        @if (showIcon()) {
+      @if (showIcon()) {
         <ui-icon
+          [name]="iconName()"
+          [size]="iconSize()"
+          variant="filled"
+          [class]="levelInfo().iconColor">
+        </ui-icon>
+      }
+      @if (showLevel()) {
+        <span class="font-medium">{{ getLevelDisplay() }}</span>
+      }
+      @if (showLabel()) {
+        <span>{{ getDisplayLabel() }}</span>
+      }
+    </div>
+  }
+
+  <!-- Chip Variant -->
+  @if (variant() === 'chip') {
+    <div class="flex items-center gap-2">
+      @if (showIcon()) {
+        <div [class]="levelInfo().iconBg + ' p-1 rounded-full'">
+          <ui-icon
             [name]="iconName()"
             [size]="iconSize()"
             variant="filled"
             [class]="levelInfo().iconColor">
-        </ui-icon>
-        } @if (showLevel()) {
-        <span class="font-medium">{{ getLevelDisplay() }}</span>
-        } @if (showLabel()) {
-        <span>{{ getDisplayLabel() }}</span>
-        }
-    </div>
-    }
+          </ui-icon>
+        </div>
+      }
 
-    <!-- Chip Variant -->
-    @if (variant() === 'chip') {
-    <div class="flex items-center gap-2">
-        @if (showIcon()) {
-        <div [class]="levelInfo().iconBg + ' p-1 rounded-full'">
-            <ui-icon
+      <div class="flex flex-col">
+        @if (showLevel()) {
+          <span class="text-xs font-bold opacity-75">{{ getLevelDisplay() }}</span>
+        }
+        @if (showLabel()) {
+          <span class="font-medium">{{ getDisplayLabel() }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Bar Variant -->
+  @if (variant() === 'bar') {
+    <div class="w-full">
+      <div class="flex items-center justify-between mb-1">
+        @if (showLevel() || showLabel()) {
+          <div
+            class="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+            @if (showIcon()) {
+              <ui-icon
                 [name]="iconName()"
                 [size]="iconSize()"
                 variant="filled"
                 [class]="levelInfo().iconColor">
-            </ui-icon>
-        </div>
-        }
-
-        <div class="flex flex-col">
+              </ui-icon>
+            }
             @if (showLevel()) {
-            <span class="text-xs font-bold opacity-75">{{ getLevelDisplay() }}</span>
-            } @if (showLabel()) {
-            <span class="font-medium">{{ getDisplayLabel() }}</span>
+              <span>{{ getLevelDisplay() }}</span>
             }
-        </div>
-    </div>
-    }
-
-    <!-- Bar Variant -->
-    @if (variant() === 'bar') {
-    <div class="w-full">
-        <div class="flex items-center justify-between mb-1">
-            @if (showLevel() || showLabel()) {
-            <div
-                class="flex items-center gap-2 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                @if (showIcon()) {
-                <ui-icon
-                    [name]="iconName()"
-                    [size]="iconSize()"
-                    variant="filled"
-                    [class]="levelInfo().iconColor">
-                </ui-icon>
-                } @if (showLevel()) {
-                <span>{{ getLevelDisplay() }}</span>
-                } @if (showLabel()) {
-                <span>{{ getDisplayLabel() }}</span>
-                }
-            </div>
+            @if (showLabel()) {
+              <span>{{ getDisplayLabel() }}</span>
             }
+          </div>
+        }
 
-            <span class="text-xs text-neutral-500 dark:text-neutral-400">
-                {{ progressWidth() | number : '1.0-0' }}%
-            </span>
-        </div>
+        <span class="text-xs text-neutral-500 dark:text-neutral-400">
+          {{ progressWidth() | number: '1.0-0' }}%
+        </span>
+      </div>
 
-        <!-- Progress Bar -->
-        <div class="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
-            <div [class]="progressBarClasses()" [style.width.%]="progressWidth()"></div>
-        </div>
+      <!-- Progress Bar -->
+      <div class="h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+        <div [class]="progressBarClasses()" [style.width.%]="progressWidth()"></div>
+      </div>
 
-        @if (showTooltip()) {
+      @if (showTooltip()) {
         <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-            {{ levelInfo().description }}
+          {{ levelInfo().description }}
         </div>
-        }
+      }
     </div>
-    }
+  }
 
-    <!-- Circle Variant -->
-    @if (variant() === 'circle') {
+  <!-- Circle Variant -->
+  @if (variant() === 'circle') {
     <div class="flex items-center justify-center">
-        @if (showIcon()) {
+      @if (showIcon()) {
         <ui-icon
-            [name]="iconName()"
-            [size]="iconSize()"
-            variant="filled"
-            [class]="levelInfo().iconColor">
+          [name]="iconName()"
+          [size]="iconSize()"
+          variant="filled"
+          [class]="levelInfo().iconColor">
         </ui-icon>
-        } @else if (showLevel()) {
+      } @else if (showLevel()) {
         <span class="font-bold text-xs">{{ level() }}</span>
-        }
+      }
     </div>
-    }
+  }
 
-    <!-- Minimal Variant -->
-    @if (variant() === 'minimal') {
+  <!-- Minimal Variant -->
+  @if (variant() === 'minimal') {
     <div class="flex items-center gap-1">
-        @if (showIcon()) {
+      @if (showIcon()) {
         <ui-icon [name]="iconName()" [size]="iconSize()" variant="outline"> </ui-icon>
-        } @if (showLevel()) {
+      }
+      @if (showLevel()) {
         <span class="font-medium">{{ getLevelDisplay() }}</span>
-        } @if (showLabel() && !compact()) {
+      }
+      @if (showLabel() && !compact()) {
         <span>{{ getDisplayLabel() }}</span>
-        }
+      }
     </div>
-    }
+  }
 
-    <!-- Tooltip (if enabled and not using title attribute) -->
-    @if (showTooltip() && variant() !== 'bar') {
+  <!-- Tooltip (if enabled and not using title attribute) -->
+  @if (showTooltip() && variant() !== 'bar') {
     <div class="sr-only">{{ tooltipText() }}</div>
-    }
+  }
 </div>
 
 <!-- Separate tooltip for complex layouts (optional enhancement) -->
 @if (showTooltip() && false) {
-<div
+  <div
     class="access-level-tooltip hidden absolute z-50 px-2 py-1 text-xs text-white bg-neutral-900 dark:bg-neutral-100 dark:text-neutral-900 rounded shadow-lg">
     {{ tooltipText() }}
-</div>
+  </div>
 }

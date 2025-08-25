@@ -36,235 +36,226 @@ import type { UserListFilterContract } from '@domain/contracts/user.contract';
  */
 @Injectable({ providedIn: 'root' })
 export class GetUsersByRole {
-    private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
-    private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
+  private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute user retrieval by role orchestration with validation and audit logging
-     *
-     * @param roleId - Role ID to find users for
-     * @param additionalFilters - Optional additional filters for user search
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving to array of users assigned to the role
-     * @throws ApplicationError when validation fails or retrieval fails
-     */
-    async execute(
-        roleId: number,
-        additionalFilters?: Partial<UserListFilterContract>,
-        requesterId?: number
-    ): Promise<User[]> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(roleId, additionalFilters);
+  /**
+   * Execute user retrieval by role orchestration with validation and audit logging
+   *
+   * @param roleId - Role ID to find users for
+   * @param additionalFilters - Optional additional filters for user search
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving to array of users assigned to the role
+   * @throws ApplicationError when validation fails or retrieval fails
+   */
+  async execute(
+    roleId: number,
+    additionalFilters?: Partial<UserListFilterContract>,
+    requesterId?: number
+  ): Promise<User[]> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(roleId, additionalFilters);
 
-            // Step 2: Validate role exists
-            const role = await this.validateRoleExists(roleId);
+      // Step 2: Validate role exists
+      const role = await this.validateRoleExists(roleId);
 
-            // Step 3: Delegate to domain repository for user retrieval
-            const filter: UserListFilterContract = {
-                roleId,
-                ...additionalFilters,
-            };
+      // Step 3: Delegate to domain repository for user retrieval
+      const filter: UserListFilterContract = {
+        roleId,
+        ...additionalFilters,
+      };
 
-            console.log(
-                '🔥 GetUsersByRole.execute - About to call userRepo.list with filter:',
-                filter
-            );
+      console.log('🔥 GetUsersByRole.execute - About to call userRepo.list with filter:', filter);
 
-            const users = await this.userRepo.list(filter);
+      const users = await this.userRepo.list(filter);
 
-            console.log('🔥 GetUsersByRole.execute - Successfully retrieved users:', {
-                count: users.length,
-                userIds: users.map((u) => u.id),
-            });
+      console.log('🔥 GetUsersByRole.execute - Successfully retrieved users:', {
+        count: users.length,
+        userIds: users.map((u) => u.id),
+      });
 
-            // Step 4: Handle side effects
-            this.handleUserRetrievalSideEffects(
-                roleId,
-                role,
-                users,
-                additionalFilters,
-                requesterId
-            );
+      // Step 4: Handle side effects
+      this.handleUserRetrievalSideEffects(roleId, role, users, additionalFilters, requesterId);
 
-            return users;
-        } catch (error: unknown) {
-            console.error('🔥 GetUsersByRole.execute - ERROR CAUGHT:', error);
-            console.error('🔥 GetUsersByRole.execute - Error type:', typeof error);
-            console.error(
-                '🔥 GetUsersByRole.execute - Error constructor:',
-                (error as any)?.constructor?.name
-            );
-            console.error('🔥 GetUsersByRole.execute - Error message:', (error as any)?.message);
-            console.error('🔥 GetUsersByRole.execute - Error stack:', (error as any)?.stack);
+      return users;
+    } catch (error: unknown) {
+      console.error('🔥 GetUsersByRole.execute - ERROR CAUGHT:', error);
+      console.error('🔥 GetUsersByRole.execute - Error type:', typeof error);
+      console.error(
+        '🔥 GetUsersByRole.execute - Error constructor:',
+        (error as any)?.constructor?.name
+      );
+      console.error('🔥 GetUsersByRole.execute - Error message:', (error as any)?.message);
+      console.error('🔥 GetUsersByRole.execute - Error stack:', (error as any)?.stack);
 
-            // Normalize errors for application layer
-            throw new ApplicationError(
-                'get_users_by_role',
-                this.errorTransformer.transformError(error),
-                'USER_RETRIEVAL_FAILED'
-            );
-        }
+      // Normalize errors for application layer
+      throw new ApplicationError(
+        'get_users_by_role',
+        this.errorTransformer.transformError(error),
+        'USER_RETRIEVAL_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validate application-level rules for user retrieval by role
+   *
+   * @description
+   * Validates request parameters and basic business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param roleId Role ID to validate
+   * @param additionalFilters Additional filters to validate
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(
+    roleId: number,
+    additionalFilters?: Partial<UserListFilterContract>
+  ): void {
+    if (roleId === undefined || roleId === null) {
+      throw new ApplicationError(
+        'get_users_by_role',
+        'INVALID_ROLE_ID',
+        'Role ID is required for user retrieval'
+      );
     }
 
-    /**
-     * Validate application-level rules for user retrieval by role
-     *
-     * @description
-     * Validates request parameters and basic business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param roleId Role ID to validate
-     * @param additionalFilters Additional filters to validate
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(
-        roleId: number,
-        additionalFilters?: Partial<UserListFilterContract>
-    ): void {
-        if (roleId === undefined || roleId === null) {
-            throw new ApplicationError(
-                'get_users_by_role',
-                'INVALID_ROLE_ID',
-                'Role ID is required for user retrieval'
-            );
-        }
-
-        if (typeof roleId !== 'number' || !Number.isInteger(roleId) || roleId <= 0) {
-            throw new ApplicationError(
-                'get_users_by_role',
-                'INVALID_ROLE_ID_FORMAT',
-                'Role ID must be a positive integer'
-            );
-        }
-
-        // Validate additional filters if provided
-        if (additionalFilters) {
-            if (additionalFilters.searchTerm !== undefined) {
-                if (typeof additionalFilters.searchTerm !== 'string') {
-                    throw new ApplicationError(
-                        'get_users_by_role',
-                        'INVALID_SEARCH_FILTER',
-                        'Search term filter must be a string'
-                    );
-                }
-
-                if (additionalFilters.searchTerm.length > 100) {
-                    throw new ApplicationError(
-                        'get_users_by_role',
-                        'SEARCH_FILTER_TOO_LONG',
-                        'Search term filter cannot exceed 100 characters'
-                    );
-                }
-            }
-
-            if (
-                additionalFilters.isActive !== undefined &&
-                typeof additionalFilters.isActive !== 'boolean'
-            ) {
-                throw new ApplicationError(
-                    'get_users_by_role',
-                    'INVALID_ACTIVE_FILTER',
-                    'Active filter must be a boolean value'
-                );
-            }
-
-            if (additionalFilters.limit !== undefined) {
-                if (
-                    typeof additionalFilters.limit !== 'number' ||
-                    !Number.isInteger(additionalFilters.limit) ||
-                    additionalFilters.limit <= 0
-                ) {
-                    throw new ApplicationError(
-                        'get_users_by_role',
-                        'INVALID_LIMIT_FILTER',
-                        'Limit filter must be a positive integer'
-                    );
-                }
-
-                if (additionalFilters.limit > 1000) {
-                    throw new ApplicationError(
-                        'get_users_by_role',
-                        'LIMIT_FILTER_TOO_HIGH',
-                        'Limit filter cannot exceed 1000 records'
-                    );
-                }
-            }
-        }
+    if (typeof roleId !== 'number' || !Number.isInteger(roleId) || roleId <= 0) {
+      throw new ApplicationError(
+        'get_users_by_role',
+        'INVALID_ROLE_ID_FORMAT',
+        'Role ID must be a positive integer'
+      );
     }
 
-    /**
-     * Validate role exists
-     *
-     * @description
-     * Fetches the role and validates it exists before retrieving associated users.
-     *
-     * @param roleId Role ID to validate
-     * @returns Promise resolving to the Role entity
-     * @throws ApplicationError when role doesn't exist
-     */
-    private async validateRoleExists(roleId: number): Promise<Role> {
-        const role = await this.roleRepo.getById(roleId);
-
-        if (!role) {
-            throw new ApplicationError(
-                'get_users_by_role',
-                'ROLE_NOT_FOUND',
-                `Role with ID ${roleId} does not exist`
-            );
+    // Validate additional filters if provided
+    if (additionalFilters) {
+      if (additionalFilters.searchTerm !== undefined) {
+        if (typeof additionalFilters.searchTerm !== 'string') {
+          throw new ApplicationError(
+            'get_users_by_role',
+            'INVALID_SEARCH_FILTER',
+            'Search term filter must be a string'
+          );
         }
 
-        return role;
+        if (additionalFilters.searchTerm.length > 100) {
+          throw new ApplicationError(
+            'get_users_by_role',
+            'SEARCH_FILTER_TOO_LONG',
+            'Search term filter cannot exceed 100 characters'
+          );
+        }
+      }
+
+      if (
+        additionalFilters.isActive !== undefined &&
+        typeof additionalFilters.isActive !== 'boolean'
+      ) {
+        throw new ApplicationError(
+          'get_users_by_role',
+          'INVALID_ACTIVE_FILTER',
+          'Active filter must be a boolean value'
+        );
+      }
+
+      if (additionalFilters.limit !== undefined) {
+        if (
+          typeof additionalFilters.limit !== 'number' ||
+          !Number.isInteger(additionalFilters.limit) ||
+          additionalFilters.limit <= 0
+        ) {
+          throw new ApplicationError(
+            'get_users_by_role',
+            'INVALID_LIMIT_FILTER',
+            'Limit filter must be a positive integer'
+          );
+        }
+
+        if (additionalFilters.limit > 1000) {
+          throw new ApplicationError(
+            'get_users_by_role',
+            'LIMIT_FILTER_TOO_HIGH',
+            'Limit filter cannot exceed 1000 records'
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate role exists
+   *
+   * @description
+   * Fetches the role and validates it exists before retrieving associated users.
+   *
+   * @param roleId Role ID to validate
+   * @returns Promise resolving to the Role entity
+   * @throws ApplicationError when role doesn't exist
+   */
+  private async validateRoleExists(roleId: number): Promise<Role> {
+    const role = await this.roleRepo.getById(roleId);
+
+    if (!role) {
+      throw new ApplicationError(
+        'get_users_by_role',
+        'ROLE_NOT_FOUND',
+        `Role with ID ${roleId} does not exist`
+      );
     }
 
-    /**
-     * Handle side effects of user retrieval by role
-     *
-     * @description
-     * Manages audit logging and other side effects after successful user retrieval.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param roleId The role ID that was queried
-     * @param role The role entity
-     * @param users The retrieved users
-     * @param additionalFilters Any additional filters that were applied
-     * @param requesterId ID of user who performed the retrieval
-     */
-    private handleUserRetrievalSideEffects(
-        roleId: number,
-        role: Role,
-        users: User[],
-        additionalFilters?: Partial<UserListFilterContract>,
-        requesterId?: number
-    ): void {
-        const timestamp = this.clock.nowEpochSeconds();
+    return role;
+  }
 
-        // Calculate statistics
-        const activeUsers = users.filter((user) => user.active).length;
-        const inactiveUsers = users.length - activeUsers;
-        const hasFilters = additionalFilters && Object.keys(additionalFilters).length > 0;
+  /**
+   * Handle side effects of user retrieval by role
+   *
+   * @description
+   * Manages audit logging and other side effects after successful user retrieval.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param roleId The role ID that was queried
+   * @param role The role entity
+   * @param users The retrieved users
+   * @param additionalFilters Any additional filters that were applied
+   * @param requesterId ID of user who performed the retrieval
+   */
+  private handleUserRetrievalSideEffects(
+    roleId: number,
+    role: Role,
+    users: User[],
+    additionalFilters?: Partial<UserListFilterContract>,
+    requesterId?: number
+  ): void {
+    const timestamp = this.clock.nowEpochSeconds();
 
-        console.log(`[AUDIT] Users by role retrieval completed`, {
-            timestamp,
-            roleId,
-            requesterId,
-            role: {
-                name: role.name,
-                accessLevel: role.accessLevel,
-                isActive: role.isActive,
-            },
-            results: {
-                totalUsers: users.length,
-                activeUsers,
-                inactiveUsers,
-                hasAdditionalFilters: hasFilters,
-                appliedFilters: additionalFilters || {},
-            },
-            operation: 'get_users_by_role',
-            feature: 'roles',
-            severity: 'LOW',
-        });
-    }
+    // Calculate statistics
+    const activeUsers = users.filter((user) => user.active).length;
+    const inactiveUsers = users.length - activeUsers;
+    const hasFilters = additionalFilters && Object.keys(additionalFilters).length > 0;
+
+    console.log(`[AUDIT] Users by role retrieval completed`, {
+      timestamp,
+      roleId,
+      requesterId,
+      role: {
+        name: role.name,
+        accessLevel: role.accessLevel,
+        isActive: role.isActive,
+      },
+      results: {
+        totalUsers: users.length,
+        activeUsers,
+        inactiveUsers,
+        hasAdditionalFilters: hasFilters,
+        appliedFilters: additionalFilters || {},
+      },
+      operation: 'get_users_by_role',
+      feature: 'roles',
+      severity: 'LOW',
+    });
+  }
 }

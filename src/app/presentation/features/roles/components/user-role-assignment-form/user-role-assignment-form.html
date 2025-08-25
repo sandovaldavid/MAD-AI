@@ -1,119 +1,116 @@
 <div
-    class="user-role-assignment-form bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
-    <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-        Assign Role to User
-    </h3>
+  class="user-role-assignment-form bg-white dark:bg-neutral-800 p-6 rounded-lg border border-neutral-200 dark:border-neutral-700">
+  <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+    Assign Role to User
+  </h3>
 
-    <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
-        <!-- User Information (Read-only) -->
-        <div class="mb-4">
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                User Information
-            </label>
-            <div class="bg-neutral-50 dark:bg-neutral-700 p-3 rounded-md">
-                <p class="text-sm text-neutral-900 dark:text-neutral-100">
-                    <span class="font-medium">{{ userData?.username }}</span> ({{
-                        userData?.email
-                    }})
-                </p>
-                @if (userData?.currentRoleId && currentRole()) {
-                <p class="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
-                    Current role: {{ currentRole()?.name }}
-                </p>
-                }
-            </div>
-        </div>
-
-        <!-- Role Selection -->
-        <div class="mb-6">
-            <app-role-selector
-                variant="dropdown"
-                selectionMode="single"
-                label="Select New Role"
-                placeholder="Choose a role for this user..."
-                [required]="true"
-                [selectedRoleId]="selectedRoleId()"
-                [excludeRoles]="excludedRoleIds()"
-                [showAccessLevel]="true"
-                [searchable]="true"
-                [disabled]="loading()"
-                [errorMessage]="roleError()"
-                size="lg"
-                (selectionChange)="onRoleSelectionChange($event)"
-                (roleSelect)="onRoleSelect($event)" />
-        </div>
-
-        <!-- Assignment Reason (Optional) -->
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Assignment Reason (Optional)
-            </label>
-            <textarea
-                formControlName="reason"
-                rows="3"
-                class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-neutral-100 dark:disabled:bg-neutral-800 disabled:cursor-not-allowed"
-                placeholder="Provide a reason for this role assignment..."
-                [disabled]="loading()">
-            </textarea>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="flex items-center justify-between">
-            <button
-                type="button"
-                class="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                [disabled]="loading()"
-                (click)="onCancel()">
-                Cancel
-            </button>
-
-            <div class="flex items-center space-x-3">
-                @if (hasRoleChanged()) {
-                <span class="text-sm text-amber-600 dark:text-amber-400">
-                    Role will change from "{{ currentRole()?.name }}" to "{{
-                        selectedRole()?.name
-                    }}"
-                </span>
-                }
-
-                <button
-                    type="submit"
-                    class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 border border-transparent rounded-md focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    [disabled]="!assignmentForm.valid || loading() || !hasValidSelection()">
-                    @if (loading()) {
-                    <svg
-                        class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
-                        fill="none"
-                        viewBox="0 0 24 24">
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"></circle>
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    }
-                    {{ loading() ? 'Assigning...' : 'Assign Role' }}
-                </button>
-            </div>
-        </div>
-
-        <!-- Form Status Messages -->
-        @if (error()) {
-        <div
-            class="mt-4 p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-md">
-            <p class="text-sm text-error-700 dark:text-error-400">{{ error() }}</p>
-        </div>
-        } @if (success()) {
-        <div
-            class="mt-4 p-3 bg-successful-50 dark:bg-successful-900/20 border border-successful-200 dark:border-successful-800 rounded-md">
-            <p class="text-sm text-successful-700 dark:text-successful-400">{{ success() }}</p>
-        </div>
+  <form [formGroup]="assignmentForm" (ngSubmit)="onSubmit()">
+    <!-- User Information (Read-only) -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+        User Information
+      </label>
+      <div class="bg-neutral-50 dark:bg-neutral-700 p-3 rounded-md">
+        <p class="text-sm text-neutral-900 dark:text-neutral-100">
+          <span class="font-medium">{{ userData?.username }}</span> ({{ userData?.email }})
+        </p>
+        @if (userData?.currentRoleId && currentRole()) {
+          <p class="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+            Current role: {{ currentRole()?.name }}
+          </p>
         }
-    </form>
+      </div>
+    </div>
+
+    <!-- Role Selection -->
+    <div class="mb-6">
+      <app-role-selector
+        variant="dropdown"
+        selectionMode="single"
+        label="Select New Role"
+        placeholder="Choose a role for this user..."
+        [required]="true"
+        [selectedRoleId]="selectedRoleId()"
+        [excludeRoles]="excludedRoleIds()"
+        [showAccessLevel]="true"
+        [searchable]="true"
+        [disabled]="loading()"
+        [errorMessage]="roleError()"
+        size="lg"
+        (selectionChange)="onRoleSelectionChange($event)"
+        (roleSelect)="onRoleSelect($event)" />
+    </div>
+
+    <!-- Assignment Reason (Optional) -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+        Assignment Reason (Optional)
+      </label>
+      <textarea
+        formControlName="reason"
+        rows="3"
+        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-neutral-100 dark:disabled:bg-neutral-800 disabled:cursor-not-allowed"
+        placeholder="Provide a reason for this role assignment..."
+        [disabled]="loading()">
+      </textarea>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="flex items-center justify-between">
+      <button
+        type="button"
+        class="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-600 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="loading()"
+        (click)="onCancel()">
+        Cancel
+      </button>
+
+      <div class="flex items-center space-x-3">
+        @if (hasRoleChanged()) {
+          <span class="text-sm text-amber-600 dark:text-amber-400">
+            Role will change from "{{ currentRole()?.name }}" to "{{ selectedRole()?.name }}"
+          </span>
+        }
+
+        <button
+          type="submit"
+          class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 border border-transparent rounded-md focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          [disabled]="!assignmentForm.valid || loading() || !hasValidSelection()">
+          @if (loading()) {
+            <svg
+              class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline"
+              fill="none"
+              viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          }
+          {{ loading() ? 'Assigning...' : 'Assign Role' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Status Messages -->
+    @if (error()) {
+      <div
+        class="mt-4 p-3 bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-md">
+        <p class="text-sm text-error-700 dark:text-error-400">{{ error() }}</p>
+      </div>
+    }
+    @if (success()) {
+      <div
+        class="mt-4 p-3 bg-successful-50 dark:bg-successful-900/20 border border-successful-200 dark:border-successful-800 rounded-md">
+        <p class="text-sm text-successful-700 dark:text-successful-400">{{ success() }}</p>
+      </div>
+    }
+  </form>
 </div>

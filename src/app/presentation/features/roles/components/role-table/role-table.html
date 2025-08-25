@@ -1,402 +1,379 @@
 <!-- Role Table Component -->
 <div class="role-table-container">
-    <!-- Header with Filters -->
-    <div
-        class="table-header bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 p-4">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <!-- Search and Filters -->
-            <div class="flex flex-col sm:flex-row gap-3 flex-1">
-                <!-- Search Input -->
-                <div class="flex-1 min-w-0">
-                    <input
-                        type="text"
-                        class="block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 dark:placeholder:text-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        placeholder="Buscar roles..."
-                        [value]="filterConfig().search"
-                        (input)="updateSearchFilter($any($event.target).value)" />
-                </div>
+  <!-- Header with Filters -->
+  <div
+    class="table-header bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 p-4">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <!-- Search and Filters -->
+      <div class="flex flex-col sm:flex-row gap-3 flex-1">
+        <!-- Search Input -->
+        <div class="flex-1 min-w-0">
+          <input
+            type="text"
+            class="block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 dark:placeholder:text-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            placeholder="Buscar roles..."
+            [value]="filterConfig().search"
+            (input)="updateSearchFilter($any($event.target).value)" />
+        </div>
 
-                <!-- Access Level Filter -->
-                <div class="w-full sm:w-48">
-                    <select
-                        class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        [value]="filterConfig().accessLevel || ''"
-                        (change)="
-                            updateAccessLevelFilter(
-                                $any($event.target).value ? +$any($event.target).value : null
-                            )
-                        ">
-                        <option value="">Todos los niveles</option>
-                        @for (level of getAccessLevels(); track level.value) {
-                        <option [value]="level.value">{{ level.label }}</option>
-                        }
-                    </select>
-                </div>
-
-                <!-- Status Filter -->
-                <div class="w-full sm:w-32">
-                    <select
-                        class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        [value]="
-                            filterConfig().isActive === null
-                                ? ''
-                                : (filterConfig().isActive ?? false).toString()
-                        "
-                        (change)="
-                            updateStatusFilter(
-                                $any($event.target).value === ''
-                                    ? null
-                                    : $any($event.target).value === 'true'
-                            )
-                        ">
-                        <option value="">Todos</option>
-                        <option value="true">Activos</option>
-                        <option value="false">Inactivos</option>
-                    </select>
-                </div>
-
-                <!-- Clear Filters Button -->
-                @if (showClearFilters()) {
-                <ui-button variant="ghost" size="sm" (clicked)="clearFilters()" iconLeft="x-mark">
-                    Limpiar
-                </ui-button>
-                }
-            </div>
-
-            <!-- Bulk Actions -->
-            @if (showBulkActions()) {
-            <div class="bulk-actions-container">
-                <span class="text-sm text-primary-700 dark:text-primary-300">
-                    {{ selectedCount() }} seleccionados
-                </span>
-                <ui-button variant="ghost" size="sm" (clicked)="clearSelection()" iconLeft="x-mark">
-                    Limpiar selección
-                </ui-button>
-            </div>
+        <!-- Access Level Filter -->
+        <div class="w-full sm:w-48">
+          <select
+            class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            [value]="filterConfig().accessLevel || ''"
+            (change)="
+              updateAccessLevelFilter($any($event.target).value ? +$any($event.target).value : null)
+            ">
+            <option value="">Todos los niveles</option>
+            @for (level of getAccessLevels(); track level.value) {
+              <option [value]="level.value">{{ level.label }}</option>
             }
+          </select>
         </div>
+
+        <!-- Status Filter -->
+        <div class="w-full sm:w-32">
+          <select
+            class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            [value]="
+              filterConfig().isActive === null ? '' : (filterConfig().isActive ?? false).toString()
+            "
+            (change)="
+              updateStatusFilter(
+                $any($event.target).value === '' ? null : $any($event.target).value === 'true'
+              )
+            ">
+            <option value="">Todos</option>
+            <option value="true">Activos</option>
+            <option value="false">Inactivos</option>
+          </select>
+        </div>
+
+        <!-- Clear Filters Button -->
+        @if (showClearFilters()) {
+          <ui-button variant="ghost" size="sm" (clicked)="clearFilters()" iconLeft="x-mark">
+            Limpiar
+          </ui-button>
+        }
+      </div>
+
+      <!-- Bulk Actions -->
+      @if (showBulkActions()) {
+        <div class="bulk-actions-container">
+          <span class="text-sm text-primary-700 dark:text-primary-300">
+            {{ selectedCount() }} seleccionados
+          </span>
+          <ui-button variant="ghost" size="sm" (clicked)="clearSelection()" iconLeft="x-mark">
+            Limpiar selección
+          </ui-button>
+        </div>
+      }
     </div>
+  </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <!-- Table Header -->
-            <thead
-                class="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
-                <tr>
-                    <!-- Select All Checkbox -->
-                    @if (showBulkCheckbox()) {
-                    <th class="w-12 px-3 py-3 text-left">
-                        <input
-                            type="checkbox"
-                            class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
-                            [checked]="allSelected()"
-                            [indeterminate]="someSelected()"
-                            (change)="toggleAllSelection()" />
-                    </th>
-                    }
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <!-- Table Header -->
+      <thead
+        class="bg-neutral-50 dark:bg-neutral-800 border-b border-neutral-200 dark:border-neutral-700">
+        <tr>
+          <!-- Select All Checkbox -->
+          @if (showBulkCheckbox()) {
+            <th class="w-12 px-3 py-3 text-left">
+              <input
+                type="checkbox"
+                class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
+                [checked]="allSelected()"
+                [indeterminate]="someSelected()"
+                (change)="toggleAllSelection()" />
+            </th>
+          }
 
-                    <!-- Name Column -->
-                    <th class="px-3 py-3 text-left">
-                        <button
-                            type="button"
-                            class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-                            (click)="sortBy('name')">
-                            <span>Nombre</span>
-                            <ui-icon
-                                [name]="getSortIcon('name')"
-                                size="sm"
-                                [variant]="isSorted('name') ? 'filled' : 'outline'"
-                                [class]="
-                                    isSorted('name') ? 'text-primary-500' : 'text-neutral-400'
-                                ">
-                            </ui-icon>
-                        </button>
-                    </th>
+          <!-- Name Column -->
+          <th class="px-3 py-3 text-left">
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="sortBy('name')">
+              <span>Nombre</span>
+              <ui-icon
+                [name]="getSortIcon('name')"
+                size="sm"
+                [variant]="isSorted('name') ? 'filled' : 'outline'"
+                [class]="isSorted('name') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
+          </th>
 
-                    <!-- Access Level Column -->
-                    <th class="px-3 py-3 text-left">
-                        <button
-                            type="button"
-                            class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-                            (click)="sortBy('accessLevel')">
-                            <span>Nivel de Acceso</span>
-                            <ui-icon
-                                [name]="getSortIcon('accessLevel')"
-                                size="sm"
-                                [variant]="isSorted('accessLevel') ? 'filled' : 'outline'"
-                                [class]="
-                                    isSorted('accessLevel')
-                                        ? 'text-primary-500'
-                                        : 'text-neutral-400'
-                                ">
-                            </ui-icon>
-                        </button>
-                    </th>
+          <!-- Access Level Column -->
+          <th class="px-3 py-3 text-left">
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="sortBy('accessLevel')">
+              <span>Nivel de Acceso</span>
+              <ui-icon
+                [name]="getSortIcon('accessLevel')"
+                size="sm"
+                [variant]="isSorted('accessLevel') ? 'filled' : 'outline'"
+                [class]="isSorted('accessLevel') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
+          </th>
 
-                    <!-- User Count Column -->
-                    <th class="px-3 py-3 text-left">
-                        <button
-                            type="button"
-                            class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-                            (click)="sortBy('userCount')">
-                            <span>Usuarios</span>
-                            <ui-icon
-                                [name]="getSortIcon('userCount')"
-                                size="sm"
-                                [variant]="isSorted('userCount') ? 'filled' : 'outline'"
-                                [class]="
-                                    isSorted('userCount') ? 'text-primary-500' : 'text-neutral-400'
-                                ">
-                            </ui-icon>
-                        </button>
-                    </th>
+          <!-- User Count Column -->
+          <th class="px-3 py-3 text-left">
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="sortBy('userCount')">
+              <span>Usuarios</span>
+              <ui-icon
+                [name]="getSortIcon('userCount')"
+                size="sm"
+                [variant]="isSorted('userCount') ? 'filled' : 'outline'"
+                [class]="isSorted('userCount') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
+          </th>
 
-                    <!-- Status Column -->
-                    <th class="px-3 py-3 text-left">
-                        <button
-                            type="button"
-                            class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-                            (click)="sortBy('isActive')">
-                            <span>Estado</span>
-                            <ui-icon
-                                [name]="getSortIcon('isActive')"
-                                size="sm"
-                                [variant]="isSorted('isActive') ? 'filled' : 'outline'"
-                                [class]="
-                                    isSorted('isActive') ? 'text-primary-500' : 'text-neutral-400'
-                                ">
-                            </ui-icon>
-                        </button>
-                    </th>
+          <!-- Status Column -->
+          <th class="px-3 py-3 text-left">
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="sortBy('isActive')">
+              <span>Estado</span>
+              <ui-icon
+                [name]="getSortIcon('isActive')"
+                size="sm"
+                [variant]="isSorted('isActive') ? 'filled' : 'outline'"
+                [class]="isSorted('isActive') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
+          </th>
 
-                    <!-- Actions Column -->
-                    <th class="w-32 px-3 py-3 text-right">
-                        <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                            >Acciones</span
-                        >
-                    </th>
-                </tr>
-            </thead>
+          <!-- Actions Column -->
+          <th class="w-32 px-3 py-3 text-right">
+            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Acciones</span>
+          </th>
+        </tr>
+      </thead>
 
-            <!-- Table Body -->
-            <tbody
-                class="divide-y divide-neutral-200 dark:divide-neutral-700 bg-white dark:bg-neutral-900">
-                @if (loading()) {
-                <!-- Loading Skeleton -->
-                @for (item of [1,2,3,4,5]; track item) {
-                <tr class="animate-pulse">
-                    @if (showBulkCheckbox()) {
-                    <td class="px-3 py-4">
-                        <div class="w-4 h-4 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                    </td>
-                    }
-                    <td class="px-3 py-4">
-                        <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-32"></div>
-                    </td>
-                    <td class="px-3 py-4">
-                        <div class="flex items-center gap-2">
-                            <div
-                                class="w-4 h-4 bg-neutral-200 dark:bg-neutral-700 rounded-full"></div>
-                            <div
-                                class="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-24"></div>
-                        </div>
-                    </td>
-                    <td class="px-3 py-4">
-                        <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-8"></div>
-                    </td>
-                    <td class="px-3 py-4">
-                        <div class="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-16"></div>
-                    </td>
-                    <td class="px-3 py-4">
-                        <div class="flex justify-end gap-1">
-                            <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                            <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                            <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
-                        </div>
-                    </td>
-                </tr>
-                } } @else if (displayedRoles().length === 0) {
-                <!-- Empty State -->
-                <tr>
-                    <td [colSpan]="tableColspan()" class="px-3 py-12 text-center">
-                        <div
-                            class="flex flex-col items-center gap-3 text-neutral-500 dark:text-neutral-400">
-                            <ui-icon name="folder-open" size="xl" variant="outline"></ui-icon>
-                            @if (isEmptySearchResult()) {
-                            <div>
-                                <p class="text-sm font-medium">No se encontraron roles</p>
-                                <p class="text-xs">Intenta ajustar los filtros de búsqueda</p>
-                            </div>
-                            } @else {
-                            <div>
-                                <p class="text-sm font-medium">No hay roles disponibles</p>
-                                <p class="text-xs">Crea tu primer rol para comenzar</p>
-                            </div>
-                            }
-                        </div>
-                    </td>
-                </tr>
-                } @else {
-                <!-- Data Rows -->
-                @for (role of displayedRoles(); track role.id) {
-                <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
-                    <!-- Selection Checkbox -->
-                    @if (showBulkCheckbox()) {
-                    <td class="px-3 py-4">
-                        <input
-                            type="checkbox"
-                            class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
-                            [checked]="isRoleSelected(role.id)"
-                            (change)="toggleRoleSelection(role.id)" />
-                    </td>
-                    }
-
-                    <!-- Name -->
-                    <td class="px-3 py-4">
-                        <div class="flex flex-col">
-                            <span
-                                class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                {{ role.name }}
-                            </span>
-                            @if (role.description) {
-                            <span
-                                class="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-xs">
-                                {{ role.description }}
-                            </span>
-                            }
-                        </div>
-                    </td>
-
-                    <!-- Access Level -->
-                    <td class="px-3 py-4">
-                        <app-access-level-indicator
-                            [level]="role.accessLevel"
-                            variant="badge"
-                            size="sm"
-                            [showIcon]="true"
-                            [showLevel]="true"
-                            [showLabel]="true"
-                            [showTooltip]="true">
-                        </app-access-level-indicator>
-                    </td>
-
-                    <!-- User Count -->
-                    <td class="px-3 py-4">
-                        <span class="text-sm text-neutral-900 dark:text-neutral-100">
-                            {{ role.userCount || 0 }}
-                        </span>
-                    </td>
-
-                    <!-- Status -->
-                    <td class="px-3 py-4">
-                        <span
-                            [class]="getStatusBadgeClasses(role.isActive)"
-                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border">
-                            {{ role.isActive ? 'Activo' : 'Inactivo' }}
-                        </span>
-                    </td>
-
-                    <!-- Actions -->
-                    <td class="px-3 py-4">
-                        <div class="flex items-center justify-end gap-1">
-                            <!-- View Button -->
-                            <ui-button
-                                variant="ghost"
-                                size="sm"
-                                (clicked)="onViewRole(role.id)"
-                                [ariaLabel]="'Ver detalles de ' + role.name"
-                                iconLeft="eye">
-                            </ui-button>
-
-                            <!-- Edit Button -->
-                            <ui-button
-                                variant="ghost"
-                                size="sm"
-                                (clicked)="onEditRole(role.id)"
-                                [ariaLabel]="'Editar ' + role.name"
-                                iconLeft="pencil">
-                            </ui-button>
-
-                            <!-- Toggle Status Button -->
-                            <ui-button
-                                [variant]="role.isActive ? 'ghost' : 'success'"
-                                size="sm"
-                                (clicked)="onToggleStatus(role)"
-                                [ariaLabel]="
-                                    (role.isActive ? 'Desactivar' : 'Activar') + ' ' + role.name
-                                "
-                                [iconLeft]="role.isActive ? 'pause' : 'play'">
-                            </ui-button>
-
-                            <!-- Delete Button -->
-                            <ui-button
-                                variant="danger"
-                                size="sm"
-                                (clicked)="onDeleteRole(role.id)"
-                                [ariaLabel]="'Eliminar ' + role.name"
-                                iconLeft="trash">
-                            </ui-button>
-                        </div>
-                    </td>
-                </tr>
-                } }
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination -->
-    @if (showPagination()) {
-    <div
-        class="table-footer bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 px-4 py-3">
-        <div class="flex items-center justify-between">
-            <div class="text-sm text-neutral-700 dark:text-neutral-300">
-                Mostrando {{ paginationInfo().start }} - {{ paginationInfo().end }} de
-                {{ paginationInfo().total }} resultados
-            </div>
-
-            <div class="flex items-center gap-2">
-                <!-- Previous Button -->
-                <ui-button
-                    variant="ghost"
-                    size="sm"
-                    (clicked)="previousPage()"
-                    [disabled]="isPreviousDisabled()"
-                    iconLeft="chevron-left">
-                    Anterior
-                </ui-button>
-
-                <!-- Page Numbers -->
-                <div class="flex items-center gap-1">
-                    @for (pageNum of pageNumbers(); track pageNum) {
-                    <ui-button
-                        [variant]="pageNum === currentPage() ? 'primary' : 'ghost'"
-                        size="sm"
-                        (clicked)="goToPage(pageNum)"
-                        [disabled]="pageNum === currentPage()">
-                        {{ pageNum }}
-                    </ui-button>
-                    }
+      <!-- Table Body -->
+      <tbody
+        class="divide-y divide-neutral-200 dark:divide-neutral-700 bg-white dark:bg-neutral-900">
+        @if (loading()) {
+          <!-- Loading Skeleton -->
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+            <tr class="animate-pulse">
+              @if (showBulkCheckbox()) {
+                <td class="px-3 py-4">
+                  <div class="w-4 h-4 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                </td>
+              }
+              <td class="px-3 py-4">
+                <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-32"></div>
+              </td>
+              <td class="px-3 py-4">
+                <div class="flex items-center gap-2">
+                  <div class="w-4 h-4 bg-neutral-200 dark:bg-neutral-700 rounded-full"></div>
+                  <div class="h-5 bg-neutral-200 dark:bg-neutral-700 rounded-full w-24"></div>
                 </div>
+              </td>
+              <td class="px-3 py-4">
+                <div class="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-8"></div>
+              </td>
+              <td class="px-3 py-4">
+                <div class="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-16"></div>
+              </td>
+              <td class="px-3 py-4">
+                <div class="flex justify-end gap-1">
+                  <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                  <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                  <div class="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded"></div>
+                </div>
+              </td>
+            </tr>
+          }
+        } @else if (displayedRoles().length === 0) {
+          <!-- Empty State -->
+          <tr>
+            <td [colSpan]="tableColspan()" class="px-3 py-12 text-center">
+              <div class="flex flex-col items-center gap-3 text-neutral-500 dark:text-neutral-400">
+                <ui-icon name="folder-open" size="xl" variant="outline"></ui-icon>
+                @if (isEmptySearchResult()) {
+                  <div>
+                    <p class="text-sm font-medium">No se encontraron roles</p>
+                    <p class="text-xs">Intenta ajustar los filtros de búsqueda</p>
+                  </div>
+                } @else {
+                  <div>
+                    <p class="text-sm font-medium">No hay roles disponibles</p>
+                    <p class="text-xs">Crea tu primer rol para comenzar</p>
+                  </div>
+                }
+              </div>
+            </td>
+          </tr>
+        } @else {
+          <!-- Data Rows -->
+          @for (role of displayedRoles(); track role.id) {
+            <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
+              <!-- Selection Checkbox -->
+              @if (showBulkCheckbox()) {
+                <td class="px-3 py-4">
+                  <input
+                    type="checkbox"
+                    class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
+                    [checked]="isRoleSelected(role.id)"
+                    (change)="toggleRoleSelection(role.id)" />
+                </td>
+              }
 
-                <!-- Next Button -->
-                <ui-button
+              <!-- Name -->
+              <td class="px-3 py-4">
+                <div class="flex flex-col">
+                  <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+                    {{ role.name }}
+                  </span>
+                  @if (role.description) {
+                    <span class="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-xs">
+                      {{ role.description }}
+                    </span>
+                  }
+                </div>
+              </td>
+
+              <!-- Access Level -->
+              <td class="px-3 py-4">
+                <app-access-level-indicator
+                  [level]="role.accessLevel"
+                  variant="badge"
+                  size="sm"
+                  [showIcon]="true"
+                  [showLevel]="true"
+                  [showLabel]="true"
+                  [showTooltip]="true">
+                </app-access-level-indicator>
+              </td>
+
+              <!-- User Count -->
+              <td class="px-3 py-4">
+                <span class="text-sm text-neutral-900 dark:text-neutral-100">
+                  {{ role.userCount || 0 }}
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td class="px-3 py-4">
+                <span
+                  [class]="getStatusBadgeClasses(role.isActive)"
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border">
+                  {{ role.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-3 py-4">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- View Button -->
+                  <ui-button
                     variant="ghost"
                     size="sm"
-                    (clicked)="nextPage()"
-                    [disabled]="isNextDisabled()"
-                    iconRight="chevron-right">
-                    Siguiente
-                </ui-button>
-            </div>
+                    (clicked)="onViewRole(role.id)"
+                    [ariaLabel]="'Ver detalles de ' + role.name"
+                    iconLeft="eye">
+                  </ui-button>
+
+                  <!-- Edit Button -->
+                  <ui-button
+                    variant="ghost"
+                    size="sm"
+                    (clicked)="onEditRole(role.id)"
+                    [ariaLabel]="'Editar ' + role.name"
+                    iconLeft="pencil">
+                  </ui-button>
+
+                  <!-- Toggle Status Button -->
+                  <ui-button
+                    [variant]="role.isActive ? 'ghost' : 'success'"
+                    size="sm"
+                    (clicked)="onToggleStatus(role)"
+                    [ariaLabel]="(role.isActive ? 'Desactivar' : 'Activar') + ' ' + role.name"
+                    [iconLeft]="role.isActive ? 'pause' : 'play'">
+                  </ui-button>
+
+                  <!-- Delete Button -->
+                  <ui-button
+                    variant="danger"
+                    size="sm"
+                    (clicked)="onDeleteRole(role.id)"
+                    [ariaLabel]="'Eliminar ' + role.name"
+                    iconLeft="trash">
+                  </ui-button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  @if (showPagination()) {
+    <div
+      class="table-footer bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-neutral-700 dark:text-neutral-300">
+          Mostrando {{ paginationInfo().start }} - {{ paginationInfo().end }} de
+          {{ paginationInfo().total }} resultados
         </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Previous Button -->
+          <ui-button
+            variant="ghost"
+            size="sm"
+            (clicked)="previousPage()"
+            [disabled]="isPreviousDisabled()"
+            iconLeft="chevron-left">
+            Anterior
+          </ui-button>
+
+          <!-- Page Numbers -->
+          <div class="flex items-center gap-1">
+            @for (pageNum of pageNumbers(); track pageNum) {
+              <ui-button
+                [variant]="pageNum === currentPage() ? 'primary' : 'ghost'"
+                size="sm"
+                (clicked)="goToPage(pageNum)"
+                [disabled]="pageNum === currentPage()">
+                {{ pageNum }}
+              </ui-button>
+            }
+          </div>
+
+          <!-- Next Button -->
+          <ui-button
+            variant="ghost"
+            size="sm"
+            (clicked)="nextPage()"
+            [disabled]="isNextDisabled()"
+            iconRight="chevron-right">
+            Siguiente
+          </ui-button>
+        </div>
+      </div>
     </div>
-    }
+  }
 </div>
 
 <!-- Floating Bulk Actions Toolbar -->
 @if (showFloatingToolbar()) {
-<ui-bulk-actions-toolbar
+  <ui-bulk-actions-toolbar
     [selectedCount]="selectedCount()"
     [quickActions]="quickActions()"
     [advancedActions]="advancedActions()"
@@ -410,5 +387,5 @@
     (advancedActionTriggered)="onToolbarAdvancedAction($event)"
     (exportRequested)="onToolbarExportRequested($event)"
     (clearSelection)="clearSelection()">
-</ui-bulk-actions-toolbar>
+  </ui-bulk-actions-toolbar>
 }

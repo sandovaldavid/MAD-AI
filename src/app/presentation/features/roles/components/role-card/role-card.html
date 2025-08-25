@@ -1,108 +1,108 @@
 <!-- Role Card Container -->
 <article class="role-card" [class.role-card--loading]="loading()">
-    <!-- Card Header -->
-    <header class="role-card__header">
-        <!-- Role Icon and Level Indicator -->
-        <div class="role-card__icon-container">
-            <div class="role-card__icon" [ngClass]="getAccessLevelInfo().iconBg">
-                <ui-icon
-                    [name]="getAccessLevelIcon()"
-                    size="lg"
-                    variant="outline"
-                    [ngClass]="getAccessLevelInfo().iconColor" />
-            </div>
-            <!-- Access Level Indicator Component -->
-            <app-access-level-indicator
-                [level]="role().accessLevel"
-                variant="badge"
-                [showLabel]="true"
-                class="role-card__level-indicator">
-            </app-access-level-indicator>
-        </div>
-
-        <!-- Status Indicator -->
-        <div class="role-card__status">
-            <div class="role-card__status-badge" [ngClass]="getStatusInfo().classes">
-                <ui-icon [name]="getStatusInfo().icon" size="xs" class="role-card__status-icon" />
-                <span class="role-card__status-text">{{ getStatusInfo().label }}</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Card Content -->
-    <div class="role-card__content">
-        <!-- Role Title -->
-        <div class="role-card__title-section">
-            <h3 class="role-card__title" [title]="role().displayName">
-                {{ role().displayName }}
-            </h3>
-            <p class="role-card__subtitle">
-                {{ getAccessLevelInfo().description }}
-            </p>
-        </div>
-
-        <!-- Role Description -->
-        @if (role().description) {
-        <div class="role-card__description">
-            <p class="role-card__description-text" [title]="role().description">
-                {{ role().description }}
-            </p>
-        </div>
-        }
-
-        <!-- User Count -->
-        <div class="role-card__metrics">
-            <div class="role-card__metric">
-                <ui-icon name="user-group" size="sm" class="role-card__metric-icon" />
-                <span class="role-card__metric-text">{{ getUserCountDisplay() }}</span>
-            </div>
-        </div>
+  <!-- Card Header -->
+  <header class="role-card__header">
+    <!-- Role Icon and Level Indicator -->
+    <div class="role-card__icon-container">
+      <div class="role-card__icon" [ngClass]="getAccessLevelInfo().iconBg">
+        <ui-icon
+          [name]="getAccessLevelIcon()"
+          size="lg"
+          variant="outline"
+          [ngClass]="getAccessLevelInfo().iconColor" />
+      </div>
+      <!-- Access Level Indicator Component -->
+      <app-access-level-indicator
+        [level]="role().accessLevel"
+        variant="badge"
+        [showLabel]="true"
+        class="role-card__level-indicator">
+      </app-access-level-indicator>
     </div>
 
-    <!-- Card Actions -->
-    <footer class="role-card__actions">
-        <!-- Primary Action - View Role -->
-        <button
-            type="button"
-            class="role-card__btn role-card__btn--primary"
-            (click)="onViewRole()"
-            [disabled]="loading()"
-            title="Ver detalles del rol">
-            <ui-icon name="eye" size="md" />
-            <span>Ver detalles</span>
-        </button>
-
-        <!-- Secondary Actions -->
-        <div class="role-card__actions-secondary">
-            <!-- Toggle Status -->
-            <button
-                type="button"
-                class="role-card__btn role-card__btn--icon"
-                [ngClass]="getStatusInfo().buttonClasses"
-                (click)="onToggleStatus()"
-                [disabled]="loading()"
-                [title]="getStatusInfo().buttonTooltip">
-                <ui-icon [name]="role().isActive ? 'pause' : 'play'" size="md" variant="filled" />
-            </button>
-
-            <!-- Delete Role -->
-            <button
-                type="button"
-                class="role-card__btn role-card__btn--icon role-card__btn--danger"
-                (click)="onDeleteRole()"
-                [disabled]="loading()"
-                title="Eliminar rol">
-                <ui-icon name="trash" variant="filled" size="md" />
-            </button>
-        </div>
-    </footer>
-
-    <!-- Loading Overlay -->
-    @if (loading()) {
-    <div class="role-card__loading-overlay">
-        <div class="role-card__loading-spinner">
-            <div class="loading-spinner"></div>
-        </div>
+    <!-- Status Indicator -->
+    <div class="role-card__status">
+      <div class="role-card__status-badge" [ngClass]="getStatusInfo().classes">
+        <ui-icon [name]="getStatusInfo().icon" size="xs" class="role-card__status-icon" />
+        <span class="role-card__status-text">{{ getStatusInfo().label }}</span>
+      </div>
     </div>
+  </header>
+
+  <!-- Card Content -->
+  <div class="role-card__content">
+    <!-- Role Title -->
+    <div class="role-card__title-section">
+      <h3 class="role-card__title" [title]="role().displayName">
+        {{ role().displayName }}
+      </h3>
+      <p class="role-card__subtitle">
+        {{ getAccessLevelInfo().description }}
+      </p>
+    </div>
+
+    <!-- Role Description -->
+    @if (role().description) {
+      <div class="role-card__description">
+        <p class="role-card__description-text" [title]="role().description">
+          {{ role().description }}
+        </p>
+      </div>
     }
+
+    <!-- User Count -->
+    <div class="role-card__metrics">
+      <div class="role-card__metric">
+        <ui-icon name="user-group" size="sm" class="role-card__metric-icon" />
+        <span class="role-card__metric-text">{{ getUserCountDisplay() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card Actions -->
+  <footer class="role-card__actions">
+    <!-- Primary Action - View Role -->
+    <button
+      type="button"
+      class="role-card__btn role-card__btn--primary"
+      (click)="onViewRole()"
+      [disabled]="loading()"
+      title="Ver detalles del rol">
+      <ui-icon name="eye" size="md" />
+      <span>Ver detalles</span>
+    </button>
+
+    <!-- Secondary Actions -->
+    <div class="role-card__actions-secondary">
+      <!-- Toggle Status -->
+      <button
+        type="button"
+        class="role-card__btn role-card__btn--icon"
+        [ngClass]="getStatusInfo().buttonClasses"
+        (click)="onToggleStatus()"
+        [disabled]="loading()"
+        [title]="getStatusInfo().buttonTooltip">
+        <ui-icon [name]="role().isActive ? 'pause' : 'play'" size="md" variant="filled" />
+      </button>
+
+      <!-- Delete Role -->
+      <button
+        type="button"
+        class="role-card__btn role-card__btn--icon role-card__btn--danger"
+        (click)="onDeleteRole()"
+        [disabled]="loading()"
+        title="Eliminar rol">
+        <ui-icon name="trash" variant="filled" size="md" />
+      </button>
+    </div>
+  </footer>
+
+  <!-- Loading Overlay -->
+  @if (loading()) {
+    <div class="role-card__loading-overlay">
+      <div class="role-card__loading-spinner">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+  }
 </article>

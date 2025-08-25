@@ -1,19 +1,19 @@
 @reference '../../../../../styles.css';
 
 :host {
-    @apply fixed inset-0 pointer-events-none z-50;
+  @apply fixed inset-0 pointer-events-none z-50;
 }
 
 .toast-anchor {
-    @apply fixed pointer-events-none w-[min(92vw,380px)];
+  @apply fixed pointer-events-none w-[min(92vw,380px)];
 }
 
 .toast-anchor > * {
-    @apply block pointer-events-auto mb-2;
+  @apply block pointer-events-auto mb-2;
 }
 
 @media (max-width: 640px) {
-    .toast-anchor {
-        @apply left-1/2 -translate-x-1/2 right-auto;
-    }
+  .toast-anchor {
+    @apply left-1/2 -translate-x-1/2 right-auto;
+  }
 }

@@ -22,12 +22,12 @@ import type { EventProcessingConfig } from '@application/types/domain-event-proc
  * Can be overridden in environment configurations.
  */
 export const DEFAULT_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
-    enableExternalSystems: false, // Disable by default for safety
-    enableSecurityProcessing: true, // Always enable security processing
-    enableAuditLogging: true, // Always enable audit logging
-    maxBatchSize: 100, // Process up to 100 events in batch
-    processingTimeout: 5000, // 5 seconds timeout
-    failFast: false, // Continue processing other events on failure
+  enableExternalSystems: false, // Disable by default for safety
+  enableSecurityProcessing: true, // Always enable security processing
+  enableAuditLogging: true, // Always enable audit logging
+  maxBatchSize: 100, // Process up to 100 events in batch
+  processingTimeout: 5000, // 5 seconds timeout
+  failFast: false, // Continue processing other events on failure
 };
 
 /**
@@ -38,12 +38,12 @@ export const DEFAULT_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
  * More verbose logging, smaller batch sizes for testing.
  */
 export const DEVELOPMENT_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
-    enableExternalSystems: false, // Disable external systems in dev
-    enableSecurityProcessing: true,
-    enableAuditLogging: true,
-    maxBatchSize: 10, // Smaller batches for easier debugging
-    processingTimeout: 10000, // Longer timeout for debugging
-    failFast: true, // Fail fast in development to catch issues
+  enableExternalSystems: false, // Disable external systems in dev
+  enableSecurityProcessing: true,
+  enableAuditLogging: true,
+  maxBatchSize: 10, // Smaller batches for easier debugging
+  processingTimeout: 10000, // Longer timeout for debugging
+  failFast: true, // Fail fast in development to catch issues
 };
 
 /**
@@ -54,12 +54,12 @@ export const DEVELOPMENT_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
  * Enables all features with performance optimizations.
  */
 export const PRODUCTION_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
-    enableExternalSystems: true, // Enable external integrations
-    enableSecurityProcessing: true,
-    enableAuditLogging: true,
-    maxBatchSize: 500, // Larger batches for performance
-    processingTimeout: 3000, // Shorter timeout for production
-    failFast: false, // Continue processing for resilience
+  enableExternalSystems: true, // Enable external integrations
+  enableSecurityProcessing: true,
+  enableAuditLogging: true,
+  maxBatchSize: 500, // Larger batches for performance
+  processingTimeout: 3000, // Shorter timeout for production
+  failFast: false, // Continue processing for resilience
 };
 
 /**
@@ -70,12 +70,12 @@ export const PRODUCTION_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
  * Minimal external dependencies, fast processing.
  */
 export const TESTING_EVENT_PROCESSING_CONFIG: EventProcessingConfig = {
-    enableExternalSystems: false, // Disable external systems in tests
-    enableSecurityProcessing: false, // Simplify for testing
-    enableAuditLogging: false, // Reduce noise in tests
-    maxBatchSize: 5, // Very small batches for unit tests
-    processingTimeout: 1000, // Fast timeout for tests
-    failFast: true, // Fail fast to catch test issues
+  enableExternalSystems: false, // Disable external systems in tests
+  enableSecurityProcessing: false, // Simplify for testing
+  enableAuditLogging: false, // Reduce noise in tests
+  maxBatchSize: 5, // Very small batches for unit tests
+  processingTimeout: 1000, // Fast timeout for tests
+  failFast: true, // Fail fast to catch test issues
 };
 
 /**
@@ -146,34 +146,34 @@ export const EVENT_PROCESSING_CONFIG = 'EVENT_PROCESSING_CONFIG';
  * ```
  */
 export function provideDomainEvents(
-    config: Partial<EventProcessingConfig> = {}
+  config: Partial<EventProcessingConfig> = {}
 ): EnvironmentProviders {
-    // Merge provided config with defaults
-    const finalConfig: EventProcessingConfig = {
-        ...DEFAULT_EVENT_PROCESSING_CONFIG,
-        ...config,
-    };
+  // Merge provided config with defaults
+  const finalConfig: EventProcessingConfig = {
+    ...DEFAULT_EVENT_PROCESSING_CONFIG,
+    ...config,
+  };
 
-    return makeEnvironmentProviders([
-        // Provide the configuration
-        {
-            provide: EVENT_PROCESSING_CONFIG,
-            useValue: finalConfig,
-        },
+  return makeEnvironmentProviders([
+    // Provide the configuration
+    {
+      provide: EVENT_PROCESSING_CONFIG,
+      useValue: finalConfig,
+    },
 
-        // Provide the main DomainEventProcessor service
-        {
-            provide: DomainEventProcessor,
-            useClass: DomainEventProcessor,
-        },
+    // Provide the main DomainEventProcessor service
+    {
+      provide: DomainEventProcessor,
+      useClass: DomainEventProcessor,
+    },
 
-        // Note: Additional providers can be added here as needed
-        // For example:
-        // - External system integrations
-        // - Custom audit loggers
-        // - Event storage services
-        // - Notification services
-    ]);
+    // Note: Additional providers can be added here as needed
+    // For example:
+    // - External system integrations
+    // - Custom audit loggers
+    // - Event storage services
+    // - Notification services
+  ]);
 }
 
 /**
@@ -195,7 +195,7 @@ export function provideDomainEvents(
  * ```
  */
 export function provideDomainEventsForDevelopment(): EnvironmentProviders {
-    return provideDomainEvents(DEVELOPMENT_EVENT_PROCESSING_CONFIG);
+  return provideDomainEvents(DEVELOPMENT_EVENT_PROCESSING_CONFIG);
 }
 
 /**
@@ -217,7 +217,7 @@ export function provideDomainEventsForDevelopment(): EnvironmentProviders {
  * ```
  */
 export function provideDomainEventsForProduction(): EnvironmentProviders {
-    return provideDomainEvents(PRODUCTION_EVENT_PROCESSING_CONFIG);
+  return provideDomainEvents(PRODUCTION_EVENT_PROCESSING_CONFIG);
 }
 
 /**
@@ -240,13 +240,13 @@ export function provideDomainEventsForProduction(): EnvironmentProviders {
  * ```
  */
 export function provideDomainEventsForTesting(): EnvironmentProviders {
-    return provideDomainEvents(TESTING_EVENT_PROCESSING_CONFIG);
+  return provideDomainEvents(TESTING_EVENT_PROCESSING_CONFIG);
 }
 
 /**
  * Type definitions for provider configuration functions
  */
 export type DomainEventsProviderFn = (
-    config?: Partial<EventProcessingConfig>
+  config?: Partial<EventProcessingConfig>
 ) => EnvironmentProviders;
 export type DomainEventsEnvironmentProviderFn = () => EnvironmentProviders;

@@ -1,46 +1,46 @@
 @reference '../../../../../../styles.css';
 
 .error-actions {
-    @apply flex flex-wrap gap-3;
+  @apply flex flex-wrap gap-3;
 }
 
 .error-actions--center {
-    @apply justify-center;
+  @apply justify-center;
 }
 
 .error-actions--start {
-    @apply justify-start;
+  @apply justify-start;
 }
 
 .error-actions--end {
-    @apply justify-end;
+  @apply justify-end;
 }
 
 /* Button base styles */
 .error-action-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
-    min-height: 2.25rem;
-    padding-inline: 0.875rem;
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  min-height: 2.25rem;
+  padding-inline: 0.875rem;
 }
 
 /* Style variants */
 .error-action-btn--primary {
-    @apply text-white bg-primary-500 hover:bg-primary-700 focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
+  @apply text-white bg-primary-500 hover:bg-primary-700 focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
 }
 
 .error-action-btn--secondary {
-    @apply text-neutral-900 bg-secondary-200 hover:bg-secondary-300 focus-visible:ring-secondary-500/25 dark:text-neutral-100 dark:bg-secondary-700 dark:hover:bg-secondary-600;
+  @apply text-neutral-900 bg-secondary-200 hover:bg-secondary-300 focus-visible:ring-secondary-500/25 dark:text-neutral-100 dark:bg-secondary-700 dark:hover:bg-secondary-600;
 }
 
 .error-action-btn--danger {
-    @apply text-white bg-error-500 hover:bg-error-600 focus-visible:ring-error-500/25 dark:bg-error-600 dark:hover:bg-error-500;
+  @apply text-white bg-error-500 hover:bg-error-600 focus-visible:ring-error-500/25 dark:bg-error-600 dark:hover:bg-error-500;
 }
 
 .error-action-btn--ghost {
-    @apply text-neutral-800 bg-transparent border border-neutral-200 hover:bg-neutral-100 focus-visible:ring-neutral-500/25 dark:text-neutral-200 dark:border-neutral-700 dark:hover:bg-neutral-800;
+  @apply text-neutral-800 bg-transparent border border-neutral-200 hover:bg-neutral-100 focus-visible:ring-neutral-500/25 dark:text-neutral-200 dark:border-neutral-700 dark:hover:bg-neutral-800;
 }
 
 /* Loading spinner */
 .loading-spinner {
-    @apply border-2 border-current border-t-transparent rounded-full animate-spin;
+  @apply border-2 border-current border-t-transparent rounded-full animate-spin;
 }

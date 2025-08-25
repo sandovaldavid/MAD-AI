@@ -16,8 +16,8 @@ export { AccessLevelIndicator } from './access-level-indicator';
 export type { RoleAccessLevelColor, RoleAccessLevelInfo } from './access-level-indicator';
 
 export {
-    ROLE_ACCESS_LEVEL_CONFIG,
-    ROLE_ACCESS_LEVEL_ICONS,
-    getRoleAccessLevelInfo,
-    getRoleAccessLevelIcon,
+  ROLE_ACCESS_LEVEL_CONFIG,
+  ROLE_ACCESS_LEVEL_ICONS,
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
 } from './access-level-indicator';

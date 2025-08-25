@@ -32,146 +32,142 @@ import type { NotificationId } from '@domain/entities/notification.entity';
  */
 @Injectable({ providedIn: 'root' })
 export class DismissNotification {
-    private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute notification dismissal orchestration with validation and audit logging
-     *
-     * @param id - Notification ID to dismiss
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving when dismissal is complete
-     * @throws ApplicationError when validation fails or dismissal fails
-     */
-    async execute(id: NotificationId, requesterId?: number): Promise<void> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(id, requesterId);
+  /**
+   * Execute notification dismissal orchestration with validation and audit logging
+   *
+   * @param id - Notification ID to dismiss
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving when dismissal is complete
+   * @throws ApplicationError when validation fails or dismissal fails
+   */
+  async execute(id: NotificationId, requesterId?: number): Promise<void> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(id, requesterId);
 
-            // Step 2: Delegate to domain repository for dismissal
-            // The domain layer (service) handles existence validation and idempotency
-            this.notificationPort.dismiss(id);
+      // Step 2: Delegate to domain repository for dismissal
+      // The domain layer (service) handles existence validation and idempotency
+      this.notificationPort.dismiss(id);
 
-            // Step 3: Handle side effects
-            this.handleNotificationDismissalSideEffects(id, requesterId);
-        } catch (error: unknown) {
-            // Normalize errors for application layer
-            throw new ApplicationError(
-                'dismiss_notification',
-                this.errorTransformer.transformError(error),
-                'NOTIFICATION_DISMISSAL_FAILED'
-            );
-        }
+      // Step 3: Handle side effects
+      this.handleNotificationDismissalSideEffects(id, requesterId);
+    } catch (error: unknown) {
+      // Normalize errors for application layer
+      throw new ApplicationError(
+        'dismiss_notification',
+        this.errorTransformer.transformError(error),
+        'NOTIFICATION_DISMISSAL_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validate application-level rules for notification dismissal
+   *
+   * @description
+   * Validates request parameters and basic business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param id Notification ID to validate
+   * @param requesterId Requester ID to validate (optional)
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(id: NotificationId, requesterId?: number): void {
+    if (id === undefined || id === null) {
+      throw new ApplicationError(
+        'dismiss_notification',
+        'INVALID_NOTIFICATION_ID',
+        'Notification ID is required for dismissal'
+      );
     }
 
-    /**
-     * Validate application-level rules for notification dismissal
-     *
-     * @description
-     * Validates request parameters and basic business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param id Notification ID to validate
-     * @param requesterId Requester ID to validate (optional)
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(id: NotificationId, requesterId?: number): void {
-        if (id === undefined || id === null) {
-            throw new ApplicationError(
-                'dismiss_notification',
-                'INVALID_NOTIFICATION_ID',
-                'Notification ID is required for dismissal'
-            );
-        }
-
-        if (typeof id !== 'string' || id.trim().length === 0) {
-            throw new ApplicationError(
-                'dismiss_notification',
-                'INVALID_NOTIFICATION_ID_FORMAT',
-                'Notification ID must be a non-empty string'
-            );
-        }
-
-        // Validate requester ID if provided
-        if (requesterId !== undefined && requesterId !== null) {
-            if (
-                typeof requesterId !== 'number' ||
-                !Number.isInteger(requesterId) ||
-                requesterId <= 0
-            ) {
-                throw new ApplicationError(
-                    'dismiss_notification',
-                    'INVALID_REQUESTER_ID_FORMAT',
-                    'Requester ID must be a positive integer when provided'
-                );
-            }
-        }
+    if (typeof id !== 'string' || id.trim().length === 0) {
+      throw new ApplicationError(
+        'dismiss_notification',
+        'INVALID_NOTIFICATION_ID_FORMAT',
+        'Notification ID must be a non-empty string'
+      );
     }
 
-    /**
-     * Validate notification exists and can be dismissed
-     *
-     * @description
-     * Validates that the notification exists in the current snapshot and is in a dismissible state.
-     *
-     * @param id Notification ID to validate
-     * @throws ApplicationError when notification cannot be dismissed
-     */
-    /**
-     * Validate notification exists and can be dismissed
-     *
-     * @description
-     * DEPRECATED: This validation is now handled by the domain service layer.
-     * The NotificationPort service handles existence validation and idempotency,
-     * making this application-layer validation redundant and potentially
-     * causing race conditions with concurrent dismissal requests.
-     *
-     * @param id Notification ID to validate
-     * @throws ApplicationError when notification not found or already dismissed
-     */
-    private async validateNotificationForDismissal(id: NotificationId): Promise<void> {
-        // DEPRECATED: Validation moved to domain service layer
-        // Keeping method for documentation purposes but it's no longer called
-        // const notifications = this.notificationPort.snapshot();
-        // const notification = notifications.find(n => n.id === id);
-        // if (!notification) {
-        //     throw new ApplicationError(
-        //         'dismiss_notification',
-        //         'NOTIFICATION_NOT_FOUND',
-        //         `Notification with ID '${id}' does not exist or has already been dismissed`
-        //     , error);
-        // }
-        // // Check if notification is already dismissed (if it has a dismissed property)
-        // if ('isDismissed' in notification && notification.isDismissed) {
-        //     throw new ApplicationError(
-        //         'dismiss_notification',
-        //         'NOTIFICATION_ALREADY_DISMISSED',
-        //         `Notification with ID '${id}' has already been dismissed`
-        //     , error);
-        // }
+    // Validate requester ID if provided
+    if (requesterId !== undefined && requesterId !== null) {
+      if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+        throw new ApplicationError(
+          'dismiss_notification',
+          'INVALID_REQUESTER_ID_FORMAT',
+          'Requester ID must be a positive integer when provided'
+        );
+      }
     }
+  }
 
-    /**
-     * Handle side effects of notification dismissal
-     *
-     * @description
-     * Manages audit logging and other side effects after successful notification dismissal.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param id The dismissed notification ID
-     * @param requesterId ID of user who performed the dismissal
-     */
-    private handleNotificationDismissalSideEffects(id: NotificationId, requesterId?: number): void {
-        const timestamp = this.clock.nowEpochSeconds();
+  /**
+   * Validate notification exists and can be dismissed
+   *
+   * @description
+   * Validates that the notification exists in the current snapshot and is in a dismissible state.
+   *
+   * @param id Notification ID to validate
+   * @throws ApplicationError when notification cannot be dismissed
+   */
+  /**
+   * Validate notification exists and can be dismissed
+   *
+   * @description
+   * DEPRECATED: This validation is now handled by the domain service layer.
+   * The NotificationPort service handles existence validation and idempotency,
+   * making this application-layer validation redundant and potentially
+   * causing race conditions with concurrent dismissal requests.
+   *
+   * @param id Notification ID to validate
+   * @throws ApplicationError when notification not found or already dismissed
+   */
+  private async validateNotificationForDismissal(id: NotificationId): Promise<void> {
+    // DEPRECATED: Validation moved to domain service layer
+    // Keeping method for documentation purposes but it's no longer called
+    // const notifications = this.notificationPort.snapshot();
+    // const notification = notifications.find(n => n.id === id);
+    // if (!notification) {
+    //     throw new ApplicationError(
+    //         'dismiss_notification',
+    //         'NOTIFICATION_NOT_FOUND',
+    //         `Notification with ID '${id}' does not exist or has already been dismissed`
+    //     , error);
+    // }
+    // // Check if notification is already dismissed (if it has a dismissed property)
+    // if ('isDismissed' in notification && notification.isDismissed) {
+    //     throw new ApplicationError(
+    //         'dismiss_notification',
+    //         'NOTIFICATION_ALREADY_DISMISSED',
+    //         `Notification with ID '${id}' has already been dismissed`
+    //     , error);
+    // }
+  }
 
-        console.log(`[AUDIT] Notification dismissal completed`, {
-            timestamp,
-            notificationId: id,
-            requesterId,
-            operation: 'dismiss_notification',
-            feature: 'notifications',
-            severity: 'LOW',
-        });
-    }
+  /**
+   * Handle side effects of notification dismissal
+   *
+   * @description
+   * Manages audit logging and other side effects after successful notification dismissal.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param id The dismissed notification ID
+   * @param requesterId ID of user who performed the dismissal
+   */
+  private handleNotificationDismissalSideEffects(id: NotificationId, requesterId?: number): void {
+    const timestamp = this.clock.nowEpochSeconds();
+
+    console.log(`[AUDIT] Notification dismissal completed`, {
+      timestamp,
+      notificationId: id,
+      requesterId,
+      operation: 'dismiss_notification',
+      feature: 'notifications',
+      severity: 'LOW',
+    });
+  }
 }

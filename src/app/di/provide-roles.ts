@@ -8,15 +8,15 @@ import { UpdateRole } from '@application/use-cases/roles/update-role.usecase';
 import { DeleteRole } from '@application/use-cases/roles/delete-role.usecase';
 
 export function provideRoles(): Provider[] {
-    return [
-        // Repository
-        { provide: ROLE_REPOSITORY, useClass: HttpRoleRepository },
+  return [
+    // Repository
+    { provide: ROLE_REPOSITORY, useClass: HttpRoleRepository },
 
-        // Use cases
-        ListRoles,
-        GetRoleById,
-        CreateRole,
-        UpdateRole,
-        DeleteRole,
-    ];
+    // Use cases
+    ListRoles,
+    GetRoleById,
+    CreateRole,
+    UpdateRole,
+    DeleteRole,
+  ];
 }

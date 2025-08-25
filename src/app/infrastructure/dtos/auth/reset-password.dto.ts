@@ -1,7 +1,7 @@
 export interface ResetPasswordRequestDTO {
-    email: string;
+  email: string;
 }
 
 export interface ResetPasswordResponseDTO {
-    message: string;
+  message: string;
 }

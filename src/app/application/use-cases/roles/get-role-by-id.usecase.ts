@@ -32,94 +32,94 @@ import type { Role } from '@domain/entities/role.entity';
  */
 @Injectable({ providedIn: 'root' })
 export class GetRoleById {
-    private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute role retrieval orchestration with validation and audit logging
-     *
-     * @param id - Role ID to retrieve
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving to the Role entity
-     * @throws ApplicationError when validation fails or role not found
-     */
-    async execute(id: number, requesterId?: number): Promise<Role> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(id);
+  /**
+   * Execute role retrieval orchestration with validation and audit logging
+   *
+   * @param id - Role ID to retrieve
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving to the Role entity
+   * @throws ApplicationError when validation fails or role not found
+   */
+  async execute(id: number, requesterId?: number): Promise<Role> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(id);
 
-            // Step 2: Delegate to domain repository
-            const role = await this.roleRepo.getById(id);
+      // Step 2: Delegate to domain repository
+      const role = await this.roleRepo.getById(id);
 
-            // Step 3: Handle side effects
-            this.handleRoleRetrievalSideEffects(id, role, requesterId);
+      // Step 3: Handle side effects
+      this.handleRoleRetrievalSideEffects(id, role, requesterId);
 
-            return role;
-        } catch (error: unknown) {
-            // Step 4: Normalize errors for application layer
-            throw new ApplicationError(
-                'get_role_by_id',
-                this.errorTransformer.transformError(error),
-                'ROLE_RETRIEVAL_FAILED'
-            );
-        }
+      return role;
+    } catch (error: unknown) {
+      // Step 4: Normalize errors for application layer
+      throw new ApplicationError(
+        'get_role_by_id',
+        this.errorTransformer.transformError(error),
+        'ROLE_RETRIEVAL_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validate application-level rules for role retrieval
+   *
+   * @description
+   * Validates request parameters and business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param id Role ID to validate
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(id: number): void {
+    if (id === undefined || id === null) {
+      throw new ApplicationError(
+        'get_role_by_id',
+        'INVALID_ROLE_ID',
+        'Role ID is required for retrieval'
+      );
     }
 
-    /**
-     * Validate application-level rules for role retrieval
-     *
-     * @description
-     * Validates request parameters and business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param id Role ID to validate
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(id: number): void {
-        if (id === undefined || id === null) {
-            throw new ApplicationError(
-                'get_role_by_id',
-                'INVALID_ROLE_ID',
-                'Role ID is required for retrieval'
-            );
-        }
-
-        if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0) {
-            throw new ApplicationError(
-                'get_role_by_id',
-                'INVALID_ROLE_ID_FORMAT',
-                'Role ID must be a positive integer'
-            );
-        }
+    if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0) {
+      throw new ApplicationError(
+        'get_role_by_id',
+        'INVALID_ROLE_ID_FORMAT',
+        'Role ID must be a positive integer'
+      );
     }
+  }
 
-    /**
-     * Handle side effects of role retrieval
-     *
-     * @description
-     * Manages audit logging and other side effects after successful role retrieval.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param id The requested role ID
-     * @param role The retrieved role entity
-     * @param requesterId ID of user who performed the retrieval
-     */
-    private handleRoleRetrievalSideEffects(id: number, role: Role, requesterId?: number): void {
-        const timestamp = this.clock.nowEpochSeconds();
+  /**
+   * Handle side effects of role retrieval
+   *
+   * @description
+   * Manages audit logging and other side effects after successful role retrieval.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param id The requested role ID
+   * @param role The retrieved role entity
+   * @param requesterId ID of user who performed the retrieval
+   */
+  private handleRoleRetrievalSideEffects(id: number, role: Role, requesterId?: number): void {
+    const timestamp = this.clock.nowEpochSeconds();
 
-        console.log(`[AUDIT] Role retrieval completed`, {
-            timestamp,
-            requestedId: id,
-            foundRole: {
-                id: role.id,
-                name: role.name,
-                accessLevel: role.accessLevel,
-            },
-            requesterId,
-            operation: 'get_role_by_id',
-            feature: 'roles',
-            severity: 'LOW',
-        });
-    }
+    console.log(`[AUDIT] Role retrieval completed`, {
+      timestamp,
+      requestedId: id,
+      foundRole: {
+        id: role.id,
+        name: role.name,
+        accessLevel: role.accessLevel,
+      },
+      requesterId,
+      operation: 'get_role_by_id',
+      feature: 'roles',
+      severity: 'LOW',
+    });
+  }
 }

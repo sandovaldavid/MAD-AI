@@ -43,17 +43,17 @@ import { USER_REPOSITORY } from './tokens';
  * @layer Infrastructure
  */
 export function provideUsers() {
-    return makeEnvironmentProviders([
-        // Repository Implementation
-        {
-            provide: USER_REPOSITORY,
-            useClass: HttpUserRepository,
-        },
+  return makeEnvironmentProviders([
+    // Repository Implementation
+    {
+      provide: USER_REPOSITORY,
+      useClass: HttpUserRepository,
+    },
 
-        // User Management Facade
-        UsersFacade,
+    // User Management Facade
+    UsersFacade,
 
-        // Note: Use cases are already provided by their own @Injectable({ providedIn: 'root' })
-        // This provider focuses on facade-level dependencies and repository configuration
-    ]);
+    // Note: Use cases are already provided by their own @Injectable({ providedIn: 'root' })
+    // This provider focuses on facade-level dependencies and repository configuration
+  ]);
 }

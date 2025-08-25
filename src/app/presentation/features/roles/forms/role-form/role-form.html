@@ -1,108 +1,102 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Form Section (Left) -->
-    <div class="space-y-6 w-full">
-        <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
-            <!-- Nombre del Rol -->
-            <div class="form-field">
-                <label class="form-label" for="name">
-                    Nombre del Rol
-                    <span class="text-error-500">*</span>
-                </label>
-                <input
-                    id="name"
-                    formControlName="name"
-                    class="form-input"
-                    placeholder="Ej: Administrador de Proyecto" />
-                @if (getFieldError('name')) {
-                <span class="form-error">{{ getFieldError('name') }}</span>
-                }
-            </div>
+  <!-- Form Section (Left) -->
+  <div class="space-y-6 w-full">
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+      <!-- Nombre del Rol -->
+      <div class="form-field">
+        <label class="form-label" for="name">
+          Nombre del Rol
+          <span class="text-error-500">*</span>
+        </label>
+        <input
+          id="name"
+          formControlName="name"
+          class="form-input"
+          placeholder="Ej: Administrador de Proyecto" />
+        @if (getFieldError('name')) {
+          <span class="form-error">{{ getFieldError('name') }}</span>
+        }
+      </div>
 
-            <!-- Nivel de Acceso -->
-            <div class="form-field">
-                <label class="form-label" for="accessLevel">
-                    Nivel de Acceso
-                    <span class="text-error-500">*</span>
-                </label>
-                <select id="accessLevel" formControlName="accessLevel" class="form-input">
-                    @for (level of accessLevels; track level.value) {
-                    <option [value]="level.value">
-                        {{ level.label }} - {{ level.description }}
-                    </option>
-                    }
-                </select>
-                @if (getFieldError('accessLevel')) {
-                <span class="form-error">{{ getFieldError('accessLevel') }}</span>
-                }
-            </div>
+      <!-- Nivel de Acceso -->
+      <div class="form-field">
+        <label class="form-label" for="accessLevel">
+          Nivel de Acceso
+          <span class="text-error-500">*</span>
+        </label>
+        <select id="accessLevel" formControlName="accessLevel" class="form-input">
+          @for (level of accessLevels; track level.value) {
+            <option [value]="level.value">{{ level.label }} - {{ level.description }}</option>
+          }
+        </select>
+        @if (getFieldError('accessLevel')) {
+          <span class="form-error">{{ getFieldError('accessLevel') }}</span>
+        }
+      </div>
 
-            <!-- Descripción -->
-            <div class="form-field">
-                <label class="form-label" for="description">Descripción</label>
-                <textarea
-                    id="description"
-                    formControlName="description"
-                    class="form-input"
-                    rows="3"
-                    placeholder="Describe las responsabilidades y permisos de este rol...">
-                </textarea>
-                @if (getFieldError('description')) {
-                <span class="form-error">{{ getFieldError('description') }}</span>
-                }
-            </div>
+      <!-- Descripción -->
+      <div class="form-field">
+        <label class="form-label" for="description">Descripción</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-input"
+          rows="3"
+          placeholder="Describe las responsabilidades y permisos de este rol...">
+        </textarea>
+        @if (getFieldError('description')) {
+          <span class="form-error">{{ getFieldError('description') }}</span>
+        }
+      </div>
 
-            <!-- Estado Activo (solo en modo edit) -->
-            @if (mode() === 'edit') {
-            <div class="form-field">
-                <label class="form-label">Estado del Rol</label>
-                <ui-toggle
-                    [checked]="roleForm.get('isActive')?.value || false"
-                    label="Rol activo"
-                    color="successful"
-                    size="md"
-                    (toggle)="onToggleActiveStatus($event)">
-                </ui-toggle>
-            </div>
-            }
-        </form>
-        <!-- Form Actions Below Preview -->
-        <div class="form-actions">
-            <button type="button" class="btn btn--secondary" (click)="onCancel()">Cancelar</button>
-            <button
-                type="button"
-                class="btn btn--primary"
-                [disabled]="roleForm.invalid || submitting() || loading()"
-                (click)="onSubmit()">
-                {{
-                    submitting() || loading()
-                        ? 'Guardando...'
-                        : mode() === 'create'
-                        ? 'Crear'
-                        : 'Actualizar'
-                }}
-                Rol
-            </button>
+      <!-- Estado Activo (solo en modo edit) -->
+      @if (mode() === 'edit') {
+        <div class="form-field">
+          <label class="form-label">Estado del Rol</label>
+          <ui-toggle
+            [checked]="roleForm.get('isActive')?.value || false"
+            label="Rol activo"
+            color="successful"
+            size="md"
+            (toggle)="onToggleActiveStatus($event)">
+          </ui-toggle>
         </div>
+      }
+    </form>
+    <!-- Form Actions Below Preview -->
+    <div class="form-actions">
+      <button type="button" class="btn btn--secondary" (click)="onCancel()">Cancelar</button>
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="roleForm.invalid || submitting() || loading()"
+        (click)="onSubmit()">
+        {{
+          submitting() || loading() ? 'Guardando...' : mode() === 'create' ? 'Crear' : 'Actualizar'
+        }}
+        Rol
+      </button>
     </div>
+  </div>
 
-    <!-- Preview Section (Right) -->
-    <div class="space-y-6">
-        <div
-            class="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
-            <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-                Vista Previa del Rol
-            </h3>
+  <!-- Preview Section (Right) -->
+  <div class="space-y-6">
+    <div
+      class="bg-neutral-50 dark:bg-neutral-800 rounded-lg p-6 border border-neutral-200 dark:border-neutral-700">
+      <h3 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+        Vista Previa del Rol
+      </h3>
 
-            <!-- Role Card Preview -->
-            <div class="max-w-sm">
-                <app-role-card
-                    [role]="previewRole()"
-                    [loading]="false"
-                    (view)="onPreviewView()"
-                    (toggleStatus)="onPreviewToggleStatus()"
-                    (delete)="onPreviewDelete()">
-                </app-role-card>
-            </div>
-        </div>
+      <!-- Role Card Preview -->
+      <div class="max-w-sm">
+        <app-role-card
+          [role]="previewRole()"
+          [loading]="false"
+          (view)="onPreviewView()"
+          (toggleStatus)="onPreviewToggleStatus()"
+          (delete)="onPreviewDelete()">
+        </app-role-card>
+      </div>
     </div>
+  </div>
 </div>

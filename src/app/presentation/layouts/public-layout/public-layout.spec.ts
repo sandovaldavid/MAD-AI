@@ -8,9 +8,8 @@ describe('PublicLayout', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PublicLayout]
-    })
-    .compileComponents();
+      imports: [PublicLayout],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PublicLayout);
     component = fixture.componentInstance;

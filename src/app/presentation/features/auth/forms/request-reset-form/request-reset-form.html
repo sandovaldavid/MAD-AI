@@ -1,65 +1,65 @@
 <form [formGroup]="form" (ngSubmit)="submit()" class="request-reset-form shadow-container">
-    <!-- Enhanced Header Section -->
-    <div class="request-reset-form__header">
-        <h2 class="request-reset-form__title">¿Olvidaste tu contraseña?</h2>
-        <p class="request-reset-form__subtitle">
-            Ingresa tu dirección de correo electrónico y te enviaremos un enlace seguro para
-            restablecer tu contraseña en pocos minutos.
-        </p>
-    </div>
+  <!-- Enhanced Header Section -->
+  <div class="request-reset-form__header">
+    <h2 class="request-reset-form__title">¿Olvidaste tu contraseña?</h2>
+    <p class="request-reset-form__subtitle">
+      Ingresa tu dirección de correo electrónico y te enviaremos un enlace seguro para restablecer
+      tu contraseña en pocos minutos.
+    </p>
+  </div>
 
-    <!-- Enhanced Email Field -->
-    <ui-form-field
-        label="Correo electrónico"
-        [required]="true"
-        [error]="emailError"
-        controlId="email">
-        <ui-input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="tu.correo@ejemplo.com"
-            formControlName="email"
-            autocomplete="email"
-            size="md">
-            <ui-icon
-                prefix
-                name="outline/mail"
-                size="lg"
-                class="text-primary-500 dark:text-primary-400" />
-            @if (form.get('email')?.value) {
-            <button
-                type="button"
-                suffix
-                class="text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 p-0.5 transition-colors duration-200"
-                (click)="clearField('email')"
-                aria-label="Limpiar campo de correo">
-                <ui-icon name="outline/x-mark" size="sm" />
-            </button>
-            }
-        </ui-input>
-    </ui-form-field>
+  <!-- Enhanced Email Field -->
+  <ui-form-field
+    label="Correo electrónico"
+    [required]="true"
+    [error]="emailError"
+    controlId="email">
+    <ui-input
+      id="email"
+      name="email"
+      type="email"
+      placeholder="tu.correo@ejemplo.com"
+      formControlName="email"
+      autocomplete="email"
+      size="md">
+      <ui-icon
+        prefix
+        name="outline/mail"
+        size="lg"
+        class="text-primary-500 dark:text-primary-400" />
+      @if (form.get('email')?.value) {
+        <button
+          type="button"
+          suffix
+          class="text-neutral-400 hover:text-primary-600 dark:hover:text-primary-400 p-0.5 transition-colors duration-200"
+          (click)="clearField('email')"
+          aria-label="Limpiar campo de correo">
+          <ui-icon name="outline/x-mark" size="sm" />
+        </button>
+      }
+    </ui-input>
+  </ui-form-field>
 
-    <!-- Enhanced Submit Button -->
-    <ui-button
-        type="submit"
-        variant="primary"
-        size="md"
-        [fullWidth]="true"
-        [loading]="auth()?.loading() ?? false"
-        [disabled]="!form.valid">
-        @if (!(auth()?.loading() ?? false)) {
-        <ui-icon icon-right name="paper-airplane" size="sm" variant="outline" />
-        }
-        {{ auth()?.loading() ?? false ? 'Enviando...' : 'Enviar enlace de restablecimiento' }}
-    </ui-button>
+  <!-- Enhanced Submit Button -->
+  <ui-button
+    type="submit"
+    variant="primary"
+    size="md"
+    [fullWidth]="true"
+    [loading]="auth()?.loading() ?? false"
+    [disabled]="!form.valid">
+    @if (!(auth()?.loading() ?? false)) {
+      <ui-icon icon-right name="paper-airplane" size="sm" variant="outline" />
+    }
+    {{ (auth()?.loading() ?? false) ? 'Enviando...' : 'Enviar enlace de restablecimiento' }}
+  </ui-button>
 
-    <!-- Enhanced Footer Section -->
-    <div class="request-reset-form__footer">
-        <p class="request-reset-form__footer-text">¿Recordaste tu contraseña?</p>
-        <a routerLink="/auth/login" class="request-reset-form__link">
-            <ui-icon name="filled/login" size="sm" />
-            Volver al inicio de sesión
-        </a>
-    </div>
+  <!-- Enhanced Footer Section -->
+  <div class="request-reset-form__footer">
+    <p class="request-reset-form__footer-text">¿Recordaste tu contraseña?</p>
+    <a routerLink="/auth/login" class="request-reset-form__link">
+      <ui-icon name="filled/login" size="sm" />
+      Volver al inicio de sesión
+    </a>
+  </div>
 </form>

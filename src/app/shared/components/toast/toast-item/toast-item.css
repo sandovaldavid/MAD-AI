@@ -1,28 +1,28 @@
 @reference '../../../../../styles.css';
 
 .icon-success {
-    @apply text-successful-600;
+  @apply text-successful-600;
 }
 .icon-error {
-    @apply text-error-600;
+  @apply text-error-600;
 }
 .icon-warning {
-    @apply text-warning-600;
+  @apply text-warning-600;
 }
 .icon-info {
-    @apply text-primary-600;
+  @apply text-primary-600;
 }
 
 /* Acento por tipo (borde izquierda) */
 .accent-success {
-    @apply border-l-4 border-successful-600;
+  @apply border-l-4 border-successful-600;
 }
 .accent-error {
-    @apply border-l-4 border-error-600;
+  @apply border-l-4 border-error-600;
 }
 .accent-warning {
-    @apply border-l-4 border-warning-600;
+  @apply border-l-4 border-warning-600;
 }
 .accent-info {
-    @apply border-l-4 border-primary-600;
+  @apply border-l-4 border-primary-600;
 }

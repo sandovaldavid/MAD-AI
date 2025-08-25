@@ -1,196 +1,184 @@
 <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
-    @if (error()) {
+  @if (error()) {
     <div class="register-form__error" role="alert">
-        <ui-icon
-            name="warning"
-            size="sm"
-            variant="outline"
-            class="inline mr-2 flex-shrink-0" />
-        <span>{{ error() }}</span>
+      <ui-icon name="warning" size="sm" variant="outline" class="inline mr-2 flex-shrink-0" />
+      <span>{{ error() }}</span>
     </div>
-    }
+  }
 
-    <div class="register-form__fields">
-        <!-- Personal Information Section -->
-        <div class="register-form__section">
-            <!-- First Name & Last Name Row -->
-            <div class="register-form__field-group">
-                <ui-form-field
-                    label="Nombre"
-                    [error]="getFieldError('first_name')"
-                    [required]="true"
-                    controlId="first_name">
-                    <ui-input
-                        id="first_name"
-                        name="first_name"
-                        type="text"
-                        placeholder="Tu nombre"
-                        formControlName="first_name"
-                        [attr.aria-describedby]="
-                            hasFieldError('first_name') ? 'first_name-err' : null
-                        "
-                        [attr.aria-invalid]="hasFieldError('first_name')" />
-                </ui-form-field>
+  <div class="register-form__fields">
+    <!-- Personal Information Section -->
+    <div class="register-form__section">
+      <!-- First Name & Last Name Row -->
+      <div class="register-form__field-group">
+        <ui-form-field
+          label="Nombre"
+          [error]="getFieldError('first_name')"
+          [required]="true"
+          controlId="first_name">
+          <ui-input
+            id="first_name"
+            name="first_name"
+            type="text"
+            placeholder="Tu nombre"
+            formControlName="first_name"
+            [attr.aria-describedby]="hasFieldError('first_name') ? 'first_name-err' : null"
+            [attr.aria-invalid]="hasFieldError('first_name')" />
+        </ui-form-field>
 
-                <ui-form-field
-                    label="Apellido"
-                    [error]="getFieldError('last_name')"
-                    [required]="true"
-                    controlId="last_name">
-                    <ui-input
-                        id="last_name"
-                        name="last_name"
-                        type="text"
-                        placeholder="Tu apellido"
-                        formControlName="last_name"
-                        [attr.aria-describedby]="
-                            hasFieldError('last_name') ? 'last_name-err' : null
-                        "
-                        [attr.aria-invalid]="hasFieldError('last_name')" />
-                </ui-form-field>
-            </div>
-        </div>
-
-        <!-- Account Information Section -->
-        <div class="register-form__section">
-            <!-- Username & Email Row -->
-            <div class="register-form__field-group">
-                <ui-form-field
-                    label="Nombre de usuario"
-                    [error]="getFieldError('username')"
-                    [required]="true"
-                    controlId="username"
-                    hint="3-30 caracteres">
-                    <ui-input
-                        id="username"
-                        name="username"
-                        type="text"
-                        placeholder="Usuario único"
-                        formControlName="username"
-                        [attr.aria-describedby]="
-                            hasFieldError('username') ? 'username-err' : 'username-hint'
-                        "
-                        [attr.aria-invalid]="hasFieldError('username')" />
-                </ui-form-field>
-
-                <ui-form-field
-                    label="Correo electrónico"
-                    [error]="getFieldError('email')"
-                    [required]="true"
-                    controlId="email">
-                    <ui-input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="correo@ejemplo.com"
-                        formControlName="email"
-                        [attr.aria-describedby]="hasFieldError('email') ? 'email-err' : null"
-                        [attr.aria-invalid]="hasFieldError('email')" />
-                </ui-form-field>
-            </div>
-
-            <!-- Role Selection (conditional) -->
-            @if (showRoleSelection()) {
-            <div class="register-form__field-single">
-                <ui-form-field
-                    label="Rol"
-                    [error]="getFieldError('role_id')"
-                    controlId="role_id"
-                    hint="Selecciona un rol (opcional)">
-                    <select
-                        id="role_id"
-                        name="role_id"
-                        formControlName="role_id"
-                        class="in in-md"
-                        [attr.aria-describedby]="
-                            hasFieldError('role_id') ? 'role_id-err' : 'role_id-hint'
-                        "
-                        [attr.aria-invalid]="hasFieldError('role_id')">
-                        <option value="">Seleccionar rol</option>
-                        @for (role of roles(); track role.id) {
-                        <option [value]="role.id">{{ role.name }}</option>
-                        }
-                    </select>
-                </ui-form-field>
-            </div>
-            }
-        </div>
-
-        <!-- Security Section -->
-        <div class="register-form__section">
-            <!-- Password & Confirmation Row -->
-            <div class="register-form__field-group--password">
-                <ui-form-field
-                    label="Contraseña"
-                    [error]="getFieldError('password')"
-                    [required]="true"
-                    controlId="password"
-                    hint="Mínimo 8 caracteres">
-                    <ui-input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Contraseña segura"
-                        formControlName="password"
-                        [attr.aria-describedby]="
-                            hasFieldError('password') ? 'password-err' : 'password-hint'
-                        "
-                        [attr.aria-invalid]="hasFieldError('password')" />
-                </ui-form-field>
-
-                <ui-form-field
-                    label="Confirmar contraseña"
-                    [error]="getFieldError('password_confirm')"
-                    [required]="true"
-                    controlId="password_confirm">
-                    <ui-input
-                        id="password_confirm"
-                        name="password_confirm"
-                        type="password"
-                        placeholder="Repite tu contraseña"
-                        formControlName="password_confirm"
-                        [attr.aria-describedby]="
-                            hasFieldError('password_confirm') ? 'password_confirm-err' : null
-                        "
-                        [attr.aria-invalid]="hasFieldError('password_confirm')" />
-                </ui-form-field>
-            </div>
-        </div>
+        <ui-form-field
+          label="Apellido"
+          [error]="getFieldError('last_name')"
+          [required]="true"
+          controlId="last_name">
+          <ui-input
+            id="last_name"
+            name="last_name"
+            type="text"
+            placeholder="Tu apellido"
+            formControlName="last_name"
+            [attr.aria-describedby]="hasFieldError('last_name') ? 'last_name-err' : null"
+            [attr.aria-invalid]="hasFieldError('last_name')" />
+        </ui-form-field>
+      </div>
     </div>
 
-    <div class="register-form__actions">
-        <div class="register-form__submit">
-            <ui-button
-                type="submit"
-                variant="primary"
-                size="lg"
-                [fullWidth]="true"
-                [loading]="loading()"
-                [disabled]="registerForm.invalid || loading()"
-                iconLeft="user-plus"
-                ariaLabel="Crear cuenta nueva">
-                @if (loading()) {
-                <span class="flex items-center gap-2">
-                    <span class="animate-spin">⏳</span>
-                    Creando cuenta...
-                </span>
-                } @else { Crear cuenta }
-            </ui-button>
-        </div>
+    <!-- Account Information Section -->
+    <div class="register-form__section">
+      <!-- Username & Email Row -->
+      <div class="register-form__field-group">
+        <ui-form-field
+          label="Nombre de usuario"
+          [error]="getFieldError('username')"
+          [required]="true"
+          controlId="username"
+          hint="3-30 caracteres">
+          <ui-input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="Usuario único"
+            formControlName="username"
+            [attr.aria-describedby]="hasFieldError('username') ? 'username-err' : 'username-hint'"
+            [attr.aria-invalid]="hasFieldError('username')" />
+        </ui-form-field>
 
-        <div class="register-form__divider">
-            <span class="register-form__divider-text">¿Ya tienes cuenta?</span>
-        </div>
+        <ui-form-field
+          label="Correo electrónico"
+          [error]="getFieldError('email')"
+          [required]="true"
+          controlId="email">
+          <ui-input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="correo@ejemplo.com"
+            formControlName="email"
+            [attr.aria-describedby]="hasFieldError('email') ? 'email-err' : null"
+            [attr.aria-invalid]="hasFieldError('email')" />
+        </ui-form-field>
+      </div>
 
-        <div class="register-form__login-link">
-            <span class="register-form__login-text">Inicia sesión con tu cuenta existente</span>
-            <button
-                type="button"
-                class="register-form__login-button"
-                (click)="navigateToLogin()"
-                [disabled]="loading()">
-                Iniciar sesión
-            </button>
+      <!-- Role Selection (conditional) -->
+      @if (showRoleSelection()) {
+        <div class="register-form__field-single">
+          <ui-form-field
+            label="Rol"
+            [error]="getFieldError('role_id')"
+            controlId="role_id"
+            hint="Selecciona un rol (opcional)">
+            <select
+              id="role_id"
+              name="role_id"
+              formControlName="role_id"
+              class="in in-md"
+              [attr.aria-describedby]="hasFieldError('role_id') ? 'role_id-err' : 'role_id-hint'"
+              [attr.aria-invalid]="hasFieldError('role_id')">
+              <option value="">Seleccionar rol</option>
+              @for (role of roles(); track role.id) {
+                <option [value]="role.id">{{ role.name }}</option>
+              }
+            </select>
+          </ui-form-field>
         </div>
+      }
     </div>
+
+    <!-- Security Section -->
+    <div class="register-form__section">
+      <!-- Password & Confirmation Row -->
+      <div class="register-form__field-group--password">
+        <ui-form-field
+          label="Contraseña"
+          [error]="getFieldError('password')"
+          [required]="true"
+          controlId="password"
+          hint="Mínimo 8 caracteres">
+          <ui-input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="Contraseña segura"
+            formControlName="password"
+            [attr.aria-describedby]="hasFieldError('password') ? 'password-err' : 'password-hint'"
+            [attr.aria-invalid]="hasFieldError('password')" />
+        </ui-form-field>
+
+        <ui-form-field
+          label="Confirmar contraseña"
+          [error]="getFieldError('password_confirm')"
+          [required]="true"
+          controlId="password_confirm">
+          <ui-input
+            id="password_confirm"
+            name="password_confirm"
+            type="password"
+            placeholder="Repite tu contraseña"
+            formControlName="password_confirm"
+            [attr.aria-describedby]="
+              hasFieldError('password_confirm') ? 'password_confirm-err' : null
+            "
+            [attr.aria-invalid]="hasFieldError('password_confirm')" />
+        </ui-form-field>
+      </div>
+    </div>
+  </div>
+
+  <div class="register-form__actions">
+    <div class="register-form__submit">
+      <ui-button
+        type="submit"
+        variant="primary"
+        size="lg"
+        [fullWidth]="true"
+        [loading]="loading()"
+        [disabled]="registerForm.invalid || loading()"
+        iconLeft="user-plus"
+        ariaLabel="Crear cuenta nueva">
+        @if (loading()) {
+          <span class="flex items-center gap-2">
+            <span class="animate-spin">⏳</span>
+            Creando cuenta...
+          </span>
+        } @else {
+          Crear cuenta
+        }
+      </ui-button>
+    </div>
+
+    <div class="register-form__divider">
+      <span class="register-form__divider-text">¿Ya tienes cuenta?</span>
+    </div>
+
+    <div class="register-form__login-link">
+      <span class="register-form__login-text">Inicia sesión con tu cuenta existente</span>
+      <button
+        type="button"
+        class="register-form__login-button"
+        (click)="navigateToLogin()"
+        [disabled]="loading()">
+        Iniciar sesión
+      </button>
+    </div>
+  </div>
 </form>

@@ -16,25 +16,32 @@ Un componente de interruptor (toggle/switch) reutilizable construido con Angular
 
 ### Inputs (Señales)
 
-| Propiedad | Tipo | Valor por defecto | Descripción |
-|-----------|------|-------------------|-------------|
-| `checked` | `boolean` | `false` | Estado del toggle (activado/desactivado) |
-| `disabled` | `boolean` | `false` | Deshabilita la interacción con el toggle |
-| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Tamaño del componente |
-| `color` | `ToggleColor` | `'primary'` | Color del toggle cuando está activado |
-| `label` | `string` | `''` | Texto de etiqueta (opcional) |
-| `labelPosition` | `'left' \| 'right'` | `'right'` | Posición de la etiqueta |
+| Propiedad       | Tipo                   | Valor por defecto | Descripción                              |
+| --------------- | ---------------------- | ----------------- | ---------------------------------------- |
+| `checked`       | `boolean`              | `false`           | Estado del toggle (activado/desactivado) |
+| `disabled`      | `boolean`              | `false`           | Deshabilita la interacción con el toggle |
+| `size`          | `'sm' \| 'md' \| 'lg'` | `'md'`            | Tamaño del componente                    |
+| `color`         | `ToggleColor`          | `'primary'`       | Color del toggle cuando está activado    |
+| `label`         | `string`               | `''`              | Texto de etiqueta (opcional)             |
+| `labelPosition` | `'left' \| 'right'`    | `'right'`         | Posición de la etiqueta                  |
 
 ### Outputs (Eventos)
 
-| Evento | Tipo | Descripción |
-|--------|------|-------------|
+| Evento   | Tipo      | Descripción                                 |
+| -------- | --------- | ------------------------------------------- |
 | `toggle` | `boolean` | Se emite cuando cambia el estado del toggle |
 
 ### Tipos de Color
 
 ```typescript
-type ToggleColor = 'primary' | 'secondary' | 'tertiary' | 'successful' | 'error' | 'warning' | 'info';
+type ToggleColor =
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'successful'
+  | 'error'
+  | 'warning'
+  | 'info';
 ```
 
 ## Ejemplos de Uso
@@ -48,16 +55,11 @@ import { Toggle } from '@/shared/ui/toggle/toggle';
 @Component({
   selector: 'app-example',
   imports: [Toggle],
-  template: `
-    <ui-toggle 
-      [checked]="isEnabled()"
-      (toggle)="onToggle($event)">
-    </ui-toggle>
-  `
+  template: ` <ui-toggle [checked]="isEnabled()" (toggle)="onToggle($event)"> </ui-toggle> `,
 })
 export class ExampleComponent {
   readonly isEnabled = signal(false);
-  
+
   onToggle(value: boolean): void {
     this.isEnabled.set(value);
     console.log('Toggle changed:', value);
@@ -70,17 +72,17 @@ export class ExampleComponent {
 ```typescript
 @Component({
   template: `
-    <ui-toggle 
+    <ui-toggle
       [checked]="darkMode()"
       label="Modo oscuro"
       labelPosition="left"
       (toggle)="toggleDarkMode($event)">
     </ui-toggle>
-  `
+  `,
 })
 export class SettingsComponent {
   readonly darkMode = signal(false);
-  
+
   toggleDarkMode(enabled: boolean): void {
     this.darkMode.set(enabled);
     // Lógica para cambiar el tema
@@ -94,28 +96,17 @@ export class SettingsComponent {
 @Component({
   template: `
     <!-- Tamaño pequeño -->
-    <ui-toggle 
-      size="sm" 
-      color="successful"
-      label="Notificaciones"
-      [checked]="notifications()">
+    <ui-toggle size="sm" color="successful" label="Notificaciones" [checked]="notifications()">
     </ui-toggle>
-    
+
     <!-- Tamaño mediano (por defecto) -->
-    <ui-toggle 
-      color="primary"
-      label="Sincronización automática"
-      [checked]="autoSync()">
+    <ui-toggle color="primary" label="Sincronización automática" [checked]="autoSync()">
     </ui-toggle>
-    
+
     <!-- Tamaño grande -->
-    <ui-toggle 
-      size="lg" 
-      color="warning"
-      label="Modo de desarrollo"
-      [checked]="devMode()">
+    <ui-toggle size="lg" color="warning" label="Modo de desarrollo" [checked]="devMode()">
     </ui-toggle>
-  `
+  `,
 })
 export class PreferencesComponent {
   readonly notifications = signal(true);
@@ -130,33 +121,29 @@ export class PreferencesComponent {
 @Component({
   template: `
     <!-- Toggle deshabilitado -->
-    <ui-toggle 
+    <ui-toggle
       [checked]="true"
       [disabled]="true"
       label="Función premium (requiere suscripción)"
       color="tertiary">
     </ui-toggle>
-    
+
     <!-- Toggle de error -->
-    <ui-toggle 
+    <ui-toggle
       [checked]="hasError()"
       color="error"
       label="Alertas de error"
       (toggle)="toggleErrorAlerts($event)">
     </ui-toggle>
-    
+
     <!-- Toggle de información -->
-    <ui-toggle 
-      color="info"
-      label="Mostrar ayuda contextual"
-      [checked]="showHelp()">
-    </ui-toggle>
-  `
+    <ui-toggle color="info" label="Mostrar ayuda contextual" [checked]="showHelp()"> </ui-toggle>
+  `,
 })
 export class StatusComponent {
   readonly hasError = signal(false);
   readonly showHelp = signal(true);
-  
+
   toggleErrorAlerts(enabled: boolean): void {
     this.hasError.set(enabled);
   }
@@ -173,35 +160,29 @@ import { effect } from '@angular/core';
   imports: [Toggle, ReactiveFormsModule],
   template: `
     <form [formGroup]="settingsForm">
-      <ui-toggle 
+      <ui-toggle
         formControlName="emailNotifications"
         label="Notificaciones por email"
         color="primary">
       </ui-toggle>
-      
-      <ui-toggle 
-        formControlName="pushNotifications"
-        label="Notificaciones push"
-        color="secondary">
+
+      <ui-toggle formControlName="pushNotifications" label="Notificaciones push" color="secondary">
       </ui-toggle>
     </form>
-    
+
     <!-- Toggles controlados por signals -->
-    <ui-toggle 
-      [checked]="emailEnabled()"
-      (toggle)="emailEnabled.set($event)"
-      label="Emails">
+    <ui-toggle [checked]="emailEnabled()" (toggle)="emailEnabled.set($event)" label="Emails">
     </ui-toggle>
-  `
+  `,
 })
 export class FormExampleComponent {
   readonly settingsForm = this.fb.group({
     emailNotifications: [true],
-    pushNotifications: [false]
+    pushNotifications: [false],
   });
-  
+
   readonly emailEnabled = signal(false);
-  
+
   constructor(private fb: FormBuilder) {
     // Sincronizar signal con form control
     effect(() => {
@@ -217,7 +198,7 @@ export class FormExampleComponent {
 El componente utiliza exclusivamente los colores definidos en `src/styles/colors.css`:
 
 - **`primary`**: Azul principal del sistema
-- **`secondary`**: Colores secundarios para elementos de apoyo  
+- **`secondary`**: Colores secundarios para elementos de apoyo
 - **`tertiary`**: Colores terciarios para acentos
 - **`successful`**: Verde para estados de éxito
 - **`error`**: Rojo para estados de error
@@ -229,17 +210,20 @@ El componente utiliza exclusivamente los colores definidos en `src/styles/colors
 El componente está completamente optimizado para accesibilidad:
 
 ### ARIA
+
 - `role="switch"` para identificar el componente como interruptor
 - `aria-checked` refleja el estado actual
 - `aria-disabled` cuando está deshabilitado
 - `aria-label` para descripción accesible
 
 ### Navegación por Teclado
+
 - **Espacio** o **Enter**: Activa/desactiva el toggle
 - **Tab**: Navega hacia el siguiente elemento
 - **Shift + Tab**: Navega hacia el elemento anterior
 
 ### Indicadores Visuales
+
 - Anillo de enfoque visible al navegar por teclado
 - Contrastes de color que cumplen WCAG 2.1 AA
 - Soporte para `prefers-reduced-motion`
@@ -299,16 +283,19 @@ npm test -- --include="**/toggle.spec.ts"
 ## Notas de Implementación
 
 ### Signals y Reactivity
+
 - Utiliza las nuevas APIs de Angular (signals, input, output)
 - Estado reactivo con `computed()` para clases dinámicas
 - Optimizado para `OnPush` change detection
 
 ### Rendimiento
+
 - Sin re-renderizados innecesarios gracias a signals
 - Clases CSS calculadas dinámicamente solo cuando cambian las dependencias
 - Transiciones CSS nativas para animaciones fluidas
 
 ### Mantenibilidad
+
 - Código modular y bien tipado
 - Separación clara entre lógica y presentación
 - Documentación completa y ejemplos de uso

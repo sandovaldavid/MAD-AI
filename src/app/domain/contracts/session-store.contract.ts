@@ -28,46 +28,46 @@ import { UserStatus } from '@domain/enums/user-status.enum';
  * @domain Session Management
  */
 export interface AuthUserSnapshotContract {
-    /** Unique identifier of the authenticated user */
-    id: number;
-    /** Username of the authenticated user */
-    username: string;
-    /** Email address of the authenticated user */
-    email: string;
-    /**
-     * ID of the user's assigned role.
-     * Null if no role is assigned or role data is unavailable.
-     */
-    roleId?: number | null;
-    /**
-     * Name of the user's assigned role.
-     * Null if no role is assigned or role data is unavailable.
-     */
-    roleName?: string | null;
-    /**
-     * Access level derived from the user's role.
-     * Used for quick permission checks without role lookups.
-     * Null if role data is unavailable.
-     */
-    accessLevel?: number | null;
-    /**
-     * Email confirmation status of the user.
-     * Critical for feature access and security verification.
-     * Null if confirmation status is unknown.
-     */
-    isEmailConfirmed?: boolean | null;
-    /**
-     * Current status of the user account.
-     * Used for account state management and access control.
-     * Null if status is unknown.
-     */
-    status?: UserStatus | null;
-    /**
-     * Timestamp of the last user data update.
-     * Used for cache invalidation and data freshness checks.
-     * ISO 8601 format string or null if unknown.
-     */
-    updatedAt?: string | null;
+  /** Unique identifier of the authenticated user */
+  id: number;
+  /** Username of the authenticated user */
+  username: string;
+  /** Email address of the authenticated user */
+  email: string;
+  /**
+   * ID of the user's assigned role.
+   * Null if no role is assigned or role data is unavailable.
+   */
+  roleId?: number | null;
+  /**
+   * Name of the user's assigned role.
+   * Null if no role is assigned or role data is unavailable.
+   */
+  roleName?: string | null;
+  /**
+   * Access level derived from the user's role.
+   * Used for quick permission checks without role lookups.
+   * Null if role data is unavailable.
+   */
+  accessLevel?: number | null;
+  /**
+   * Email confirmation status of the user.
+   * Critical for feature access and security verification.
+   * Null if confirmation status is unknown.
+   */
+  isEmailConfirmed?: boolean | null;
+  /**
+   * Current status of the user account.
+   * Used for account state management and access control.
+   * Null if status is unknown.
+   */
+  status?: UserStatus | null;
+  /**
+   * Timestamp of the last user data update.
+   * Used for cache invalidation and data freshness checks.
+   * ISO 8601 format string or null if unknown.
+   */
+  updatedAt?: string | null;
 }
 
 /**
@@ -100,18 +100,18 @@ export interface AuthUserSnapshotContract {
  * @domain Session Management
  */
 export interface TokenSnapshotContract {
-    /**
-     * JWT access token for API authentication.
-     * Null if no active session or token has been cleared.
-     */
-    accessToken?: string | null;
-    /**
-     * Unix timestamp for access token expiration.
-     * Used for automatic token refresh before expiration.
-     * Null if expiration is unknown.
-     */
-    accessExp?: number | null;
-    refreshToken?: string | null;
+  /**
+   * JWT access token for API authentication.
+   * Null if no active session or token has been cleared.
+   */
+  accessToken?: string | null;
+  /**
+   * Unix timestamp for access token expiration.
+   * Used for automatic token refresh before expiration.
+   * Null if expiration is unknown.
+   */
+  accessExp?: number | null;
+  refreshToken?: string | null;
 }
 
 /**
@@ -160,25 +160,25 @@ export interface TokenSnapshotContract {
  * @domain Session Management
  */
 export type SessionSnapshotContract = Readonly<{
-    /**
-     * Authenticated user data snapshot.
-     * Null when no user is authenticated or session is cleared.
-     */
-    user: AuthUserSnapshotContract | null;
-    /**
-     * Authentication tokens snapshot.
-     * Null when no tokens are available or session is cleared.
-     */
-    tokens: TokenSnapshotContract | null;
-    /**
-     * Schema version for migration support.
-     * Enables backward compatibility when session structure evolves.
-     * @minimum 1
-     */
-    version: number;
-    /**
-     * Timestamp when the session was last updated.
-     * Unix timestamp in milliseconds for precise ordering.
-     */
-    updatedAt: number;
+  /**
+   * Authenticated user data snapshot.
+   * Null when no user is authenticated or session is cleared.
+   */
+  user: AuthUserSnapshotContract | null;
+  /**
+   * Authentication tokens snapshot.
+   * Null when no tokens are available or session is cleared.
+   */
+  tokens: TokenSnapshotContract | null;
+  /**
+   * Schema version for migration support.
+   * Enables backward compatibility when session structure evolves.
+   * @minimum 1
+   */
+  version: number;
+  /**
+   * Timestamp when the session was last updated.
+   * Unix timestamp in milliseconds for precise ordering.
+   */
+  updatedAt: number;
 }>;

@@ -18,29 +18,29 @@ import { provideIcons } from './di/provide-icons';
 import { provideExportServices } from './di/provide-export';
 
 export const appConfig: ApplicationConfig = {
-    providers: [
-        { provide: ErrorHandler, useClass: GlobalErrorHandler },
-        {
-            provide: IMAGE_LOADER,
-            useValue: (config: ImageLoaderConfig) => {
-                return config.src;
-            },
-        },
-        provideAnimations(),
-        provideHttpClient(
-            withInterceptors([authInterceptor, httpErrorInterceptor, enhancedErrorInterceptor])
-        ),
-        provideRouter(routes),
-        provideClientHydration(withEventReplay()),
-        provideAuth(),
-        provideNotifications(),
-        provideUsers(),
-        provideDomainEventsForDevelopment(),
-        ...provideRoles(),
-        provideExportServices(),
-        ...provideIcons({
-            missingStrategy: 'warn',
-            defaultVariant: 'outline',
-        }),
-    ],
+  providers: [
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
+    {
+      provide: IMAGE_LOADER,
+      useValue: (config: ImageLoaderConfig) => {
+        return config.src;
+      },
+    },
+    provideAnimations(),
+    provideHttpClient(
+      withInterceptors([authInterceptor, httpErrorInterceptor, enhancedErrorInterceptor])
+    ),
+    provideRouter(routes),
+    provideClientHydration(withEventReplay()),
+    provideAuth(),
+    provideNotifications(),
+    provideUsers(),
+    provideDomainEventsForDevelopment(),
+    ...provideRoles(),
+    provideExportServices(),
+    ...provideIcons({
+      missingStrategy: 'warn',
+      defaultVariant: 'outline',
+    }),
+  ],
 };

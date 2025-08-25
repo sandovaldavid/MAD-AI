@@ -29,35 +29,35 @@
  * @domain User Management
  */
 export interface UserListFilterContract {
-    /**
-     * Filter by user active status.
-     * When true, returns only active users.
-     * When false, returns only inactive users.
-     * When undefined, returns users regardless of status.
-     */
-    isActive?: boolean;
-    /**
-     * Filter by specific role ID.
-     * Returns only users assigned to the specified role.
-     */
-    roleId?: number;
-    /**
-     * Text search across username, email, first name, and last name.
-     * Performs case-insensitive partial matching.
-     */
-    searchTerm?: string;
-    /**
-     * Maximum number of users to return.
-     * Used for pagination and performance optimization.
-     * @default 50
-     */
-    limit?: number;
-    /**
-     * Number of users to skip from the beginning.
-     * Used for pagination in combination with limit.
-     * @default 0
-     */
-    offset?: number;
+  /**
+   * Filter by user active status.
+   * When true, returns only active users.
+   * When false, returns only inactive users.
+   * When undefined, returns users regardless of status.
+   */
+  isActive?: boolean;
+  /**
+   * Filter by specific role ID.
+   * Returns only users assigned to the specified role.
+   */
+  roleId?: number;
+  /**
+   * Text search across username, email, first name, and last name.
+   * Performs case-insensitive partial matching.
+   */
+  searchTerm?: string;
+  /**
+   * Maximum number of users to return.
+   * Used for pagination and performance optimization.
+   * @default 50
+   */
+  limit?: number;
+  /**
+   * Number of users to skip from the beginning.
+   * Used for pagination in combination with limit.
+   * @default 0
+   */
+  offset?: number;
 }
 
 /**
@@ -84,21 +84,21 @@ export interface UserListFilterContract {
  * @domain User Management
  */
 export interface CreateUserContract {
-    /** Unique username for the new user account */
-    username: string;
-    /** Email address for the new user account */
-    email: string;
-    /** User's first name */
-    firstName: string;
-    /** User's last name */
-    lastName: string;
-    /** Role ID to assign to the new user */
-    roleId: number;
-    /**
-     * Initial active status for the user account.
-     * @default true
-     */
-    isActive?: boolean;
+  /** Unique username for the new user account */
+  username: string;
+  /** Email address for the new user account */
+  email: string;
+  /** User's first name */
+  firstName: string;
+  /** User's last name */
+  lastName: string;
+  /** Role ID to assign to the new user */
+  roleId: number;
+  /**
+   * Initial active status for the user account.
+   * @default true
+   */
+  isActive?: boolean;
 }
 
 /**
@@ -136,18 +136,18 @@ export interface CreateUserContract {
  * @domain User Management
  */
 export interface UpdateUserPatchContract {
-    /** Updated username (must remain unique) */
-    username?: string;
-    /** Updated email address (must remain unique) */
-    email?: string;
-    /** Updated first name */
-    firstName?: string;
-    /** Updated last name */
-    lastName?: string;
-    /** Updated role assignment */
-    roleId?: number;
-    /** Updated active status */
-    isActive?: boolean;
+  /** Updated username (must remain unique) */
+  username?: string;
+  /** Updated email address (must remain unique) */
+  email?: string;
+  /** Updated first name */
+  firstName?: string;
+  /** Updated last name */
+  lastName?: string;
+  /** Updated role assignment */
+  roleId?: number;
+  /** Updated active status */
+  isActive?: boolean;
 }
 
 /**
@@ -164,10 +164,10 @@ export interface UpdateUserPatchContract {
  * @domain User Management
  */
 export interface ChangePasswordContract {
-    /** Contraseña actual del usuario */
-    currentPassword: string;
-    /** Nueva contraseña deseada */
-    newPassword: string;
-    /** Confirmación de la nueva contraseña */
-    newPasswordConfirm: string;
+  /** Contraseña actual del usuario */
+  currentPassword: string;
+  /** Nueva contraseña deseada */
+  newPassword: string;
+  /** Confirmación de la nueva contraseña */
+  newPasswordConfirm: string;
 }

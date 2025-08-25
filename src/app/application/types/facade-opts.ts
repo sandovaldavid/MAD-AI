@@ -1,4 +1,4 @@
 export interface FacadeOpts {
-    silent?: boolean;
-    skipLoading?: boolean;
+  silent?: boolean;
+  skipLoading?: boolean;
 }

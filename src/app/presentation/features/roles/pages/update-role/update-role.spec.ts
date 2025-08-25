@@ -8,9 +8,8 @@ describe('UpdateRole', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UpdateRole]
-    })
-    .compileComponents();
+      imports: [UpdateRole],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(UpdateRole);
     component = fixture.componentInstance;

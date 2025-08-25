@@ -33,114 +33,112 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
  */
 @Injectable({ providedIn: 'root' })
 export class ConfirmEmail {
-    private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Orchestrates email confirmation with validation, delegation, and side effects
-     *
-     * @param request - Email confirmation request containing the token
-     * @returns Promise<string> - Confirmation message
-     *
-     * @throws ApplicationError when confirmation fails with normalized error message
-     *
-     * @example Basic email confirmation
-     * ```typescript
-     * const message = await confirmEmailUC.execute({
-     *   token: 'email-confirmation-token-here'
-     * });
-     * console.log(message); // "Email confirmed successfully"
-     * ```
-     */
-    async execute(request: EmailConfirmationRequest): Promise<string> {
-        try {
-            // 1. Validate application rules for email confirmation
-            await this.validateApplicationRules(request);
+  /**
+   * Orchestrates email confirmation with validation, delegation, and side effects
+   *
+   * @param request - Email confirmation request containing the token
+   * @returns Promise<string> - Confirmation message
+   *
+   * @throws ApplicationError when confirmation fails with normalized error message
+   *
+   * @example Basic email confirmation
+   * ```typescript
+   * const message = await confirmEmailUC.execute({
+   *   token: 'email-confirmation-token-here'
+   * });
+   * console.log(message); // "Email confirmed successfully"
+   * ```
+   */
+  async execute(request: EmailConfirmationRequest): Promise<string> {
+    try {
+      // 1. Validate application rules for email confirmation
+      await this.validateApplicationRules(request);
 
-            // 2. Execute email confirmation through domain repository
-            const confirmationResult = await this.authRepo.confirmEmail(request.token);
+      // 2. Execute email confirmation through domain repository
+      const confirmationResult = await this.authRepo.confirmEmail(request.token);
 
-            // 3. Handle side effects - logging and audit trail
-            await this.handleConfirmationSideEffects(request, confirmationResult);
+      // 3. Handle side effects - logging and audit trail
+      await this.handleConfirmationSideEffects(request, confirmationResult);
 
-            return confirmationResult.message;
-        } catch (error) {
-            // 4. Normalize and re-throw error
-            throw new ApplicationError(
-                'confirm_email',
-                this.errorTransformer.transformError(error),
-                'EMAIL_CONFIRMATION_FAILED'
-            );
-        }
+      return confirmationResult.message;
+    } catch (error) {
+      // 4. Normalize and re-throw error
+      throw new ApplicationError(
+        'confirm_email',
+        this.errorTransformer.transformError(error),
+        'EMAIL_CONFIRMATION_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validates application-specific rules for email confirmation
+   */
+  private async validateApplicationRules(request: EmailConfirmationRequest): Promise<void> {
+    // Application-level validation: check if system is in maintenance mode
+    const maintenanceMode = await this.checkMaintenanceMode();
+
+    if (maintenanceMode) {
+      throw new ApplicationError(
+        'confirm_email',
+        'Email confirmation is temporarily unavailable due to system maintenance.',
+        'SYSTEM_MAINTENANCE'
+      );
     }
 
-    /**
-     * Validates application-specific rules for email confirmation
-     */
-    private async validateApplicationRules(request: EmailConfirmationRequest): Promise<void> {
-        // Application-level validation: check if system is in maintenance mode
-        const maintenanceMode = await this.checkMaintenanceMode();
+    // Application-level validation: rate limiting could be implemented here
+    // This would prevent abuse of the confirmation endpoint
+    console.log(
+      `Email confirmation attempt at ${new Date(this.clock.nowEpochSeconds() * 1000).toISOString()}`
+    );
+  }
 
-        if (maintenanceMode) {
-            throw new ApplicationError(
-                'confirm_email',
-                'Email confirmation is temporarily unavailable due to system maintenance.',
-                'SYSTEM_MAINTENANCE'
-            );
-        }
+  /**
+   * Handles email confirmation side effects
+   */
+  private async handleConfirmationSideEffects(
+    request: EmailConfirmationRequest,
+    result: { message: string }
+  ): Promise<void> {
+    // Log successful confirmation for audit purposes
+    const confirmationTime = new Date(this.clock.nowEpochSeconds() * 1000);
+    console.log(
+      `Email confirmed successfully at ${confirmationTime.toISOString()}: ${request.token.substring(
+        0,
+        8
+      )}...`
+    );
 
-        // Application-level validation: rate limiting could be implemented here
-        // This would prevent abuse of the confirmation endpoint
-        console.log(
-            `Email confirmation attempt at ${new Date(
-                this.clock.nowEpochSeconds() * 1000
-            ).toISOString()}`
-        );
+    // Additional side effects could include:
+    // - Sending welcome notifications
+    // - Updating user analytics
+    // - Triggering post-confirmation workflows
+    // - Security event logging
+  }
+
+  /**
+   * Checks if system is in maintenance mode
+   */
+  private async checkMaintenanceMode(): Promise<boolean> {
+    // This would typically check system configuration or feature flags
+    // For now, returning false (no maintenance mode)
+    return false;
+  }
+
+  /**
+   * Extracts error code from unknown error
+   */
+  private extractErrorCode(error: unknown): string {
+    if (error instanceof ApplicationError) {
+      return error.code;
     }
-
-    /**
-     * Handles email confirmation side effects
-     */
-    private async handleConfirmationSideEffects(
-        request: EmailConfirmationRequest,
-        result: { message: string }
-    ): Promise<void> {
-        // Log successful confirmation for audit purposes
-        const confirmationTime = new Date(this.clock.nowEpochSeconds() * 1000);
-        console.log(
-            `Email confirmed successfully at ${confirmationTime.toISOString()}: ${request.token.substring(
-                0,
-                8
-            )}...`
-        );
-
-        // Additional side effects could include:
-        // - Sending welcome notifications
-        // - Updating user analytics
-        // - Triggering post-confirmation workflows
-        // - Security event logging
+    if (error && typeof error === 'object' && 'code' in error) {
+      return String((error as any).code);
     }
-
-    /**
-     * Checks if system is in maintenance mode
-     */
-    private async checkMaintenanceMode(): Promise<boolean> {
-        // This would typically check system configuration or feature flags
-        // For now, returning false (no maintenance mode)
-        return false;
-    }
-
-    /**
-     * Extracts error code from unknown error
-     */
-    private extractErrorCode(error: unknown): string {
-        if (error instanceof ApplicationError) {
-            return error.code;
-        }
-        if (error && typeof error === 'object' && 'code' in error) {
-            return String((error as any).code);
-        }
-        return 'UNKNOWN_ERROR';
-    }
+    return 'UNKNOWN_ERROR';
+  }
 }

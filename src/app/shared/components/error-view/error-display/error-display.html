@@ -1,28 +1,28 @@
 <div class="error-display">
-    <!-- Error Container -->
-    <div [class]="containerClasses()">
-        <!-- Header Section -->
-        <div class="error-display-header">
-            @if (showIcon()) {
-            <app-error-icon [config]="iconConfig()" />
-            }
+  <!-- Error Container -->
+  <div [class]="containerClasses()">
+    <!-- Header Section -->
+    <div class="error-display-header">
+      @if (showIcon()) {
+        <app-error-icon [config]="iconConfig()" />
+      }
 
-            <div class="error-display-content">
-                <h3 class="error-display-title">{{ config().title }}</h3>
-                <p class="error-display-message">{{ config().message }}</p>
-            </div>
-        </div>
-
-        <!-- Actions Section -->
-        @if (hasActions()) {
-        <div class="error-display-actions">
-            <app-error-actions [actions]="config().actions" />
-        </div>
-        }
-
-        <!-- Details Section -->
-        @if (hasDetails()) {
-        <app-error-details [config]="detailsConfig()" />
-        }
+      <div class="error-display-content">
+        <h3 class="error-display-title">{{ config().title }}</h3>
+        <p class="error-display-message">{{ config().message }}</p>
+      </div>
     </div>
+
+    <!-- Actions Section -->
+    @if (hasActions()) {
+      <div class="error-display-actions">
+        <app-error-actions [actions]="config().actions" />
+      </div>
+    }
+
+    <!-- Details Section -->
+    @if (hasDetails()) {
+      <app-error-details [config]="detailsConfig()" />
+    }
+  </div>
 </div>

@@ -1,66 +1,65 @@
 <div
-    class="pointer-events-auto rounded-xl shadow-lg border bg-white/95 dark:bg-neutral-900/90 backdrop-blur relative"
-    role="alert"
-    [attr.aria-live]="ariaLive"
-    [ngClass]="accentClass(t.type)">
-    <div class="flex gap-3 p-3">
-        <!-- Icono a la izquierda -->
-        <div class="flex items-center justify-center shrink-0 h-full">
-            @if (t.type === types.SUCCESS) {
-            <ui-icon
-                name="outline/success"
-                class="text-successful-500"
-                ariaLabel="Éxito"
-                size="lg" />
-            } @if (t.type === types.ERROR) {
-            <ui-icon name="outline/error" class="text-error-500" ariaLabel="Error" size="lg" />
-            } @if (t.type === types.WARNING) {
-            <ui-icon
-                name="outline/warning"
-                class="text-warning-500"
-                ariaLabel="Advertencia"
-                size="lg" />
-            } @if (t.type === types.INFO) {
-            <ui-icon name="outline/info" class="text-info-500" ariaLabel="Información" size="lg" />
-            }
-        </div>
-
-        <!-- Contenido en el medio -->
-        <div class="flex-1 min-w-0">
-            @if (t.title) {
-            <div class="font-semibold truncate text-black dark:text-white">{{ t.title }}</div>
-            }
-            <div
-                class="text-sm leading-snug break-words whitespace-pre-line text-black dark:text-white">
-                {{ t.message }}
-            </div>
-
-            @if (t.actions && t.actions.length > 0) {
-            <div class="mt-2 flex gap-2">
-                @if (t.actions[0]) {
-                <button
-                    class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
-                    (click)="onAction('primary')">
-                    {{ t.actions[0].label }}
-                </button>
-                } @if (t.actions[1]) {
-                <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
-                    {{ t.actions[1].label }}
-                </button>
-                }
-            </div>
-            }
-        </div>
+  class="pointer-events-auto rounded-xl shadow-lg border bg-white/95 dark:bg-neutral-900/90 backdrop-blur relative"
+  role="alert"
+  [attr.aria-live]="ariaLive"
+  [ngClass]="accentClass(t.type)">
+  <div class="flex gap-3 p-3">
+    <!-- Icono a la izquierda -->
+    <div class="flex items-center justify-center shrink-0 h-full">
+      @if (t.type === types.SUCCESS) {
+        <ui-icon name="outline/success" class="text-successful-500" ariaLabel="Éxito" size="lg" />
+      }
+      @if (t.type === types.ERROR) {
+        <ui-icon name="outline/error" class="text-error-500" ariaLabel="Error" size="lg" />
+      }
+      @if (t.type === types.WARNING) {
+        <ui-icon
+          name="outline/warning"
+          class="text-warning-500"
+          ariaLabel="Advertencia"
+          size="lg" />
+      }
+      @if (t.type === types.INFO) {
+        <ui-icon name="outline/info" class="text-info-500" ariaLabel="Información" size="lg" />
+      }
     </div>
 
-    <!-- Botón cerrar en la esquina superior derecha -->
-    @if (!t.isDismissed) {
+    <!-- Contenido en el medio -->
+    <div class="flex-1 min-w-0">
+      @if (t.title) {
+        <div class="font-semibold truncate text-black dark:text-white">{{ t.title }}</div>
+      }
+      <div class="text-sm leading-snug break-words whitespace-pre-line text-black dark:text-white">
+        {{ t.message }}
+      </div>
+
+      @if (t.actions && t.actions.length > 0) {
+        <div class="mt-2 flex gap-2">
+          @if (t.actions[0]) {
+            <button
+              class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
+              (click)="onAction('primary')">
+              {{ t.actions[0].label }}
+            </button>
+          }
+          @if (t.actions[1]) {
+            <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
+              {{ t.actions[1].label }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Botón cerrar en la esquina superior derecha -->
+  @if (!t.isDismissed) {
     <button
-        class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
-        type="button"
-        aria-label="Cerrar notificación"
-        (click)="onClose()">
-        <ui-icon name="outline/x-mark" class="text-red-500 dark:text-red-700" size="md" />
+      class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
+      type="button"
+      aria-label="Cerrar notificación"
+      (click)="onClose()">
+      <ui-icon name="outline/x-mark" class="text-red-500 dark:text-red-700" size="md" />
     </button>
-    }
+  }
 </div>

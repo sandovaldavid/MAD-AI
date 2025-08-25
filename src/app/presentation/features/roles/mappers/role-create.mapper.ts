@@ -4,11 +4,11 @@ import { RoleModel } from '../models/role.model';
  * Type definition for role creation input (what the facade expects)
  */
 export interface CreateRoleInput {
-    name: string;
-    accessLevel: number;
-    description: string;
-    canLeadProjects?: boolean;
-    isUniquePerTeam?: boolean;
+  name: string;
+  accessLevel: number;
+  description: string;
+  canLeadProjects?: boolean;
+  isUniquePerTeam?: boolean;
 }
 
 /**
@@ -23,13 +23,13 @@ export interface CreateRoleInput {
  * @returns CreateRoleInput - Properly typed input for the application facade
  */
 export function mapRoleModelToCreateInput(roleModel: Partial<RoleModel>): CreateRoleInput {
-    return {
-        name: roleModel.name || '',
-        accessLevel: Number(roleModel.accessLevel) || 5,
-        description: roleModel.description || '',
-        canLeadProjects: false, // Default value for optional field
-        isUniquePerTeam: false, // Default value for optional field
-    };
+  return {
+    name: roleModel.name || '',
+    accessLevel: Number(roleModel.accessLevel) || 5,
+    description: roleModel.description || '',
+    canLeadProjects: false, // Default value for optional field
+    isUniquePerTeam: false, // Default value for optional field
+  };
 }
 
 /**
@@ -39,11 +39,11 @@ export function mapRoleModelToCreateInput(roleModel: Partial<RoleModel>): Create
  * @returns boolean - True if model has required fields, false otherwise
  */
 export function isValidRoleForCreation(roleModel: Partial<RoleModel>): boolean {
-    return !!(
-        roleModel.name?.trim() &&
-        roleModel.accessLevel &&
-        Number.isInteger(Number(roleModel.accessLevel)) &&
-        Number(roleModel.accessLevel) >= 1 &&
-        Number(roleModel.accessLevel) <= 5
-    );
+  return !!(
+    roleModel.name?.trim() &&
+    roleModel.accessLevel &&
+    Number.isInteger(Number(roleModel.accessLevel)) &&
+    Number(roleModel.accessLevel) >= 1 &&
+    Number(roleModel.accessLevel) <= 5
+  );
 }

@@ -2,257 +2,257 @@
 
 /* Custom Keyframes */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes bounce {
-    0%,
-    20%,
-    60%,
-    100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-20px);
-    }
-    80% {
-        transform: translateY(-10px);
-    }
+  0%,
+  20%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-20px);
+  }
+  80% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Main Container */
 .verify-email-page {
-    @apply min-h-screen flex items-center justify-center p-4;
-    background: linear-gradient(
-        135deg,
-        rgb(from theme(colors.primary.50) r g b / 0.8) 0%,
-        rgb(from theme(colors.primary.100) r g b / 0.6) 50%,
-        rgb(from theme(colors.primary.200) r g b / 0.4) 100%
-    );
-    animation: fadeIn 0.8s ease-out;
+  @apply min-h-screen flex items-center justify-center p-4;
+  background: linear-gradient(
+    135deg,
+    rgb(from theme(colors.primary.50) r g b / 0.8) 0%,
+    rgb(from theme(colors.primary.100) r g b / 0.6) 50%,
+    rgb(from theme(colors.primary.200) r g b / 0.4) 100%
+  );
+  animation: fadeIn 0.8s ease-out;
 }
 
 .verify-email-page::before {
-    @apply absolute inset-0 pointer-events-none;
-    content: '';
-    background: radial-gradient(
-        circle at 20% 50%,
-        rgb(from theme(colors.primary.300) r g b / 0.3) 0%,
-        transparent 50%
-    );
+  @apply absolute inset-0 pointer-events-none;
+  content: '';
+  background: radial-gradient(
+    circle at 20% 50%,
+    rgb(from theme(colors.primary.300) r g b / 0.3) 0%,
+    transparent 50%
+  );
 }
 
 /* Container */
 .verify-email-page__container {
-    @apply relative w-full max-w-md mx-auto;
+  @apply relative w-full max-w-md mx-auto;
 }
 
 /* Card */
 .verify-email-page__card {
-    @apply bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl p-8 text-center backdrop-blur-xl border border-white/20;
-    animation: slideInUp 0.6s ease-out 0.2s both;
+  @apply bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl p-8 text-center backdrop-blur-xl border border-white/20;
+  animation: slideInUp 0.6s ease-out 0.2s both;
 }
 
 /* Brand Section */
 .verify-email-page__brand {
-    @apply mb-8;
+  @apply mb-8;
 }
 
 .verify-email-page__brand-title {
-    @apply text-3xl font-bold mb-2;
-    background: linear-gradient(135deg, theme(colors.primary.600), theme(colors.primary.800));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 8px rgb(from theme(colors.primary.500) r g b / 0.2);
+  @apply text-3xl font-bold mb-2;
+  background: linear-gradient(135deg, theme(colors.primary.600), theme(colors.primary.800));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 4px 8px rgb(from theme(colors.primary.500) r g b / 0.2);
 }
 
 .verify-email-page__brand-subtitle {
-    @apply text-neutral-600 dark:text-neutral-400 text-sm font-medium;
+  @apply text-neutral-600 dark:text-neutral-400 text-sm font-medium;
 }
 
 /* Loading State */
 .verify-email-page__loading {
-    @apply py-8;
+  @apply py-8;
 }
 
 .verify-email-page__loading-icon {
-    @apply w-16 h-16 mx-auto mb-6 text-primary-500;
-    animation: spin 1s linear infinite;
+  @apply w-16 h-16 mx-auto mb-6 text-primary-500;
+  animation: spin 1s linear infinite;
 }
 
 .verify-email-page__loading-title {
-    @apply text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-2;
+  @apply text-xl font-semibold text-neutral-800 dark:text-neutral-200 mb-2;
 }
 
 .verify-email-page__loading-text {
-    @apply text-neutral-600 dark:text-neutral-400;
+  @apply text-neutral-600 dark:text-neutral-400;
 }
 
 .verify-email-page__loading-dots {
-    @apply inline-block;
-    animation: pulse 1.5s ease-in-out infinite;
+  @apply inline-block;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 /* Success State */
 .verify-email-page__success {
-    @apply py-6;
+  @apply py-6;
 }
 
 .verify-email-page__success-icon {
-    @apply w-20 h-20 mx-auto mb-6 text-successful-500;
-    animation: bounce 0.8s ease-out 0.5s both;
+  @apply w-20 h-20 mx-auto mb-6 text-successful-500;
+  animation: bounce 0.8s ease-out 0.5s both;
 }
 
 .verify-email-page__success-title {
-    @apply text-2xl font-bold text-successful-700 dark:text-successful-400 mb-3;
+  @apply text-2xl font-bold text-successful-700 dark:text-successful-400 mb-3;
 }
 
 .verify-email-page__success-text {
-    @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
+  @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
 }
 
 .verify-email-page__success-redirect {
-    @apply text-sm text-primary-600 dark:text-primary-400 font-medium;
+  @apply text-sm text-primary-600 dark:text-primary-400 font-medium;
 }
 
 /* Error State */
 .verify-email-page__error {
-    @apply py-6;
+  @apply py-6;
 }
 
 .verify-email-page__error-icon {
-    @apply w-20 h-20 mx-auto mb-6 text-error-500;
-    animation: bounce 0.8s ease-out 0.5s both;
+  @apply w-20 h-20 mx-auto mb-6 text-error-500;
+  animation: bounce 0.8s ease-out 0.5s both;
 }
 
 .verify-email-page__error-title {
-    @apply text-2xl font-bold text-error-700 dark:text-error-400 mb-3;
+  @apply text-2xl font-bold text-error-700 dark:text-error-400 mb-3;
 }
 
 .verify-email-page__error-text {
-    @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
+  @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
 }
 
 .verify-email-page__error-message {
-    @apply bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-xl p-4 mb-6;
+  @apply bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-xl p-4 mb-6;
 }
 
 .verify-email-page__error-message-text {
-    @apply text-error-700 dark:text-error-400 text-sm font-medium;
+  @apply text-error-700 dark:text-error-400 text-sm font-medium;
 }
 
 /* Invalid Token State */
 .verify-email-page__invalid {
-    @apply py-6;
+  @apply py-6;
 }
 
 .verify-email-page__invalid-icon {
-    @apply w-20 h-20 mx-auto mb-6 text-warning-500;
-    animation: bounce 0.8s ease-out 0.5s both;
+  @apply w-20 h-20 mx-auto mb-6 text-warning-500;
+  animation: bounce 0.8s ease-out 0.5s both;
 }
 
 .verify-email-page__invalid-title {
-    @apply text-2xl font-bold text-warning-700 dark:text-warning-400 mb-3;
+  @apply text-2xl font-bold text-warning-700 dark:text-warning-400 mb-3;
 }
 
 .verify-email-page__invalid-text {
-    @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
+  @apply text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed;
 }
 
 /* Action Buttons */
 .verify-email-page__actions {
-    @apply flex flex-col gap-3 mt-8;
+  @apply flex flex-col gap-3 mt-8;
 }
 
 .verify-email-page__btn {
-    @apply w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 
+  @apply w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all duration-200 
            focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98];
 }
 
 .verify-email-page__btn--primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white 
+  @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white 
            hover:from-primary-700 hover:to-primary-800 
            focus:ring-primary-500/25 shadow-lg hover:shadow-xl;
 }
 
 .verify-email-page__btn--secondary {
-    @apply bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 
+  @apply bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 
            hover:bg-neutral-200 dark:hover:bg-neutral-600 
            focus:ring-neutral-500/25 border border-neutral-200 dark:border-neutral-600;
 }
 
 /* Responsive Design */
 @media (max-width: 640px) {
-    .verify-email-page {
-        @apply p-2;
-    }
+  .verify-email-page {
+    @apply p-2;
+  }
 
-    .verify-email-page__card {
-        @apply p-6 rounded-2xl;
-    }
+  .verify-email-page__card {
+    @apply p-6 rounded-2xl;
+  }
 
-    .verify-email-page__brand-title {
-        @apply text-2xl;
-    }
+  .verify-email-page__brand-title {
+    @apply text-2xl;
+  }
 }
 
 /* Accessibility and Motion Reduction */
 @media (prefers-reduced-motion: reduce) {
-    .verify-email-page,
-    .verify-email-page__card,
-    .verify-email-page__loading-icon,
-    .verify-email-page__success-icon,
-    .verify-email-page__error-icon,
-    .verify-email-page__invalid-icon,
-    .verify-email-page__loading-dots {
-        animation: none;
-    }
+  .verify-email-page,
+  .verify-email-page__card,
+  .verify-email-page__loading-icon,
+  .verify-email-page__success-icon,
+  .verify-email-page__error-icon,
+  .verify-email-page__invalid-icon,
+  .verify-email-page__loading-dots {
+    animation: none;
+  }
 }
 
 /* High Contrast Mode */
 @media (prefers-contrast: high) {
-    .verify-email-page__card {
-        @apply border-2 border-neutral-800 dark:border-neutral-200;
-    }
+  .verify-email-page__card {
+    @apply border-2 border-neutral-800 dark:border-neutral-200;
+  }
 
-    .verify-email-page__btn--primary {
-        @apply bg-primary-700 hover:bg-primary-800;
-        background-image: none;
-    }
+  .verify-email-page__btn--primary {
+    @apply bg-primary-700 hover:bg-primary-800;
+    background-image: none;
+  }
 }

@@ -10,23 +10,23 @@ import type { CreateUserContract } from '@domain/contracts/user.contract';
 import type { User } from '@domain/entities/user.entity';
 
 export interface BulkCreateUsersRequest {
-    readonly users: readonly CreateUserContract[];
-    readonly performingUserId: number;
+  readonly users: readonly CreateUserContract[];
+  readonly performingUserId: number;
 }
 
 export interface BulkCreateUserResult {
-    readonly index: number;
-    readonly success: boolean;
-    readonly user?: User;
-    readonly error?: string;
-    readonly email?: string;
+  readonly index: number;
+  readonly success: boolean;
+  readonly user?: User;
+  readonly error?: string;
+  readonly email?: string;
 }
 
 export interface BulkCreateUsersResponse {
-    readonly totalRequested: number;
-    readonly successfulCreations: number;
-    readonly failedCreations: number;
-    readonly results: readonly BulkCreateUserResult[];
+  readonly totalRequested: number;
+  readonly successfulCreations: number;
+  readonly failedCreations: number;
+  readonly results: readonly BulkCreateUserResult[];
 }
 
 /**
@@ -55,136 +55,136 @@ export interface BulkCreateUsersResponse {
  */
 @Injectable({ providedIn: 'root' })
 export class BulkCreateUsers {
-    private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
-    private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly eventProcessor = inject(DomainEventProcessor);
 
-    async execute(request: BulkCreateUsersRequest): Promise<BulkCreateUsersResponse> {
-        try {
-            // Step 1: Validate application-level rules
-            this.validateApplicationRules(request);
+  async execute(request: BulkCreateUsersRequest): Promise<BulkCreateUsersResponse> {
+    try {
+      // Step 1: Validate application-level rules
+      this.validateApplicationRules(request);
 
-            // Step 2: Fetch domain data
-            const operationTimestamp = this.clock.nowEpochSeconds();
+      // Step 2: Fetch domain data
+      const operationTimestamp = this.clock.nowEpochSeconds();
 
-            // Step 3: Execute core business operation
-            const results = await this.createUsersInBatch(request);
+      // Step 3: Execute core business operation
+      const results = await this.createUsersInBatch(request);
 
-            // Step 4: Handle side effects
-            await this.handleBulkCreationSideEffects(request, results, operationTimestamp);
+      // Step 4: Handle side effects
+      await this.handleBulkCreationSideEffects(request, results, operationTimestamp);
 
-            return results;
-        } catch (error: unknown) {
-            throw new ApplicationError(
-                'bulk_create_users',
-                this.errorTransformer.transformError(error),
-                'BULK_USER_CREATION_FAILED'
-            );
-        }
+      return results;
+    } catch (error: unknown) {
+      throw new ApplicationError(
+        'bulk_create_users',
+        this.errorTransformer.transformError(error),
+        'BULK_USER_CREATION_FAILED'
+      );
+    }
+  }
+
+  private validateApplicationRules(request: BulkCreateUsersRequest): void {
+    if (!request.users || request.users.length === 0) {
+      throw new ApplicationError(
+        'bulk_create_users',
+        'VALIDATION_ERROR',
+        'User data is required for bulk creation'
+      );
     }
 
-    private validateApplicationRules(request: BulkCreateUsersRequest): void {
-        if (!request.users || request.users.length === 0) {
-            throw new ApplicationError(
-                'bulk_create_users',
-                'VALIDATION_ERROR',
-                'User data is required for bulk creation'
-            );
-        }
-
-        if (request.users.length > 100) {
-            throw new ApplicationError(
-                'bulk_create_users',
-                'BATCH_SIZE_EXCEEDED',
-                'Cannot create more than 100 users at once'
-            );
-        }
-
-        // Check for duplicate emails in the batch
-        const emails = request.users.map((user) => user.email.toLowerCase());
-        const uniqueEmails = new Set(emails);
-        if (uniqueEmails.size !== emails.length) {
-            throw new ApplicationError(
-                'bulk_create_users',
-                'DUPLICATE_EMAILS',
-                'Duplicate email addresses detected in bulk creation request'
-            );
-        }
+    if (request.users.length > 100) {
+      throw new ApplicationError(
+        'bulk_create_users',
+        'BATCH_SIZE_EXCEEDED',
+        'Cannot create more than 100 users at once'
+      );
     }
 
-    private async createUsersInBatch(
-        request: BulkCreateUsersRequest
-    ): Promise<BulkCreateUsersResponse> {
-        const results: BulkCreateUserResult[] = [];
-        let successfulCreations = 0;
-        let failedCreations = 0;
-
-        for (let i = 0; i < request.users.length; i++) {
-            const userData = request.users[i];
-            try {
-                // Use individual repository calls since no bulk method exists
-                const user = await this.userRepository.create(userData);
-
-                results.push({
-                    index: i,
-                    success: true,
-                    user,
-                    email: userData.email,
-                });
-                successfulCreations++;
-            } catch (error: any) {
-                results.push({
-                    index: i,
-                    success: false,
-                    error: error?.message || 'Unknown error during user creation',
-                    email: userData.email,
-                });
-                failedCreations++;
-            }
-        }
-
-        return {
-            totalRequested: request.users.length,
-            successfulCreations,
-            failedCreations,
-            results,
-        };
+    // Check for duplicate emails in the batch
+    const emails = request.users.map((user) => user.email.toLowerCase());
+    const uniqueEmails = new Set(emails);
+    if (uniqueEmails.size !== emails.length) {
+      throw new ApplicationError(
+        'bulk_create_users',
+        'DUPLICATE_EMAILS',
+        'Duplicate email addresses detected in bulk creation request'
+      );
     }
+  }
 
-    private async handleBulkCreationSideEffects(
-        request: BulkCreateUsersRequest,
-        results: BulkCreateUsersResponse,
-        operationTimestamp: number
-    ): Promise<void> {
-        // Process domain events for all successfully created users
-        const successfulUsers = results.results
-            .filter((result) => result.success && result.user)
-            .map((result) => result.user!);
+  private async createUsersInBatch(
+    request: BulkCreateUsersRequest
+  ): Promise<BulkCreateUsersResponse> {
+    const results: BulkCreateUserResult[] = [];
+    let successfulCreations = 0;
+    let failedCreations = 0;
 
-        for (const user of successfulUsers) {
-            await this.eventProcessor.processEntityEvents(user);
-        }
+    for (let i = 0; i < request.users.length; i++) {
+      const userData = request.users[i];
+      try {
+        // Use individual repository calls since no bulk method exists
+        const user = await this.userRepository.create(userData);
 
-        const successfulEmails = results.results
-            .filter((result) => result.success)
-            .map((result) => result.email);
-
-        const failedEmails = results.results
-            .filter((result) => !result.success)
-            .map((result) => result.email);
-
-        console.log(`[AUDIT] Bulk user creation completed`, {
-            timestamp: operationTimestamp,
-            performedBy: request.performingUserId,
-            operation: 'bulk_create_users',
-            feature: 'users',
-            totalRequested: results.totalRequested,
-            successfulCreations: results.successfulCreations,
-            failedCreations: results.failedCreations,
-            successfulEmails,
-            failedEmails,
-            severity: 'MEDIUM',
+        results.push({
+          index: i,
+          success: true,
+          user,
+          email: userData.email,
         });
+        successfulCreations++;
+      } catch (error: any) {
+        results.push({
+          index: i,
+          success: false,
+          error: error?.message || 'Unknown error during user creation',
+          email: userData.email,
+        });
+        failedCreations++;
+      }
     }
+
+    return {
+      totalRequested: request.users.length,
+      successfulCreations,
+      failedCreations,
+      results,
+    };
+  }
+
+  private async handleBulkCreationSideEffects(
+    request: BulkCreateUsersRequest,
+    results: BulkCreateUsersResponse,
+    operationTimestamp: number
+  ): Promise<void> {
+    // Process domain events for all successfully created users
+    const successfulUsers = results.results
+      .filter((result) => result.success && result.user)
+      .map((result) => result.user!);
+
+    for (const user of successfulUsers) {
+      await this.eventProcessor.processEntityEvents(user);
+    }
+
+    const successfulEmails = results.results
+      .filter((result) => result.success)
+      .map((result) => result.email);
+
+    const failedEmails = results.results
+      .filter((result) => !result.success)
+      .map((result) => result.email);
+
+    console.log(`[AUDIT] Bulk user creation completed`, {
+      timestamp: operationTimestamp,
+      performedBy: request.performingUserId,
+      operation: 'bulk_create_users',
+      feature: 'users',
+      totalRequested: results.totalRequested,
+      successfulCreations: results.successfulCreations,
+      failedCreations: results.failedCreations,
+      successfulEmails,
+      failedEmails,
+      severity: 'MEDIUM',
+    });
+  }
 }

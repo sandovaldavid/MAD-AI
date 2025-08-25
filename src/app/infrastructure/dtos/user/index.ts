@@ -19,7 +19,7 @@
  */
 
 // Export correct DTOs from individual files
-export type { ListUsersResponseDTO, UserDTO} from './users.dto';
+export type { ListUsersResponseDTO, UserDTO } from './users.dto';
 export type { CreateUserRequestDTO, CreateUserResponseDTO } from './create.dto';
 export type { UpdateUserRequestDTO, UpdateUserResponseDTO } from './update.dto';
 export type { UserDetailResponseDTO } from './detail.dto';

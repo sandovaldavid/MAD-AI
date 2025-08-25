@@ -1,118 +1,119 @@
 @reference '../../../../styles.css';
 
 .auth-header {
-    @apply relative w-full bg-primary-500 border-b border-primary-600 shadow-sm z-10
+  @apply relative w-full bg-primary-500 border-b border-primary-600 shadow-sm z-10
     dark:bg-primary-800 dark:border-primary-700;
-    backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .auth-header__container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between;
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between;
 }
 
 /* Brand Section */
 .auth-header__brand {
-    @apply flex items-center gap-3 transition-all duration-200;
+  @apply flex items-center gap-3 transition-all duration-200;
 }
 
 .auth-header__logo-container {
-    @apply relative;
+  @apply relative;
 }
 
 .auth-header__logo-placeholder {
-    @apply w-10 h-10 rounded-lg bg-gradient-to-br from-white to-primary-200 
+  @apply w-10 h-10 rounded-lg bg-gradient-to-br from-white to-primary-200 
     flex items-center justify-center shadow-md transition-all duration-200;
-    /* Professional gradient placeholder for logo */
+  /* Professional gradient placeholder for logo */
 }
 
 .auth-header__logo-placeholder::before {
-    @apply absolute inset-0 rounded-lg opacity-20 bg-gradient-to-br from-tertiary-300 to-secondary-400;
-    content: '';
+  @apply absolute inset-0 rounded-lg opacity-20 bg-gradient-to-br from-tertiary-300 to-secondary-400;
+  content: '';
 }
 
 .auth-header__brand-text {
-    @apply flex flex-col;
+  @apply flex flex-col;
 }
 
 .auth-header__title {
-    @apply text-xl font-bold text-white leading-none tracking-tight
+  @apply text-xl font-bold text-white leading-none tracking-tight
     transition-colors duration-200;
-    /* Professional font styling for IT platform */
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    letter-spacing: -0.02em;
+  /* Professional font styling for IT platform */
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .auth-header__subtitle {
-    @apply text-xs font-medium text-primary-100 leading-none mt-0.5;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
+  @apply text-xs font-medium text-primary-100 leading-none mt-0.5;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 /* Actions Section */
 .auth-header__actions {
-    @apply flex items-center gap-3;
+  @apply flex items-center gap-3;
 }
 
 /* Professional hover effects */
 .auth-header__brand:hover .auth-header__logo-placeholder {
-    @apply scale-105 shadow-lg;
+  @apply scale-105 shadow-lg;
 }
 
 .auth-header__brand:hover .auth-header__title {
-    @apply text-primary-100;
+  @apply text-primary-100;
 }
 
 /* Glass morphism effect for modern look */
 .auth-header::before {
-    @apply absolute inset-0 bg-primary-500/80 dark:bg-primary-800/80;
-    content: '';
-    backdrop-filter: blur(20px);
-    z-index: -1;
+  @apply absolute inset-0 bg-primary-500/80 dark:bg-primary-800/80;
+  content: '';
+  backdrop-filter: blur(20px);
+  z-index: -1;
 }
 
 /* Professional border with gradient */
 .auth-header::after {
-    @apply absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-300 to-transparent;
-    content: '';
+  @apply absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-300 to-transparent;
+  content: '';
 }
 
 /* Enterprise-grade styling adjustments */
 .auth-header {
-    /* Subtle texture for professional feel */
-    background-image: radial-gradient(
-            circle at 20% 80%,
-            rgb(255 255 255 / 0.05) 0%,
-            transparent 50%
-        ),
-        radial-gradient(circle at 80% 20%, rgb(255 255 255 / 0.03) 0%, transparent 50%);
+  /* Subtle texture for professional feel */
+  background-image:
+    radial-gradient(circle at 20% 80%, rgb(255 255 255 / 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgb(255 255 255 / 0.03) 0%, transparent 50%);
 }
 
 /* Responsive Design */
 @media (max-width: 640px) {
-    .auth-header__container {
-        @apply px-4 h-14;
-    }
+  .auth-header__container {
+    @apply px-4 h-14;
+  }
 
-    .auth-header__title {
-        @apply text-lg;
-    }
+  .auth-header__title {
+    @apply text-lg;
+  }
 
-    .auth-header__subtitle {
-        @apply text-xs;
-    }
+  .auth-header__subtitle {
+    @apply text-xs;
+  }
 
-    .auth-header__logo-placeholder {
-        @apply w-8 h-8;
-    }
+  .auth-header__logo-placeholder {
+    @apply w-8 h-8;
+  }
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-    .auth-header {
-        @apply border-b-2 border-primary-300;
-    }
+  .auth-header {
+    @apply border-b-2 border-primary-300;
+  }
 
-    .auth-header__title {
-        @apply font-extrabold;
-    }
+  .auth-header__title {
+    @apply font-extrabold;
+  }
 }

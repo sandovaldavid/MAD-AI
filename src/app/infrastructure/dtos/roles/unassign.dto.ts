@@ -1,7 +1,7 @@
 export interface UnassignRoleRequestDTO {
-    user_id: number;
+  user_id: number;
 }
 
 export interface UnassignRoleResponseDTO {
-    message: string;
+  message: string;
 }

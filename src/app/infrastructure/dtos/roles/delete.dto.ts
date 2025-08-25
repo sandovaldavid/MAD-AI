@@ -1,3 +1,3 @@
 export interface DeleteRoleResponseDTO {
-    message: string;
+  message: string;
 }

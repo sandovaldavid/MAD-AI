@@ -16,13 +16,13 @@ import { RoleModel } from '../models/role.model';
  * Export format options for role data
  */
 export interface RoleExportOptions {
-    includeId?: boolean;
-    includeAccessLevel?: boolean;
-    includeStatus?: boolean;
-    includeDescription?: boolean;
-    includeUserCount?: boolean;
-    customTitle?: string;
-    format: 'pdf' | 'csv' | 'json';
+  includeId?: boolean;
+  includeAccessLevel?: boolean;
+  includeStatus?: boolean;
+  includeDescription?: boolean;
+  includeUserCount?: boolean;
+  customTitle?: string;
+  format: 'pdf' | 'csv' | 'json';
 }
 
 /**
@@ -30,12 +30,12 @@ export interface RoleExportOptions {
  * This avoids creating domain entities in the presentation layer
  */
 export interface RoleExportData {
-    id: number;
-    name: string;
-    accessLevel: number;
-    isActive: boolean;
-    description?: string;
-    userCount?: number;
+  id: number;
+  name: string;
+  accessLevel: number;
+  isActive: boolean;
+  description?: string;
+  userCount?: number;
 }
 
 /**
@@ -45,57 +45,57 @@ export interface RoleExportData {
  * without violating Clean Architecture principles.
  */
 export const RoleExportMapper = {
-    /**
-     * Transform role models to export format
-     *
-     * @param roleModels - Array of role models from presentation layer
-     * @returns Array of export-ready role data
-     */
-    toExportFormat(roleModels: RoleModel[]): RoleExportData[] {
-        return roleModels.map((roleModel) => ({
-            id: roleModel.id,
-            name: roleModel.name,
-            accessLevel: roleModel.accessLevel,
-            isActive: roleModel.isActive,
-            description: roleModel.description,
-            userCount: roleModel.userCount,
-        }));
-    },
+  /**
+   * Transform role models to export format
+   *
+   * @param roleModels - Array of role models from presentation layer
+   * @returns Array of export-ready role data
+   */
+  toExportFormat(roleModels: RoleModel[]): RoleExportData[] {
+    return roleModels.map((roleModel) => ({
+      id: roleModel.id,
+      name: roleModel.name,
+      accessLevel: roleModel.accessLevel,
+      isActive: roleModel.isActive,
+      description: roleModel.description,
+      userCount: roleModel.userCount,
+    }));
+  },
 
-    /**
-     * Transform single role model to export format
-     *
-     * @param roleModel - Single role model from presentation layer
-     * @returns Export-ready role data
-     */
-    toSingleExportFormat(roleModel: RoleModel): RoleExportData {
-        return {
-            id: roleModel.id,
-            name: roleModel.name,
-            accessLevel: roleModel.accessLevel,
-            isActive: roleModel.isActive,
-            description: roleModel.description,
-            userCount: roleModel.userCount,
-        };
-    },
+  /**
+   * Transform single role model to export format
+   *
+   * @param roleModel - Single role model from presentation layer
+   * @returns Export-ready role data
+   */
+  toSingleExportFormat(roleModel: RoleModel): RoleExportData {
+    return {
+      id: roleModel.id,
+      name: roleModel.name,
+      accessLevel: roleModel.accessLevel,
+      isActive: roleModel.isActive,
+      description: roleModel.description,
+      userCount: roleModel.userCount,
+    };
+  },
 
-    /**
-     * Create export options with defaults
-     *
-     * @param options - Partial export options
-     * @returns Complete export options with defaults
-     */
-    createExportOptions(options: Partial<RoleExportOptions>): RoleExportOptions {
-        const currentDate = new Date().toLocaleDateString();
-        return {
-            includeId: true,
-            includeAccessLevel: true,
-            includeStatus: true,
-            includeDescription: true,
-            includeUserCount: true,
-            customTitle: `Roles Export - ${currentDate}`,
-            format: 'json',
-            ...options,
-        };
-    },
+  /**
+   * Create export options with defaults
+   *
+   * @param options - Partial export options
+   * @returns Complete export options with defaults
+   */
+  createExportOptions(options: Partial<RoleExportOptions>): RoleExportOptions {
+    const currentDate = new Date().toLocaleDateString();
+    return {
+      includeId: true,
+      includeAccessLevel: true,
+      includeStatus: true,
+      includeDescription: true,
+      includeUserCount: true,
+      customTitle: `Roles Export - ${currentDate}`,
+      format: 'json',
+      ...options,
+    };
+  },
 };

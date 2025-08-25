@@ -1,7 +1,7 @@
 export interface ConfirmEmailRequestDTO {
-    token: string;
+  token: string;
 }
 
 export interface ConfirmEmailResponseDTO {
-    message: string;
+  message: string;
 }

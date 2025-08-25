@@ -39,16 +39,16 @@ export type Identifier = { type: 'email'; value: string } | { type: 'username'; 
  * @domain Authentication
  */
 export interface CredentialsContract {
-    /** User identifier supporting both email and username authentication methods */
-    identifier: Identifier;
-    /** User password for authentication validation */
-    password: string;
-    /**
-     * Optional flag to persist session across browser sessions.
-     * When true, the session will survive browser restarts.
-     * @default false
-     */
-    rememberMe?: boolean;
+  /** User identifier supporting both email and username authentication methods */
+  identifier: Identifier;
+  /** User password for authentication validation */
+  password: string;
+  /**
+   * Optional flag to persist session across browser sessions.
+   * When true, the session will survive browser restarts.
+   * @default false
+   */
+  rememberMe?: boolean;
 }
 
 /**
@@ -70,8 +70,8 @@ export interface CredentialsContract {
  * @domain Core
  */
 export interface MessageResultContract {
-    /** Human-readable message describing the operation result */
-    message: string;
+  /** Human-readable message describing the operation result */
+  message: string;
 }
 
 /**
@@ -101,24 +101,24 @@ export interface MessageResultContract {
  * @domain Authentication
  */
 export interface RegisterUserContract {
-    /** Unique username for the new user account */
-    username: string;
-    /** Email address for the new user account */
-    email: string;
-    /** Password for the new user account */
-    password: string;
-    /** Password confirmation for client-side validation */
-    passwordConfirm: string; // Renamed from password_confirm
-    /** User's first name */
-    firstName: string; // Renamed from first_name
-    /** User's last name */
-    lastName: string; // Renamed from last_name
-    /**
-     * Optional role ID to assign to the user.
-     * If not provided, a default role will be assigned.
-     * @default null
-     */
-    roleId?: number | null; // Renamed from role_id
+  /** Unique username for the new user account */
+  username: string;
+  /** Email address for the new user account */
+  email: string;
+  /** Password for the new user account */
+  password: string;
+  /** Password confirmation for client-side validation */
+  passwordConfirm: string; // Renamed from password_confirm
+  /** User's first name */
+  firstName: string; // Renamed from first_name
+  /** User's last name */
+  lastName: string; // Renamed from last_name
+  /**
+   * Optional role ID to assign to the user.
+   * If not provided, a default role will be assigned.
+   * @default null
+   */
+  roleId?: number | null; // Renamed from role_id
 }
 
 /**
@@ -142,10 +142,10 @@ export interface RegisterUserContract {
  * @domain Authentication
  */
 export interface ResetPasswordContract {
-    /** Secure token received via email for password reset authorization */
-    token: string;
-    /** New password to set for the user account */
-    newPassword: string;
-    /** Confirmation of the new password for client-side validation */
-    newPasswordConfirm: string;
+  /** Secure token received via email for password reset authorization */
+  token: string;
+  /** New password to set for the user account */
+  newPassword: string;
+  /** Confirmation of the new password for client-side validation */
+  newPasswordConfirm: string;
 }

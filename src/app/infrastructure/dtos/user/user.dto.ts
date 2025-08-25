@@ -64,38 +64,38 @@ import type { RoleDTO } from '../roles/roles.dto';
  * @property roles - Array of roles assigned to the user
  */
 export interface UserDTO {
-    /** Unique user identifier */
-    readonly id: number;
+  /** Unique user identifier */
+  readonly id: number;
 
-    /** Unique username for authentication */
-    readonly username: string;
+  /** Unique username for authentication */
+  readonly username: string;
 
-    /** User's email address (unique) */
-    readonly email: string;
+  /** User's email address (unique) */
+  readonly email: string;
 
-    /** User's first name */
-    readonly first_name: string;
+  /** User's first name */
+  readonly first_name: string;
 
-    /** User's last name */
-    readonly last_name: string;
+  /** User's last name */
+  readonly last_name: string;
 
-    /** Account active status */
-    readonly is_active: boolean;
+  /** Account active status */
+  readonly is_active: boolean;
 
-    /** Email verification status */
-    readonly is_verified: boolean;
+  /** Email verification status */
+  readonly is_verified: boolean;
 
-    /** Account creation timestamp (ISO 8601) */
-    readonly created_at: string;
+  /** Account creation timestamp (ISO 8601) */
+  readonly created_at: string;
 
-    /** Last update timestamp (ISO 8601) */
-    readonly updated_at: string;
+  /** Last update timestamp (ISO 8601) */
+  readonly updated_at: string;
 
-    /** Last login timestamp (ISO 8601, nullable) */
-    readonly last_login: string | null;
+  /** Last login timestamp (ISO 8601, nullable) */
+  readonly last_login: string | null;
 
-    /** Array of roles assigned to the user */
-    readonly roles: RoleDTO[];
+  /** Array of roles assigned to the user */
+  readonly roles: RoleDTO[];
 }
 
 /**
@@ -128,26 +128,26 @@ export interface UserDTO {
  * ```
  */
 export interface CreateUserRequestDTO {
-    /** Unique username for the new account */
-    readonly username: string;
+  /** Unique username for the new account */
+  readonly username: string;
 
-    /** Unique email address for the new account */
-    readonly email: string;
+  /** Unique email address for the new account */
+  readonly email: string;
 
-    /** User's first name */
-    readonly first_name: string;
+  /** User's first name */
+  readonly first_name: string;
 
-    /** User's last name */
-    readonly last_name: string;
+  /** User's last name */
+  readonly last_name: string;
 
-    /** Plain text password (will be hashed by backend) */
-    readonly password: string;
+  /** Plain text password (will be hashed by backend) */
+  readonly password: string;
 
-    /** ID of the role to assign to the user */
-    readonly role_id: number;
+  /** ID of the role to assign to the user */
+  readonly role_id: number;
 
-    /** Initial active status (optional, defaults to true) */
-    readonly is_active?: boolean;
+  /** Initial active status (optional, defaults to true) */
+  readonly is_active?: boolean;
 }
 
 /**
@@ -182,23 +182,23 @@ export interface CreateUserRequestDTO {
  * ```
  */
 export interface UpdateUserRequestDTO {
-    /** Updated username (must remain unique) */
-    readonly username?: string;
+  /** Updated username (must remain unique) */
+  readonly username?: string;
 
-    /** Updated email address (must remain unique) */
-    readonly email?: string;
+  /** Updated email address (must remain unique) */
+  readonly email?: string;
 
-    /** Updated first name */
-    readonly first_name?: string;
+  /** Updated first name */
+  readonly first_name?: string;
 
-    /** Updated last name */
-    readonly last_name?: string;
+  /** Updated last name */
+  readonly last_name?: string;
 
-    /** Updated role assignment */
-    readonly role_id?: number;
+  /** Updated role assignment */
+  readonly role_id?: number;
 
-    /** Updated active status */
-    readonly is_active?: boolean;
+  /** Updated active status */
+  readonly is_active?: boolean;
 }
 
 /**
@@ -237,23 +237,23 @@ export interface UpdateUserRequestDTO {
  * ```
  */
 export interface UserListFilterDTO {
-    /** Filter by active status (true=active, false=inactive) */
-    readonly is_active?: boolean;
+  /** Filter by active status (true=active, false=inactive) */
+  readonly is_active?: boolean;
 
-    /** Filter by specific role ID */
-    readonly role_id?: number;
+  /** Filter by specific role ID */
+  readonly role_id?: number;
 
-    /** Text search across username, email, first_name, last_name */
-    readonly search?: string;
+  /** Text search across username, email, first_name, last_name */
+  readonly search?: string;
 
-    /** Maximum number of results to return (default: 50) */
-    readonly limit?: number;
+  /** Maximum number of results to return (default: 50) */
+  readonly limit?: number;
 
-    /** Number of results to skip for pagination (default: 0) */
-    readonly offset?: number;
+  /** Number of results to skip for pagination (default: 0) */
+  readonly offset?: number;
 
-    /** Field to sort by (prefix with '-' for descending) */
-    readonly ordering?: string;
+  /** Field to sort by (prefix with '-' for descending) */
+  readonly ordering?: string;
 }
 
 /**
@@ -286,15 +286,15 @@ export interface UserListFilterDTO {
  * ```
  */
 export interface UserListResponseDTO {
-    /** Total number of users matching the filter */
-    readonly count: number;
+  /** Total number of users matching the filter */
+  readonly count: number;
 
-    /** URL for the next page (null if last page) */
-    readonly next: string | null;
+  /** URL for the next page (null if last page) */
+  readonly next: string | null;
 
-    /** URL for the previous page (null if first page) */
-    readonly previous: string | null;
+  /** URL for the previous page (null if first page) */
+  readonly previous: string | null;
 
-    /** Array of user DTOs for the current page */
-    readonly results: UserDTO[];
+  /** Array of user DTOs for the current page */
+  readonly results: UserDTO[];
 }

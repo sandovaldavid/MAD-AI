@@ -21,35 +21,35 @@ import { HttpErrorLogger } from '../cross-cutting/http/http-error-logger';
  * - Attaches only technical classification to error
  */
 export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
-    const classifier = inject(HttpErrorClassifier);
-    const logger = inject(HttpErrorLogger);
+  const classifier = inject(HttpErrorClassifier);
+  const logger = inject(HttpErrorLogger);
 
-    return next(req).pipe(
-        catchError((error: HttpErrorResponse) => {
-            // Pure technical classification
-            const classification = classifier.classify(error);
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Pure technical classification
+      const classification = classifier.classify(error);
 
-            // Pure technical logging
-            logger.logHttpError(error, classification, {
-                method: req.method,
-                operation: 'http_request',
-                component: 'http_interceptor',
-            });
+      // Pure technical logging
+      logger.logHttpError(error, classification, {
+        method: req.method,
+        operation: 'http_request',
+        component: 'http_interceptor',
+      });
 
-            // Attach only technical classification to error
-            // Application layer will handle feature-specific processing
-            (error as any).technicalClassification = classification;
+      // Attach only technical classification to error
+      // Application layer will handle feature-specific processing
+      (error as any).technicalClassification = classification;
 
-            console.log(`[Core HTTP Interceptor] Technical classification:`, {
-                url: req.url,
-                method: req.method,
-                status: error.status,
-                category: classification.category,
-                severity: classification.severity,
-                isRetryable: classification.isRetryable,
-            });
+      console.log(`[Core HTTP Interceptor] Technical classification:`, {
+        url: req.url,
+        method: req.method,
+        status: error.status,
+        category: classification.category,
+        severity: classification.severity,
+        isRetryable: classification.isRetryable,
+      });
 
-            return throwError(() => error);
-        })
-    );
+      return throwError(() => error);
+    })
+  );
 };

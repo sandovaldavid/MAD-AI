@@ -33,26 +33,26 @@
  * @domain Role Management
  */
 export type CreateRoleContract = Readonly<{
-    /** Unique name identifying the role within the organization */
-    name: string;
-    /**
-     * Numerical access level determining permissions hierarchy.
-     * Higher values indicate greater access privileges.
-     * @range 1-5
-     */
-    accessLevel: number;
-    /** Detailed description of role responsibilities and scope */
-    description: string;
-    /**
-     * Whether users with this role can lead and manage projects.
-     * Affects project assignment and team management capabilities.
-     */
-    canLeadProjects: boolean;
-    /**
-     * Whether only one user per team can have this role.
-     * Used for roles like Team Lead or Project Manager.
-     */
-    isUniquePerTeam: boolean;
+  /** Unique name identifying the role within the organization */
+  name: string;
+  /**
+   * Numerical access level determining permissions hierarchy.
+   * Higher values indicate greater access privileges.
+   * @range 1-5
+   */
+  accessLevel: number;
+  /** Detailed description of role responsibilities and scope */
+  description: string;
+  /**
+   * Whether users with this role can lead and manage projects.
+   * Affects project assignment and team management capabilities.
+   */
+  canLeadProjects: boolean;
+  /**
+   * Whether only one user per team can have this role.
+   * Used for roles like Team Lead or Project Manager.
+   */
+  isUniquePerTeam: boolean;
 }>;
 
 /**
@@ -89,21 +89,21 @@ export type CreateRoleContract = Readonly<{
  * @domain Role Management
  */
 export type UpdateRolePatchContract = Readonly<{
-    /** Updated role name (must remain unique) */
-    name?: string;
-    /**
-     * Updated access level for permission hierarchy.
-     * @range 1-5
-     */
-    accessLevel?: number;
-    /** Updated role description */
-    description?: string;
-    /** Updated project leadership permission */
-    canLeadProjects?: boolean;
-    /** Updated team uniqueness constraint */
-    isUniquePerTeam?: boolean;
-    /** Updated active status of the role */
-    isActive?: boolean;
+  /** Updated role name (must remain unique) */
+  name?: string;
+  /**
+   * Updated access level for permission hierarchy.
+   * @range 1-5
+   */
+  accessLevel?: number;
+  /** Updated role description */
+  description?: string;
+  /** Updated project leadership permission */
+  canLeadProjects?: boolean;
+  /** Updated team uniqueness constraint */
+  isUniquePerTeam?: boolean;
+  /** Updated active status of the role */
+  isActive?: boolean;
 }>;
 
 /**
@@ -133,18 +133,18 @@ export type UpdateRolePatchContract = Readonly<{
  * @domain Role Management
  */
 export type ListRolesFilterContract = Readonly<{
-    /**
-     * Text search across role name and description.
-     * Performs case-insensitive partial matching.
-     */
-    search?: string;
-    /**
-     * Filter by role active status.
-     * When true, returns only active roles.
-     * When false, returns only inactive roles.
-     * When undefined, returns all roles.
-     */
-    active?: boolean;
+  /**
+   * Text search across role name and description.
+   * Performs case-insensitive partial matching.
+   */
+  search?: string;
+  /**
+   * Filter by role active status.
+   * When true, returns only active roles.
+   * When false, returns only inactive roles.
+   * When undefined, returns all roles.
+   */
+  active?: boolean;
 }>;
 
 /**
@@ -177,13 +177,13 @@ export type ListRolesFilterContract = Readonly<{
  * @domain Role Management
  */
 export type RoleAssignmentContract = Readonly<{
-    /** ID of the user receiving the role assignment */
-    userId: number;
-    /** ID of the role being assigned */
-    roleId: number;
-    /**
-     * ID of the user who performed the assignment.
-     * Optional for system-level assignments or automated processes.
-     */
-    assignedByUserId?: number;
+  /** ID of the user receiving the role assignment */
+  userId: number;
+  /** ID of the role being assigned */
+  roleId: number;
+  /**
+   * ID of the user who performed the assignment.
+   * Optional for system-level assignments or automated processes.
+   */
+  assignedByUserId?: number;
 }>;

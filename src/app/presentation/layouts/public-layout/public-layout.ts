@@ -4,8 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-public-layout',
   imports: [],
   templateUrl: './public-layout.html',
-  styleUrl: './public-layout.css'
+  styleUrl: './public-layout.css',
 })
-export class PublicLayout {
-
-}
+export class PublicLayout {}

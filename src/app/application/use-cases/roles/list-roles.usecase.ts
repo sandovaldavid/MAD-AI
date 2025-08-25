@@ -33,118 +33,118 @@ import type { ListRolesFilterContract } from '@domain/contracts/role.contract';
  */
 @Injectable({ providedIn: 'root' })
 export class ListRoles {
-    private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute role listing orchestration with validation and audit logging
-     *
-     * @param filter - Optional filter criteria for role listing
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving to array of Role entities
-     * @throws ApplicationError when validation fails or listing fails
-     */
-    async execute(filter?: ListRolesFilterContract, requesterId?: number): Promise<Role[]> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(filter);
+  /**
+   * Execute role listing orchestration with validation and audit logging
+   *
+   * @param filter - Optional filter criteria for role listing
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving to array of Role entities
+   * @throws ApplicationError when validation fails or listing fails
+   */
+  async execute(filter?: ListRolesFilterContract, requesterId?: number): Promise<Role[]> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(filter);
 
-            // Step 2: Delegate to domain repository
-            const roles = await this.roleRepo.list(filter);
+      // Step 2: Delegate to domain repository
+      const roles = await this.roleRepo.list(filter);
 
-            // Step 3: Handle side effects
-            this.handleRoleListingSideEffects(filter, roles, requesterId);
+      // Step 3: Handle side effects
+      this.handleRoleListingSideEffects(filter, roles, requesterId);
 
-            return roles;
-        } catch (error: unknown) {
-            // Step 4: Normalize errors for application layer
-            throw new ApplicationError(
-                'list_roles',
-                this.errorTransformer.transformError(error),
-                'ROLE_LISTING_FAILED'
-            );
-        }
+      return roles;
+    } catch (error: unknown) {
+      // Step 4: Normalize errors for application layer
+      throw new ApplicationError(
+        'list_roles',
+        this.errorTransformer.transformError(error),
+        'ROLE_LISTING_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validate application-level rules for role listing
+   *
+   * @description
+   * Validates request parameters and business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param filter Filter criteria to validate
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(filter?: ListRolesFilterContract): void {
+    if (filter && typeof filter !== 'object') {
+      throw new ApplicationError(
+        'list_roles',
+        'INVALID_FILTER_TYPE',
+        'Filter must be an object when provided'
+      );
     }
 
-    /**
-     * Validate application-level rules for role listing
-     *
-     * @description
-     * Validates request parameters and business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param filter Filter criteria to validate
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(filter?: ListRolesFilterContract): void {
-        if (filter && typeof filter !== 'object') {
-            throw new ApplicationError(
-                'list_roles',
-                'INVALID_FILTER_TYPE',
-                'Filter must be an object when provided'
-            );
-        }
+    if (filter?.search !== undefined) {
+      if (typeof filter.search !== 'string') {
+        throw new ApplicationError(
+          'list_roles',
+          'INVALID_SEARCH_TYPE',
+          'Search filter must be a string'
+        );
+      }
 
-        if (filter?.search !== undefined) {
-            if (typeof filter.search !== 'string') {
-                throw new ApplicationError(
-                    'list_roles',
-                    'INVALID_SEARCH_TYPE',
-                    'Search filter must be a string'
-                );
-            }
-
-            if (filter.search.length > 100) {
-                throw new ApplicationError(
-                    'list_roles',
-                    'SEARCH_TOO_LONG',
-                    'Search term cannot exceed 100 characters'
-                );
-            }
-        }
-
-        if (filter?.active !== undefined && typeof filter.active !== 'boolean') {
-            throw new ApplicationError(
-                'list_roles',
-                'INVALID_ACTIVE_FILTER',
-                'Active filter must be a boolean value'
-            );
-        }
+      if (filter.search.length > 100) {
+        throw new ApplicationError(
+          'list_roles',
+          'SEARCH_TOO_LONG',
+          'Search term cannot exceed 100 characters'
+        );
+      }
     }
 
-    /**
-     * Handle side effects of role listing
-     *
-     * @description
-     * Manages audit logging and other side effects after successful role listing.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param filter The filter criteria used
-     * @param roles The retrieved roles
-     * @param requesterId ID of user who performed the listing
-     */
-    private handleRoleListingSideEffects(
-        filter: ListRolesFilterContract | undefined,
-        roles: Role[],
-        requesterId?: number
-    ): void {
-        const timestamp = this.clock.nowEpochSeconds();
-
-        console.log(`[AUDIT] Role listing completed`, {
-            timestamp,
-            filterCriteria: {
-                search: filter?.search,
-                active: filter?.active,
-                hasFilter: !!filter,
-            },
-            resultCount: roles.length,
-            adminRolesCount: roles.filter((role) => role.isAdministrator()).length,
-            activeRolesCount: roles.filter((role) => role.isActive).length,
-            requesterId,
-            operation: 'list_roles',
-            feature: 'roles',
-            severity: 'LOW',
-        });
+    if (filter?.active !== undefined && typeof filter.active !== 'boolean') {
+      throw new ApplicationError(
+        'list_roles',
+        'INVALID_ACTIVE_FILTER',
+        'Active filter must be a boolean value'
+      );
     }
+  }
+
+  /**
+   * Handle side effects of role listing
+   *
+   * @description
+   * Manages audit logging and other side effects after successful role listing.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param filter The filter criteria used
+   * @param roles The retrieved roles
+   * @param requesterId ID of user who performed the listing
+   */
+  private handleRoleListingSideEffects(
+    filter: ListRolesFilterContract | undefined,
+    roles: Role[],
+    requesterId?: number
+  ): void {
+    const timestamp = this.clock.nowEpochSeconds();
+
+    console.log(`[AUDIT] Role listing completed`, {
+      timestamp,
+      filterCriteria: {
+        search: filter?.search,
+        active: filter?.active,
+        hasFilter: !!filter,
+      },
+      resultCount: roles.length,
+      adminRolesCount: roles.filter((role) => role.isAdministrator()).length,
+      activeRolesCount: roles.filter((role) => role.isActive).length,
+      requesterId,
+      operation: 'list_roles',
+      feature: 'roles',
+      severity: 'LOW',
+    });
+  }
 }

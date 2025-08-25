@@ -1,21 +1,21 @@
 @reference '../../../../../../styles.css';
 
 .error-details {
-    @apply mt-4;
+  @apply mt-4;
 }
 
 .error-details-toggle {
-    @apply flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25 rounded px-2 py-1;
+  @apply flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25 rounded px-2 py-1;
 }
 
 .error-details-toggle-icon {
-    @apply transition-transform duration-200;
+  @apply transition-transform duration-200;
 }
 
 .error-details-content {
-    @apply mt-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700;
+  @apply mt-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-700;
 }
 
 .error-details-text {
-    @apply text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap font-mono;
+  @apply text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap font-mono;
 }

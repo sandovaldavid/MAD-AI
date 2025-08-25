@@ -1,29 +1,29 @@
 @reference '../../../../styles.css';
 
 .nav-rail-section {
-    @apply space-y-1.5 mb-4;
-    /* Isolate section styles */
-    isolation: isolate;
+  @apply space-y-1.5 mb-4;
+  /* Isolate section styles */
+  isolation: isolate;
 }
 
 .nav-rail-section__title {
-    @apply text-xs font-bold text-primary-600/80 dark:text-primary-400/80 
+  @apply text-xs font-bold text-primary-600/80 dark:text-primary-400/80 
     uppercase tracking-wider px-3 py-1.5 mb-2
     border-b border-primary-200/50 dark:border-primary-800/50;
 }
 
 .nav-rail-section__items {
-    @apply space-y-0.5;
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  @apply space-y-0.5;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-rail-section__items li {
-    @apply w-full;
+  @apply w-full;
 }
 
 /* Last section has no bottom margin */
 .nav-rail-section:last-child {
-    @apply mb-0;
+  @apply mb-0;
 }

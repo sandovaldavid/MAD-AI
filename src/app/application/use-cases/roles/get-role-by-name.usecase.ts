@@ -33,140 +33,138 @@ import type { ListRolesFilterContract } from '@domain/contracts/role.contract';
  */
 @Injectable({ providedIn: 'root' })
 export class GetRoleByName {
-    private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
-    private readonly clock = inject<ClockPort>(CLOCK_PORT);
-    private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
+  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
-    /**
-     * Execute role retrieval by name orchestration with validation and audit logging
-     *
-     * @param name - Role name to search for
-     * @param requesterId - ID of the user making the request (for audit logging)
-     * @returns Promise resolving to the Role entity
-     * @throws ApplicationError when validation fails or role not found
-     */
-    async execute(name: string, requesterId?: number): Promise<Role> {
-        try {
-            // Step 1: Validate application rules
-            this.validateApplicationRules(name);
+  /**
+   * Execute role retrieval by name orchestration with validation and audit logging
+   *
+   * @param name - Role name to search for
+   * @param requesterId - ID of the user making the request (for audit logging)
+   * @returns Promise resolving to the Role entity
+   * @throws ApplicationError when validation fails or role not found
+   */
+  async execute(name: string, requesterId?: number): Promise<Role> {
+    try {
+      // Step 1: Validate application rules
+      this.validateApplicationRules(name);
 
-            // Step 2: Search for role by name
-            const role = await this.findRoleByName(name);
+      // Step 2: Search for role by name
+      const role = await this.findRoleByName(name);
 
-            // Step 3: Handle side effects
-            this.handleRoleRetrievalSideEffects(name, role, requesterId);
+      // Step 3: Handle side effects
+      this.handleRoleRetrievalSideEffects(name, role, requesterId);
 
-            return role;
-        } catch (error: unknown) {
-            // Step 4: Normalize errors for application layer
-            throw new ApplicationError(
-                'get_role_by_name',
-                this.errorTransformer.transformError(error),
-                'ROLE_SEARCH_FAILED'
-            );
-        }
+      return role;
+    } catch (error: unknown) {
+      // Step 4: Normalize errors for application layer
+      throw new ApplicationError(
+        'get_role_by_name',
+        this.errorTransformer.transformError(error),
+        'ROLE_SEARCH_FAILED'
+      );
+    }
+  }
+
+  /**
+   * Validate application-level rules for role name search
+   *
+   * @description
+   * Validates request parameters and business rules specific to the application layer.
+   * Domain validation is handled by the repository layer.
+   *
+   * @param name Role name to validate
+   * @throws ApplicationError when validation fails
+   */
+  private validateApplicationRules(name: string): void {
+    if (!name || typeof name !== 'string') {
+      throw new ApplicationError(
+        'get_role_by_name',
+        'INVALID_ROLE_NAME',
+        'Role name is required for search'
+      );
     }
 
-    /**
-     * Validate application-level rules for role name search
-     *
-     * @description
-     * Validates request parameters and business rules specific to the application layer.
-     * Domain validation is handled by the repository layer.
-     *
-     * @param name Role name to validate
-     * @throws ApplicationError when validation fails
-     */
-    private validateApplicationRules(name: string): void {
-        if (!name || typeof name !== 'string') {
-            throw new ApplicationError(
-                'get_role_by_name',
-                'INVALID_ROLE_NAME',
-                'Role name is required for search'
-            );
-        }
-
-        if (name.trim().length === 0) {
-            throw new ApplicationError(
-                'get_role_by_name',
-                'EMPTY_ROLE_NAME',
-                'Role name cannot be empty or whitespace only'
-            );
-        }
-
-        if (name.trim().length > 100) {
-            throw new ApplicationError(
-                'get_role_by_name',
-                'ROLE_NAME_TOO_LONG',
-                'Role name cannot exceed 100 characters'
-            );
-        }
+    if (name.trim().length === 0) {
+      throw new ApplicationError(
+        'get_role_by_name',
+        'EMPTY_ROLE_NAME',
+        'Role name cannot be empty or whitespace only'
+      );
     }
 
-    /**
-     * Find role by exact name match
-     *
-     * @description
-     * Searches for roles using the repository list method and filters for exact match.
-     * This approach maintains consistency with existing repository interface.
-     *
-     * @param name Role name to search for
-     * @returns Promise resolving to the matching Role entity
-     * @throws ApplicationError when role not found
-     */
-    private async findRoleByName(name: string): Promise<Role> {
-        const filter: ListRolesFilterContract = {
-            search: name.trim(),
-        };
+    if (name.trim().length > 100) {
+      throw new ApplicationError(
+        'get_role_by_name',
+        'ROLE_NAME_TOO_LONG',
+        'Role name cannot exceed 100 characters'
+      );
+    }
+  }
 
-        const roles = await this.roleRepo.list(filter);
+  /**
+   * Find role by exact name match
+   *
+   * @description
+   * Searches for roles using the repository list method and filters for exact match.
+   * This approach maintains consistency with existing repository interface.
+   *
+   * @param name Role name to search for
+   * @returns Promise resolving to the matching Role entity
+   * @throws ApplicationError when role not found
+   */
+  private async findRoleByName(name: string): Promise<Role> {
+    const filter: ListRolesFilterContract = {
+      search: name.trim(),
+    };
 
-        // Find exact match (case-insensitive)
-        const exactMatch = roles.find(
-            (role) => role.name.toLowerCase() === name.trim().toLowerCase()
-        );
+    const roles = await this.roleRepo.list(filter);
 
-        if (!exactMatch) {
-            throw new ApplicationError(
-                'get_role_by_name',
-                'ROLE_NOT_FOUND',
-                `Role with name '${name.trim()}' not found`
-            );
-        }
+    // Find exact match (case-insensitive)
+    const exactMatch = roles.find((role) => role.name.toLowerCase() === name.trim().toLowerCase());
 
-        return exactMatch;
+    if (!exactMatch) {
+      throw new ApplicationError(
+        'get_role_by_name',
+        'ROLE_NOT_FOUND',
+        `Role with name '${name.trim()}' not found`
+      );
     }
 
-    /**
-     * Handle side effects of role retrieval by name
-     *
-     * @description
-     * Manages audit logging and other side effects after successful role retrieval.
-     * Uses high-precision timestamps for accurate audit trails.
-     *
-     * @param searchName The requested role name
-     * @param role The retrieved role entity
-     * @param requesterId ID of user who performed the search
-     */
-    private handleRoleRetrievalSideEffects(
-        searchName: string,
-        role: Role,
-        requesterId?: number
-    ): void {
-        const timestamp = this.clock.nowEpochSeconds();
+    return exactMatch;
+  }
 
-        console.log(`[AUDIT] Role search by name completed`, {
-            timestamp,
-            searchName: searchName.trim(),
-            foundRole: {
-                id: role.id,
-                name: role.name,
-                accessLevel: role.accessLevel,
-            },
-            requesterId,
-            operation: 'get_role_by_name',
-            feature: 'roles',
-            severity: 'LOW',
-        });
-    }
+  /**
+   * Handle side effects of role retrieval by name
+   *
+   * @description
+   * Manages audit logging and other side effects after successful role retrieval.
+   * Uses high-precision timestamps for accurate audit trails.
+   *
+   * @param searchName The requested role name
+   * @param role The retrieved role entity
+   * @param requesterId ID of user who performed the search
+   */
+  private handleRoleRetrievalSideEffects(
+    searchName: string,
+    role: Role,
+    requesterId?: number
+  ): void {
+    const timestamp = this.clock.nowEpochSeconds();
+
+    console.log(`[AUDIT] Role search by name completed`, {
+      timestamp,
+      searchName: searchName.trim(),
+      foundRole: {
+        id: role.id,
+        name: role.name,
+        accessLevel: role.accessLevel,
+      },
+      requesterId,
+      operation: 'get_role_by_name',
+      feature: 'roles',
+      severity: 'LOW',
+    });
+  }
 }

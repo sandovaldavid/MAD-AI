@@ -1,44 +1,44 @@
 <div class="nav-rail-footer">
-    <!-- Theme Toggle -->
-    <div class="nav-rail-footer__theme-section">
-        <ui-theme-toggle />
-    </div>
+  <!-- Theme Toggle -->
+  <div class="nav-rail-footer__theme-section">
+    <ui-theme-toggle />
+  </div>
 
-    <!-- User Menu / Profile -->
-    @if (user()) {
+  <!-- User Menu / Profile -->
+  @if (user()) {
     <button
-        type="button"
-        [attr.aria-label]="profileButtonLabel()"
-        class="nav-rail-footer__action nav-rail-footer__action--profile"
-        [class.nav-rail-footer__action--collapsed]="collapsed()"
-        (click)="onProfileClick()">
-        <ui-icon name="user-circle" size="md" class="nav-rail-footer__icon" />
-        @if (!collapsed()) {
+      type="button"
+      [attr.aria-label]="profileButtonLabel()"
+      class="nav-rail-footer__action nav-rail-footer__action--profile"
+      [class.nav-rail-footer__action--collapsed]="collapsed()"
+      (click)="onProfileClick()">
+      <ui-icon name="user-circle" size="md" class="nav-rail-footer__icon" />
+      @if (!collapsed()) {
         <span class="nav-rail-footer__text">
-            {{ user()?.firstName }}
+          {{ user()?.firstName }}
         </span>
-        }
+      }
     </button>
-    }
+  }
 
-    <!-- Logout -->
-    <button
-        type="button"
-        [attr.aria-label]="'Cerrar sesión'"
-        class="nav-rail-footer__action nav-rail-footer__action--danger"
-        [class.nav-rail-footer__action--collapsed]="collapsed()"
-        [disabled]="authFacade.loading()"
-        (click)="onLogout()">
-        <ui-icon name="logout" size="md" class="nav-rail-footer__icon" />
-        @if (!collapsed()) {
-        <span class="nav-rail-footer__text">Salir</span>
-        }
-    </button>
-
-    <!-- Version (only when expanded) -->
+  <!-- Logout -->
+  <button
+    type="button"
+    [attr.aria-label]="'Cerrar sesión'"
+    class="nav-rail-footer__action nav-rail-footer__action--danger"
+    [class.nav-rail-footer__action--collapsed]="collapsed()"
+    [disabled]="authFacade.loading()"
+    (click)="onLogout()">
+    <ui-icon name="logout" size="md" class="nav-rail-footer__icon" />
     @if (!collapsed()) {
-    <div class="nav-rail-footer__version">
-        <span class="nav-rail-footer__version-text">v1.0.0</span>
-    </div>
+      <span class="nav-rail-footer__text">Salir</span>
     }
+  </button>
+
+  <!-- Version (only when expanded) -->
+  @if (!collapsed()) {
+    <div class="nav-rail-footer__version">
+      <span class="nav-rail-footer__version-text">v1.0.0</span>
+    </div>
+  }
 </div>

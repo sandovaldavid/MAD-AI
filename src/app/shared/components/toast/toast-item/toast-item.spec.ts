@@ -3,20 +3,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ToastItem } from './toast-item';
 
 describe('ToastItem', () => {
-    let component: ToastItem;
-    let fixture: ComponentFixture<ToastItem>;
+  let component: ToastItem;
+  let fixture: ComponentFixture<ToastItem>;
 
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            imports: [ToastItem],
-        }).compileComponents();
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ToastItem],
+    }).compileComponents();
 
-        fixture = TestBed.createComponent(ToastItem);
-        component = fixture.componentInstance;
-        fixture.detectChanges();
-    });
+    fixture = TestBed.createComponent(ToastItem);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it('should create', () => {
-        expect(component).toBeTruthy();
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });

@@ -1,354 +1,367 @@
 <!-- Role Selector Component Template -->
 <div
-    class="role-selector relative"
-    [class]="'size-' + size"
-    (keydown)="onKeyDown($event)"
-    (click)="onClickOutside($event)">
-    <!-- Label -->
-    @if (label) {
+  class="role-selector relative"
+  [class]="'size-' + size"
+  (keydown)="onKeyDown($event)"
+  (click)="onClickOutside($event)">
+  <!-- Label -->
+  @if (label) {
     <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-        {{ label }}
-        @if (required) {
+      {{ label }}
+      @if (required) {
         <span class="text-error-500">*</span>
-        }
+      }
     </label>
-    }
+  }
 
-    <!-- Main Selector Container -->
-    <div class="relative">
-        <!-- Dropdown Variant -->
-        @if (variant === 'dropdown') {
-        <button
-            type="button"
-            class="selector-trigger w-full"
-            [class.disabled]="disabled"
-            [class.error]="errorMessage"
-            [class.open]="isOpen()"
-            [disabled]="disabled"
-            (click)="toggleDropdown()"
-            [attr.aria-expanded]="isOpen()"
-            [attr.aria-haspopup]="true"
-            [attr.aria-label]="placeholder">
-            <div class="flex items-center justify-between w-full">
-                <span class="truncate" [class.placeholder]="selectedRoles().length === 0">
-                    {{ displayValue() }}
-                </span>
-                <div class="ml-2 flex items-center space-x-1">
-                    @if (selectedRoles().length > 0 && allowClear && !disabled) {
-                    <button
-                        type="button"
-                        class="clear-button"
-                        (click)="clearSelection(); $event.stopPropagation()"
-                        [attr.aria-label]="'Clear selection'">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                    }
-                    <svg
-                        class="chevron h-4 w-4 transition-transform"
-                        [class.rotate-180]="isOpen()"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-            </div>
-        </button>
+  <!-- Main Selector Container -->
+  <div class="relative">
+    <!-- Dropdown Variant -->
+    @if (variant === 'dropdown') {
+      <button
+        type="button"
+        class="selector-trigger w-full"
+        [class.disabled]="disabled"
+        [class.error]="errorMessage"
+        [class.open]="isOpen()"
+        [disabled]="disabled"
+        (click)="toggleDropdown()"
+        [attr.aria-expanded]="isOpen()"
+        [attr.aria-haspopup]="true"
+        [attr.aria-label]="placeholder">
+        <div class="flex items-center justify-between w-full">
+          <span class="truncate" [class.placeholder]="selectedRoles().length === 0">
+            {{ displayValue() }}
+          </span>
+          <div class="ml-2 flex items-center space-x-1">
+            @if (selectedRoles().length > 0 && allowClear && !disabled) {
+              <button
+                type="button"
+                class="clear-button"
+                (click)="clearSelection(); $event.stopPropagation()"
+                [attr.aria-label]="'Clear selection'">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            }
+            <svg
+              class="chevron h-4 w-4 transition-transform"
+              [class.rotate-180]="isOpen()"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+      </button>
 
-        <!-- Dropdown Menu -->
-        @if (isOpen()) {
+      <!-- Dropdown Menu -->
+      @if (isOpen()) {
         <div class="dropdown-menu absolute z-50 w-full mt-1">
-            <div class="dropdown-content">
-                <!-- Search Input -->
-                @if (searchable) {
-                <div
-                    class="search-container p-2 border-b border-neutral-200 dark:border-neutral-700">
-                    <div class="relative">
-                        <input
-                            type="text"
-                            class="search-input w-full"
-                            [placeholder]="'Search roles...'"
-                            [formControl]="searchControl"
-                            (click)="$event.stopPropagation()" />
-                        <svg
-                            class="search-icon absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
+          <div class="dropdown-content">
+            <!-- Search Input -->
+            @if (searchable) {
+              <div class="search-container p-2 border-b border-neutral-200 dark:border-neutral-700">
+                <div class="relative">
+                  <input
+                    type="text"
+                    class="search-input w-full"
+                    [placeholder]="'Search roles...'"
+                    [formControl]="searchControl"
+                    (click)="$event.stopPropagation()" />
+                  <svg
+                    class="search-icon absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                 </div>
-                }
+              </div>
+            }
 
-                <!-- Loading State -->
-                @if (loading()) {
-                <div class="p-4 text-center">
-                    <div
-                        class="animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
-                    <p class="mt-2 text-sm text-neutral-500">Loading roles...</p>
-                </div>
-                }
-
-                <!-- Error State -->
-                @else if (facadeError()) {
-                <div class="p-4 text-center">
-                    <p class="text-sm text-error-600">{{ facadeError() }}</p>
-                    <button
-                        type="button"
-                        class="mt-2 text-sm text-primary-600 hover:text-primary-700"
-                        (click)="loadRoles()">
-                        Try again
-                    </button>
-                </div>
-                }
-
-                <!-- Role Options -->
-                @else {
-                <div class="max-h-60 overflow-auto">
-                    @if (availableRoles().length === 0) {
-                    <div class="p-4 text-center text-sm text-neutral-500">
-                        @if (searchTerm()) { No roles found for "{{ searchTerm() }}" } @else { No
-                        roles available }
-                    </div>
-                    } @else { @for (role of availableRoles(); track trackByRoleId($index, role); let
-                    i = $index) {
-                    <div
-                        class="role-option"
-                        [class.selected]="isRoleSelected(role)"
-                        [class.focused]="isRoleFocused(i)"
-                        [class.hovered]="isRoleHovered(i)"
-                        (click)="selectRole(role)"
-                        (mouseenter)="onRoleHover(i)"
-                        (mouseleave)="onRoleLeave()"
-                        [attr.aria-selected]="isRoleSelected(role)"
-                        role="option">
-                        <div class="flex items-center space-x-3">
-                            @if (selectionMode === 'multiple') {
-                            <input
-                                type="checkbox"
-                                class="role-checkbox"
-                                [checked]="isRoleSelected(role)"
-                                (click)="$event.stopPropagation()"
-                                readonly />
-                            }
-
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between">
-                                    <p
-                                        class="font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                                        {{ role.name }}
-                                    </p>
-                                    @if (showAccessLevel) {
-                                    <app-access-level-indicator
-                                        [level]="role.accessLevel"
-                                        variant="badge"
-                                        size="xs" />
-                                    }
-                                </div>
-                                @if (role.description) {
-                                <p
-                                    class="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-1">
-                                    {{ role.description }}
-                                </p>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                    } }
-                </div>
-                }
-
-                <!-- Role Count Footer -->
-                @if (showRoleCount && availableRoles().length > 0) {
-                <div
-                    class="px-3 py-2 border-t border-neutral-200 dark:border-neutral-700 text-xs text-neutral-500">
-                    {{ availableRoles().length }} role{{
-                        availableRoles().length === 1 ? '' : 's'
-                    }}
-                    @if (selectedRoles().length > 0) { • {{ selectedRoles().length }} selected }
-                </div>
-                }
-            </div>
-        </div>
-        } }
-
-        <!-- List Variant -->
-        @else if (variant === 'list') {
-        <div class="role-list space-y-2">
+            <!-- Loading State -->
             @if (loading()) {
-            <div class="text-center py-4">
+              <div class="p-4 text-center">
                 <div
-                    class="animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
-            </div>
-            } @else if (availableRoles().length === 0) {
-            <div class="text-center py-4 text-neutral-500">No roles available</div>
-            } @else { @for (role of availableRoles(); track trackByRoleId($index, role)) {
-            <div
-                class="role-list-item"
-                [class.selected]="isRoleSelected(role)"
-                [class.disabled]="disabled"
-                (click)="selectRole(role)">
-                <div class="flex items-center space-x-3">
-                    @if (selectionMode === 'multiple') {
-                    <input
-                        type="checkbox"
-                        class="role-checkbox"
-                        [checked]="isRoleSelected(role)"
-                        [disabled]="disabled"
-                        (click)="$event.stopPropagation()"
-                        readonly />
+                  class="animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
+                <p class="mt-2 text-sm text-neutral-500">Loading roles...</p>
+              </div>
+            }
+
+            <!-- Error State -->
+            @else if (facadeError()) {
+              <div class="p-4 text-center">
+                <p class="text-sm text-error-600">{{ facadeError() }}</p>
+                <button
+                  type="button"
+                  class="mt-2 text-sm text-primary-600 hover:text-primary-700"
+                  (click)="loadRoles()">
+                  Try again
+                </button>
+              </div>
+            }
+
+            <!-- Role Options -->
+            @else {
+              <div class="max-h-60 overflow-auto">
+                @if (availableRoles().length === 0) {
+                  <div class="p-4 text-center text-sm text-neutral-500">
+                    @if (searchTerm()) {
+                      No roles found for "{{ searchTerm() }}"
+                    } @else {
+                      No roles available
                     }
-
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-medium text-neutral-900 dark:text-neutral-100">
-                                {{ role.name }}
-                            </h3>
-                            @if (showAccessLevel) {
-                            <app-access-level-indicator
-                                [level]="role.accessLevel"
-                                variant="badge"
-                                size="sm" />
-                            }
-                        </div>
-                        @if (role.description) {
-                        <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                            {{ role.description }}
-                        </p>
-                        }
-                    </div>
-                </div>
-            </div>
-            } }
-        </div>
-        }
-
-        <!-- Cards Variant -->
-        @else if (variant === 'cards') {
-        <div
-            class="role-cards grid gap-3"
-            [class]="size === 'sm' ? 'grid-cols-1' : size === 'md' ? 'grid-cols-2' : 'grid-cols-3'">
-            @if (loading()) {
-            <div class="col-span-full text-center py-8">
-                <div
-                    class="animate-spin inline-block w-8 h-8 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
-            </div>
-            } @else if (availableRoles().length === 0) {
-            <div class="col-span-full text-center py-8 text-neutral-500">No roles available</div>
-            } @else { @for (role of availableRoles(); track trackByRoleId($index, role)) {
-            <div
-                class="role-card"
-                [class.selected]="isRoleSelected(role)"
-                [class.disabled]="disabled"
-                (click)="selectRole(role)">
-                <div class="card-content">
-                    <div class="flex items-start justify-between mb-2">
-                        <h3 class="font-medium text-neutral-900 dark:text-neutral-100 text-sm">
-                            {{ role.name }}
-                        </h3>
+                  </div>
+                } @else {
+                  @for (
+                    role of availableRoles();
+                    track trackByRoleId($index, role);
+                    let i = $index
+                  ) {
+                    <div
+                      class="role-option"
+                      [class.selected]="isRoleSelected(role)"
+                      [class.focused]="isRoleFocused(i)"
+                      [class.hovered]="isRoleHovered(i)"
+                      (click)="selectRole(role)"
+                      (mouseenter)="onRoleHover(i)"
+                      (mouseleave)="onRoleLeave()"
+                      [attr.aria-selected]="isRoleSelected(role)"
+                      role="option">
+                      <div class="flex items-center space-x-3">
                         @if (selectionMode === 'multiple') {
-                        <input
+                          <input
                             type="checkbox"
                             class="role-checkbox"
                             [checked]="isRoleSelected(role)"
-                            [disabled]="disabled"
                             (click)="$event.stopPropagation()"
                             readonly />
                         }
+
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center justify-between">
+                            <p class="font-medium text-neutral-900 dark:text-neutral-100 truncate">
+                              {{ role.name }}
+                            </p>
+                            @if (showAccessLevel) {
+                              <app-access-level-indicator
+                                [level]="role.accessLevel"
+                                variant="badge"
+                                size="xs" />
+                            }
+                          </div>
+                          @if (role.description) {
+                            <p class="text-sm text-neutral-500 dark:text-neutral-400 truncate mt-1">
+                              {{ role.description }}
+                            </p>
+                          }
+                        </div>
+                      </div>
                     </div>
-
-                    @if (showAccessLevel) {
-                    <app-access-level-indicator
-                        [level]="role.accessLevel"
-                        variant="chip"
-                        size="xs"
-                        class="mb-2" />
-                    } @if (role.description) {
-                    <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
-                        {{ role.description }}
-                    </p>
-                    }
-                </div>
-            </div>
-            } }
-        </div>
-        }
-
-        <!-- Compact Variant -->
-        @else if (variant === 'compact') {
-        <div class="role-compact space-x-2 flex flex-wrap gap-2">
-            @if (loading()) {
-            <div
-                class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
-            } @else if (availableRoles().length === 0) {
-            <span class="text-sm text-neutral-500">No roles</span>
-            } @else { @for (role of availableRoles(); track trackByRoleId($index, role)) {
-            <button
-                type="button"
-                class="role-compact-item"
-                [class.selected]="isRoleSelected(role)"
-                [class.disabled]="disabled"
-                [disabled]="disabled"
-                (click)="selectRole(role)"
-                [title]="getRoleDescription(role)">
-                <span class="role-name">{{ role.name }}</span>
-                @if (showAccessLevel) {
-                <app-access-level-indicator
-                    [level]="role.accessLevel"
-                    variant="minimal"
-                    size="xs" />
+                  }
                 }
-            </button>
-            } }
-        </div>
-        }
-    </div>
-
-    <!-- Error Message -->
-    @if (errorMessage) {
-    <p class="mt-1 text-sm text-error-600">
-        {{ errorMessage }}
-    </p>
-    }
-
-    <!-- Selection Summary -->
-    @if (selectionMode === 'multiple' && selectedRoles().length > 0) {
-    <div class="mt-2 flex flex-wrap gap-1">
-        @for (role of selectedRoles(); track trackByRoleId($index, role)) {
-        <span class="selected-role-tag">
-            {{ role.name }}
-            @if (!disabled) {
-            <button
-                type="button"
-                class="ml-1 hover:text-error-600"
-                (click)="deselectRole(role)"
-                [attr.aria-label]="'Remove ' + role.name">
-                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
+              </div>
             }
-        </span>
-        }
-    </div>
+
+            <!-- Role Count Footer -->
+            @if (showRoleCount && availableRoles().length > 0) {
+              <div
+                class="px-3 py-2 border-t border-neutral-200 dark:border-neutral-700 text-xs text-neutral-500">
+                {{ availableRoles().length }} role{{ availableRoles().length === 1 ? '' : 's' }}
+                @if (selectedRoles().length > 0) {
+                  • {{ selectedRoles().length }} selected
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
     }
+
+    <!-- List Variant -->
+    @else if (variant === 'list') {
+      <div class="role-list space-y-2">
+        @if (loading()) {
+          <div class="text-center py-4">
+            <div
+              class="animate-spin inline-block w-6 h-6 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
+          </div>
+        } @else if (availableRoles().length === 0) {
+          <div class="text-center py-4 text-neutral-500">No roles available</div>
+        } @else {
+          @for (role of availableRoles(); track trackByRoleId($index, role)) {
+            <div
+              class="role-list-item"
+              [class.selected]="isRoleSelected(role)"
+              [class.disabled]="disabled"
+              (click)="selectRole(role)">
+              <div class="flex items-center space-x-3">
+                @if (selectionMode === 'multiple') {
+                  <input
+                    type="checkbox"
+                    class="role-checkbox"
+                    [checked]="isRoleSelected(role)"
+                    [disabled]="disabled"
+                    (click)="$event.stopPropagation()"
+                    readonly />
+                }
+
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <h3 class="font-medium text-neutral-900 dark:text-neutral-100">
+                      {{ role.name }}
+                    </h3>
+                    @if (showAccessLevel) {
+                      <app-access-level-indicator
+                        [level]="role.accessLevel"
+                        variant="badge"
+                        size="sm" />
+                    }
+                  </div>
+                  @if (role.description) {
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                      {{ role.description }}
+                    </p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- Cards Variant -->
+    @else if (variant === 'cards') {
+      <div
+        class="role-cards grid gap-3"
+        [class]="size === 'sm' ? 'grid-cols-1' : size === 'md' ? 'grid-cols-2' : 'grid-cols-3'">
+        @if (loading()) {
+          <div class="col-span-full text-center py-8">
+            <div
+              class="animate-spin inline-block w-8 h-8 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
+          </div>
+        } @else if (availableRoles().length === 0) {
+          <div class="col-span-full text-center py-8 text-neutral-500">No roles available</div>
+        } @else {
+          @for (role of availableRoles(); track trackByRoleId($index, role)) {
+            <div
+              class="role-card"
+              [class.selected]="isRoleSelected(role)"
+              [class.disabled]="disabled"
+              (click)="selectRole(role)">
+              <div class="card-content">
+                <div class="flex items-start justify-between mb-2">
+                  <h3 class="font-medium text-neutral-900 dark:text-neutral-100 text-sm">
+                    {{ role.name }}
+                  </h3>
+                  @if (selectionMode === 'multiple') {
+                    <input
+                      type="checkbox"
+                      class="role-checkbox"
+                      [checked]="isRoleSelected(role)"
+                      [disabled]="disabled"
+                      (click)="$event.stopPropagation()"
+                      readonly />
+                  }
+                </div>
+
+                @if (showAccessLevel) {
+                  <app-access-level-indicator
+                    [level]="role.accessLevel"
+                    variant="chip"
+                    size="xs"
+                    class="mb-2" />
+                }
+                @if (role.description) {
+                  <p class="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
+                    {{ role.description }}
+                  </p>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- Compact Variant -->
+    @else if (variant === 'compact') {
+      <div class="role-compact space-x-2 flex flex-wrap gap-2">
+        @if (loading()) {
+          <div
+            class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent text-primary-600 rounded-full"></div>
+        } @else if (availableRoles().length === 0) {
+          <span class="text-sm text-neutral-500">No roles</span>
+        } @else {
+          @for (role of availableRoles(); track trackByRoleId($index, role)) {
+            <button
+              type="button"
+              class="role-compact-item"
+              [class.selected]="isRoleSelected(role)"
+              [class.disabled]="disabled"
+              [disabled]="disabled"
+              (click)="selectRole(role)"
+              [title]="getRoleDescription(role)">
+              <span class="role-name">{{ role.name }}</span>
+              @if (showAccessLevel) {
+                <app-access-level-indicator
+                  [level]="role.accessLevel"
+                  variant="minimal"
+                  size="xs" />
+              }
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Error Message -->
+  @if (errorMessage) {
+    <p class="mt-1 text-sm text-error-600">
+      {{ errorMessage }}
+    </p>
+  }
+
+  <!-- Selection Summary -->
+  @if (selectionMode === 'multiple' && selectedRoles().length > 0) {
+    <div class="mt-2 flex flex-wrap gap-1">
+      @for (role of selectedRoles(); track trackByRoleId($index, role)) {
+        <span class="selected-role-tag">
+          {{ role.name }}
+          @if (!disabled) {
+            <button
+              type="button"
+              class="ml-1 hover:text-error-600"
+              (click)="deselectRole(role)"
+              [attr.aria-label]="'Remove ' + role.name">
+              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          }
+        </span>
+      }
+    </div>
+  }
 </div>

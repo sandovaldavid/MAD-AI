@@ -11,13 +11,13 @@
 
 // Models
 export type {
-    UINotificationId,
-    UINotification,
-    NewUINotification,
-    SimpleUINotification,
-    UINotificationUpdate,
-    UINotificationFilter,
-    UINotificationSort,
+  UINotificationId,
+  UINotification,
+  NewUINotification,
+  SimpleUINotification,
+  UINotificationUpdate,
+  UINotificationFilter,
+  UINotificationSort,
 } from './models/ui-notification.model';
 
 // Enums
@@ -26,14 +26,14 @@ export { UINotificationPosition } from './enums/ui-notification-position.enum';
 
 // Types
 export type {
-    UINotificationAction,
-    UINotificationConfig,
-    UINotificationDefaults,
-    UINotificationTheme,
-    UINotificationAnimation,
-    UINotificationAccessibility,
-    UINotificationResponsive,
-    UINotificationSystemConfig,
+  UINotificationAction,
+  UINotificationConfig,
+  UINotificationDefaults,
+  UINotificationTheme,
+  UINotificationAnimation,
+  UINotificationAccessibility,
+  UINotificationResponsive,
+  UINotificationSystemConfig,
 } from './types/ui-notification.types';
 
 // Services
@@ -41,7 +41,7 @@ export { NotificationActionRegistryService } from './services/notification-actio
 
 // Mappers
 export {
-    NotificationUIMapper,
-    NotificationActionFactory,
-    CommonNotificationActions,
+  NotificationUIMapper,
+  NotificationActionFactory,
+  CommonNotificationActions,
 } from './mappers/notification-ui.mapper';

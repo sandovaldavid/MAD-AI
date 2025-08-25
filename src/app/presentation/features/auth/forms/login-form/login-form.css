@@ -1,84 +1,84 @@
 @reference '../../../../../../styles.css';
 
 .login-form {
-    @apply flex flex-col w-full space-y-4;
+  @apply flex flex-col w-full space-y-4;
 }
 
 /* Enhanced form field spacing */
 .login-form > * {
-    @apply transition-all duration-200;
+  @apply transition-all duration-200;
 }
 
 /* Improved link styles */
 .login-form-link {
-    @apply text-primary-600 hover:text-primary-700 hover:underline text-sm 
+  @apply text-primary-600 hover:text-primary-700 hover:underline text-sm 
     flex items-center gap-1 font-medium transition-colors duration-200
     dark:text-primary-400 dark:hover:text-primary-300;
 }
 
 .login-form-link:focus-visible {
-    @apply outline-none ring-2 ring-primary-500/20 ring-offset-2 rounded;
+  @apply outline-none ring-2 ring-primary-500/20 ring-offset-2 rounded;
 }
 
 /* Enhanced register link */
 .login-form-register {
-    @apply text-primary-600 hover:text-primary-700 hover:underline font-semibold 
+  @apply text-primary-600 hover:text-primary-700 hover:underline font-semibold 
     flex items-center gap-2 justify-center transition-all duration-200
     dark:text-primary-400 dark:hover:text-primary-300 p-2 rounded-lg
     hover:bg-primary-50 dark:hover:bg-primary-900/20;
 }
 
 .login-form-register:focus-visible {
-    @apply outline-none ring-2 ring-primary-500/20 ring-offset-2;
+  @apply outline-none ring-2 ring-primary-500/20 ring-offset-2;
 }
 
 /* Enhanced checkbox styling */
 .login-form-checkbox {
-    @apply w-4 h-4 text-primary-600 bg-neutral-100 border-neutral-300 rounded 
+  @apply w-4 h-4 text-primary-600 bg-neutral-100 border-neutral-300 rounded 
     focus:ring-primary-500 focus:ring-2 transition-colors duration-200
     dark:bg-neutral-700 dark:border-neutral-600 dark:text-primary-400;
 }
 
 /* Remember me section */
 .login-form-remember {
-    @apply flex items-center justify-between py-2;
+  @apply flex items-center justify-between py-2;
 }
 
 .login-form-remember label {
-    @apply flex items-center gap-3 text-sm font-medium text-neutral-700 
+  @apply flex items-center gap-3 text-sm font-medium text-neutral-700 
     dark:text-neutral-300 cursor-pointer transition-colors duration-200
     hover:text-neutral-900 dark:hover:text-neutral-100;
 }
 
 /* Submit button enhancement */
 .login-form-submit {
-    @apply mt-4 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
+  @apply mt-4 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98];
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
-    .login-form {
-        @apply space-y-3;
-    }
+  .login-form {
+    @apply space-y-3;
+  }
 
-    .login-form-remember {
-        @apply flex-col items-start gap-2;
-    }
+  .login-form-remember {
+    @apply flex-col items-start gap-2;
+  }
 }
 
 /* Focus and accessibility improvements */
 .login-form input:focus,
 .login-form button:focus {
-    @apply outline-none;
+  @apply outline-none;
 }
 
 /* Loading state styles */
 .login-form[data-loading='true'] {
-    @apply pointer-events-none opacity-75;
+  @apply pointer-events-none opacity-75;
 }
 
 /* Error state enhancement */
 .login-form-error {
-    @apply p-4 bg-error-50 border border-error-200 rounded-xl text-error-700 text-sm
+  @apply p-4 bg-error-50 border border-error-200 rounded-xl text-error-700 text-sm
     dark:bg-error-950/20 dark:border-error-800 dark:text-error-300;
 }

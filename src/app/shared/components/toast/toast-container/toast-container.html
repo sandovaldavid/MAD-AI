@@ -1,12 +1,12 @@
 <!-- TOAST CONTAINER - TOP RIGHT (DEFAULT POSITION) -->
 <div class="toast-anchor top-4 right-4">
-    <ng-container *ngFor="let t of allItems(); trackBy: trackId">
-        <app-toast-item
-            [t]="t"
-            (close)="close(t.id)"
-            (act)="onAction(t.id, $event)"
-            (hover)="pause(t.id)"
-            (leave)="resume(t.id)">
-        </app-toast-item>
-    </ng-container>
+  <ng-container *ngFor="let t of allItems(); trackBy: trackId">
+    <app-toast-item
+      [t]="t"
+      (close)="close(t.id)"
+      (act)="onAction(t.id, $event)"
+      (hover)="pause(t.id)"
+      (leave)="resume(t.id)">
+    </app-toast-item>
+  </ng-container>
 </div>

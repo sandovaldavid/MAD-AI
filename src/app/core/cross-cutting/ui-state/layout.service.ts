@@ -6,108 +6,108 @@ const MOBILE_BREAKPOINT = 768; // md breakpoint
 
 @Injectable({ providedIn: 'root' })
 export class LayoutService {
-    private document = inject(DOCUMENT);
+  private document = inject(DOCUMENT);
 
-    // Private signals
-    private _sidebarCollapsed = signal(false);
-    private _mobileDrawerOpen = signal(false);
-    private _hoveredItemId = signal<string | null>(null);
-    private _expandedSectionIds = signal(new Set<string>());
-    private _windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  // Private signals
+  private _sidebarCollapsed = signal(false);
+  private _mobileDrawerOpen = signal(false);
+  private _hoveredItemId = signal<string | null>(null);
+  private _expandedSectionIds = signal(new Set<string>());
+  private _windowWidth = signal(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
-    // Public computed signals
-    readonly sidebarCollapsed = computed(() => this._sidebarCollapsed());
-    readonly mobileDrawerOpen = computed(() => this._mobileDrawerOpen());
-    readonly hoveredItemId = computed(() => this._hoveredItemId());
-    readonly expandedSectionIds = computed(() => this._expandedSectionIds());
-    readonly isMobile = computed(() => this._windowWidth() < MOBILE_BREAKPOINT);
+  // Public computed signals
+  readonly sidebarCollapsed = computed(() => this._sidebarCollapsed());
+  readonly mobileDrawerOpen = computed(() => this._mobileDrawerOpen());
+  readonly hoveredItemId = computed(() => this._hoveredItemId());
+  readonly expandedSectionIds = computed(() => this._expandedSectionIds());
+  readonly isMobile = computed(() => this._windowWidth() < MOBILE_BREAKPOINT);
 
-    constructor() {
-        // Initialize from localStorage (SSR-safe)
-        this.initializeFromStorage();
+  constructor() {
+    // Initialize from localStorage (SSR-safe)
+    this.initializeFromStorage();
 
-        // Listen to window resize (client-side only)
-        if (typeof window !== 'undefined') {
-            this.setupWindowResize();
-        }
-
-        // Persist sidebar collapsed state
-        effect(() => {
-            if (typeof window !== 'undefined') {
-                const collapsed = this._sidebarCollapsed();
-                localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(collapsed));
-            }
-        });
-
-        // Auto-close mobile drawer when switching to desktop
-        effect(() => {
-            if (!this.isMobile() && this._mobileDrawerOpen()) {
-                this._mobileDrawerOpen.set(false);
-            }
-        });
+    // Listen to window resize (client-side only)
+    if (typeof window !== 'undefined') {
+      this.setupWindowResize();
     }
 
-    private initializeFromStorage(): void {
-        if (typeof window !== 'undefined') {
-            try {
-                const stored = localStorage.getItem(LAYOUT_STORAGE_KEY);
-                if (stored !== null) {
-                    this._sidebarCollapsed.set(JSON.parse(stored));
-                }
-            } catch {
-                // Ignore parsing errors
-            }
-        }
-    }
+    // Persist sidebar collapsed state
+    effect(() => {
+      if (typeof window !== 'undefined') {
+        const collapsed = this._sidebarCollapsed();
+        localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(collapsed));
+      }
+    });
 
-    private setupWindowResize(): void {
-        const updateWidth = () => this._windowWidth.set(window.innerWidth);
-
-        window.addEventListener('resize', updateWidth);
-        updateWidth(); // Initial value
-    }
-
-    // Public API
-    toggleSidebarCollapsed(): void {
-        this._sidebarCollapsed.update((collapsed) => !collapsed);
-    }
-
-    setSidebarCollapsed(collapsed: boolean): void {
-        this._sidebarCollapsed.set(collapsed);
-    }
-
-    openMobileDrawer(): void {
-        this._mobileDrawerOpen.set(true);
-    }
-
-    closeMobileDrawer(): void {
+    // Auto-close mobile drawer when switching to desktop
+    effect(() => {
+      if (!this.isMobile() && this._mobileDrawerOpen()) {
         this._mobileDrawerOpen.set(false);
-    }
+      }
+    });
+  }
 
-    setHoveredItem(id: string | null): void {
-        this._hoveredItemId.set(id);
-    }
-
-    toggleSection(sectionId: string): void {
-        this._expandedSectionIds.update((sections) => {
-            const newSections = new Set(sections);
-            if (newSections.has(sectionId)) {
-                newSections.delete(sectionId);
-            } else {
-                newSections.add(sectionId);
-            }
-            return newSections;
-        });
-    }
-
-    // Navigation helpers
-    onNavigate(): void {
-        // Close mobile drawer on navigation
-        if (this.isMobile()) {
-            this.closeMobileDrawer();
+  private initializeFromStorage(): void {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (stored !== null) {
+          this._sidebarCollapsed.set(JSON.parse(stored));
         }
-
-        // Clear hovered item
-        this.setHoveredItem(null);
+      } catch {
+        // Ignore parsing errors
+      }
     }
+  }
+
+  private setupWindowResize(): void {
+    const updateWidth = () => this._windowWidth.set(window.innerWidth);
+
+    window.addEventListener('resize', updateWidth);
+    updateWidth(); // Initial value
+  }
+
+  // Public API
+  toggleSidebarCollapsed(): void {
+    this._sidebarCollapsed.update((collapsed) => !collapsed);
+  }
+
+  setSidebarCollapsed(collapsed: boolean): void {
+    this._sidebarCollapsed.set(collapsed);
+  }
+
+  openMobileDrawer(): void {
+    this._mobileDrawerOpen.set(true);
+  }
+
+  closeMobileDrawer(): void {
+    this._mobileDrawerOpen.set(false);
+  }
+
+  setHoveredItem(id: string | null): void {
+    this._hoveredItemId.set(id);
+  }
+
+  toggleSection(sectionId: string): void {
+    this._expandedSectionIds.update((sections) => {
+      const newSections = new Set(sections);
+      if (newSections.has(sectionId)) {
+        newSections.delete(sectionId);
+      } else {
+        newSections.add(sectionId);
+      }
+      return newSections;
+    });
+  }
+
+  // Navigation helpers
+  onNavigate(): void {
+    // Close mobile drawer on navigation
+    if (this.isMobile()) {
+      this.closeMobileDrawer();
+    }
+
+    // Clear hovered item
+    this.setHoveredItem(null);
+  }
 }

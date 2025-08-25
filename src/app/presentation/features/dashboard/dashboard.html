@@ -1,256 +1,230 @@
 <div class="dashboard-container">
-    <!-- Header Section -->
-    <div class="dashboard-header bg-gradient-form shadow-form-elevated">
-        <div class="mb-6">
-            <h1 class="dashboard-title">
-                <ui-icon name="user" size="lg" class="chart-title-logo" />
-                Dashboard
-            </h1>
-            <p class="dashboard-subtitle">{{ getGreeting() }} Bienvenido a MAD-AI</p>
-            <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                {{ getCurrentDate() }}
-            </p>
-        </div>
+  <!-- Header Section -->
+  <div class="dashboard-header bg-gradient-form shadow-form-elevated">
+    <div class="mb-6">
+      <h1 class="dashboard-title">
+        <ui-icon name="user" size="lg" class="chart-title-logo" />
+        Dashboard
+      </h1>
+      <p class="dashboard-subtitle">{{ getGreeting() }} Bienvenido a MAD-AI</p>
+      <p class="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+        {{ getCurrentDate() }}
+      </p>
     </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="dashboard-content">
-        @if (authFacade.user()) {
-        <!-- Welcome Card -->
-        <div class="section-dashboard animate-fade-in">
-            <div class="mb-4">
-                <h2 class="section-title mb-3">
-                    <ui-icon name="user" size="md" class="chart-title-logo" />
-                    Información de Usuario
-                </h2>
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    @if (authFacade.user()) {
+      <!-- Welcome Card -->
+      <div class="section-dashboard animate-fade-in">
+        <div class="mb-4">
+          <h2 class="section-title mb-3">
+            <ui-icon name="user" size="md" class="chart-title-logo" />
+            Información de Usuario
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          <!-- User Avatar and Basic Info -->
+          <div
+            class="flex items-center space-x-4 p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+            <div
+              class="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
+              <ui-icon name="user" size="lg" class="text-white" />
             </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-neutral-900 dark:text-white">
+                {{ authFacade.user()?.username }}
+              </h3>
+              <p class="text-neutral-600 dark:text-neutral-300">
+                Conectado como {{ authFacade.user()?.role?.name }}
+              </p>
+            </div>
+          </div>
 
-            <div class="space-y-4">
-                <!-- User Avatar and Basic Info -->
+          <!-- User Details Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+              <div class="flex items-center space-x-3">
                 <div
-                    class="flex items-center space-x-4 p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-full flex items-center justify-center">
-                        <ui-icon name="user" size="lg" class="text-white" />
-                    </div>
-                    <div class="flex-1">
-                        <h3 class="text-xl font-bold text-neutral-900 dark:text-white">
-                            {{ authFacade.user()?.username }}
-                        </h3>
-                        <p class="text-neutral-600 dark:text-neutral-300">
-                            Conectado como {{ authFacade.user()?.role?.name }}
-                        </p>
-                    </div>
+                  class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                  <ui-icon name="user" size="sm" class="text-primary-600 dark:text-primary-400" />
                 </div>
-
-                <!-- User Details Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                        <div class="flex items-center space-x-3">
-                            <div
-                                class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
-                                <ui-icon
-                                    name="user"
-                                    size="sm"
-                                    class="text-primary-600 dark:text-primary-400" />
-                            </div>
-                            <div>
-                                <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                                    Usuario
-                                </p>
-                                <p class="font-semibold text-neutral-900 dark:text-white">
-                                    {{ authFacade.user()?.username }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                        <div class="flex items-center space-x-3">
-                            <div
-                                class="w-10 h-10 bg-secondary-100 dark:bg-secondary-900 rounded-lg flex items-center justify-center">
-                                <ui-icon
-                                    name="key"
-                                    size="sm"
-                                    class="text-secondary-600 dark:text-secondary-400" />
-                            </div>
-                            <div>
-                                <p class="text-sm text-neutral-600 dark:text-neutral-400">Rol</p>
-                                <p class="font-semibold text-neutral-900 dark:text-white">
-                                    {{ authFacade.user()?.role?.name }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                  <p class="text-sm text-neutral-600 dark:text-neutral-400">Usuario</p>
+                  <p class="font-semibold text-neutral-900 dark:text-white">
+                    {{ authFacade.user()?.username }}
+                  </p>
                 </div>
+              </div>
             </div>
-        </div>
 
-        <!-- Quick Actions Card -->
-        <div class="section-dashboard animate-slide-up">
-            <h2 class="section-title mb-4">
-                <ui-icon name="paper-airplane" size="md" class="chart-title-logo" />
-                Acciones Rápidas
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Profile Action -->
+            <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+              <div class="flex items-center space-x-3">
                 <div
-                    class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
-                    (click)="onProfileAction()">
-                    <div class="text-center">
-                        <div
-                            class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <ui-icon name="user" size="md" class="text-white" />
-                        </div>
-                        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Perfil</h3>
-                        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                            Gestionar perfil de usuario
-                        </p>
-                    </div>
+                  class="w-10 h-10 bg-secondary-100 dark:bg-secondary-900 rounded-lg flex items-center justify-center">
+                  <ui-icon
+                    name="key"
+                    size="sm"
+                    class="text-secondary-600 dark:text-secondary-400" />
                 </div>
-
-                <!-- Settings Action -->
-                <div
-                    class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
-                    (click)="onSettingsAction()">
-                    <div class="text-center">
-                        <div
-                            class="w-12 h-12 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <ui-icon name="key" size="md" class="text-white" />
-                        </div>
-                        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">
-                            Configuración
-                        </h3>
-                        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                            Ajustes del sistema
-                        </p>
-                    </div>
+                <div>
+                  <p class="text-sm text-neutral-600 dark:text-neutral-400">Rol</p>
+                  <p class="font-semibold text-neutral-900 dark:text-white">
+                    {{ authFacade.user()?.role?.name }}
+                  </p>
                 </div>
-
-                <!-- Help Action -->
-                <div
-                    class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
-                    (click)="onHelpAction()">
-                    <div class="text-center">
-                        <div
-                            class="w-12 h-12 bg-gradient-to-br from-tertiary-500 to-tertiary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <ui-icon name="info" size="md" class="text-white" />
-                        </div>
-                        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Ayuda</h3>
-                        <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                            Soporte y documentación
-                        </p>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Statistics/Overview Card -->
-        <div class="section-dashboard animate-scale-in">
-            <h2 class="section-title mb-4">
-                <ui-icon name="success" size="md" class="chart-title-logo" />
-                Resumen de Actividad
-            </h2>
+      <!-- Quick Actions Card -->
+      <div class="section-dashboard animate-slide-up">
+        <h2 class="section-title mb-4">
+          <ui-icon name="paper-airplane" size="md" class="chart-title-logo" />
+          Acciones Rápidas
+        </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                                Sesiones Activas
-                            </p>
-                            <p class="text-2xl font-bold text-neutral-900 dark:text-white">1</p>
-                        </div>
-                        <div
-                            class="w-10 h-10 bg-successful-100 dark:bg-successful-900 rounded-lg flex items-center justify-center">
-                            <ui-icon
-                                name="success"
-                                size="sm"
-                                class="text-successful-600 dark:text-successful-400" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                                Última Conexión
-                            </p>
-                            <p class="text-lg font-bold text-neutral-900 dark:text-white">Ahora</p>
-                        </div>
-                        <div
-                            class="w-10 h-10 bg-info-100 dark:bg-info-900 rounded-lg flex items-center justify-center">
-                            <ui-icon
-                                name="info"
-                                size="sm"
-                                class="text-info-600 dark:text-info-400" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-neutral-600 dark:text-neutral-400">Estado</p>
-                            <p
-                                class="text-lg font-bold text-successful-600 dark:text-successful-400">
-                                Activo
-                            </p>
-                        </div>
-                        <div
-                            class="w-10 h-10 bg-successful-100 dark:bg-successful-900 rounded-lg flex items-center justify-center">
-                            <ui-icon
-                                name="check"
-                                size="sm"
-                                class="text-successful-600 dark:text-successful-400" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                                Nivel de Acceso
-                            </p>
-                            <p class="text-lg font-bold text-primary-600 dark:text-primary-400">
-                                {{ authFacade.user()?.role?.name }}
-                            </p>
-                        </div>
-                        <div
-                            class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
-                            <ui-icon
-                                name="key"
-                                size="sm"
-                                class="text-primary-600 dark:text-primary-400" />
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Profile Action -->
+          <div
+            class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
+            (click)="onProfileAction()">
+            <div class="text-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <ui-icon name="user" size="md" class="text-white" />
+              </div>
+              <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Perfil</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400">
+                Gestionar perfil de usuario
+              </p>
             </div>
-        </div>
-        } @else {
-        <!-- Loading State -->
-        <div class="section-dashboard">
-            <div class="text-center py-8">
-                <div class="loading-spinner w-8 h-8 mx-auto mb-4"></div>
-                <p class="text-neutral-600 dark:text-neutral-300">Cargando información...</p>
-            </div>
-        </div>
-        }
+          </div>
 
-        <!-- Logout Section -->
-        <div class="mt-8 text-center">
-            <ui-button
-                type="button"
-                variant="secondary"
-                size="lg"
-                (click)="logout()"
-                class="interactive-glow">
-                <ui-icon name="arrow-left" size="sm" class="mr-2" />
-                Cerrar Sesión
-            </ui-button>
+          <!-- Settings Action -->
+          <div
+            class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
+            (click)="onSettingsAction()">
+            <div class="text-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <ui-icon name="key" size="md" class="text-white" />
+              </div>
+              <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Configuración</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400">Ajustes del sistema</p>
+            </div>
+          </div>
+
+          <!-- Help Action -->
+          <div
+            class="p-6 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated interactive-scale cursor-pointer hover:shadow-lg transition-all duration-300"
+            (click)="onHelpAction()">
+            <div class="text-center">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-tertiary-500 to-tertiary-600 rounded-lg flex items-center justify-center mx-auto mb-3">
+                <ui-icon name="info" size="md" class="text-white" />
+              </div>
+              <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Ayuda</h3>
+              <p class="text-sm text-neutral-600 dark:text-neutral-400">Soporte y documentación</p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Statistics/Overview Card -->
+      <div class="section-dashboard animate-scale-in">
+        <h2 class="section-title mb-4">
+          <ui-icon name="success" size="md" class="chart-title-logo" />
+          Resumen de Actividad
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">Sesiones Activas</p>
+                <p class="text-2xl font-bold text-neutral-900 dark:text-white">1</p>
+              </div>
+              <div
+                class="w-10 h-10 bg-successful-100 dark:bg-successful-900 rounded-lg flex items-center justify-center">
+                <ui-icon
+                  name="success"
+                  size="sm"
+                  class="text-successful-600 dark:text-successful-400" />
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">Última Conexión</p>
+                <p class="text-lg font-bold text-neutral-900 dark:text-white">Ahora</p>
+              </div>
+              <div
+                class="w-10 h-10 bg-info-100 dark:bg-info-900 rounded-lg flex items-center justify-center">
+                <ui-icon name="info" size="sm" class="text-info-600 dark:text-info-400" />
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">Estado</p>
+                <p class="text-lg font-bold text-successful-600 dark:text-successful-400">Activo</p>
+              </div>
+              <div
+                class="w-10 h-10 bg-successful-100 dark:bg-successful-900 rounded-lg flex items-center justify-center">
+                <ui-icon
+                  name="check"
+                  size="sm"
+                  class="text-successful-600 dark:text-successful-400" />
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-white dark:bg-neutral-800 rounded-xl shadow-form-elevated">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-neutral-600 dark:text-neutral-400">Nivel de Acceso</p>
+                <p class="text-lg font-bold text-primary-600 dark:text-primary-400">
+                  {{ authFacade.user()?.role?.name }}
+                </p>
+              </div>
+              <div
+                class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded-lg flex items-center justify-center">
+                <ui-icon name="key" size="sm" class="text-primary-600 dark:text-primary-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <!-- Loading State -->
+      <div class="section-dashboard">
+        <div class="text-center py-8">
+          <div class="loading-spinner w-8 h-8 mx-auto mb-4"></div>
+          <p class="text-neutral-600 dark:text-neutral-300">Cargando información...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Logout Section -->
+    <div class="mt-8 text-center">
+      <ui-button
+        type="button"
+        variant="secondary"
+        size="lg"
+        (click)="logout()"
+        class="interactive-glow">
+        <ui-icon name="arrow-left" size="sm" class="mr-2" />
+        Cerrar Sesión
+      </ui-button>
     </div>
+  </div>
 </div>

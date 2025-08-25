@@ -1,10 +1,10 @@
 import {
-    ChangeDetectionStrategy,
-    Component,
-    inject,
-    computed,
-    signal,
-    effect,
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  computed,
+  signal,
+  effect,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -21,107 +21,107 @@ import type { RoleModel } from '../../models/role.model';
  * Includes only the fields that can be updated from the UI
  */
 type RoleUpdateData = Pick<RoleModel, 'name' | 'accessLevel' | 'description' | 'isActive'> & {
-    canLeadProjects?: boolean;
-    isUniquePerTeam?: boolean;
+  canLeadProjects?: boolean;
+  isUniquePerTeam?: boolean;
 };
 
 @Component({
-    selector: 'app-update-role',
-    standalone: true,
-    imports: [CommonModule, PageHeader, RoleFormComponent, ErrorDisplay],
-    templateUrl: './update-role.html',
-    styleUrl: './update-role.css',
-    changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-update-role',
+  standalone: true,
+  imports: [CommonModule, PageHeader, RoleFormComponent, ErrorDisplay],
+  templateUrl: './update-role.html',
+  styleUrl: './update-role.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UpdateRole {
-    private router = inject(Router);
-    private route = inject(ActivatedRoute);
-    private breadcrumbService = inject(BreadcrumbService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private breadcrumbService = inject(BreadcrumbService);
 
-    readonly facade = inject(RolesFacade);
+  readonly facade = inject(RolesFacade);
 
-    private roleId = signal<number | null>(null);
+  private roleId = signal<number | null>(null);
 
-    readonly currentRole = computed(() => {
-        const id = this.roleId();
-        return id ? this.facade.roles().find((r) => r.id === id) : null;
+  readonly currentRole = computed(() => {
+    const id = this.roleId();
+    return id ? this.facade.roles().find((r) => r.id === id) : null;
+  });
+
+  readonly headerConfig = computed(
+    (): PageHeaderConfig => ({
+      title: `Editar Rol: ${this.currentRole()?.displayName || 'Cargando...'}`,
+      description: 'Modifica los permisos y configuración del rol',
+      icon: 'shield',
+      showBreadcrumbs: true,
+      actions: [],
+    })
+  );
+
+  readonly errorConfig = computed(
+    (): ErrorDisplayConfig => ({
+      type: 'generic',
+      severity: 'error',
+      title: 'Rol no encontrado',
+      message: 'El rol que intentas editar no existe o ha sido eliminado.',
+      actions: [
+        {
+          label: 'Volver a Roles',
+          style: 'primary',
+          action: () => this.router.navigate(['/roles']),
+        },
+      ],
+    })
+  );
+
+  constructor() {
+    // Get role ID from route params
+    effect(() => {
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.roleId.set(+id);
+        this.updateBreadcrumbs();
+      }
     });
 
-    readonly headerConfig = computed(
-        (): PageHeaderConfig => ({
-            title: `Editar Rol: ${this.currentRole()?.displayName || 'Cargando...'}`,
-            description: 'Modifica los permisos y configuración del rol',
-            icon: 'shield',
-            showBreadcrumbs: true,
-            actions: [],
-        })
-    );
+    // Load roles if not already loaded
+    effect(() => {
+      if (this.facade.roles().length === 0) {
+        this.facade.refresh({});
+      }
+    });
+  }
 
-    readonly errorConfig = computed(
-        (): ErrorDisplayConfig => ({
-            type: 'generic',
-            severity: 'error',
-            title: 'Rol no encontrado',
-            message: 'El rol que intentas editar no existe o ha sido eliminado.',
-            actions: [
-                {
-                    label: 'Volver a Roles',
-                    style: 'primary',
-                    action: () => this.router.navigate(['/roles']),
-                },
-            ],
-        })
-    );
+  private updateBreadcrumbs() {
+    const role = this.currentRole();
+    this.breadcrumbService.setBreadcrumbs([
+      { label: 'Dashboard', route: '/dashboard' },
+      { label: 'Roles', route: '/roles' },
+      {
+        label: role?.displayName || 'Editar',
+        route: `/roles/${this.roleId()}/edit`,
+        isLast: true,
+      },
+    ]);
+  }
 
-    constructor() {
-        // Get role ID from route params
-        effect(() => {
-            const id = this.route.snapshot.paramMap.get('id');
-            if (id) {
-                this.roleId.set(+id);
-                this.updateBreadcrumbs();
-            }
-        });
+  async onRoleUpdated(roleData: RoleUpdateData) {
+    const roleId = this.roleId();
+    if (!roleId) return;
 
-        // Load roles if not already loaded
-        effect(() => {
-            if (this.facade.roles().length === 0) {
-                this.facade.refresh({});
-            }
-        });
+    try {
+      await this.facade.updateRole(roleId, roleData);
+      this.router.navigate(['/roles', roleId]);
+    } catch (error) {
+      console.error('Error updating role:', error);
     }
+  }
 
-    private updateBreadcrumbs() {
-        const role = this.currentRole();
-        this.breadcrumbService.setBreadcrumbs([
-            { label: 'Dashboard', route: '/dashboard' },
-            { label: 'Roles', route: '/roles' },
-            {
-                label: role?.displayName || 'Editar',
-                route: `/roles/${this.roleId()}/edit`,
-                isLast: true,
-            },
-        ]);
+  onCancel() {
+    const roleId = this.roleId();
+    if (roleId) {
+      this.router.navigate(['/roles', roleId]);
+    } else {
+      this.router.navigate(['/roles']);
     }
-
-    async onRoleUpdated(roleData: RoleUpdateData) {
-        const roleId = this.roleId();
-        if (!roleId) return;
-
-        try {
-            await this.facade.updateRole(roleId, roleData);
-            this.router.navigate(['/roles', roleId]);
-        } catch (error) {
-            console.error('Error updating role:', error);
-        }
-    }
-
-    onCancel() {
-        const roleId = this.roleId();
-        if (roleId) {
-            this.router.navigate(['/roles', roleId]);
-        } else {
-            this.router.navigate(['/roles']);
-        }
-    }
+  }
 }

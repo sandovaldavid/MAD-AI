@@ -5,12 +5,12 @@
    =============================================== */
 
 .register-page {
-    @apply min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 
+  @apply min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 
     dark:from-primary-950 dark:to-secondary-950;
 }
 
 .register-page__container {
-    @apply min-h-screen grid grid-cols-1 xl:grid-cols-5 shadow-2xl
+  @apply min-h-screen grid grid-cols-1 xl:grid-cols-5 shadow-2xl
     dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.80)] overflow-hidden;
 }
 
@@ -19,47 +19,47 @@
    =============================================== */
 
 .register-page__image-section {
-    @apply relative overflow-hidden xl:col-span-2;
-    /* Hide on mobile and tablet, show on extra large screens */
-    @apply hidden xl:block;
+  @apply relative overflow-hidden xl:col-span-2;
+  /* Hide on mobile and tablet, show on extra large screens */
+  @apply hidden xl:block;
 }
 
 .register-page__image-wrapper {
-    @apply relative h-full;
+  @apply relative h-full;
 }
 
 .register-page__image {
-    @apply w-full h-full object-cover;
+  @apply w-full h-full object-cover;
 }
 
 .register-page__overlay {
-    @apply absolute inset-0 bg-gradient-to-br from-primary-900/95 via-primary-800/90 to-primary-700/85;
-    @apply flex items-center justify-center;
+  @apply absolute inset-0 bg-gradient-to-br from-primary-900/95 via-primary-800/90 to-primary-700/85;
+  @apply flex items-center justify-center;
 }
 
 .register-page__overlay-content {
-    @apply max-w-lg px-8 text-center text-white;
+  @apply max-w-lg px-8 text-center text-white;
 }
 
 .register-page__welcome-title {
-    @apply text-4xl xl:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-primary-100 
+  @apply text-4xl xl:text-5xl font-bold mb-6 bg-gradient-to-r from-white to-primary-100 
     bg-clip-text text-transparent;
 }
 
 .register-page__welcome-text {
-    @apply text-xl opacity-95 mb-10 leading-relaxed font-light;
+  @apply text-xl opacity-95 mb-10 leading-relaxed font-light;
 }
 
 .register-page__features {
-    @apply space-y-6 text-left;
+  @apply space-y-6 text-left;
 }
 
 .register-page__feature {
-    @apply flex items-center gap-4 text-base;
+  @apply flex items-center gap-4 text-base;
 }
 
 .register-page__feature-icon {
-    @apply flex-shrink-0 w-6 h-6 rounded-full bg-primary-100/20 backdrop-blur-sm 
+  @apply flex-shrink-0 w-6 h-6 rounded-full bg-primary-100/20 backdrop-blur-sm 
     border border-primary-200/30 fill-primary-100 flex items-center justify-center;
 }
 
@@ -68,14 +68,14 @@
    =============================================== */
 
 .register-page__form-section {
-    @apply flex items-center justify-center min-h-screen xl:col-span-3;
-    @apply bg-gradient-to-br from-white via-neutral-50/50 to-primary-50/30
+  @apply flex items-center justify-center min-h-screen xl:col-span-3;
+  @apply bg-gradient-to-br from-white via-neutral-50/50 to-primary-50/30
     dark:from-primary-950 dark:via-primary-900/80 dark:to-primary-950/40;
-    @apply px-6 py-6 lg:px-12 xl:px-16;
+  @apply px-6 py-6 lg:px-12 xl:px-16;
 }
 
 .register-page__form-wrapper {
-    @apply w-full max-w-4xl;
+  @apply w-full max-w-4xl;
 }
 
 /* ===============================================
@@ -83,16 +83,16 @@
    =============================================== */
 
 .register-page__brand {
-    @apply text-center mb-10;
+  @apply text-center mb-10;
 }
 
 .register-page__brand-title {
-    @apply text-3xl xl:text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 
+  @apply text-3xl xl:text-4xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 
     bg-clip-text text-transparent mb-3;
 }
 
 .register-page__brand-subtitle {
-    @apply text-base text-neutral-600 dark:text-neutral-400 font-medium;
+  @apply text-base text-neutral-600 dark:text-neutral-400 font-medium;
 }
 
 /* ===============================================
@@ -100,30 +100,30 @@
    =============================================== */
 
 .register-page__footer {
-    @apply mt-8 border-t border-neutral-200 dark:border-neutral-700;
-    position: relative;
+  @apply mt-8 border-t border-neutral-200 dark:border-neutral-700;
+  position: relative;
 }
 
 .register-page__footer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgb(229 231 235), transparent);
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgb(229 231 235), transparent);
 }
 
 .dark .register-page__footer::before {
-    background: linear-gradient(to right, transparent, rgb(64 64 64), transparent);
+  background: linear-gradient(to right, transparent, rgb(64 64 64), transparent);
 }
 
 .register-page__footer-text {
-    @apply text-sm text-neutral-600 dark:text-neutral-400 text-center leading-relaxed;
+  @apply text-sm text-neutral-600 dark:text-neutral-400 text-center leading-relaxed;
 }
 
 .register-page__link {
-    @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300
+  @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300
     font-medium underline underline-offset-2 transition-colors duration-200
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25 
     focus-visible:ring-offset-2 rounded-sm;
@@ -135,44 +135,44 @@
 
 /* Mobile and tablet - single column */
 @media (max-width: 1279px) {
-    .register-page__container {
-        @apply grid-cols-1;
-    }
+  .register-page__container {
+    @apply grid-cols-1;
+  }
 
-    .register-page__form-section {
-        @apply min-h-screen px-4 py-8;
-    }
+  .register-page__form-section {
+    @apply min-h-screen px-4 py-8;
+  }
 
-    .register-page__form-wrapper {
-        @apply max-w-2xl;
-    }
+  .register-page__form-wrapper {
+    @apply max-w-2xl;
+  }
 
-    .register-page__brand-title {
-        @apply text-2xl;
-    }
+  .register-page__brand-title {
+    @apply text-2xl;
+  }
 
-    .register-page__brand-subtitle {
-        @apply text-sm;
-    }
+  .register-page__brand-subtitle {
+    @apply text-sm;
+  }
 }
 
 /* Extra large screens - optimize layout */
 @media (min-width: 1536px) {
-    .register-page__form-wrapper {
-        @apply max-w-5xl;
-    }
+  .register-page__form-wrapper {
+    @apply max-w-5xl;
+  }
 
-    .register-page__welcome-title {
-        @apply text-6xl;
-    }
+  .register-page__welcome-title {
+    @apply text-6xl;
+  }
 
-    .register-page__welcome-text {
-        @apply text-2xl;
-    }
+  .register-page__welcome-text {
+    @apply text-2xl;
+  }
 
-    .register-page__brand-title {
-        @apply text-5xl;
-    }
+  .register-page__brand-title {
+    @apply text-5xl;
+  }
 }
 
 /* ===============================================
@@ -180,13 +180,13 @@
    =============================================== */
 
 @media (prefers-color-scheme: dark) {
-    .register-page__overlay {
-        @apply from-primary-950/98 via-primary-900/92 to-primary-800/88;
-    }
+  .register-page__overlay {
+    @apply from-primary-950/98 via-primary-900/92 to-primary-800/88;
+  }
 
-    .register-page__feature-icon {
-        @apply bg-primary-100/10 border-primary-200/20;
-    }
+  .register-page__feature-icon {
+    @apply bg-primary-100/10 border-primary-200/20;
+  }
 }
 
 /* ===============================================
@@ -195,34 +195,34 @@
 
 /* Focus management */
 .register-page__link:focus-visible {
-    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white 
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white 
     dark:ring-offset-neutral-800 rounded-sm;
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-    .register-page__overlay {
-        @apply from-black/95 to-black/85;
-    }
+  .register-page__overlay {
+    @apply from-black/95 to-black/85;
+  }
 
-    .register-page__feature-icon {
-        @apply bg-white/30 border-white/50;
-    }
+  .register-page__feature-icon {
+    @apply bg-white/30 border-white/50;
+  }
 
-    .register-page__brand-title {
-        @apply bg-none text-primary-700 dark:text-primary-300;
-    }
+  .register-page__brand-title {
+    @apply bg-none text-primary-700 dark:text-primary-300;
+  }
 }
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-    .register-page__link {
-        @apply transition-none;
-    }
+  .register-page__link {
+    @apply transition-none;
+  }
 
-    .register-page__brand-title {
-        @apply bg-none text-primary-700 dark:text-primary-300;
-    }
+  .register-page__brand-title {
+    @apply bg-none text-primary-700 dark:text-primary-300;
+  }
 }
 
 /* ===============================================
@@ -230,16 +230,16 @@
    =============================================== */
 
 .register-page__container {
-    @apply backdrop-blur-sm;
+  @apply backdrop-blur-sm;
 }
 
 .register-page__form-section {
-    @apply backdrop-blur-sm;
+  @apply backdrop-blur-sm;
 }
 
 /* Smooth scrolling for mobile */
 @media (max-width: 768px) {
-    .register-page {
-        @apply overflow-x-hidden;
-    }
+  .register-page {
+    @apply overflow-x-hidden;
+  }
 }

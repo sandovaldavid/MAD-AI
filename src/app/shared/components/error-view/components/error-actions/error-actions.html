@@ -1,16 +1,16 @@
 <div [class]="containerClasses()">
-    @for (action of actions(); track action.label) {
+  @for (action of actions(); track action.label) {
     <button
-        [class]="getActionClasses(action)"
-        [disabled]="action.disabled || action.loading"
-        (click)="handleAction(action)">
-        @if (action.loading) {
+      [class]="getActionClasses(action)"
+      [disabled]="action.disabled || action.loading"
+      (click)="handleAction(action)">
+      @if (action.loading) {
         <div class="loading-spinner w-4 h-4"></div>
-        } @else if (action.icon) {
+      } @else if (action.icon) {
         <ui-icon [name]="action.icon" size="sm" />
-        }
+      }
 
-        <span>{{ action.label }}</span>
+      <span>{{ action.label }}</span>
     </button>
-    }
+  }
 </div>

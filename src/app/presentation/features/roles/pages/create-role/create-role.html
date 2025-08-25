@@ -1,26 +1,26 @@
 <section class="dashboard-container min-h-screen">
-    <!-- Header Section -->
-    <app-page-header [config]="headerConfig()" />
+  <!-- Header Section -->
+  <app-page-header [config]="headerConfig()" />
 
-    <!-- Form Content -->
-    <div class="dashboard-content">
-        <div class="max-w-4xl">
-            <div
-                class="bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
-                <div class="p-6">
-                    <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
-                        Información del Nuevo Rol
-                    </h2>
+  <!-- Form Content -->
+  <div class="dashboard-content">
+    <div class="max-w-4xl">
+      <div
+        class="bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-700">
+        <div class="p-6">
+          <h2 class="text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+            Información del Nuevo Rol
+          </h2>
 
-                    <!-- Role Form Component -->
-                    <app-role-form
-                        [mode]="'create'"
-                        [loading]="facade.loading()"
-                        (submitted)="onRoleCreated($event)"
-                        (cancelled)="onCancel()">
-                    </app-role-form>
-                </div>
-            </div>
+          <!-- Role Form Component -->
+          <app-role-form
+            [mode]="'create'"
+            [loading]="facade.loading()"
+            (submitted)="onRoleCreated($event)"
+            (cancelled)="onCancel()">
+          </app-role-form>
         </div>
+      </div>
     </div>
+  </div>
 </section>

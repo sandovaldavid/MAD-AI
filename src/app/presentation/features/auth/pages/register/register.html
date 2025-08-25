@@ -1,80 +1,78 @@
 <div class="register-page">
-    <!--  two-column layout -->
-    <div class="register-page__container">
-        <!-- Left Column -  Image -->
-        <div class="register-page__image-section">
-            <div class="register-page__image-wrapper">
-                <!-- Optimized background image -->
-                <img
-                    ngSrc="/bg-placeholder.webp"
-                    alt="Únete a la revolución de MAD-AI"
-                    class="register-page__image object-cover"
-                    fill
-                    priority />
-                <div class="register-page__overlay">
-                    <div class="register-page__overlay-content">
-                        <h1 class="register-page__welcome-title">Únete a MAD-AI</h1>
-                        <p class="register-page__welcome-text">
-                            Crea tu cuenta y accede a nuestra plataforma avanzada de inteligencia
-                            artificial para la gestión de proyectos informáticos.
-                        </p>
-                        <div class="register-page__features">
-                            <div class="register-page__feature">
-                                <ui-icon
-                                    name="check"
-                                    size="md"
-                                    variant="outline"
-                                    class="register-page__feature-icon" />
-                                <span>Gestión inteligente de proyectos y recursos</span>
-                            </div>
-                            <div class="register-page__feature">
-                                <ui-icon
-                                    name="check"
-                                    size="md"
-                                    variant="outline"
-                                    class="register-page__feature-icon" />
-                                <span>Sistema avanzado de roles y permisos</span>
-                            </div>
-                            <div class="register-page__feature">
-                                <ui-icon
-                                    name="check"
-                                    size="md"
-                                    variant="outline"
-                                    class="register-page__feature-icon" />
-                                <span>Análisis y reportes con IA</span>
-                            </div>
-                            <div class="register-page__feature">
-                                <ui-icon
-                                    name="check"
-                                    size="md"
-                                    variant="outline"
-                                    class="register-page__feature-icon" />
-                                <span>Soporte técnico especializado 24/7</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <!--  two-column layout -->
+  <div class="register-page__container">
+    <!-- Left Column -  Image -->
+    <div class="register-page__image-section">
+      <div class="register-page__image-wrapper">
+        <!-- Optimized background image -->
+        <img
+          ngSrc="/bg-placeholder.webp"
+          alt="Únete a la revolución de MAD-AI"
+          class="register-page__image object-cover"
+          fill
+          priority />
+        <div class="register-page__overlay">
+          <div class="register-page__overlay-content">
+            <h1 class="register-page__welcome-title">Únete a MAD-AI</h1>
+            <p class="register-page__welcome-text">
+              Crea tu cuenta y accede a nuestra plataforma avanzada de inteligencia artificial para
+              la gestión de proyectos informáticos.
+            </p>
+            <div class="register-page__features">
+              <div class="register-page__feature">
+                <ui-icon
+                  name="check"
+                  size="md"
+                  variant="outline"
+                  class="register-page__feature-icon" />
+                <span>Gestión inteligente de proyectos y recursos</span>
+              </div>
+              <div class="register-page__feature">
+                <ui-icon
+                  name="check"
+                  size="md"
+                  variant="outline"
+                  class="register-page__feature-icon" />
+                <span>Sistema avanzado de roles y permisos</span>
+              </div>
+              <div class="register-page__feature">
+                <ui-icon
+                  name="check"
+                  size="md"
+                  variant="outline"
+                  class="register-page__feature-icon" />
+                <span>Análisis y reportes con IA</span>
+              </div>
+              <div class="register-page__feature">
+                <ui-icon
+                  name="check"
+                  size="md"
+                  variant="outline"
+                  class="register-page__feature-icon" />
+                <span>Soporte técnico especializado 24/7</span>
+              </div>
             </div>
+          </div>
         </div>
-
-        <!-- Right Column -  Registration Form -->
-        <div class="register-page__form-section">
-            <div class="register-page__form-wrapper">
-                <!--  Registration Form -->
-                <app-register-form
-                    [showRoleSelection]="false"
-                    (registered)="onRegistrationSuccess()" />
-
-                <!--  Legal Links -->
-                <div class="register-page__footer">
-                    <p class="register-page__footer-text">
-                        Al crear tu cuenta, aceptas nuestros
-                        <a href="/terms" class="register-page__link">Términos de Servicio</a>
-                        y confirmas que has leído nuestra
-                        <a href="/privacy" class="register-page__link">Política de Privacidad</a>
-                    </p>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <!-- Right Column -  Registration Form -->
+    <div class="register-page__form-section">
+      <div class="register-page__form-wrapper">
+        <!--  Registration Form -->
+        <app-register-form [showRoleSelection]="false" (registered)="onRegistrationSuccess()" />
+
+        <!--  Legal Links -->
+        <div class="register-page__footer">
+          <p class="register-page__footer-text">
+            Al crear tu cuenta, aceptas nuestros
+            <a href="/terms" class="register-page__link">Términos de Servicio</a>
+            y confirmas que has leído nuestra
+            <a href="/privacy" class="register-page__link">Política de Privacidad</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
