@@ -1,0 +1,11 @@
+FROM node:20-alpine@sha256:latest
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run lint
+
+# Scan for vulnerabilities (optional, requires Trivy installed)
+# RUN trivy image --severity HIGH,CRITICAL --exit-code 1 --no-progress --ignore-unfixed .
+
+CMD ["npm", "run", "test"]
