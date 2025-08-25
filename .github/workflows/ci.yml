@@ -1,0 +1,28 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: docker build -f Dockerfile.jest . -t mad-ai-jest
+      - run: docker run --rm mad-ai-jest
+      - run: docker build -f Dockerfile.cypress . -t mad-ai-cypress
+      - run: docker run --rm mad-ai-cypress
+  deploy:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Desplegando..."
