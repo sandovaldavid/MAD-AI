@@ -3,12 +3,9 @@ import { AccessToken, RefreshToken } from '@domain/value-objects/local-tokens.vo
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { FieldError } from '@domain/errors/field-error.type';
-import {
-  DomainEvent,
-  DomainEventType,
-  DomainEventSeverity,
-} from '@domain/events/domain-event.entity';
+import { DomainEvent, DomainEventType } from '@domain/events/domain-event.entity';
 import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import { TokenExpirationSpec } from '@domain/specifications/token-expiration.specs';
 
 export class Session {
   private _domainEvents: DomainEvent[] = [];
@@ -200,7 +197,7 @@ export class Session {
 
   // --- Reglas/consultas de dominio (dependen del tiempo externo) ---
   isAccessTokenExpired(nowEpochSeconds: number): boolean {
-    const isExpired = this._access.isExpired(nowEpochSeconds);
+    const isExpired = TokenExpirationSpec.isExpired(this._access, nowEpochSeconds);
 
     // Si el token está expirado y no hemos registrado el evento, lo registramos
     if (isExpired) {
@@ -252,9 +249,7 @@ export class Session {
       });
     }
 
-    // El VO de RefreshToken garantiza longitud mínima en create();
-    // este check es por si llegara un valor corrupto desde fuera del dominio.
-    if (!this._refresh?.isValid()) {
+    if (!RefreshToken.create(this._refresh.getValue())) {
       errors.push({
         field: 'refreshToken',
         value: '[redacted]',
