@@ -37,6 +37,12 @@ import { ValidationError } from '../errors/validation-error.entity';
 import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 import type { FieldError } from '../errors/field-error.type';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
+import {
+  NotificationType,
+  NOTIFICATION_PRIORITY_LEVELS,
+  NOTIFICATION_DEFAULT_DURATIONS,
+} from '../enums/notification-type.enum';
+import { NotificationChannel } from '../enums/notification-channel.enum';
 
 /**
  * Unique identifier for notifications in the domain.
@@ -44,14 +50,14 @@ import { ISODateTime } from '../value-objects/iso-datetime.vo';
 export type NotificationId = string;
 
 /**
- * Notification types representing different business scenarios.
+ * @deprecated Use NotificationType enum from '../enums/notification-type.enum' instead
  */
-export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+export type NotificationTypeLegacy = 'success' | 'error' | 'warning' | 'info';
 
 /**
- * Notification channels representing delivery methods.
+ * @deprecated Use NotificationChannel enum from '../enums/notification-channel.enum' instead
  */
-export type NotificationChannel = 'email' | 'inApp' | 'push' | 'sms';
+export type NotificationChannelLegacy = 'email' | 'inApp' | 'push' | 'sms';
 
 /**
  * Notification action representing user interactions.
@@ -214,7 +220,7 @@ export class Notification {
       props.type,
       props.message.trim(),
       props.userId,
-      props.channel ?? 'inApp',
+      props.channel ?? NotificationChannel.IN_APP,
       priority,
       props.duration ?? null,
       props.actions ?? [],
@@ -445,57 +451,39 @@ export class Notification {
 }
 
 /**
- * Domain specification patterns for notifications.
- *
- * @namespace NotificationSpecs
+ * Checks if a notification is critical and requires immediate attention.
  */
-export namespace NotificationSpecs {
-  /**
-   * Checks if a notification is critical and requires immediate attention.
-   */
-  export function isCritical(notification: Notification): boolean {
-    return notification.type === 'error' && notification.isHighPriority();
-  }
-
-  /**
-   * Checks if a notification should persist (not auto-dismiss).
-   */
-  export function shouldPersist(notification: Notification): boolean {
-    return notification.type === 'error' || !notification.shouldAutoDismiss();
-  }
-
-  /**
-   * Checks if a notification is actionable (has user actions).
-   */
-  export function isActionable(notification: Notification): boolean {
-    return notification.hasActions() && notification.isActive();
-  }
-
-  /**
-   * Checks if a notification is stale (older than specified duration).
-   */
-  export function isStale(notification: Notification, maxAge: number = 86400000): boolean {
-    return notification.getAge() > maxAge; // Default: 24 hours
-  }
-
-  /**
-   * Priority levels with descriptions.
-   */
-  export const PRIORITY_LEVELS = {
-    1: 'Critical',
-    2: 'High',
-    3: 'Normal',
-    4: 'Low',
-    5: 'Informational',
-  } as const;
-
-  /**
-   * Default durations by notification type.
-   */
-  export const DEFAULT_DURATIONS = {
-    success: 3000,
-    info: 5000,
-    warning: 8000,
-    error: null, // Persistent
-  } as const;
+export function isCritical(notification: Notification): boolean {
+  return notification.type === 'error' && notification.isHighPriority();
 }
+
+/**
+ * Checks if a notification should persist (not auto-dismiss).
+ */
+export function shouldPersist(notification: Notification): boolean {
+  return notification.type === 'error' || !notification.shouldAutoDismiss();
+}
+
+/**
+ * Checks if a notification is actionable (has user actions).
+ */
+export function isActionable(notification: Notification): boolean {
+  return notification.hasActions() && notification.isActive();
+}
+
+/**
+ * Checks if a notification is stale (older than specified duration).
+ */
+export function isStale(notification: Notification, maxAge: number = 86400000): boolean {
+  return notification.getAge() > maxAge; // Default: 24 hours
+}
+
+/**
+ * @deprecated Use NOTIFICATION_PRIORITY_LEVELS from '../enums/notification-type.enum' instead
+ */
+export const PRIORITY_LEVELS = NOTIFICATION_PRIORITY_LEVELS;
+
+/**
+ * @deprecated Use NOTIFICATION_DEFAULT_DURATIONS from '../enums/notification-type.enum' instead
+ */
+export const DEFAULT_DURATIONS = NOTIFICATION_DEFAULT_DURATIONS;
