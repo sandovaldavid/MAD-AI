@@ -4,7 +4,7 @@ import {
   UpdateUserPatchContract,
   UserListFilterContract,
   ChangePasswordContract,
-} from '@domain/contracts/user.contract';
+} from '@domain/repositories/business/user.contract';
 
 /**
  * @fileoverview Domain repository interface for user management operations.

@@ -28,7 +28,7 @@ export interface JsonConfig {
 }
 
 // Puerto principal para exportación
-export interface ExportPort {
+export interface ExportRepository {
   exportToPdf<T>(data: T[], config: PdfConfig): Promise<void>;
   exportToCsv<T>(data: T[], config: CsvConfig): Promise<void>;
   exportToJson<T>(data: T[], config: JsonConfig): Promise<void>;

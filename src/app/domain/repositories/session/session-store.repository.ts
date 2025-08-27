@@ -2,7 +2,7 @@ import type {
   AuthUserSnapshotContract,
   TokenSnapshotContract,
   SessionSnapshotContract,
-} from '@domain/contracts/session-store.contract';
+} from '@domain/repositories/session/session-store.contract';
 
 /**
  * @fileoverview Domain repository interfaces for session storage operations.

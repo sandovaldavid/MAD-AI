@@ -5,7 +5,7 @@ import {
   RegisterUserContract,
   ResetPasswordContract,
   MessageResultContract,
-} from '@domain/contracts/auth.contract';
+} from '@domain/repositories/business/auth.contract';
 
 /**
  * @fileoverview Domain repository interface for authentication operations.
@@ -176,7 +176,7 @@ export interface AuthRepository {
    * }
    * ```
    */
-  logout(): Promise<void>;
+  logout(refresh_token: string): Promise<MessageResultContract>;
 
   /**
    * Refreshes the current session with new tokens.
@@ -213,7 +213,7 @@ export interface AuthRepository {
    * }
    * ```
    */
-  refresh(): Promise<Session>;
+  refresh(token_refresh: string): Promise<Session>;
 
   /**
    * Retrieves the current authenticated user's profile.

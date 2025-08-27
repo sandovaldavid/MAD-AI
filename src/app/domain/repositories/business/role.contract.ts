@@ -1,3 +1,5 @@
+import { Role } from '@domain/entities/role.entity';
+
 /**
  * Contract for creating a new role in the MAD-AI system.
  * Encapsulates all required properties for defining organizational roles
@@ -33,26 +35,8 @@
  * @domain Role Management
  */
 export type CreateRoleContract = Readonly<{
-  /** Unique name identifying the role within the organization */
-  name: string;
-  /**
-   * Numerical access level determining permissions hierarchy.
-   * Higher values indicate greater access privileges.
-   * @range 1-5
-   */
-  accessLevel: number;
-  /** Detailed description of role responsibilities and scope */
-  description: string;
-  /**
-   * Whether users with this role can lead and manage projects.
-   * Affects project assignment and team management capabilities.
-   */
-  canLeadProjects: boolean;
-  /**
-   * Whether only one user per team can have this role.
-   * Used for roles like Team Lead or Project Manager.
-   */
-  isUniquePerTeam: boolean;
+  role: Role;
+  createdByUserId: number;
 }>;
 
 /**

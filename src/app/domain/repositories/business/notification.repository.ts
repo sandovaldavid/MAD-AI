@@ -1,4 +1,8 @@
-import { NewNotification, Notification, NotificationId } from '../../entities/notification.entity';
+import {
+  NewNotification,
+  Notification,
+  NotificationId,
+} from '@domain/entities/notification.entity';
 
 /**
  * @fileoverview Domain repository interface for notification management operations.

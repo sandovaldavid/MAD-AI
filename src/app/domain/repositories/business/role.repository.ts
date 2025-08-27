@@ -4,7 +4,7 @@ import {
   UpdateRolePatchContract,
   ListRolesFilterContract,
   RoleAssignmentContract,
-} from '../../contracts/role.contract';
+} from './role.contract';
 
 /**
  * @fileoverview Domain repository interface for role management operations.
