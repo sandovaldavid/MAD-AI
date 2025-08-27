@@ -5,8 +5,13 @@ import {
   LastName,
   ISODateTime,
   UserStatusVO,
-  UserNotificationPreferences,
+  UserNotificationPreferencesVO,
 } from '../value-objects';
+
+import { AccessLevelService } from '../services/role/accessLevel.service';
+
+import type { UserNotificationPreferences } from '../value-objects/user-notification-preferences.vo';
+
 import { Role } from './role.entity';
 import { ValidationError } from '../errors/validation-error.entity';
 import { ValidationErrorCode } from '../errors/validation-error-code.enum';
@@ -15,94 +20,137 @@ import { DomainEvent, DomainEventType } from '../events/domain-event.entity';
 
 export class User {
   private _domainEvents: DomainEvent[] = [];
+  public readonly id: number;
+  private _username: Username;
+  private _email: Email;
+  private _firstName: FirstName;
+  private _lastName: LastName;
+  private _active: boolean;
+  private _role: Role;
+  public readonly createdAt?: ISODateTime;
+  public readonly updatedAt?: ISODateTime;
+  public readonly lastActivityAt?: ISODateTime;
+  public status?: UserStatusVO;
+  public isEmailConfirmed?: boolean;
+  public notificationPreferences?: UserNotificationPreferencesVO;
 
   private constructor(
-    public readonly id: number,
-    private _username: Username,
-    private _email: Email,
-    private _firstName: FirstName,
-    private _lastName: LastName,
-    private _active: boolean,
-    private _role: Role,
-    public readonly createdAt?: ISODateTime,
-    public readonly updatedAt?: ISODateTime,
-    public readonly lastActivityAt?: ISODateTime,
-    public readonly status?: UserStatusVO,
-    public readonly isEmailConfirmed?: boolean,
-    public readonly profileCompleted?: boolean,
-    public readonly notificationPreferences?: UserNotificationPreferences
-  ) {}
+    id: number,
+    username: Username,
+    email: Email,
+    firstName: FirstName,
+    lastName: LastName,
+    isActive: boolean,
+    role: Role,
+    createdAt?: ISODateTime,
+    updatedAt?: ISODateTime,
+    lastActivityAt?: ISODateTime,
+    status?: UserStatusVO,
+    isEmailConfirmed?: boolean,
+    notificationPreferences?: UserNotificationPreferencesVO
+  ) {
+    this.id = id;
+    this._username = username;
+    this._email = email;
+    this._firstName = firstName;
+    this._lastName = lastName;
+    this._active = isActive;
+    this._role = role;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.lastActivityAt = lastActivityAt;
+    this.status = status || UserStatusVO.create('pending');
+    this.isEmailConfirmed = isEmailConfirmed || false;
+    this.notificationPreferences = notificationPreferences;
+  }
 
   /** Factory method con validación de invariantes */
   static create(props: {
     id: number;
-    username: Username;
-    email: Email;
-    firstName: FirstName;
-    lastName: LastName;
+    username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
     isActive: boolean;
     role: Role;
-    createdAt?: ISODateTime;
-    updatedAt?: ISODateTime;
-    lastActivityAt?: ISODateTime;
-    status?: UserStatusVO;
+    createdAt?: string;
+    updatedAt?: string;
+    lastActivityAt?: string;
+    status?: string;
     isEmailConfirmed?: boolean;
     profileCompleted?: boolean;
     notificationPreferences?: UserNotificationPreferences;
   }): User {
     const errors: FieldError[] = [];
+    let usernameVO: Username;
+    let emailVO: Email;
+    let firstNameVO: FirstName;
+    let lastNameVO: LastName;
+    let createdAtVO: ISODateTime | undefined;
+    let updatedAtVO: ISODateTime | undefined;
+    let lastActivityAtVO: ISODateTime | undefined;
+    let statusVO: UserStatusVO;
 
-    // Validar invariantes de entidad
-    if (typeof props.id !== 'number' || !Number.isInteger(props.id) || props.id <= 0) {
-      errors.push({
-        field: 'id',
-        value: props.id,
-        message: 'User.id must be a positive integer',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-      });
+    try {
+      usernameVO = Username.create(props.username);
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('username'));
     }
-
-    if (!props.username) {
-      errors.push({
-        field: 'username',
-        value: props.username,
-        message: 'Username is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    try {
+      emailVO = Email.create(props.email);
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('email'));
     }
-
-    if (!props.email) {
-      errors.push({
-        field: 'email',
-        value: props.email,
-        message: 'Email is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    try {
+      firstNameVO = FirstName.create(props.firstName);
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('firstName'));
     }
-
-    if (!props.firstName) {
-      errors.push({
-        field: 'firstName',
-        value: props.firstName,
-        message: 'FirstName is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    try {
+      lastNameVO = LastName.create(props.lastName);
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('lastName'));
     }
-
-    if (!props.lastName) {
-      errors.push({
-        field: 'lastName',
-        value: props.lastName,
-        message: 'LastName is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    if (props.createdAt) {
+      try {
+        createdAtVO = ISODateTime.create(props.createdAt);
+      } catch (err) {
+        errors.push(...(err as ValidationError).getFieldErrors('createdAt'));
+      }
     }
-
+    if (props.updatedAt) {
+      try {
+        updatedAtVO = ISODateTime.create(props.updatedAt);
+      } catch (err) {
+        errors.push(...(err as ValidationError).getFieldErrors('updatedAt'));
+      }
+    }
+    if (props.lastActivityAt) {
+      try {
+        lastActivityAtVO = ISODateTime.create(props.lastActivityAt);
+      } catch (err) {
+        errors.push(...(err as ValidationError).getFieldErrors('lastActivityAt'));
+      }
+    }
+    try {
+      statusVO = props.status ? UserStatusVO.create(props.status) : UserStatusVO.create('pending');
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('status'));
+    }
     if (!props.role) {
       errors.push({
         field: 'role',
         value: props.role,
         message: 'Role is required',
+        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+      });
+    }
+
+    if (!props.notificationPreferences) {
+      errors.push({
+        field: 'notificationPreferences',
+        value: props.notificationPreferences,
+        message: 'Notification preferences are required',
         code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
       });
     }
@@ -113,19 +161,20 @@ export class User {
 
     return new User(
       props.id,
-      props.username,
-      props.email,
-      props.firstName,
-      props.lastName,
+      usernameVO!,
+      emailVO!,
+      firstNameVO!,
+      lastNameVO!,
       props.isActive,
       props.role,
-      props.createdAt,
-      props.updatedAt,
-      props.lastActivityAt,
-      props.status,
+      createdAtVO,
+      updatedAtVO,
+      lastActivityAtVO,
+      statusVO!,
       props.isEmailConfirmed,
-      props.profileCompleted,
       props.notificationPreferences
+        ? UserNotificationPreferencesVO.create(props.notificationPreferences)
+        : undefined
     );
   }
 
@@ -159,6 +208,14 @@ export class User {
     this._domainEvents = [];
   }
 
+  canDeleteUsers(): boolean {
+    return AccessLevelService.canDeleteUsers(this._role.getAccessLevel());
+  }
+
+  getPermissions() {
+    return AccessLevelService.getPermissions(this._role.getAccessLevel());
+  }
+
   // --- Getters / Domain Logic ---
 
   get username(): string {
@@ -173,17 +230,11 @@ export class User {
   get lastName(): string {
     return this._lastName.value;
   }
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`.trim();
-  }
   get active(): boolean {
     return this._active;
   }
   get role(): Role {
     return this._role;
-  }
-  get roleName(): string {
-    return this._role.name;
   }
 
   /**
@@ -388,91 +439,28 @@ export class User {
   }
 
   isAdministrator(): boolean {
-    return this._role?.isAdministrator() ?? false;
-  }
-
-  canAssignRole(role: Role): boolean {
-    // Solo administradores pueden asignar roles
-    if (!this.isAdministrator()) return false;
-
-    // Los administradores no pueden asignar roles de administrador a otros
-    if (role.isAdministrator()) return false;
-
-    // No se puede asignar un rol inactivo
-    if (!role.isActive) return false;
-
-    return true;
-  }
-
-  assignRole(role: Role): void {
-    if (!this.canAssignRole(role)) {
-      throw ValidationError.create({
-        field: 'role',
-        value: role.name,
-        message: 'User not allowed to assign this role',
-        code: ValidationErrorCode.ROLE_NOT_ALLOWED,
-      });
-    }
-    this._role = role;
-  }
-
-  emailFrom(domain: string): boolean {
-    return this.email.toLowerCase().endsWith(`@${domain.toLowerCase()}`);
-  }
-
-  /** Verifica si el usuario puede realizar acciones administrativas */
-  canPerformAdminActions(): boolean {
-    return this.isAdministrator() && this.active;
-  }
-
-  /** Verifica si el perfil del usuario está completo */
-  hasCompleteProfile(): boolean {
-    return (
-      !!this.username &&
-      !!this.email &&
-      !!this.firstName &&
-      !!this.lastName &&
-      (this.profileCompleted ?? false)
-    );
-  }
-
-  /** Verifica si el usuario puede acceder al sistema */
-  canAccess(): boolean {
-    return this.active && (this.isEmailConfirmed ?? false);
-  }
-
-  /** Business logic: Check if user allows email notifications */
-  allowsEmailNotifications(): boolean {
-    return this.notificationPreferences?.canReceiveNotification('email', 'system') ?? true;
-  }
-
-  /** Business logic: Check if user allows system notifications */
-  allowsSystemNotifications(): boolean {
-    return this.notificationPreferences?.canReceiveNotification('inApp', 'system') ?? true;
-  }
-
-  /** Business logic: Check if user allows task notifications */
-  allowsTaskNotifications(): boolean {
-    return this.notificationPreferences?.canReceiveNotification('email', 'task') ?? true;
-  }
-
-  /** Business logic: Get user's enabled notification channels */
-  getEnabledNotificationChannels(): string[] {
-    return this.notificationPreferences?.getEnabledChannelsFor('system') ?? ['email', 'inApp'];
+    return this._role?.canAccessAdmin();
   }
 
   /** Business logic: Update user notification preferences */
   updateNotificationPreferences(preferences: UserNotificationPreferences): void {
-    if (!preferences) {
-      throw ValidationError.create({
-        field: 'notificationPreferences',
-        value: preferences,
-        message: 'Notification preferences are required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
-    }
-    // Note: Since readonly, this would need to be handled through a proper entity update method
-    // For now, this validates the business rule
+    // Validar y actualizar el VO de preferencias
+    this.notificationPreferences = UserNotificationPreferencesVO.create(preferences);
+
+    // Agregar evento de dominio
+    this.addDomainEvent(
+      DomainEvent.create({
+        id: `user-preferences-updated-${this.id}-${Date.now()}`,
+        aggregateId: this.id.toString(),
+        aggregateType: 'User',
+        eventType: DomainEventType.USER_PREFERENCES_UPDATED,
+        eventData: {
+          userId: this.id,
+          updatedAt: new Date().toISOString(),
+        },
+        occurredAt: ISODateTime.now(),
+      })
+    );
   }
 
   /**
@@ -550,32 +538,7 @@ export class User {
    * @domain Project Management
    */
   canLeadProjects(): boolean {
-    // Business rule: Users with access level 75 or higher can lead projects
-    return this._role.accessLevel >= 75;
-  }
-
-  /**
-   * Checks if the user has sufficient access level for a given operation.
-   *
-   * @description This method implements access control logic based on
-   * the user's role access level. Higher access levels can perform
-   * operations requiring lower access levels.
-   *
-   * @param requiredLevel - Minimum access level required for the operation
-   * @returns true if user has sufficient access, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (user.hasAccessLevel(75)) {
-   *   // User can perform administrative operations
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Authorization
-   */
-  hasAccessLevel(requiredLevel: number): boolean {
-    return this._role.accessLevel >= requiredLevel;
+    return this._role.canLeadProjects();
   }
 
   /**
@@ -606,6 +569,6 @@ export class User {
   }
 
   toString(): string {
-    return `User(${this.id}, ${this.username}, ${this.email}, ${this.fullName})`;
+    return `User(${this.id}, ${this.username}, ${this.email}, ${this.firstName} ${this.lastName}, Active: ${this.active}, Role: ${this.role.name})`;
   }
 }
