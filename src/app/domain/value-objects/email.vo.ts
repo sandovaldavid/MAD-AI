@@ -1,5 +1,12 @@
 import { ValidationError } from '@domain/errors/validation-error.entity';
-import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
+import {
+  EMAIL_VALIDATION_REGEX,
+  EmailMaxLength,
+  EmailValidationRule,
+  EmailProvider,
+} from '../enums/email.enum';
+import { FieldError } from '../errors/field-error.type';
+import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 
 /**
  * Email Value Object
@@ -84,61 +91,43 @@ export class Email {
    * ```
    */
   static create(raw: string): Email {
-    const errors: Array<{
-      field: string;
-      value: unknown;
-      message: string;
-      code?: ValidationErrorCode;
-    }> = [];
-
+    const errors: FieldError[] = [];
     if (typeof raw !== 'string' || raw.trim().length === 0) {
       errors.push({
         field: 'email',
         value: raw,
-        message: 'Email requerido',
+        message: EmailValidationRule.REQUIRED,
         code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
       });
     }
-
     const normalized = (typeof raw === 'string' ? raw : '').trim().toLowerCase();
-
-    // Máximo recomendado por estándares comunes
-    if (normalized.length > 254) {
+    if (normalized.length > EmailMaxLength.VALUE) {
       errors.push({
         field: 'email',
         value: normalized,
-        message: 'Email demasiado largo',
+        message: EmailValidationRule.MAX_LENGTH,
         code: ValidationErrorCode.FIELD_TOO_LONG,
       });
     }
-
-    // No espacios en blanco
     if (/\s/.test(normalized)) {
       errors.push({
         field: 'email',
         value: normalized,
-        message: 'El email no debe contener espacios',
-        code: ValidationErrorCode.EMAIL_INVALID, // o FIELD_FORMAT_INVALID si prefieres
+        message: EmailValidationRule.NO_WHITESPACE,
+        code: ValidationErrorCode.EMAIL_INVALID,
       });
     }
-
-    // Regex RFC 5322 (simplificada, práctica para la mayoría de casos)
-    const strictRegex =
-      /^(?:[a-zA-Z0-9_'^&/+-]+(?:\.[a-zA-Z0-9_'^&/+-]+)*)@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-    if (normalized.length > 0 && !strictRegex.test(normalized)) {
+    if (normalized.length > 0 && !EMAIL_VALIDATION_REGEX.test(normalized)) {
       errors.push({
         field: 'email',
         value: normalized,
-        message: 'Formato de email inválido',
-        code: ValidationErrorCode.EMAIL_INVALID, // específico de dominio
+        message: EmailValidationRule.VALID_FORMAT,
+        code: ValidationErrorCode.EMAIL_INVALID,
       });
     }
-
     if (errors.length) {
       throw ValidationError.createFromFields(errors);
     }
-
     return new Email(normalized);
   }
 
@@ -268,19 +257,9 @@ export class Email {
    * ```
    */
   isFromPublicProvider(): boolean {
-    const publicProviders = [
-      'gmail.com',
-      'yahoo.com',
-      'outlook.com',
-      'hotmail.com',
-      'icloud.com',
-      'aol.com',
-      'protonmail.com',
-      'yandex.com',
-    ];
-
+    const publicProviders = Object.values(EmailProvider);
     const domain = this.getDomain();
-    return publicProviders.includes(domain);
+    return publicProviders.map(String).includes(domain);
   }
 
   /**
@@ -320,109 +299,5 @@ export class Email {
         domain.length <= 1 ? '*' : domain[0] + '*'.repeat(Math.min(6, domain.length - 1)) + '.com';
       return `${maskedLocal}@${maskedDomain}`;
     }
-  }
-}
-
-/**
- * Email Value Object Specifications
- *
- * Defines the business rules, validation constraints, and behavioral specifications
- * for the Email value object. Used for testing, documentation, and validation.
- */
-export namespace EmailSpecs {
-  /**
-   * Maximum allowed length for email addresses according to RFC 5321
-   */
-  export const MAX_LENGTH = 254;
-
-  /**
-   * Regular expression for email validation (RFC 5322 simplified)
-   */
-  export const VALIDATION_REGEX =
-    /^(?:[a-zA-Z0-9_'^&/+-]+(?:\.[a-zA-Z0-9_'^&/+-]+)*)@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-  /**
-   * Common public email providers for business logic
-   */
-  export const PUBLIC_PROVIDERS = [
-    'gmail.com',
-    'yahoo.com',
-    'outlook.com',
-    'hotmail.com',
-    'icloud.com',
-    'aol.com',
-    'protonmail.com',
-    'yandex.com',
-  ] as const;
-
-  /**
-   * Validation rules applied during email creation
-   */
-  export const VALIDATION_RULES = {
-    REQUIRED: 'Email address is required',
-    MAX_LENGTH: `Email cannot exceed ${MAX_LENGTH} characters`,
-    NO_WHITESPACE: 'Email cannot contain whitespace characters',
-    VALID_FORMAT: 'Email must be in valid format (user@domain.com)',
-    VALID_DOMAIN: 'Email must contain a valid domain part',
-  } as const;
-
-  /**
-   * Business rules for email usage in the domain
-   */
-  export const BUSINESS_RULES = {
-    UNIQUE_IDENTIFIER: 'Email serves as unique user identifier',
-    VERIFICATION_REQUIRED: 'Email must be verified before account activation',
-    CASE_INSENSITIVE: 'Email comparison is case-insensitive',
-    NORMALIZED_STORAGE: 'Emails are stored in normalized (lowercase) format',
-  } as const;
-}
-
-/**
- * Email utility functions for common operations
- */
-export namespace EmailUtils {
-  /**
-   * Validates if a string could be a valid email without creating the value object
-   *
-   * @param value - The string to validate
-   * @returns True if the string appears to be a valid email format
-   */
-  export function isValidFormat(value: string): boolean {
-    if (typeof value !== 'string' || value.trim().length === 0) {
-      return false;
-    }
-
-    const normalized = value.trim().toLowerCase();
-
-    if (normalized.length > EmailSpecs.MAX_LENGTH) {
-      return false;
-    }
-
-    if (/\s/.test(normalized)) {
-      return false;
-    }
-
-    return EmailSpecs.VALIDATION_REGEX.test(normalized);
-  }
-
-  /**
-   * Normalizes an email string using the same rules as Email.create()
-   *
-   * @param value - The email string to normalize
-   * @returns The normalized email string
-   */
-  export function normalize(value: string): string {
-    return (typeof value === 'string' ? value : '').trim().toLowerCase();
-  }
-
-  /**
-   * Extracts domain from email string without validation
-   *
-   * @param email - The email string
-   * @returns The domain part or empty string if invalid
-   */
-  export function extractDomain(email: string): string {
-    const parts = email.split('@');
-    return parts.length === 2 ? parts[1] : '';
   }
 }
