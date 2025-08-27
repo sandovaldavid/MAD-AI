@@ -4,6 +4,7 @@ import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { FieldError } from '@domain/errors/field-error.type';
 import { DomainEvent, DomainEventType } from '../events/domain-event.entity';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
+import { AccessLevelService } from '../services/role/accessLevel.service';
 
 /**
  * Role Entity - Represents organizational roles in the MAD-AI system.
@@ -17,51 +18,41 @@ import { ISODateTime } from '../value-objects/iso-datetime.vo';
  */
 export class Role {
   private _domainEvents: DomainEvent[] = [];
+  private readonly _id: number;
+  private readonly _name: RoleName;
+  private readonly _accessLevel: AccessLevel;
+  private _isActive: boolean;
+  private _description?: string;
+  private _userCount?: number;
 
   private constructor(
-    private readonly _id: number,
-    private readonly _name: RoleName,
-    private readonly _accessLevel: AccessLevel,
-    private _isActive: boolean,
-    private _description?: string,
-    private _userCount?: number
-  ) {}
+    id: number,
+    name: RoleName,
+    accessLevel?: AccessLevel,
+    isActive?: boolean,
+    description?: string,
+    userCount?: number
+  ) {
+    this._id = id;
+    this._name = name;
+    this._accessLevel = accessLevel || AccessLevel.create(5);
+    this._isActive = isActive || false;
+    this._description = description;
+    this._userCount = userCount || 0;
+  }
 
-  /**
-   * Factory method for creating Role instances with validation.
-   *
-   * @description Creates a Role entity after validating all invariants.
-   * The construction logic ensures data integrity and business rule compliance.
-   *
-   * @param props - Role properties for creation
-   * @returns Role instance
-   * @throws ValidationError if any invariant is violated
-   *
-   * @example
-   * ```typescript
-   * const role = Role.create({
-   *   id: 1,
-   *   name: RoleName.create('Admin'),
-   *   accessLevel: AccessLevel.create(90),
-   *   isActive: true,
-   *   description: 'System administrator'
-   * });
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Role Management
-   */
   static create(props: {
     id: number;
-    name: RoleName;
-    accessLevel: AccessLevel;
-    isActive: boolean;
+    name: string;
+    accessLevel?: number;
+    isActive?: boolean;
     description?: string | null;
     userCount?: number;
+    canLeadProjects?: boolean;
   }): Role {
     const errors: FieldError[] = [];
 
-    // Invariante mínima sobre id (entidad)
+    // Validación mínima sobre id
     if (typeof props.id !== 'number' || !Number.isInteger(props.id) || props.id <= 0) {
       errors.push({
         field: 'id',
@@ -71,22 +62,32 @@ export class Role {
       });
     }
 
-    if (!props.name) {
+    // Validar y construir RoleName VO
+    let nameVO: RoleName;
+    try {
+      nameVO = RoleName.create(props.name);
+    } catch (e: unknown) {
       errors.push({
         field: 'name',
         value: props.name,
-        message: 'RoleName is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+        message: (e as Error)?.message || 'Invalid RoleName',
+        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
       });
     }
 
-    if (!props.accessLevel) {
-      errors.push({
-        field: 'accessLevel',
-        value: props.accessLevel,
-        message: 'AccessLevel is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    // Validar y construir AccessLevel VO
+    let accessLevelVO: AccessLevel;
+    if (props.accessLevel) {
+      try {
+        accessLevelVO = AccessLevel.create(props.accessLevel);
+      } catch (e: unknown) {
+        errors.push({
+          field: 'accessLevel',
+          value: props.accessLevel,
+          message: (e as Error)?.message || 'Invalid AccessLevel',
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        });
+      }
     }
 
     if (errors.length) {
@@ -95,8 +96,8 @@ export class Role {
 
     return new Role(
       props.id,
-      props.name,
-      props.accessLevel,
+      nameVO!,
+      accessLevelVO!,
       !!props.isActive,
       props.description ?? undefined,
       props.userCount
@@ -140,109 +141,41 @@ export class Role {
   get name(): string {
     return this._name.value;
   }
-  get accessLevel(): number {
-    return this._accessLevel.value;
+
+  getAccessLevel(): AccessLevel {
+    return this._accessLevel;
   }
+
   get isActive(): boolean {
     return this._isActive;
   }
+
   get description(): string {
     return this._description ?? 'No hay descripción para este rol';
   }
+
   get userCount(): number {
     return this._userCount ?? 0;
   }
 
-  // ---------- Comportamiento de dominio ----------
-
-  /**
-   * Determines if this role represents a system administrator.
-   *
-   * @description Implements business logic to identify administrative roles
-   * based on access level and name patterns. Administrators have special
-   * privileges and restrictions in the system.
-   *
-   * @returns true if this is an administrator role, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (role.isAdministrator()) {
-   *   // Grant full system access
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Role Management
-   */
-  isAdministrator(): boolean {
-    // Política: nivel 1 es administrador
-    return this.accessLevel === 1 || this.name.toLowerCase() === 'administrator';
+  canManageUsers(): boolean {
+    return AccessLevelService.canManageUsers(this._accessLevel);
   }
 
-  /**
-   * Determines if this role can manage projects.
-   *
-   * @description Implements business rule for project management permissions
-   * based on access level hierarchy. Higher-level roles have project
-   * management capabilities.
-   *
-   * @returns true if role can manage projects, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (role.canManageProjects()) {
-   *   // Allow project creation and management
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Project Management
-   */
-  canManageProjects(): boolean {
-    return this.accessLevel <= 2;
+  canAccessAdmin(): boolean {
+    return AccessLevelService.canAccessAdmin(this._accessLevel);
   }
 
-  /**
-   * Determines if this role can lead projects.
-   *
-   * @description Implements business rule for project leadership eligibility
-   * based on access level. Project leadership requires sufficient authority
-   * and responsibility level.
-   *
-   * @returns true if role can lead projects, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (role.canLeadProjects()) {
-   *   // Allow project leadership assignment
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Project Management
-   */
   canLeadProjects(): boolean {
-    return this.accessLevel >= 75; // Consistent with User entity logic
+    return AccessLevelService.canLeadProjects(this._accessLevel);
   }
 
-  /**
-   * Creates a display label for the role.
-   *
-   * @description Generates a human-readable label combining role name
-   * and access level for UI display purposes.
-   *
-   * @returns Formatted role label
-   *
-   * @example
-   * ```typescript
-   * console.log(role.label()); // "Admin (L90)"
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Display
-   */
-  label(): string {
-    return `${this.name} (L${this.accessLevel})`;
+  getPermissions() {
+    return AccessLevelService.getPermissions(this._accessLevel);
+  }
+
+  isUniqueForTeam(): boolean {
+    return AccessLevelService.isUniqueForTeam(this._accessLevel);
   }
 
   /**
@@ -274,7 +207,7 @@ export class Role {
           eventData: {
             roleId: this.id,
             roleName: this.name,
-            accessLevel: this.accessLevel,
+            accessLevel: this._accessLevel,
             activatedAt: new Date().toISOString(),
           },
           occurredAt: ISODateTime.now(),
@@ -312,7 +245,7 @@ export class Role {
           eventData: {
             roleId: this.id,
             roleName: this.name,
-            accessLevel: this.accessLevel,
+            accessLevel: this._accessLevel,
             userCount: this.userCount,
             deactivatedAt: new Date().toISOString(),
           },
@@ -322,58 +255,11 @@ export class Role {
     }
   }
 
-  /**
-   * Determines if the role can be edited by users.
-   *
-   * @description Implements business rule that prevents modification of
-   * system-critical administrator roles while allowing editing of
-   * regular organizational roles.
-   *
-   * @returns true if role can be edited, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (role.isEditable()) {
-   *   // Show edit interface
-   * } else {
-   *   // Show read-only view
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Role Management
-   */
-  isEditable(): boolean {
-    return !this.isAdministrator();
-  }
-
-  /**
-   * Checks if users with this role can perform administrative actions.
-   *
-   * @description Implements business rule combining administrator status
-   * with active state to determine administrative capabilities.
-   *
-   * @returns true if role has admin privileges, false otherwise
-   *
-   * @example
-   * ```typescript
-   * if (role.hasAdminPrivileges()) {
-   *   // Grant administrative access
-   * }
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Authorization
-   */
-  hasAdminPrivileges(): boolean {
-    return this.isAdministrator() && this.isActive;
-  }
-
   equals(other: Role): boolean {
     return this.id === other.id;
   }
 
   toString(): string {
-    return `Role(${this.id}, ${this.name}, L${this.accessLevel}, active=${this.isActive})`;
+    return `Role(${this.id}, ${this.name}, L${this._accessLevel}, active=${this.isActive})`;
   }
 }
