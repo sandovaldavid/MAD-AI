@@ -237,7 +237,7 @@ export interface AuthRepository {
    * ```typescript
    * try {
    *   const currentUser = await authRepository.me();
-   *   console.log(`Current user: ${currentUser.fullName}`);
+  *   console.log(`Current user: ${UserFormatterService.getFullName(currentUser)}`);
    *   console.log(`Role: ${currentUser.role.name}`);
    * } catch (error) {
    *   if (error instanceof UnauthorizedError) {

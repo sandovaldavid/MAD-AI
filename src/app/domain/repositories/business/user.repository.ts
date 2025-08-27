@@ -163,7 +163,7 @@ export interface UserRepository {
    * ```typescript
    * try {
    *   const user = await userRepository.getById(123);
-   *   console.log(`User: ${user.fullName} (${user.email.value})`);
+  *   console.log(`User: ${UserFormatterService.getFullName(user)} (${user.email.value})`);
    *   console.log(`Role: ${user.role.name}`);
    *   console.log(`Status: ${user.isActive ? 'Active' : 'Inactive'}`);
    * } catch (error) {
@@ -212,7 +212,7 @@ export interface UserRepository {
    * ```typescript
    * const user = await userRepository.getByEmail('john@example.com');
    * if (user) {
-   *   console.log(`Found user: ${user.fullName}`);
+  *   console.log(`Found user: ${UserFormatterService.getFullName(user)}`);
    * } else {
    *   console.log('No user found with that email');
    * }
@@ -343,7 +343,7 @@ export interface UserRepository {
    *
    * try {
    *   const newUser = await userRepository.create(userSpec);
-   *   console.log(`Created user ${newUser.id}: ${newUser.fullName}`);
+  *   console.log(`Created user ${newUser.id}: ${UserFormatterService.getFullName(newUser)}`);
    *
    *   // Trigger welcome email
    *   await emailService.sendWelcomeEmail(newUser.email.value);
@@ -408,7 +408,7 @@ export interface UserRepository {
    *
    * try {
    *   const updatedUser = await userRepository.update(123, updates);
-   *   console.log(`Updated user: ${updatedUser.fullName}`);
+  *   console.log(`Updated user: ${UserFormatterService.getFullName(updatedUser)}`);
    * } catch (error) {
    *   if (error instanceof ConflictError) {
    *     console.error('Email address already in use');
