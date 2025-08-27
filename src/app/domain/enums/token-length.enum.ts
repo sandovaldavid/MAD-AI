@@ -1,0 +1,8 @@
+export enum TokenLength {
+  ACCESS_TOKEN_MIN = 16,
+  REFRESH_TOKEN_MIN = 32,
+  API_KEY_MIN = 24,
+  ACCESS_TOKEN_MAX = 8192,
+  REFRESH_TOKEN_MAX = 512,
+  API_KEY_MAX = 256,
+}
