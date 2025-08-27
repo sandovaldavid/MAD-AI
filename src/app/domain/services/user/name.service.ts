@@ -1,6 +1,7 @@
-import { FirstName } from '../value-objects/firstname.vo';
-import { LastName } from '../value-objects/lastname.vo';
-import { BusinessRuleError } from '../errors/business-rule-error.entity';
+import { FirstName } from '@domain/value-objects/firstname.vo';
+import { LastName } from '@domain/value-objects/lastname.vo';
+import { BusinessRuleError } from '@domain/errors/business-rule-error.entity';
+import { User } from '@domain/entities/user.entity';
 
 /**
  * Domain Service: Name normalization and validation
@@ -22,5 +23,13 @@ export class NameService {
       );
     }
     return true;
+  }
+
+  /**
+   * Returns a display name for the user (username or full name).
+   * @param user - User entity
+   */
+  static getDisplayName(user: User): string {
+    return user.username.value || this.normalizeFullName(user.firstName, user.lastName);
   }
 }
