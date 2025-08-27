@@ -218,17 +218,17 @@ export class User {
 
   // --- Getters / Domain Logic ---
 
-  get username(): string {
-    return this._username.value;
+  get username(): Username {
+    return this._username;
   }
-  get email(): string {
-    return this._email.value;
+  get email(): Email {
+    return this._email;
   }
-  get firstName(): string {
-    return this._firstName.value;
+  get firstName(): FirstName {
+    return this._firstName;
   }
-  get lastName(): string {
-    return this._lastName.value;
+  get lastName(): LastName {
+    return this._lastName;
   }
   get active(): boolean {
     return this._active;
