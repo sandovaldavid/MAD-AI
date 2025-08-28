@@ -19,40 +19,49 @@ export class UserStatusVO {
 
   static create(raw: string | UserStatus): UserStatusVO {
     if (typeof raw !== 'string' && !Object.values(UserStatus).includes(raw)) {
-      throw ValidationError.createFromFields([
-        {
-          field: 'userStatus',
-          value: raw,
-          message: 'User status is required and must be a valid string',
-          code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-        },
-      ]);
+      throw ValidationError.createFromFields(
+        [
+          {
+            field: 'userStatus',
+            value: raw,
+            message: 'User status is required and must be a valid string',
+            code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+          },
+        ],
+        ValidationErrorCode.REQUIRED_FIELD_MISSING
+      );
     }
 
     const normalized = typeof raw === 'string' ? raw.trim().toLowerCase() : raw;
 
     if (typeof normalized === 'string' && normalized.length === 0) {
-      throw ValidationError.createFromFields([
-        {
-          field: 'userStatus',
-          value: raw,
-          message: 'User status cannot be empty',
-          code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-        },
-      ]);
+      throw ValidationError.createFromFields(
+        [
+          {
+            field: 'userStatus',
+            value: raw,
+            message: 'User status cannot be empty',
+            code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+          },
+        ],
+        ValidationErrorCode.REQUIRED_FIELD_MISSING
+      );
     }
 
     const found = UserStatusVO.allowed.find((status) => status.toLowerCase() === normalized);
     if (!found) {
       const validOptions = UserStatusVO.allowed.join(', ');
-      throw ValidationError.createFromFields([
-        {
-          field: 'userStatus',
-          value: raw,
-          message: `Invalid user status. Must be one of: ${validOptions}`,
-          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-        },
-      ]);
+      throw ValidationError.createFromFields(
+        [
+          {
+            field: 'userStatus',
+            value: raw,
+            message: `Invalid user status. Must be one of: ${validOptions}`,
+            code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+          },
+        ],
+        ValidationErrorCode.FIELD_FORMAT_INVALID
+      );
     }
 
     return new UserStatusVO(found);
