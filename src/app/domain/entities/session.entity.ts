@@ -3,7 +3,8 @@ import { AccessToken, RefreshToken } from '@domain/value-objects/local-tokens.vo
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { FieldError } from '@domain/errors/field-error.type';
-import { DomainEvent, DomainEventType } from '@domain/events/domain-event.entity';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '../events/domain-event.enum';
 import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
 import { TokenExpirationSpec } from '@domain/specifications/token-expiration.specs';
 
