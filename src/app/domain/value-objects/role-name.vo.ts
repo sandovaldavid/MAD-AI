@@ -75,7 +75,7 @@ export class RoleName {
 
       // Early return if no valid string to work with
       if (errors.length) {
-        throw ValidationError.createFromFields(errors);
+        throw ValidationError.createFromFields(errors, ValidationErrorCode.REQUIRED_FIELD_MISSING);
       }
     }
 
@@ -111,7 +111,7 @@ export class RoleName {
     }
 
     if (errors.length) {
-      throw ValidationError.createFromFields(errors);
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
     return new RoleName(RoleNameUtils.normalize(raw.trim()));
