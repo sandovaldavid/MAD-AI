@@ -113,7 +113,7 @@ export class ISODateTime {
     }
 
     if (errors.length > 0) {
-      throw ValidationError.createFromFields(errors);
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
     return new ISODateTime(normalized);
@@ -137,12 +137,11 @@ export class ISODateTime {
    */
   static fromDate(date: Date): ISODateTime {
     if (!(date instanceof Date) || isNaN(date.getTime())) {
-      throw ValidationError.create({
-        field: 'date',
-        value: date,
-        message: 'Invalid Date object provided',
-        code: ValidationErrorCode.VALIDATION_ERROR,
-      });
+      throw ValidationError.fromMessage(
+        'Invalid Date object provided',
+        'date',
+        ValidationErrorCode.INVALID_FORMAT
+      );
     }
     return ISODateTime.create(date.toISOString())!;
   }
@@ -156,12 +155,11 @@ export class ISODateTime {
    */
   static fromUnixTimestamp(timestamp: number): ISODateTime {
     if (typeof timestamp !== 'number' || isNaN(timestamp)) {
-      throw ValidationError.create({
-        field: 'timestamp',
-        value: timestamp,
-        message: 'Invalid Unix timestamp provided',
-        code: ValidationErrorCode.VALIDATION_ERROR,
-      });
+      throw ValidationError.fromMessage(
+        'Invalid Unix timestamp provided',
+        'timestamp',
+        ValidationErrorCode.INVALID_FORMAT
+      );
     }
     return new ISODateTime(new Date(timestamp * 1000).toISOString());
   }
