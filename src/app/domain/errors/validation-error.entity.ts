@@ -42,16 +42,6 @@ import type { FieldError } from './field-error.type';
  * ]);
  * ```
  *
- * @example Business rule validation
- * ```typescript
- * const error = ValidationError.forBusinessRule(
- *   'operation',
- *   'delete_user',
- *   'Only administrators can delete users',
- *   ValidationErrorCode.PERMISSION_DENIED
- * );
- * ```
- *
  * @since 1.0.0
  * @domain Error Handling
  */
@@ -166,34 +156,6 @@ export class ValidationError extends Error {
   }
 
   /**
-   * Factory method for creating business rule validation errors.
-   *
-   * @param field - Field name related to the business rule
-   * @param value - Value that violated the business rule
-   * @param message - Business rule violation message
-   * @param code - Specific business rule error code
-   * @param context - Optional business context
-   * @returns New ValidationError instance
-   */
-  static forBusinessRule(
-    field: string,
-    value: any,
-    message: string,
-    code: ValidationErrorCode,
-    context?: Record<string, any>
-  ): ValidationError {
-    const fieldError: FieldError = {
-      field,
-      value,
-      message,
-      code,
-      severity: 'error',
-      context,
-    };
-    return new ValidationError([fieldError], code, context);
-  }
-
-  /**
    * Factory method for creating uniqueness constraint validation errors.
    *
    * @param field - Field name that must be unique
@@ -268,17 +230,6 @@ export class ValidationError extends Error {
   }
 
   /**
-   * Checks if this validation error contains any business rule violations.
-   *
-   * @returns True if any error is a business rule violation
-   */
-  hasBusinessRuleViolations(): boolean {
-    return this.errors.some(
-      (error) => error.code && ValidationErrorCodeUtils.isBusinessRuleError(error.code)
-    );
-  }
-
-  /**
    * Checks if this validation error contains any format-related errors.
    *
    * @returns True if any error is format-related
@@ -331,6 +282,22 @@ export class ValidationError extends Error {
     const primaryCode = this.code === ValidationErrorCode.VALIDATION_ERROR ? other.code : this.code;
 
     return ValidationError.createFromFields(combinedErrors, primaryCode, combinedContext);
+  }
+
+  /**
+   * Creates a new ValidationError with all field names mapped to a new field name.
+   * Useful when a VO uses one field name internally but you need it mapped to another context.
+   *
+   * @param newFieldName - The new field name to use for all errors
+   * @returns New ValidationError with mapped field names
+   */
+  mapFieldName(newFieldName: string): ValidationError {
+    const mappedErrors = this.errors.map((error) => ({
+      ...error,
+      field: newFieldName,
+    }));
+
+    return ValidationError.createFromFields(mappedErrors, this.code, this.context);
   }
 
   /**
