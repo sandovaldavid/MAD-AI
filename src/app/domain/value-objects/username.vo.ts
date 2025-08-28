@@ -1,5 +1,6 @@
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
+import type { FieldError } from '@domain/errors/field-error.type';
 
 /**
  * Username Value Object
@@ -98,57 +99,46 @@ export class Username {
    * ```
    */
   static create(raw: string): Username {
-    const errors: Array<{
-      field: string;
-      value: unknown;
-      message: string;
-      code?: ValidationErrorCode;
-    }> = [];
-
+    // Check for required field first
     if (!raw || typeof raw !== 'string') {
+      throw ValidationError.forMissingRequiredFields(['username']);
+    }
+
+    const errors: FieldError[] = [];
+    const normalized = raw.trim().toLowerCase();
+
+    if (normalized.length < 3) {
       errors.push({
         field: 'username',
-        value: raw,
-        message: 'Username is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+        value: normalized,
+        message: 'Username must be at least 3 characters',
+        code: ValidationErrorCode.FIELD_TOO_SHORT,
       });
-    } else {
-      const normalized = raw.trim().toLowerCase();
+    }
 
-      if (normalized.length < 3) {
-        errors.push({
-          field: 'username',
-          value: normalized,
-          message: 'Username must be at least 3 characters',
-          code: ValidationErrorCode.FIELD_TOO_SHORT,
-        });
-      }
+    if (normalized.length > 32) {
+      errors.push({
+        field: 'username',
+        value: normalized,
+        message: 'Username must be at most 32 characters',
+        code: ValidationErrorCode.FIELD_TOO_LONG,
+      });
+    }
 
-      if (normalized.length > 32) {
-        errors.push({
-          field: 'username',
-          value: normalized,
-          message: 'Username must be at most 32 characters',
-          code: ValidationErrorCode.FIELD_TOO_LONG,
-        });
-      }
-
-      // Alphanumeric + underscore
-      if (!/^\w+$/.test(normalized)) {
-        errors.push({
-          field: 'username',
-          value: normalized,
-          message: 'Username must be alphanumeric or underscore',
-          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-        });
-      }
+    // Alphanumeric + underscore
+    if (!/^\w+$/.test(normalized)) {
+      errors.push({
+        field: 'username',
+        value: normalized,
+        message: 'Username must be alphanumeric or underscore',
+        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+      });
     }
 
     if (errors.length) {
-      throw ValidationError.createFromFields(errors);
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
-    const normalized = raw.trim().toLowerCase();
     return new Username(normalized);
   }
 
