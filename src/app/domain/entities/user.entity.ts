@@ -90,69 +90,93 @@ export class User {
     let updatedAtVO: ISODateTime | undefined;
     let lastActivityAtVO: ISODateTime | undefined;
     let statusVO: UserStatusVO;
+    let notificationPreferecesVO: UserNotificationPreferencesVO | undefined;
 
     try {
       usernameVO = Username.create(props.username);
     } catch (err) {
       errors.push(...(err as ValidationError).getFieldErrors('username'));
     }
+
+    try {
+      statusVO = props.status ? UserStatusVO.create(props.status) : UserStatusVO.create('pending');
+    } catch (err) {
+      errors.push(...(err as ValidationError).getFieldErrors('userStatus'));
+    }
+
     try {
       emailVO = Email.create(props.email);
     } catch (err) {
       errors.push(...(err as ValidationError).getFieldErrors('email'));
     }
+
     try {
       firstNameVO = FirstName.create(props.firstName);
     } catch (err) {
       errors.push(...(err as ValidationError).getFieldErrors('firstName'));
     }
+
     try {
       lastNameVO = LastName.create(props.lastName);
     } catch (err) {
       errors.push(...(err as ValidationError).getFieldErrors('lastName'));
     }
+
     if (props.createdAt) {
       try {
         createdAtVO = ISODateTime.create(props.createdAt);
       } catch (err) {
-        errors.push(...(err as ValidationError).getFieldErrors('createdAt'));
+        // Map field name from 'isoDateTime' to 'createdAt'
+        const mappedError = (err as ValidationError).mapFieldName('createdAt');
+        errors.push(...mappedError.errors);
       }
     }
+
     if (props.updatedAt) {
       try {
         updatedAtVO = ISODateTime.create(props.updatedAt);
       } catch (err) {
-        errors.push(...(err as ValidationError).getFieldErrors('updatedAt'));
+        // Map field name from 'isoDateTime' to 'updatedAt'
+        const mappedError = (err as ValidationError).mapFieldName('updatedAt');
+        errors.push(...mappedError.errors);
       }
     }
+
     if (props.lastActivityAt) {
       try {
         lastActivityAtVO = ISODateTime.create(props.lastActivityAt);
       } catch (err) {
-        errors.push(...(err as ValidationError).getFieldErrors('lastActivityAt'));
+        // Map field name from 'isoDateTime' to 'lastActivityAt'
+        const mappedError = (err as ValidationError).mapFieldName('lastActivityAt');
+        errors.push(...mappedError.errors);
       }
     }
-    try {
-      statusVO = props.status ? UserStatusVO.create(props.status) : UserStatusVO.create('pending');
-    } catch (err) {
-      errors.push(...(err as ValidationError).getFieldErrors('status'));
-    }
-    if (!props.role) {
-      errors.push({
-        field: 'role',
-        value: props.role,
-        message: 'Role is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+
+    if (props.notificationPreferences) {
+      try {
+        notificationPreferecesVO = UserNotificationPreferencesVO.create(
+          props.notificationPreferences
+        );
+      } catch (err) {
+        errors.push(...(err as ValidationError).getFieldErrors('notificationPreferences'));
+      }
     }
 
-    if (!props.notificationPreferences) {
-      errors.push({
-        field: 'notificationPreferences',
-        value: props.notificationPreferences,
-        message: 'Notification preferences are required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    // Check for required fields using ValidationError utility
+    const missingFields: string[] = [];
+    if (!props.role) missingFields.push('role');
+    if (!props.notificationPreferences) missingFields.push('notificationPreferences');
+
+    if (missingFields.length > 0) {
+      const requiredFieldsError = ValidationError.forMissingRequiredFields(missingFields);
+      if (errors.length > 0) {
+        throw ValidationError.createFromFields(
+          errors,
+          ValidationErrorCode.VALIDATION_ERROR
+        ).combine(requiredFieldsError);
+      } else {
+        throw requiredFieldsError;
+      }
     }
 
     if (errors.length) {
@@ -172,9 +196,7 @@ export class User {
       lastActivityAtVO,
       statusVO!,
       props.isEmailConfirmed,
-      props.notificationPreferences
-        ? UserNotificationPreferencesVO.create(props.notificationPreferences)
-        : undefined
+      notificationPreferecesVO
     );
   }
 
@@ -336,12 +358,7 @@ export class User {
    */
   changeEmail(newEmail: Email): void {
     if (!newEmail) {
-      throw ValidationError.create({
-        field: 'email',
-        value: newEmail,
-        message: 'Email is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+      throw ValidationError.forMissingRequiredFields(['email']);
     }
 
     const oldEmail = this._email.value;
@@ -388,12 +405,7 @@ export class User {
    */
   changeUsername(newUsername: Username): void {
     if (!newUsername) {
-      throw ValidationError.create({
-        field: 'username',
-        value: newUsername,
-        message: 'Username is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+      throw ValidationError.forMissingRequiredFields(['username']);
     }
 
     const oldUsername = this._username.value;
@@ -418,21 +430,12 @@ export class User {
   }
 
   updateName(firstName: FirstName, lastName: LastName): void {
-    if (!firstName) {
-      throw ValidationError.create({
-        field: 'firstName',
-        value: firstName,
-        message: 'FirstName is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
-    }
-    if (!lastName) {
-      throw ValidationError.create({
-        field: 'lastName',
-        value: lastName,
-        message: 'LastName is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    const missingFields: string[] = [];
+    if (!firstName) missingFields.push('firstName');
+    if (!lastName) missingFields.push('lastName');
+
+    if (missingFields.length > 0) {
+      throw ValidationError.forMissingRequiredFields(missingFields);
     }
     this._firstName = firstName;
     this._lastName = lastName;
@@ -486,12 +489,7 @@ export class User {
    */
   changeRole(newRole: Role): void {
     if (!newRole) {
-      throw ValidationError.create({
-        field: 'role',
-        value: newRole,
-        message: 'Role is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+      throw ValidationError.forMissingRequiredFields(['role']);
     }
 
     const oldRole = this._role;
