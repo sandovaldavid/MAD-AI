@@ -4,7 +4,7 @@ import { BusinessRuleError } from '@domain/errors/business-rule-error.entity';
 
 export class UserRoleAssignmentService {
   static canAssignRole(actor: User, targetRole: Role): boolean {
-    if (!actor.isAdministrator()) return false;
+    if (!actor.getRole.canAccessAdmin()) return false;
     if (targetRole.getAccessLevel().getValue() < actor.getRole.getAccessLevel().getValue())
       return false;
     if (!targetRole.isActive) return false;
