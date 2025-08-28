@@ -37,14 +37,15 @@ export class Session {
   }
 
   static create(p: { user: User; access: AccessToken; refresh: RefreshToken }): Session {
-    if (!p.user) {
-      throw ValidationError.create({
-        field: 'user',
-        value: p.user,
-        message: 'User is required',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+    const missingFields: string[] = [];
+    if (!p.user) missingFields.push('user');
+    if (!p.access) missingFields.push('access');
+    if (!p.refresh) missingFields.push('refresh');
+
+    if (missingFields.length > 0) {
+      throw ValidationError.forMissingRequiredFields(missingFields);
     }
+
     return new Session(p.user, p.access, p.refresh);
   }
 
@@ -231,30 +232,35 @@ export class Session {
   validate(nowEpochSeconds: number): void {
     const errors: FieldError[] = [];
 
+    // Check for required fields - though this should never happen in a constructed Session
     if (!this._user) {
       errors.push({
         field: 'user',
-        value: this._user,
-        message: 'User is required',
+        value: '[missing]',
+        message: 'Session user is required',
         code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
       });
     }
 
+    // Check token expiration - this is more like a state validation
     if (this.isAccessTokenExpired(nowEpochSeconds)) {
       errors.push({
         field: 'accessToken',
         value: '[redacted]',
-        message: 'Access token expired',
+        message: 'Access token has expired',
         code: ValidationErrorCode.VALIDATION_ERROR,
       });
     }
 
-    if (!RefreshToken.create(this._refresh.getValue())) {
+    // Validate refresh token format (not re-creating, just checking validity)
+    try {
+      RefreshToken.create(this._refresh.getValue());
+    } catch (e) {
       errors.push({
         field: 'refreshToken',
         value: '[redacted]',
-        message: 'Refresh token is invalid',
-        code: ValidationErrorCode.VALIDATION_ERROR,
+        message: 'Refresh token format is invalid',
+        code: ValidationErrorCode.INVALID_FORMAT,
       });
     }
 
