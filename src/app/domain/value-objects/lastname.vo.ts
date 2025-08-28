@@ -46,7 +46,7 @@ export class LastName {
       });
     }
     if (errors.length > 0) {
-      throw ValidationError.createFromFields(errors);
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
     return new LastName(LastName.format(normalized));
   }
