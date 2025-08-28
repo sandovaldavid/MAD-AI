@@ -200,4 +200,19 @@ export class BusinessRuleError extends Error {
       context
     );
   }
+
+  /**
+   * Intento de marcar como leída una notificación ya descartada
+   */
+  static notificationAlreadyDismissed(notificationId: string): BusinessRuleError {
+    return new BusinessRuleError(
+      'Cannot mark dismissed notification as read',
+      BusinessRuleErrorCode.NOTIFICATION_ALREADY_DISMISSED,
+      {
+        notificationId,
+        currentState: 'dismissed',
+        attemptedAction: 'markAsRead',
+      }
+    );
+  }
 }
