@@ -91,16 +91,14 @@ export class Email {
    * ```
    */
   static create(raw: string): Email {
-    const errors: FieldError[] = [];
+    // Check for required field first
     if (typeof raw !== 'string' || raw.trim().length === 0) {
-      errors.push({
-        field: 'email',
-        value: raw,
-        message: EmailValidationRule.REQUIRED,
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+      throw ValidationError.forMissingRequiredFields(['email']);
     }
-    const normalized = (typeof raw === 'string' ? raw : '').trim().toLowerCase();
+
+    const errors: FieldError[] = [];
+    const normalized = raw.trim().toLowerCase();
+
     if (normalized.length > EmailMaxLength.VALUE) {
       errors.push({
         field: 'email',
@@ -109,6 +107,7 @@ export class Email {
         code: ValidationErrorCode.FIELD_TOO_LONG,
       });
     }
+
     if (/\s/.test(normalized)) {
       errors.push({
         field: 'email',
@@ -117,7 +116,8 @@ export class Email {
         code: ValidationErrorCode.EMAIL_INVALID,
       });
     }
-    if (normalized.length > 0 && !EMAIL_VALIDATION_REGEX.test(normalized)) {
+
+    if (!EMAIL_VALIDATION_REGEX.test(normalized)) {
       errors.push({
         field: 'email',
         value: normalized,
@@ -126,7 +126,7 @@ export class Email {
       });
     }
     if (errors.length) {
-      throw ValidationError.createFromFields(errors);
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
     return new Email(normalized);
   }
