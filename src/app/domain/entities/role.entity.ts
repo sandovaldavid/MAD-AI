@@ -58,7 +58,7 @@ export class Role {
         field: 'id',
         value: props.id,
         message: 'Role.id must be a positive integer',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
       });
     }
 
@@ -67,12 +67,18 @@ export class Role {
     try {
       nameVO = RoleName.create(props.name);
     } catch (e: unknown) {
-      errors.push({
-        field: 'name',
-        value: props.name,
-        message: (e as Error)?.message || 'Invalid RoleName',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-      });
+      // Map field errors from RoleName VO to Role context
+      if (e instanceof ValidationError) {
+        const mappedError = e.mapFieldName('name');
+        errors.push(...mappedError.errors);
+      } else {
+        errors.push({
+          field: 'name',
+          value: props.name,
+          message: (e as Error)?.message || 'Invalid RoleName',
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        });
+      }
     }
 
     // Validar y construir AccessLevel VO
@@ -81,12 +87,18 @@ export class Role {
       try {
         accessLevelVO = AccessLevel.create(props.accessLevel);
       } catch (e: unknown) {
-        errors.push({
-          field: 'accessLevel',
-          value: props.accessLevel,
-          message: (e as Error)?.message || 'Invalid AccessLevel',
-          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-        });
+        // Map field errors from AccessLevel VO to Role context
+        if (e instanceof ValidationError) {
+          const mappedError = e.mapFieldName('accessLevel');
+          errors.push(...mappedError.errors);
+        } else {
+          errors.push({
+            field: 'accessLevel',
+            value: props.accessLevel,
+            message: (e as Error)?.message || 'Invalid AccessLevel',
+            code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+          });
+        }
       }
     }
 
