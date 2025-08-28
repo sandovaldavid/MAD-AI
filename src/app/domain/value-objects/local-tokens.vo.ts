@@ -73,7 +73,8 @@ export class AccessToken {
       }
     }
 
-    if (errors.length > 0) throw ValidationError.createFromFields(errors);
+    if (errors.length > 0)
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     return new AccessToken(value.trim(), expSeconds);
   }
 
@@ -134,7 +135,8 @@ export class RefreshToken {
       }
     }
 
-    if (errors.length > 0) throw ValidationError.createFromFields(errors);
+    if (errors.length > 0)
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     return new RefreshToken(value.trim());
   }
 
