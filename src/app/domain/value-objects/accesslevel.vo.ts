@@ -17,12 +17,11 @@ export class AccessLevel {
 
   static create(value: number): AccessLevel {
     if (value < this.MIN || value > this.MAX) {
-      throw ValidationError.create({
-        field: 'accessLevel',
-        value,
-        message: `Invalid AccessLevel: ${value}. Must be between ${this.MIN} and ${this.MAX}.`,
-        code: ValidationErrorCode.VALIDATION_ERROR,
-      });
+      throw ValidationError.fromMessage(
+        `Invalid AccessLevel: ${value}. Must be between ${this.MIN} and ${this.MAX}.`,
+        'accessLevel',
+        ValidationErrorCode.FIELD_OUT_OF_RANGE
+      );
     }
     return new AccessLevel(value);
   }
