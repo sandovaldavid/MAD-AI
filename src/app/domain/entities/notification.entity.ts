@@ -35,6 +35,7 @@
 
 import { ValidationError } from '../errors/validation-error.entity';
 import { ValidationErrorCode } from '../errors/validation-error-code.enum';
+import { BusinessRuleError } from '../errors/business-rule-error.entity';
 import type { FieldError } from '../errors/field-error.type';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
 import {
@@ -167,45 +168,55 @@ export class Notification {
   static create(props: NewNotification & { id?: NotificationId }): Notification {
     const errors: FieldError[] = [];
 
-    // Validate message
+    // Check for required fields
+    const missingFields: string[] = [];
     if (!props.message?.trim()) {
-      errors.push({
-        field: 'message',
-        value: props.message,
-        message: 'Notification message is required and cannot be empty',
-        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-      });
+      missingFields.push('message');
+    }
+    if (!props.type) {
+      missingFields.push('type');
     }
 
-    // Validate type
-    if (!props.type || !['success', 'error', 'warning', 'info'].includes(props.type)) {
+    if (missingFields.length > 0) {
+      throw ValidationError.forMissingRequiredFields(missingFields);
+    }
+
+    // Validate type format (since we already checked it exists above)
+    const validTypes = Object.values(NotificationType);
+    if (!validTypes.includes(props.type as NotificationType)) {
       errors.push({
         field: 'type',
         value: props.type,
-        message: 'Invalid notification type',
+        message: `Invalid notification type. Must be one of: ${validTypes.join(', ')}`,
         code: ValidationErrorCode.FIELD_FORMAT_INVALID,
       });
     }
 
-    // Validate priority
+    // Validate priority range
     const priority = props.priority ?? 3;
-    if (![1, 2, 3, 4, 5].includes(priority)) {
+    if (priority < 1 || priority > 5 || !Number.isInteger(priority)) {
       errors.push({
         field: 'priority',
         value: priority,
-        message: 'Priority must be between 1 and 5',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        message: 'Priority must be an integer between 1 (highest) and 5 (lowest)',
+        code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
       });
     }
 
     // Validate duration
-    if (props.duration !== null && props.duration !== undefined && props.duration <= 0) {
-      errors.push({
-        field: 'duration',
-        value: props.duration,
-        message: 'Duration must be positive if specified',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-      });
+    if (props.duration !== null && props.duration !== undefined) {
+      if (
+        typeof props.duration !== 'number' ||
+        props.duration <= 0 ||
+        !Number.isInteger(props.duration)
+      ) {
+        errors.push({
+          field: 'duration',
+          value: props.duration,
+          message: 'Duration must be a positive integer (milliseconds) if specified',
+          code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
+        });
+      }
     }
 
     if (errors.length > 0) {
@@ -299,7 +310,7 @@ export class Notification {
   /**
    * Marks the notification as read.
    *
-   * @throws ValidationError if notification is already dismissed
+   * @throws BusinessRuleError if notification is already dismissed
    *
    * @businessRules
    * - Cannot mark dismissed notifications as read
@@ -308,12 +319,7 @@ export class Notification {
    */
   markAsRead(): void {
     if (this._isDismissed) {
-      throw ValidationError.create({
-        field: 'state',
-        value: 'dismissed',
-        message: 'Cannot mark dismissed notification as read',
-        code: ValidationErrorCode.PERMISSION_DENIED,
-      });
+      throw BusinessRuleError.notificationAlreadyDismissed(this._id);
     }
 
     if (!this._isRead) {
