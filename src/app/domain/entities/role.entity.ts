@@ -2,9 +2,10 @@ import { AccessLevel, RoleName } from '@domain/value-objects';
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { FieldError } from '@domain/errors/field-error.type';
-import { DomainEvent, DomainEventType } from '../events/domain-event.entity';
+import { DomainEvent } from '../events/domain-event.entity';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
 import { AccessLevelService } from '../services/role/accessLevel.service';
+import { DomainEventType } from '../events/domain-event.enum';
 
 /**
  * Role Entity - Represents organizational roles in the MAD-AI system.
