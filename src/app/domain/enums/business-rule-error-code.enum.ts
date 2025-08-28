@@ -36,6 +36,9 @@ export enum BusinessRuleErrorCode {
   UNSUPPORTED_NOTIFICATION_LANGUAGE = 'UNSUPPORTED_NOTIFICATION_LANGUAGE',
   INCONSISTENT_PREFERENCES = 'INCONSISTENT_PREFERENCES',
   INVALID_PREFERENCES_UPDATE = 'INVALID_PREFERENCES_UPDATE',
+
+  // Notification State Errors
+  NOTIFICATION_ALREADY_DISMISSED = 'NOTIFICATION_ALREADY_DISMISSED',
 }
 
 /**
@@ -129,6 +132,8 @@ export const BusinessRuleErrorCodeUtils = {
         'Preferences are inconsistent with business rules',
       [BusinessRuleErrorCode.INVALID_PREFERENCES_UPDATE]:
         'Cannot update preferences with invalid data',
+      [BusinessRuleErrorCode.NOTIFICATION_ALREADY_DISMISSED]:
+        'Notification has already been dismissed',
     };
 
     return descriptions[code] || 'Unknown business rule error';
