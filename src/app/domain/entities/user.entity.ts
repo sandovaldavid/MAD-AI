@@ -16,7 +16,8 @@ import { Role } from './role.entity';
 import { ValidationError } from '../errors/validation-error.entity';
 import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 import type { FieldError } from '../errors/field-error.type';
-import { DomainEvent, DomainEventType } from '../events/domain-event.entity';
+import { DomainEvent } from '../events/domain-event.entity';
+import { DomainEventType } from '../events/domain-event.enum';
 
 export class User {
   private _domainEvents: DomainEvent[] = [];
@@ -243,19 +244,24 @@ export class User {
   get username(): Username {
     return this._username;
   }
+
   get email(): Email {
     return this._email;
   }
+
   get firstName(): FirstName {
     return this._firstName;
   }
+
   get lastName(): LastName {
     return this._lastName;
   }
+
   get active(): boolean {
     return this._active;
   }
-  get role(): Role {
+
+  get getRole(): Role {
     return this._role;
   }
 
@@ -441,10 +447,6 @@ export class User {
     this._lastName = lastName;
   }
 
-  isAdministrator(): boolean {
-    return this._role?.canAccessAdmin();
-  }
-
   /** Business logic: Update user notification preferences */
   updateNotificationPreferences(preferences: UserNotificationPreferences): void {
     // Validar y actualizar el VO de preferencias
@@ -567,6 +569,6 @@ export class User {
   }
 
   toString(): string {
-    return `User(${this.id}, ${this.username}, ${this.email}, ${this.firstName} ${this.lastName}, Active: ${this.active}, Role: ${this.role.name})`;
+    return `User(${this.id}, ${this.username}, ${this.email}, ${this.firstName} ${this.lastName}, Active: ${this.active}, Role: ${this.getRole.name})`;
   }
 }
