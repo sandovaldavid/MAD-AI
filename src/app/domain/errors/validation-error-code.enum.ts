@@ -219,6 +219,12 @@ export enum ValidationErrorCode {
    * Used for enumeration and choice validations.
    */
   INVALID_CHOICE = 'INVALID_CHOICE',
+
+  /**
+   * Field value is out of the allowed range.
+   * Used for range validations on numeric and date fields.
+   */
+  FIELD_OUT_OF_RANGE = 'FIELD_OUT_OF_RANGE',
 }
 
 /**
