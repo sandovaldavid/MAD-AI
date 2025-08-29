@@ -1,88 +1,136 @@
-# 📘 Guía de carpetas de dominio
+# Guía Arquitectónica para Domain Layer
 
-### 🔹 `/values-objects`
+## QUÉ ES Domain
 
-- Contienen **objetos inmutables** con validaciones de dominio.
-- Reglas:
-  - Siempre inmutables.
-  - Validación en constructor (throw ValidationError).
-  - Nunca deben contener lógica de negocio.
+Domain contiene la **lógica de negocio pura** de tu aplicación. Representa conceptos que existen independientemente de la tecnología.
 
-- Ejemplo: `Email`, `AccessLevel`, `PhoneNumber`.
+## REGLA DE ORO
 
----
+**Pregunta decisiva:** "Si esta lógica fuera explicada a un experto del negocio (sin conocimiento técnico), ¿la entendería y validaría como correcta?"
 
-### 🔹 `/entities`
+- Si SÍ → Puede ir en Domain
+- Si NO → Va en otra capa
 
-- Representan **agregados o entidades de negocio**.
-- Contienen identidad (`id`) y lógica de negocio relacionada a sí mismas.
-- Ejemplo: `User`, `Role`, `Session`.
+## ESTRUCTURA OBLIGATORIA
 
----
+### `/entities` - Objetos con identidad
 
-### 🔹 `/services`
+**QUÉ VA:**
 
-- **Domain Services**: lógica de negocio que no encaja en una entidad.
-- Reglas:
-  - Puras funciones de dominio.
-  - Trabajan con Entities y VOs.
+- Agregados principales del negocio (User, Role, Project)
+- Lógica que modifica el estado de la entidad
+- Métodos que expresan comportamientos del negocio
 
-- Ejemplo: `PermissionService`, `PasswordPolicyService`.
+**QUÉ NO VA:**
 
----
+- Entidades que solo son DTOs sin comportamiento
+- Entidades con lógica de presentación
+- Entidades que dependen de frameworks
 
-### 🔹 `/enums`
+**Ejemplo correcto:** `User.changeRole()`, `User.canLeadProjects()`
+**Ejemplo incorrecto:** `User.formatDisplayName()`, `User.toJSON()`
 
-- Enumeraciones del dominio.
-- Ejemplo: `RoleName`, `AccessLevel`.
-- Aquí también puedes centralizar constantes de dominio (en vez de `utils`).
+### `/value-objects` - Objetos inmutables sin identidad
 
----
+**QUÉ VA:**
 
-### 🔹 `/errors`
+- Conceptos del dominio que se validan (Email, Username)
+- Objetos que encapsulan validaciones técnicas básicas
+- Tipos que el negocio trata como unidades
 
-- Entidades + tipos de errores de dominio.
-- Ejemplo:
-  - `validation-error.entity.ts`
-  - `business-rule-error.entity.ts`
-  - `domain-error-type.enum.ts`
+**QUÉ NO VA:**
 
----
+- Value Objects que solo formatean
+- Objetos que dependen de configuración externa
+- Wrappers innecesarios de tipos primitivos
 
-### 🔹 `/events`
+**Ejemplo correcto:** `Email.create()`, `Money.add()`
+**Ejemplo incorrecto:** `FormattedDate.toDisplay()`, `ColorTheme.getCssClass()`
 
-- Eventos que ocurren dentro del dominio.
-- Ejemplo:
-  - `user-registered.event.ts`
-  - `password-changed.event.ts`
+### `/repositories` - Contratos de persistencia
 
----
+**QUÉ VA:**
 
-### 🔹 `/repositories`
+- Interfaces que expresan necesidades del dominio
+- Métodos que reflejan operaciones de negocio
+- Contratos independientes de la tecnología de storage
 
-- Interfaces de Repositorios y contratos de repositorios(types que reciben las interfaces de las funciones en los repositories de domain)
-- Ejemplo:
-  - `user.repository.ts` -> interfaces de las funciones
-  - `user.contract.ts` -> types que usan las interfaces de las funciones
+**QUÉ NO VA:**
 
----
+- Implementaciones concretas
+- Métodos específicos de SQL o NoSQL
+- Contratos que filtran por criterios de UI
 
-### 🔹 `/specifications`
+**Ejemplo correcto:** `findActiveUsersByRole()`, `getUsersWithExpiredSessions()`
+**Ejemplo incorrecto:** `findUsersForDropdown()`, `getUsersByPaginationAndSort()`
 
-- Expresan **reglas de negocio reutilizables** que pueden ser evaluadas sin duplicar lógica.
-- Ejemplo:
-  - `UserMustBeAdult.spec.ts`
-  - `RoleMustHaveValidPermissions.spec.ts`
+### `/services` - Lógica que no pertenece a una entidad
 
----
+**QUÉ VA MÁXIMO 3-5 SERVICIOS:**
 
-# ✅ Recomendaciones para Value Objects
+- Lógica que coordina múltiples entidades
+- Algoritmos complejos del dominio
+- Reglas que no pueden vivir en una entidad específica
 
-1. **Inmutables**: no exponer setters.
-2. **Validación en constructor**: nunca se construye inválido.
-3. **Solo dominio, no negocio**:
-   - ✔️ Correcto: validar que un Email tenga formato válido.
-   - ❌ Incorrecto: decidir si un usuario puede loguearse según su Email.
+**QUÉ NO VA:**
 
-4. **Throw ValidationError** al romper invariantes.
-5. **Tests unitarios cercanos** (`.spec.ts` junto al VO).
+- Servicios de formateo o transformación
+- Servicios con más de una responsabilidad
+- Servicios que llaman a APIs externas
+
+**Ejemplo correcto:** `UserRoleAssignmentService.canAssignRole(user, role)`
+**Ejemplo incorrecto:** `UserFormattingService.formatName()`, `EmailSenderService.send()`
+
+### `/specifications` - Reglas de negocio complejas
+
+**QUÉ VA:**
+
+- Reglas que determinan si algo cumple criterios del negocio
+- Lógica condicional compleja y reutilizable
+- Especificaciones que pueden combinarse
+
+**QUÉ NO VA:**
+
+- Validaciones técnicas simples
+- Lógica específica de una sola entidad
+- Reglas de presentación
+
+**Ejemplo correcto:** `CanApproveAbsenceSpec`, `IsEligibleForPromotionSpec`
+**Ejemplo incorrecto:** `ValidEmailFormatSpec`, `ButtonShouldBeDisabledSpec`
+
+### `/events` - Hechos que ocurrieron en el negocio
+
+**QUÉ VA:**
+
+- Eventos que representan cambios importantes
+- Eventos que otros bounded contexts necesitan conocer
+- Eventos que disparan procesos de negocio
+
+**QUÉ NO VA:**
+
+- Eventos técnicos (clicks, navegación)
+- Eventos de logging
+- Eventos específicos de UI
+
+### `/errors` - Errores del dominio
+
+**QUÉ VA:**
+
+- ValidationError (formato, requeridos)
+- BusinessRuleError (reglas de negocio violadas)
+- Errores que el experto de negocio reconocería
+
+**QUÉ NO VA:**
+
+- Errores HTTP o de red
+- Errores de frameworks
+- Errores de presentación
+
+## PROHIBICIONES ABSOLUTAS EN DOMAIN
+
+- Importar librerías externas (excepto tipos básicos)
+- Conocer Angular/React/Vue
+- Hacer llamadas HTTP
+- Acceder a localStorage/sessionStorage
+- Formatear para mostrar en UI
+- Loggear (puede generar eventos para que otros loggeen)
