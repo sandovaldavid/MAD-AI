@@ -59,9 +59,9 @@ export class FirstName {
   private static format(value: string): string {
     return value
       .trim()
-      .split(/(\s+|\-+)/)
+      .split(/(\s+|-+)/)
       .map((part) =>
-        /^\s|\-$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+        /^\s|-$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
       )
       .join('');
   }
