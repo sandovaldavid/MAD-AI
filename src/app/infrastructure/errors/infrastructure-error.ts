@@ -2,22 +2,22 @@ import type { InfrastructureError as InfrastructureErrorInterface } from './infr
 
 export class InfrastructureError extends Error implements InfrastructureErrorInterface {
   public readonly type: 'NETWORK' | 'HTTP' | 'API' | 'CONNECTIVITY';
-  public readonly originalError?: any;
+  public readonly originalError?: Error | unknown;
   public readonly statusCode?: number;
   public readonly endpoint?: string;
   public readonly code: string;
   public readonly timestamp: Date;
   public readonly retryable: boolean;
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
 
   constructor(
     message: string,
     code: string,
     type: 'NETWORK' | 'HTTP' | 'API' | 'CONNECTIVITY',
     retryable: boolean,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     statusCode?: number,
-    originalError?: any,
+    originalError?: Error | unknown,
     endpoint?: string
   ) {
     super(message);
@@ -30,7 +30,8 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
     this.originalError = originalError;
     this.timestamp = new Date();
     // endpoint puede venir en context o como parámetro
-    this.endpoint = endpoint ?? context?.['endpoint'] ?? undefined;
+    this.endpoint =
+      endpoint ?? (typeof context?.['endpoint'] === 'string' ? context['endpoint'] : undefined);
   }
 
   static networkTimeout(endpoint: string, timeout: number): InfrastructureError {
@@ -54,7 +55,7 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
     );
   }
 
-  static connectionFailed(endpoint: string, originalError: any): InfrastructureError {
+  static connectionFailed(endpoint: string, originalError: Error | unknown): InfrastructureError {
     return new InfrastructureError(
       'Failed to connect to server',
       'CONNECTION_FAILED',
@@ -78,7 +79,10 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
     );
   }
 
-  static badRequest(endpoint: string, validationErrors?: any): InfrastructureError {
+  static badRequest(
+    endpoint: string,
+    validationErrors?: Record<string, unknown>
+  ): InfrastructureError {
     return new InfrastructureError(
       'Bad request sent to server',
       'HTTP_BAD_REQUEST',
@@ -89,7 +93,7 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
     );
   }
 
-  static serverError(endpoint: string, originalError?: any): InfrastructureError {
+  static serverError(endpoint: string, originalError?: Error | unknown): InfrastructureError {
     return new InfrastructureError(
       'Internal server error',
       'HTTP_SERVER_ERROR',
@@ -112,7 +116,10 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
     );
   }
 
-  static certificateError(endpoint: string, certificateError: any): InfrastructureError {
+  static certificateError(
+    endpoint: string,
+    certificateError: Error | unknown
+  ): InfrastructureError {
     return new InfrastructureError(
       'SSL certificate verification failed',
       'CERTIFICATE_ERROR',
