@@ -23,7 +23,7 @@ export const ROLE_NAME_LENGTH_CONSTRAINTS = {
  * Validation patterns for role name format (invariant validations)
  */
 export const ROLE_NAME_VALIDATION_PATTERNS = {
-  VALID_CHARACTERS: /^[A-Za-z\s\-]+$/,
+  VALID_CHARACTERS: /^[A-Za-z\s-]+$/,
   VALID_START: /^[A-Za-z]/,
   NO_CONSECUTIVE_SPACES: /\s{2,}/,
   NO_CONSECUTIVE_HYPHENS: /-{2,}/,
@@ -110,7 +110,7 @@ export const RoleNameUtils = {
     return name
       .toLowerCase()
       .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9\-]/g, '');
+      .replace(/[^a-z0-9-]/g, '');
   },
 
   /**
