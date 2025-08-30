@@ -9,7 +9,7 @@ export enum LastnameMaxLength {
   VALUE = 50,
 }
 
-export const LASTNAME_VALIDATION_REGEX = /^[\p{L}\s'\-]+$/u;
+export const LASTNAME_VALIDATION_REGEX = /^[\p{L}\s'-]+$/u;
 
 export enum LastnameValidationRule {
   REQUIRED = 'Last name is required',
