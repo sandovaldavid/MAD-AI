@@ -1,7 +1,6 @@
 import { AccessToken } from '../value-objects/local-tokens.vo';
 import { DEFAULT_REFRESH_THRESHOLD_SECONDS } from '../enums/token-security.enum';
 import { BusinessRuleError } from '../errors/business-rule-error.entity';
-import { TokenMaskingService } from '../services/token/token-masking.service';
 
 /**
  * Token Expiration Specifications
@@ -110,10 +109,7 @@ export class TokenExpirationSpec {
   static assertNotExpired(token: AccessToken, nowEpoch: number): void {
     if (this.isExpired(token, nowEpoch)) {
       const expiredBy = nowEpoch - (token.expSeconds || 0);
-      throw BusinessRuleError.tokenExpired(
-        TokenMaskingService.maskAccessToken(token),
-        Math.floor(expiredBy)
-      );
+      throw BusinessRuleError.tokenExpired(token.value, Math.floor(expiredBy));
     }
   }
 
@@ -129,7 +125,7 @@ export class TokenExpirationSpec {
       if (this.isExpired(token, nowEpoch)) {
         this.assertNotExpired(token, nowEpoch); // Will throw expired error
       } else {
-        throw BusinessRuleError.tokenInvalid(TokenMaskingService.maskAccessToken(token));
+        throw BusinessRuleError.tokenInvalid(token.value);
       }
     }
   }
