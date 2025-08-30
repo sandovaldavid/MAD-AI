@@ -7,7 +7,7 @@ export class RoleService {
     try {
       RoleNameReservedSpec.isSatisfiedBy(roleName);
       return false; // Not reserved if no exception thrown
-    } catch (error) {
+    } catch {
       return true; // Reserved if exception thrown
     }
   }
