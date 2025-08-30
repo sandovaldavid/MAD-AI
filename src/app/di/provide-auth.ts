@@ -6,13 +6,15 @@ import {
   CLOCK_PORT,
   AUTH_USER_STORE_PORT,
   SESSION_STORE_PORT,
+  SECURITY_EVENT_REPOSITORY,
 } from './tokens';
-import { HttpAuthRepository } from '../infrastructure/repositories/http-auth.repository';
-import { LocalStorageTokenStore } from '../infrastructure/services/local-storage-token-store.service';
-import { LocalStorageAuthUserStore } from '../infrastructure/services/local-storage-auth-user-store.service';
-import { LocalStorageSessionStore } from '../infrastructure/services/local-storage-session-store.service';
-import { SystemClock } from '../infrastructure/services/system-clock.service';
-import { authInterceptor } from '../infrastructure/http/auth.interceptor';
+import { HttpAuthRepository } from '@infrastructure/repositories/business/http-auth.repository';
+import { LocalStorageTokenStore } from '@infrastructure/services/storage/local-storage-token-store.service';
+import { LocalStorageAuthUserStore } from '@infrastructure/services/storage/local-storage-auth-user-store.service';
+import { LocalStorageSessionStore } from '@infrastructure/services/storage/local-storage-session-store.service';
+import { SystemClock } from '@infrastructure/services/system/system-clock.service';
+import { SecurityEventLogger } from '@infrastructure/services/system/security-event-logger.service';
+import { authInterceptor } from '@infrastructure/http/interceptors/auth.interceptor';
 
 export function provideAuth(): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -21,6 +23,7 @@ export function provideAuth(): EnvironmentProviders {
     { provide: AUTH_USER_STORE_PORT, useClass: LocalStorageAuthUserStore },
     { provide: SESSION_STORE_PORT, useClass: LocalStorageSessionStore },
     { provide: CLOCK_PORT, useClass: SystemClock },
+    { provide: SECURITY_EVENT_REPOSITORY, useClass: SecurityEventLogger },
     provideHttpClient(withInterceptors([authInterceptor])),
   ]);
 }
