@@ -13,7 +13,6 @@ import { provideUsers } from './di/provide-users';
 import { authInterceptor } from './infrastructure/http/interceptors/auth.interceptor';
 import { provideIcons } from './di/provide-icons';
 import { provideExportServices } from './di/provide-export';
-import { provideLogger } from './di/provide-logger';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -37,6 +36,5 @@ export const appConfig: ApplicationConfig = {
       missingStrategy: 'warn',
       defaultVariant: 'outline',
     }),
-    ...provideLogger(),
   ],
 };
