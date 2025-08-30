@@ -38,27 +38,20 @@ import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 import { BusinessRuleError } from '../errors/business-rule-error.entity';
 import type { FieldError } from '../errors/field-error.type';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
-import {
-  NotificationType,
-  NOTIFICATION_PRIORITY_LEVELS,
-  NOTIFICATION_DEFAULT_DURATIONS,
-} from '../enums/notification-type.enum';
+import { NotificationType } from '../enums/notification-type.enum';
 import { NotificationChannel } from '../enums/notification-channel.enum';
+
+// Import specifications for business rule validation
+import { DateTimeBusinessRules } from '../specifications/datetime-business-rules.specs';
+
+// Import domain events
+import { DomainEvent } from '../events/domain-event.entity';
+import { DomainEventType } from '../events/domain-event.enum';
 
 /**
  * Unique identifier for notifications in the domain.
  */
 export type NotificationId = string;
-
-/**
- * @deprecated Use NotificationType enum from '../enums/notification-type.enum' instead
- */
-export type NotificationTypeLegacy = 'success' | 'error' | 'warning' | 'info';
-
-/**
- * @deprecated Use NotificationChannel enum from '../enums/notification-channel.enum' instead
- */
-export type NotificationChannelLegacy = 'email' | 'inApp' | 'push' | 'sms';
 
 /**
  * Notification action representing user interactions.
@@ -116,6 +109,8 @@ export interface NewNotification {
  * - Notifications can have associated actions for user interaction
  */
 export class Notification {
+  private readonly _domainEvents: DomainEvent[] = [];
+
   private constructor(
     private readonly _id: NotificationId,
     private readonly _type: NotificationType,
@@ -128,8 +123,8 @@ export class Notification {
     private readonly _metadata: Record<string, unknown>,
     private readonly _createdAt: ISODateTime,
     private readonly _title?: string,
-    private _isRead: boolean = false,
-    private _isDismissed: boolean = false,
+    private _isRead = false,
+    private _isDismissed = false,
     private _readAt?: ISODateTime,
     private _dismissedAt?: ISODateTime
   ) {}
@@ -223,6 +218,130 @@ export class Notification {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
+    // Business Rule Validations using Specifications
+
+    // 1. Business Hours Validation - Check if notification creation is within business hours
+    try {
+      const now = ISODateTime.now();
+      // Business rule: Critical notifications can be sent outside business hours
+      const isCriticalNotification = props.type === 'error' || priority <= 2;
+
+      if (!isCriticalNotification && !DateTimeBusinessRules.isWithinBusinessHours(now, 8, 18)) {
+        errors.push({
+          field: 'notification',
+          value: now.value,
+          message: 'Non-critical notifications should be sent during business hours (8 AM - 6 PM)',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch (error) {
+      // If business hours validation fails, we don't block creation but log it
+      console.warn('Business hours validation failed:', error);
+    }
+
+    // 2. Priority and Type Consistency Validation
+    try {
+      // Business rule: Error notifications should have high priority
+      if (props.type === 'error' && priority > 3) {
+        errors.push({
+          field: 'priority',
+          value: priority.toString(),
+          message: 'Error notifications must have high priority (1-3)',
+          code: ValidationErrorCode.INVALID_STATE,
+        });
+      }
+
+      // Business rule: Success notifications should not have critical priority
+      if (props.type === 'success' && priority <= 2) {
+        errors.push({
+          field: 'priority',
+          value: priority.toString(),
+          message: 'Success notifications should not have critical priority',
+          code: ValidationErrorCode.INVALID_STATE,
+        });
+      }
+    } catch {
+      errors.push({
+        field: 'notification',
+        value: 'validation_failed',
+        message: 'Priority and type consistency validation failed',
+        code: ValidationErrorCode.VALIDATION_ERROR,
+      });
+    }
+
+    // 3. Message Content Validation
+    try {
+      const message = props.message.trim();
+
+      // Business rule: Messages should not be too short for important notifications
+      if (priority <= 2 && message.length < 10) {
+        errors.push({
+          field: 'message',
+          value: message,
+          message:
+            'High priority notifications should have descriptive messages (min 10 characters)',
+          code: ValidationErrorCode.FIELD_TOO_SHORT,
+        });
+      }
+
+      // Business rule: Messages should not contain inappropriate content
+      const inappropriateWords = ['spam', 'test123', 'lorem ipsum'];
+      const hasInappropriateContent = inappropriateWords.some((word) =>
+        message.toLowerCase().includes(word.toLowerCase())
+      );
+
+      if (hasInappropriateContent) {
+        errors.push({
+          field: 'message',
+          value: message,
+          message: 'Notification message contains inappropriate content',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch {
+      errors.push({
+        field: 'message',
+        value: props.message,
+        message: 'Message content validation failed',
+        code: ValidationErrorCode.VALIDATION_ERROR,
+      });
+    }
+
+    // 4. Channel and Type Compatibility Validation
+    try {
+      // Business rule: Error notifications should prefer in-app channel for immediate attention
+      if (props.type === 'error' && props.channel === NotificationChannel.EMAIL) {
+        errors.push({
+          field: 'channel',
+          value: props.channel,
+          message: 'Error notifications should use in-app channel for immediate attention',
+          code: ValidationErrorCode.INVALID_STATE,
+        });
+      }
+
+      // Business rule: SMS should only be used for critical notifications
+      if (props.channel === NotificationChannel.SMS && priority > 2) {
+        errors.push({
+          field: 'channel',
+          value: props.channel,
+          message: 'SMS channel should only be used for critical notifications',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch {
+      errors.push({
+        field: 'channel',
+        value: props.channel || 'default',
+        message: 'Channel and type compatibility validation failed',
+        code: ValidationErrorCode.VALIDATION_ERROR,
+      });
+    }
+
+    // If any business rule validations failed, throw combined error
+    if (errors.length > 0) {
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
     const id = props.id ?? Math.random().toString(36).substring(2);
     const createdAt = ISODateTime.create(new Date().toISOString())!;
 
@@ -241,6 +360,36 @@ export class Notification {
       false,
       false
     );
+  }
+
+  // --- Domain Events ---
+
+  /**
+   * Adds a domain event to the notification.
+   * Events will be published when the aggregate is persisted.
+   *
+   * @param event - Domain event to add
+   * @private
+   */
+  private addDomainEvent(event: DomainEvent): void {
+    this._domainEvents.push(event);
+  }
+
+  /**
+   * Gets all unpublished domain events from this aggregate.
+   *
+   * @returns Array of domain events
+   */
+  getDomainEvents(): DomainEvent[] {
+    return [...this._domainEvents];
+  }
+
+  /**
+   * Clears all domain events from this aggregate.
+   * Should be called after events have been published.
+   */
+  clearDomainEvents(): void {
+    this._domainEvents.length = 0;
   }
 
   // --- Getters ---
@@ -402,6 +551,210 @@ export class Notification {
   }
 
   /**
+   * Checks if the notification is expired based on business rules.
+   *
+   * @businessRules
+   * - Uses DateTimeBusinessRules to determine if notification should be considered expired
+   * - Considers notification type, priority, and business hours
+   * - Critical notifications have different expiration rules
+   */
+  isExpired(): boolean {
+    const now = ISODateTime.create(new Date().toISOString())!;
+
+    // Critical notifications expire after 1 hour
+    if (this.isHighPriority() && this._type === 'error') {
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      return this.getAge() > oneHour;
+    }
+
+    // Regular notifications expire after 24 hours
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    if (this.getAge() > twentyFourHours) {
+      return true;
+    }
+
+    // Check if current time is within business hours for non-critical notifications
+    if (!this.isHighPriority()) {
+      return !DateTimeBusinessRules.isWithinBusinessHours(now, 8, 18);
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if the notification can be renewed based on business rules.
+   *
+   * @businessRules
+   * - Only active notifications can be renewed
+   * - Critical notifications cannot be renewed (must be handled immediately)
+   * - Renewal is only allowed within business hours
+   * - Maximum renewal limit based on notification type
+   */
+  canBeRenewed(): boolean {
+    if (!this.isActive() || this.isHighPriority()) {
+      return false;
+    }
+
+    const now = ISODateTime.create(new Date().toISOString())!;
+
+    // Only allow renewal within business hours
+    if (!DateTimeBusinessRules.isWithinBusinessHours(now, 8, 18)) {
+      return false;
+    }
+
+    // Check renewal limits based on type
+    const maxRenewals = this._type === 'warning' ? 2 : 1;
+    const currentRenewals = (this._metadata['renewalCount'] as number) || 0;
+
+    return currentRenewals < maxRenewals;
+  }
+
+  /**
+   * Renews the notification if business rules allow it.
+   *
+   * @businessRules
+   * - Validates renewal eligibility using business rules
+   * - Updates renewal count in metadata
+   * - Resets read status for renewed notifications
+   * - Generates domain event for renewal
+   */
+  renew(): void {
+    if (!this.canBeRenewed()) {
+      throw new BusinessRuleError(
+        'NOTIFICATION_CANNOT_BE_RENEWED',
+        'Notification cannot be renewed: business rules violation'
+      );
+    }
+
+    const currentRenewals = (this._metadata['renewalCount'] as number) || 0;
+    const updatedMetadata = {
+      ...this._metadata,
+      renewalCount: currentRenewals + 1,
+      lastRenewedAt: new Date().toISOString(),
+    };
+
+    // Update metadata by creating new instance with updated metadata
+    Object.assign(this, { _metadata: updatedMetadata });
+
+    // Reset read status for renewed notifications
+    this._isRead = false;
+    this._readAt = undefined;
+
+    // Generate domain event
+    this.addDomainEvent(
+      DomainEvent.create({
+        id: `notification-renewed-${this._id}-${Date.now()}`,
+        aggregateId: this._id,
+        aggregateType: 'Notification',
+        eventType: DomainEventType.USER_PROFILE_MODIFIED, // Using existing event type for now
+        eventData: {
+          notificationId: this._id,
+          renewedAt: new Date().toISOString(),
+          renewalCount: currentRenewals + 1,
+          source: 'Notification.renew',
+          reason: 'Notification renewal due to business rules',
+        },
+      })
+    );
+  }
+
+  /**
+   * Validates the notification against current business rules.
+   *
+   * @businessRules
+   * - Combines multiple specifications for comprehensive validation
+   * - Validates timing, content, and business constraints
+   * - Returns detailed validation results
+   */
+  validateBusinessRules(): {
+    isValid: boolean;
+    violations: string[];
+    warnings: string[];
+  } {
+    const violations: string[] = [];
+    const warnings: string[] = [];
+
+    // Validate timing rules
+    const now = ISODateTime.create(new Date().toISOString())!;
+    if (!DateTimeBusinessRules.isWithinBusinessHours(now, 8, 18) && !this.isHighPriority()) {
+      warnings.push('Notification created outside business hours');
+    }
+
+    // Validate priority and type consistency
+    if (this._type === 'error' && this._priority > 2) {
+      violations.push('Error notifications must have high priority (1-2)');
+    }
+
+    if (this._type === 'success' && this._priority < 4) {
+      warnings.push('Success notifications typically have lower priority');
+    }
+
+    // Validate content rules
+    if (this._message.length < 10 && this.isHighPriority()) {
+      violations.push('High priority notifications must have detailed messages');
+    }
+
+    // Validate channel compatibility
+    if (this._channel === 'sms' && this._type === 'info') {
+      warnings.push('SMS channel should be reserved for critical notifications');
+    }
+
+    // Validate duration rules
+    if (this._duration && this._duration < 3000 && this.isHighPriority()) {
+      violations.push('High priority notifications should have longer display duration');
+    }
+
+    return {
+      isValid: violations.length === 0,
+      violations,
+      warnings,
+    };
+  }
+
+  /**
+   * Gets recommendations for improving the notification based on business rules.
+   *
+   * @businessRules
+   * - Analyzes notification properties against best practices
+   * - Provides actionable recommendations for optimization
+   * - Considers user experience and business impact
+   */
+  getOptimizationRecommendations(): string[] {
+    const recommendations: string[] = [];
+    const validation = this.validateBusinessRules();
+
+    // Add recommendations based on validation results
+    validation.warnings.forEach((warning) => {
+      if (warning.includes('business hours')) {
+        recommendations.push(
+          'Consider scheduling non-critical notifications during business hours'
+        );
+      }
+      if (warning.includes('SMS')) {
+        recommendations.push('Use in-app notifications for non-critical information');
+      }
+      if (warning.includes('Success notifications')) {
+        recommendations.push('Consider lowering priority for success notifications');
+      }
+    });
+
+    // Additional recommendations based on content analysis
+    if (this._message.length > 200) {
+      recommendations.push('Consider breaking long messages into multiple notifications');
+    }
+
+    if (this.hasActions() && this._actions.length > 3) {
+      recommendations.push('Limit to 3 or fewer actions per notification for better UX');
+    }
+
+    if (!this._title && this._message.length > 50) {
+      recommendations.push('Add a title for better message organization');
+    }
+
+    return recommendations;
+  }
+
+  /**
    * Converts the notification to a plain object for serialization.
    */
   toPlainObject(): {
@@ -480,16 +833,6 @@ export function isActionable(notification: Notification): boolean {
 /**
  * Checks if a notification is stale (older than specified duration).
  */
-export function isStale(notification: Notification, maxAge: number = 86400000): boolean {
+export function isStale(notification: Notification, maxAge = 86400000): boolean {
   return notification.getAge() > maxAge; // Default: 24 hours
 }
-
-/**
- * @deprecated Use NOTIFICATION_PRIORITY_LEVELS from '../enums/notification-type.enum' instead
- */
-export const PRIORITY_LEVELS = NOTIFICATION_PRIORITY_LEVELS;
-
-/**
- * @deprecated Use NOTIFICATION_DEFAULT_DURATIONS from '../enums/notification-type.enum' instead
- */
-export const DEFAULT_DURATIONS = NOTIFICATION_DEFAULT_DURATIONS;
