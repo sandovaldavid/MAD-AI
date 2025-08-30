@@ -16,7 +16,7 @@ export enum FirstnameMaxLength {
   VALUE = 50,
 }
 
-export const FIRSTNAME_VALIDATION_REGEX = /^[\p{L}\s'\-]+$/u;
+export const FIRSTNAME_VALIDATION_REGEX = /^[\p{L}\s'-]+$/u;
 
 export enum FirstnameValidationRule {
   REQUIRED = 'First name is required',
