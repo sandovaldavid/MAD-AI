@@ -118,7 +118,7 @@ export class UsernameBusinessRules {
    * console.log(suggestions); // ['john_doe1', 'john_doe2', 'johndoe']
    * ```
    */
-  static getSuggestedVariations(baseUsername: string, count: number = 5): string[] {
+  static getSuggestedVariations(baseUsername: string, count = 5): string[] {
     const suggestions: string[] = [];
     const base = baseUsername.toLowerCase().trim();
 
