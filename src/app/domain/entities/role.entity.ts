@@ -4,8 +4,8 @@ import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { FieldError } from '@domain/errors/field-error.type';
 import { DomainEvent } from '../events/domain-event.entity';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
-import { AccessLevelService } from '../services/role/accessLevel.service';
 import { DomainEventType } from '../events/domain-event.enum';
+import { RoleNameReservedSpec } from '../specifications/role-name-reserved.specs';
 
 /**
  * Role Entity - Represents organizational roles in the MAD-AI system.
@@ -54,7 +54,7 @@ export class Role {
     const errors: FieldError[] = [];
 
     // Validación mínima sobre id
-    if (typeof props.id !== 'number' || !Number.isInteger(props.id) || props.id <= 0) {
+    if (typeof props.id !== 'number' || !Number.isInteger(props.id) || props.id < 0) {
       errors.push({
         field: 'id',
         value: props.id,
@@ -67,6 +67,9 @@ export class Role {
     let nameVO: RoleName;
     try {
       nameVO = RoleName.create(props.name);
+
+      // 2. Validar reglas de negocio: nombre de rol no reservado
+      RoleNameReservedSpec.isSatisfiedBy(nameVO);
     } catch (e: unknown) {
       // Map field errors from RoleName VO to Role context
       if (e instanceof ValidationError) {
@@ -172,23 +175,23 @@ export class Role {
   }
 
   canManageUsers(): boolean {
-    return AccessLevelService.canManageUsers(this._accessLevel);
+    return this._accessLevel.canManageUsers();
   }
 
   canAccessAdmin(): boolean {
-    return AccessLevelService.canAccessAdmin(this._accessLevel);
+    return this._accessLevel.canAccessAdmin();
   }
 
   canLeadProjects(): boolean {
-    return AccessLevelService.canLeadProjects(this._accessLevel);
+    return this._accessLevel.canLeadProjects();
   }
 
   getPermissions() {
-    return AccessLevelService.getPermissions(this._accessLevel);
+    return this._accessLevel.getPermissions();
   }
 
   isUniqueForTeam(): boolean {
-    return AccessLevelService.isUniqueForTeam(this._accessLevel);
+    return this._accessLevel.isUniqueForTeam();
   }
 
   /**
