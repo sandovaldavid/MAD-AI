@@ -281,7 +281,7 @@ export class Email {
    * console.log(shortEmail.getMasked()); // '*@b.com'
    * ```
    */
-  getMasked(showDomain: boolean = true): string {
+  getMasked(showDomain = true): string {
     const localPart = this.getLocalPart();
     const domain = this.getDomain();
 
