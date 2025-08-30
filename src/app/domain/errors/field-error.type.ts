@@ -43,7 +43,7 @@ export interface FieldError {
    * The actual value that caused the validation error.
    * Preserved for debugging and error context purposes.
    */
-  readonly value: any;
+  readonly value: unknown;
 
   /**
    * Human-readable error message explaining what went wrong.
@@ -70,7 +70,7 @@ export interface FieldError {
    * }
    * ```
    */
-  readonly context?: Record<string, any>;
+  readonly context?: Record<string, unknown>;
 
   /**
    * Severity level of the validation error.
