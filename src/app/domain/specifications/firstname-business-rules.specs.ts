@@ -93,7 +93,7 @@ export class FirstNameBusinessRules {
    * ```
    */
   static isCompound(name: string): boolean {
-    return /[\s\-]/.test(name);
+    return /[\s-]/.test(name);
   }
 
   /**
