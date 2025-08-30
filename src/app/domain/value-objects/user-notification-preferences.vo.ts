@@ -23,7 +23,7 @@ export class UserNotificationPreferencesVO {
    * Factory method to create a validated VO instance.
    * Throws ValidationError if input is invalid.
    */
-  static create(data: UserNotificationPreferences): UserNotificationPreferencesVO {
+  static create(data: unknown): UserNotificationPreferencesVO {
     const errors: FieldError[] = [];
 
     // Validate presence of all required keys
@@ -36,8 +36,9 @@ export class UserNotificationPreferencesVO {
         severity: 'error' as const,
       });
     } else {
+      const dataObj = data as Record<string, unknown>;
       for (const key of ['email', 'system', 'task']) {
-        if (!(key in data)) {
+        if (!(key in dataObj)) {
           errors.push({
             field: key,
             value: undefined,
@@ -45,10 +46,10 @@ export class UserNotificationPreferencesVO {
             code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
             severity: 'error' as const,
           });
-        } else if (typeof (data as any)[key] !== 'boolean') {
+        } else if (typeof dataObj[key] !== 'boolean') {
           errors.push({
             field: key,
-            value: (data as any)[key],
+            value: dataObj[key],
             message: `${key} must be a boolean`,
             code: ValidationErrorCode.FIELD_FORMAT_INVALID,
             severity: 'error' as const,
@@ -61,7 +62,7 @@ export class UserNotificationPreferencesVO {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.FIELD_FORMAT_INVALID);
     }
 
-    return new UserNotificationPreferencesVO(data);
+    return new UserNotificationPreferencesVO(data as UserNotificationPreferences);
   }
 
   public equals(other: UserNotificationPreferencesVO): boolean {
