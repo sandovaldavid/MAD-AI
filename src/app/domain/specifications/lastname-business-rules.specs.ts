@@ -113,7 +113,7 @@ export class LastNameBusinessRules {
    * @returns True if surname is compound
    */
   static isCompound(surname: string): boolean {
-    return /[\s\-]/.test(surname) || this.hasParticle(surname);
+    return /[\s-]/.test(surname) || this.hasParticle(surname);
   }
 
   /**
