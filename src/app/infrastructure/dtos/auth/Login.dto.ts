@@ -25,10 +25,10 @@ export type LoginResponseDTO = {
     system_notifications_enabled: boolean;
     task_notifications_enabled: boolean;
     is_active: boolean;
-    created_at?: string | null;
-    updated_at?: string | null;
+    created_at: string;
+    updated_at: string;
     role_id: number;
     role_name: string;
-    last_activity_at?: string | null;
+    last_activity_at: string;
   };
 };
