@@ -1,6 +1,6 @@
 import { Provider } from '@angular/core';
 import { ROLE_REPOSITORY } from './tokens';
-import { HttpRoleRepository } from '@infrastructure/repositories/http-role.repository';
+import { HttpRoleRepository } from '@infrastructure/repositories/business/http-role.repository';
 import { ListRoles } from '@application/use-cases/roles/list-roles.usecase';
 import { GetRoleById } from '@application/use-cases/roles/get-role-by-id.usecase';
 import { CreateRole } from '@application/use-cases/roles/create-role.usecase';
