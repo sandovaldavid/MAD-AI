@@ -5,12 +5,11 @@ import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { NotificationPort } from '@domain/repositories/business/notification.repository';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
-import type {
-  AuthUserStorePort,
-  TokenStorePort,
-  SessionStorePort,
-} from '@domain/repositories/session/session-store.repository';
-import type { ExportPort } from '@domain/contracts/export.port';
+import type { SessionStoreRepository } from '@domain/repositories/session/session-store.repository';
+import type { ExportRepository } from '@domain/repositories/system/export.repository';
+import { AuthUserStoreRepository } from '@domain/repositories/session/auth-user-store.repository';
+import { TokenStoreRepository } from '@domain/repositories/session/token-store.repository';
+import { SecurityEventRepository } from '@domain/repositories/system/security-event.repository';
 
 export interface NotificationConfig {
   maxVisibleDesktop: number;
@@ -35,12 +34,19 @@ export const ROLE_REPOSITORY = new InjectionToken<RoleRepository>('ROLE_REPOSITO
 export const CLOCK_PORT = new InjectionToken<ClockPort>('CLOCK_PORT');
 export const NOTIFICATION_PORT = new InjectionToken<NotificationPort>('NOTIFICATION_PORT');
 export const NOTIFICATION_CONFIG = new InjectionToken<NotificationConfig>('NOTIFICATION_CONFIG');
-export const EXPORT_PORT = new InjectionToken<ExportPort>('EXPORT_PORT');
+export const EXPORT_PORT = new InjectionToken<ExportRepository>('EXPORT_PORT');
 
 // Session Storage Ports
-export const AUTH_USER_STORE_PORT = new InjectionToken<AuthUserStorePort>('AUTH_USER_STORE_PORT');
-export const TOKEN_STORE_PORT = new InjectionToken<TokenStorePort>('TOKEN_STORE_PORT');
-export const SESSION_STORE_PORT = new InjectionToken<SessionStorePort>('SESSION_STORE_PORT');
+export const AUTH_USER_STORE_PORT = new InjectionToken<AuthUserStoreRepository>(
+  'AUTH_USER_STORE_PORT'
+);
+export const TOKEN_STORE_PORT = new InjectionToken<TokenStoreRepository>('TOKEN_STORE_PORT');
+export const SESSION_STORE_PORT = new InjectionToken<SessionStoreRepository>('SESSION_STORE_PORT');
+
+// Security Event Repository Port
+export const SECURITY_EVENT_REPOSITORY = new InjectionToken<SecurityEventRepository>(
+  'SECURITY_EVENT_REPOSITORY'
+);
 
 /** Multi‑provider: cada feature aporta { [key]: rawSvg } */
 export const ICON_SVG_SET = new InjectionToken<Record<string, string>>('ICON_SVG_SET (multi)', {
