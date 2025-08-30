@@ -1,7 +1,6 @@
 import { AccessToken } from '../value-objects/local-tokens.vo';
 import { TokenSecurityLevel, TokenType, TokenSecurityUtils } from '../enums/token-security.enum';
 import { BusinessRuleError } from '../errors/business-rule-error.entity';
-import { TokenMaskingService } from '../services/token/token-masking.service';
 
 /**
  * Token Security Specifications
@@ -45,11 +44,7 @@ export class TokenSecuritySpec {
     };
 
     if (levelHierarchy[actualLevel] < levelHierarchy[minSecurityLevel]) {
-      throw BusinessRuleError.tokenSecurityInsufficient(
-        actualLevel,
-        minSecurityLevel,
-        TokenMaskingService.maskAccessToken(token)
-      );
+      throw BusinessRuleError.tokenSecurityInsufficient(actualLevel, minSecurityLevel, token.value);
     }
   }
 
