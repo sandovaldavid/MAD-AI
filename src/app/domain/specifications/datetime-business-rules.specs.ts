@@ -57,7 +57,7 @@ export class DateTimeBusinessRules {
    * DateTimeBusinessRules.assertNotTooOld(oldDate, 365); // throws BusinessRuleError
    * ```
    */
-  static assertNotTooOld(dateTime: ISODateTime, maxDaysInPast: number = 365): void {
+  static assertNotTooOld(dateTime: ISODateTime, maxDaysInPast = 365): void {
     if (!this.isWithinLast(dateTime, maxDaysInPast, 'days')) {
       throw BusinessRuleError.dateTimeTooOld(dateTime.toString(), maxDaysInPast);
     }
@@ -70,7 +70,7 @@ export class DateTimeBusinessRules {
    * @param maxDaysInFuture - Maximum allowed days in the future
    * @throws {BusinessRuleError} When datetime is too far ahead
    */
-  static assertNotTooFuture(dateTime: ISODateTime, maxDaysInFuture: number = 30): void {
+  static assertNotTooFuture(dateTime: ISODateTime, maxDaysInFuture = 30): void {
     const now = ISODateTime.now();
     const diff = dateTime.getDifferenceInMilliseconds(now);
     const threshold = maxDaysInFuture * IsoDatetimeUnitMs.DAYS;
@@ -97,11 +97,7 @@ export class DateTimeBusinessRules {
    * DateTimeBusinessRules.isWithinBusinessHours(nightTime, 9, 17); // false
    * ```
    */
-  static isWithinBusinessHours(
-    dateTime: ISODateTime,
-    startHour: number = 9,
-    endHour: number = 17
-  ): boolean {
+  static isWithinBusinessHours(dateTime: ISODateTime, startHour = 9, endHour = 17): boolean {
     const hour = dateTime.getHour();
     return hour >= startHour && hour < endHour;
   }
@@ -142,7 +138,7 @@ export class DateTimeBusinessRules {
    */
   static isSessionValid(
     sessionStart: ISODateTime,
-    maxSessionMinutes: number = 480 // 8 hours default
+    maxSessionMinutes = 480 // 8 hours default
   ): boolean {
     return this.isWithinLast(sessionStart, maxSessionMinutes, 'minutes');
   }
@@ -154,7 +150,7 @@ export class DateTimeBusinessRules {
    * @param maxPasswordAgeDays - Maximum password age in days
    * @returns True if password is still valid
    */
-  static isPasswordValid(passwordChanged: ISODateTime, maxPasswordAgeDays: number = 90): boolean {
+  static isPasswordValid(passwordChanged: ISODateTime, maxPasswordAgeDays = 90): boolean {
     return this.isWithinLast(passwordChanged, maxPasswordAgeDays, 'days');
   }
 }
