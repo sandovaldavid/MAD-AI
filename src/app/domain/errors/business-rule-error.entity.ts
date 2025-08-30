@@ -1,12 +1,14 @@
 import { BusinessRuleErrorCode } from '../enums/business-rule-error-code.enum';
 
+type ErrorContext = Record<string, unknown>;
+
 export class BusinessRuleError extends Error {
   public readonly code: string;
-  public readonly context?: Record<string, any>;
+  public readonly context?: ErrorContext;
   public readonly errorId: string;
   public readonly timestamp: Date;
 
-  constructor(message: string, code: string, context?: Record<string, any>) {
+  constructor(message: string, code: string, context?: ErrorContext) {
     super(message);
     this.name = 'BusinessRuleError';
     this.code = code;
@@ -127,7 +129,7 @@ export class BusinessRuleError extends Error {
   /**
    * No se puede deshabilitar todos los canales de notificación
    */
-  static cannotDisableAllChannels(context?: Record<string, any>): BusinessRuleError {
+  static cannotDisableAllChannels(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'At least one notification channel must be enabled',
       BusinessRuleErrorCode.NO_CHANNELS_ENABLED,
@@ -138,7 +140,7 @@ export class BusinessRuleError extends Error {
   /**
    * No se pueden desactivar notificaciones críticas (system/security)
    */
-  static cannotDisableCriticalNotifications(context?: Record<string, any>): BusinessRuleError {
+  static cannotDisableCriticalNotifications(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'Critical notifications cannot be disabled',
       BusinessRuleErrorCode.CRITICAL_NOTIFICATIONS_REQUIRED,
@@ -149,7 +151,7 @@ export class BusinessRuleError extends Error {
   /**
    * Configuración inválida de quiet hours
    */
-  static invalidQuietHoursFormat(context?: Record<string, any>): BusinessRuleError {
+  static invalidQuietHoursFormat(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'Invalid quiet hours format',
       BusinessRuleErrorCode.INVALID_QUIET_HOURS_FORMAT,
@@ -160,7 +162,7 @@ export class BusinessRuleError extends Error {
   /**
    * Frecuencia de notificaciones fuera de rango permitido
    */
-  static invalidNotificationFrequency(context?: Record<string, any>): BusinessRuleError {
+  static invalidNotificationFrequency(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'Notification frequency is out of allowed range',
       BusinessRuleErrorCode.INVALID_NOTIFICATION_FREQUENCY,
@@ -182,7 +184,7 @@ export class BusinessRuleError extends Error {
   /**
    * Preferencias inconsistentes (privacyMode bloqueando notificaciones obligatorias)
    */
-  static inconsistentPreferences(context?: Record<string, any>): BusinessRuleError {
+  static inconsistentPreferences(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'Preferences are inconsistent with business rules',
       BusinessRuleErrorCode.INCONSISTENT_PREFERENCES,
@@ -193,7 +195,7 @@ export class BusinessRuleError extends Error {
   /**
    * Intento de actualizar preferencias con datos inválidos
    */
-  static invalidPreferencesUpdate(context?: Record<string, any>): BusinessRuleError {
+  static invalidPreferencesUpdate(context?: ErrorContext): BusinessRuleError {
     return new BusinessRuleError(
       'Cannot update preferences with invalid data',
       BusinessRuleErrorCode.INVALID_PREFERENCES_UPDATE,
