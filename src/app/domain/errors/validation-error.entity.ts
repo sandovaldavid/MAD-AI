@@ -4,6 +4,8 @@ import {
 } from '../errors/validation-error-code.enum';
 import type { FieldError } from './field-error.type';
 
+type ErrorContext = Record<string, unknown>;
+
 /**
  * Domain validation error entity for the MAD-AI system.
  *
@@ -74,12 +76,12 @@ export class ValidationError extends Error {
    * Context information about where or why the validation failed.
    * Can include entity names, operation types, or other relevant data.
    */
-  public readonly context?: Record<string, any>;
+  public readonly context?: ErrorContext;
 
   private constructor(
     errors: FieldError[],
     code: ValidationErrorCode = ValidationErrorCode.VALIDATION_ERROR,
-    context?: Record<string, any>
+    context?: ErrorContext
   ) {
     // Create a comprehensive error message from all field errors
     const messages = errors.map((e) => (e.field ? `${e.field}: ${e.message}` : e.message));
@@ -105,7 +107,7 @@ export class ValidationError extends Error {
    * @param context - Optional context information
    * @returns New ValidationError instance
    */
-  static create(fieldError: FieldError, context?: Record<string, any>): ValidationError {
+  static create(fieldError: FieldError, context?: ErrorContext): ValidationError {
     return new ValidationError([fieldError], fieldError.code, context);
   }
 
@@ -120,7 +122,7 @@ export class ValidationError extends Error {
   static createFromFields(
     fieldErrors: FieldError[],
     primaryCode?: ValidationErrorCode,
-    context?: Record<string, any>
+    context?: ErrorContext
   ): ValidationError {
     if (fieldErrors.length === 0) {
       throw new Error('ValidationError requires at least one field error');
@@ -143,7 +145,7 @@ export class ValidationError extends Error {
     message: string,
     field: string = '',
     code: ValidationErrorCode = ValidationErrorCode.VALIDATION_ERROR,
-    context?: Record<string, any>
+    context?: ErrorContext
   ): ValidationError {
     const fieldError: FieldError = {
       field,
@@ -163,7 +165,7 @@ export class ValidationError extends Error {
    * @param entityType - Type of entity for context
    * @returns New ValidationError instance
    */
-  static forUniqueConstraint(field: string, value: any, entityType?: string): ValidationError {
+  static forUniqueConstraint(field: string, value: unknown, entityType?: string): ValidationError {
     const message = `${field} '${value}' already exists`;
     const context = entityType
       ? { entityType, conflictingValue: value }
@@ -313,7 +315,7 @@ export class ValidationError extends Error {
     timestamp: string;
     errors: FieldError[];
     message: string;
-    context?: Record<string, any>;
+    context?: ErrorContext;
   } {
     return {
       name: this.name,
