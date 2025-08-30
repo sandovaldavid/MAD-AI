@@ -2,12 +2,17 @@ import { Injectable } from '@angular/core';
 import { jsPDF } from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import Papa from 'papaparse';
-import type { ExportPort, PdfConfig, CsvConfig, JsonConfig } from '@domain/contracts/export.port';
+import type {
+  ExportRepository,
+  PdfConfig,
+  CsvConfig,
+  JsonConfig,
+} from '@/app/domain/repositories/system/export.repository';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ClientExportService implements ExportPort {
+export class ClientExportService implements ExportRepository {
   async exportToPdf<T>(data: T[], config: PdfConfig): Promise<void> {
     const doc = new jsPDF({
       orientation: config.orientation || 'portrait',
@@ -23,11 +28,18 @@ export class ClientExportService implements ExportPort {
     }
 
     // Preparar los datos para la tabla
-    const tableData = data.map((item) => {
-      const row: any[] = [];
+    const tableData: (string | number | boolean | null)[][] = data.map((item) => {
+      const row: (string | number | boolean | null)[] = [];
       config.columns.forEach((column) => {
         const value = this.getNestedProperty(item, column.dataKey);
-        row.push(value ?? '');
+        // Convert unknown to acceptable CellInput types
+        const cellValue: string | number | boolean | null =
+          typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+            ? value
+            : value === null || value === undefined
+              ? null
+              : String(value);
+        row.push(cellValue);
       });
       return row;
     });
@@ -74,11 +86,11 @@ export class ClientExportService implements ExportPort {
     };
 
     // Si se proporcionan headers específicos, los usamos
-    let csvData: any[] = data;
+    let csvData: Record<string, unknown>[] | unknown[] = data;
     if (config.headers && config.includeHeaders !== false) {
       // Mapear los datos para usar solo las columnas especificadas
       csvData = data.map((item) => {
-        const row: any = {};
+        const row: Record<string, unknown> = {};
         config.headers!.forEach((header) => {
           row[header] = this.getNestedProperty(item, header);
         });
@@ -97,9 +109,11 @@ export class ClientExportService implements ExportPort {
   }
 
   // Método helper para obtener propiedades anidadas
-  private getNestedProperty(obj: any, path: string): any {
+  private getNestedProperty(obj: unknown, path: string): unknown {
     return path.split('.').reduce((current, key) => {
-      return current && current[key] !== undefined ? current[key] : null;
+      return current && typeof current === 'object' && current !== null && key in current
+        ? (current as Record<string, unknown>)[key]
+        : null;
     }, obj);
   }
 
@@ -112,8 +126,8 @@ export class ClientExportService implements ExportPort {
   }
 
   // Método helper para construir estilos de columnas
-  private buildColumnStyles(columns: any[]): Record<number, any> {
-    const styles: Record<number, any> = {};
+  private buildColumnStyles(columns: { width?: number }[]): Record<number, { cellWidth?: number }> {
+    const styles: Record<number, { cellWidth?: number }> = {};
     columns.forEach((column, index) => {
       if (column.width) {
         styles[index] = { cellWidth: column.width };
