@@ -8,8 +8,6 @@ import {
   UserNotificationPreferencesVO,
 } from '../value-objects';
 
-import { AccessLevelService } from '../services/role/accessLevel.service';
-
 import type { UserNotificationPreferences } from '../value-objects/user-notification-preferences.vo';
 
 import { Role } from './role.entity';
@@ -18,6 +16,11 @@ import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 import type { FieldError } from '../errors/field-error.type';
 import { DomainEvent } from '../events/domain-event.entity';
 import { DomainEventType } from '../events/domain-event.enum';
+import { EmailDomainPolicySpec } from '../specifications/email-domain-blacklist.specs';
+import { FirstNameCompoundPolicySpec } from '../specifications/firstname-compound.specs';
+import { UserBusinessRules } from '../specifications/user-business-rules.specification';
+import { UsernameBusinessRules } from '../specifications/username-business-rules.specs';
+import { FirstNameBusinessRules } from '../specifications/firstname-business-rules.specs';
 
 export class User {
   private _domainEvents: DomainEvent[] = [];
@@ -184,6 +187,225 @@ export class User {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
+    // Business Rule Validations using Specifications
+    // These are complex business rules that go beyond simple technical validations
+
+    // 1. Username Business Rules - Validate username is not reserved
+    try {
+      if (UsernameBusinessRules.isReserved(props.username)) {
+        errors.push({
+          field: 'username',
+          value: props.username,
+          message: 'Username is reserved and cannot be used',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch (error) {
+      // If validation fails, we don't block creation but log it
+      console.warn('Username business rule validation failed:', error);
+    }
+
+    // 2. Username Security Validation - Check for weak security patterns
+    try {
+      const securityValidation = UsernameBusinessRules.validateSecurity(props.username);
+      if (!securityValidation.isSecure) {
+        errors.push({
+          field: 'username',
+          value: props.username,
+          message: 'Username does not meet security requirements',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch (error) {
+      // If validation fails, we don't block creation but log it
+      console.warn('Username security validation failed:', error);
+    }
+
+    // 3. FirstName Business Rules - Validate firstname phonetic rules
+    try {
+      // Generate phonetic code for the first name
+      const phoneticCode = FirstNameBusinessRules.generateSoundex(props.firstName);
+
+      // Check if phonetic code indicates potential security concerns
+      // This is a business rule to prevent names that sound like system accounts
+      const suspiciousPatterns = ['ADM', 'SYS', 'ROOT', 'SUPR'];
+      if (suspiciousPatterns.some((pattern) => phoneticCode.startsWith(pattern))) {
+        errors.push({
+          field: 'firstName',
+          value: props.firstName,
+          message: 'First name may conflict with system account patterns',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch (error) {
+      // If phonetic validation fails, we don't block creation but log it
+      console.warn('FirstName phonetic validation failed:', error);
+    }
+
+    // 4. Email Domain Policy - Validate email domain business rules
+    try {
+      // Create temporary user for specification validation
+      const tempUser = new User(
+        props.id || 0,
+        usernameVO!,
+        emailVO!,
+        firstNameVO!,
+        lastNameVO!,
+        props.isActive ?? true,
+        props.role!,
+        createdAtVO,
+        updatedAtVO,
+        lastActivityAtVO,
+        statusVO!,
+        props.isEmailConfirmed,
+        notificationPreferecesVO
+      );
+
+      const emailDomainContext: keyof typeof EmailDomainPolicySpec.BUSINESS_CONTEXTS = 'ENTERPRISE';
+      const additionalEmailRules = {
+        allowedDomains: ['company.com', 'enterprise.org'],
+        blockedDomains: ['temp-mail.org', 'spam.com'],
+        requireCorporateDomain: true,
+        regionRestrictions: ['us', 'eu'],
+      };
+
+      EmailDomainPolicySpec.isSatisfiedBy(
+        emailVO!,
+        tempUser,
+        emailDomainContext,
+        additionalEmailRules
+      );
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        errors.push(
+          ...error.errors.map((err) => ({
+            field: err.field,
+            value: err.value,
+            message: err.message,
+            code: err.code,
+          }))
+        );
+      } else {
+        errors.push({
+          field: 'email',
+          value: props.email,
+          message: 'Email domain policy violation',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    }
+
+    // 2. First Name Compound Policy - Validate compound name business rules
+    try {
+      // Create temporary user for specification validation
+      const tempUser = new User(
+        props.id || 0,
+        usernameVO!,
+        emailVO!,
+        firstNameVO!,
+        lastNameVO!,
+        props.isActive ?? true,
+        props.role!,
+        createdAtVO,
+        updatedAtVO,
+        lastActivityAtVO,
+        statusVO!,
+        props.isEmailConfirmed,
+        notificationPreferecesVO
+      );
+
+      const culturalContext: keyof typeof FirstNameCompoundPolicySpec.CULTURAL_CONTEXTS =
+        'LATIN_AMERICAN';
+      const organizationalContext: keyof typeof FirstNameCompoundPolicySpec.ORGANIZATIONAL_CONTEXTS =
+        'FORMAL_BUSINESS';
+      const additionalNameRules = {
+        maxParts: 2,
+        allowHyphenated: true,
+        requireFormalFormat: true,
+        regionSpecificRules: {
+          latin_america: { maxParts: 2, allowHyphenated: true },
+        },
+      };
+
+      FirstNameCompoundPolicySpec.isSatisfiedBy(
+        firstNameVO!,
+        tempUser,
+        culturalContext,
+        organizationalContext,
+        additionalNameRules
+      );
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        errors.push(
+          ...error.errors.map((err) => ({
+            field: err.field,
+            value: err.value,
+            message: err.message,
+            code: err.code,
+          }))
+        );
+      } else {
+        errors.push({
+          field: 'firstName',
+          value: props.firstName,
+          message: 'First name compound policy violation',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    }
+
+    // 3. User Business Rules - General user validation rules
+    try {
+      // Create a temporary user instance for business rule validation
+      const tempUser = new User(
+        props.id,
+        usernameVO!,
+        emailVO!,
+        firstNameVO!,
+        lastNameVO!,
+        props.isActive,
+        props.role,
+        createdAtVO,
+        updatedAtVO,
+        lastActivityAtVO,
+        statusVO!,
+        props.isEmailConfirmed,
+        notificationPreferecesVO
+      );
+
+      // Validate user has complete profile (business rule)
+      if (!UserBusinessRules.hasCompleteProfile(tempUser)) {
+        errors.push({
+          field: 'profile',
+          value: 'incomplete',
+          message: 'User profile must be complete',
+          code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+        });
+      }
+
+      // Validate user can access system (business rule)
+      if (!UserBusinessRules.canAccess(tempUser)) {
+        errors.push({
+          field: 'access',
+          value: tempUser.active ? 'email_not_confirmed' : 'inactive',
+          message: 'User does not meet access requirements',
+          code: ValidationErrorCode.PERMISSION_DENIED,
+        });
+      }
+    } catch {
+      errors.push({
+        field: 'user',
+        value: 'validation_failed',
+        message: 'User business rule validation failed',
+        code: ValidationErrorCode.INVALID_STATE,
+      });
+    }
+
+    // If any business rule validations failed, throw combined error
+    if (errors.length) {
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
     return new User(
       props.id,
       usernameVO!,
@@ -232,11 +454,11 @@ export class User {
   }
 
   canDeleteUsers(): boolean {
-    return AccessLevelService.canDeleteUsers(this._role.getAccessLevel());
+    return this._role.getAccessLevel().canDeleteUsers();
   }
 
   getPermissions() {
-    return AccessLevelService.getPermissions(this._role.getAccessLevel());
+    return this._role.getAccessLevel().getPermissions();
   }
 
   // --- Getters / Domain Logic ---
