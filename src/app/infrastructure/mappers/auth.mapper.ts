@@ -5,74 +5,81 @@ import type {
   RegisterResponseDTO,
 } from '../dtos/auth';
 import { User } from '@domain/entities/user.entity';
-import { Role } from '@domain/entities/role.entity';
 import { Session } from '@domain/entities/session.entity';
 import { AccessToken, RefreshToken } from '@domain/value-objects/local-tokens.vo';
-import { Email } from '@domain/value-objects/email.vo';
-import { Username } from '@domain/value-objects/username.vo';
-import { FirstName } from '@domain/value-objects/firstname.vo';
-import { LastName } from '@domain/value-objects/lastname.vo';
-import { RoleName } from '@domain/value-objects/role-name.vo';
-import { AccessLevel } from '@domain/value-objects/accesslevel.vo';
-import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
-import { UserNotificationPreferences } from '@domain/value-objects/user-notification-preferences.vo';
+import { Role } from '@domain/entities/role.entity';
+import type { RoleRepository } from '@domain/repositories/business/role.repository';
+import { Injectable, inject } from '@angular/core';
+import { ROLE_REPOSITORY } from '@di/tokens';
 
-function mapRole(name: string, id: number, accessLevel?: number, isActive = true) {
-  return Role.create({
-    id,
-    name: RoleName.create(name),
-    accessLevel: AccessLevel.create(accessLevel ?? 1),
-    isActive,
-    description: name,
-  });
-}
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthMapper {
+  private readonly roleRepository = inject<RoleRepository>(ROLE_REPOSITORY);
 
-export const AuthMapper = {
-  loginUserToEntity(dto: LoginResponseDTO['user']): User {
-    const role = mapRole(dto.role_name, dto.role_id);
+  async loginUserToEntity(dto: LoginResponseDTO['user']): Promise<User> {
+    // Get complete Role entity
+    const role = await this.roleRepository.getById(dto.role_id);
+
     return User.create({
       id: dto.id,
-      username: Username.create(dto.username),
-      email: Email.create(dto.email),
-      firstName: FirstName.create(dto.first_name),
-      lastName: LastName.create(dto.last_name),
-      role,
+      username: dto.username,
+      email: dto.email,
+      firstName: dto.first_name,
+      lastName: dto.last_name,
+      role: role,
       isActive: dto.is_active,
-      createdAt: dto.created_at ? ISODateTime.create(dto.created_at) : undefined,
-      updatedAt: dto.updated_at ? ISODateTime.create(dto.updated_at) : undefined,
-      lastActivityAt: dto.last_activity_at ? ISODateTime.create(dto.last_activity_at) : undefined,
+      createdAt: dto.created_at,
+      updatedAt: dto.updated_at,
+      lastActivityAt: dto.last_activity_at,
     });
-  },
+  }
 
   registerUserToEntity(dto: RegisterResponseDTO['user']): User {
-    const role = mapRole(dto.role_name, dto.role_id);
+    const role = Role.create({
+      id: dto.role_id,
+      name: dto.role_name,
+    });
+
     return User.create({
       id: dto.id,
-      username: Username.create(dto.username),
-      email: Email.create(dto.email),
-      firstName: FirstName.create(dto.first_name),
-      lastName: LastName.create(dto.last_name),
+      username: dto.username,
+      email: dto.email,
+      firstName: dto.first_name,
+      lastName: dto.last_name,
       role,
       isActive: dto.is_active,
-      createdAt: dto.created_at ? ISODateTime.create(dto.created_at) : undefined,
-      updatedAt: dto.updated_at ? ISODateTime.create(dto.updated_at) : undefined,
-      lastActivityAt: dto.last_activity_at ? ISODateTime.create(dto.last_activity_at) : undefined,
+      createdAt: dto.created_at,
+      updatedAt: dto.updated_at,
+      lastActivityAt: dto.last_activity_at,
     });
-  },
+  }
 
   meToEntity(dto: MeResponseDTO): User {
-    const role = mapRole(dto.role?.name, dto.role?.id, dto.role?.access_level, dto.role?.is_active);
+    const roleDto = dto.role;
+    const role = Role.create({
+      id: roleDto.id,
+      name: roleDto.name,
+      accessLevel: roleDto.access_level,
+      isActive: roleDto.is_active,
+    });
+
     return User.create({
       id: dto.id,
-      username: Username.create(dto.username),
-      email: Email.create(dto.email),
-      firstName: FirstName.create(dto.first_name),
-      lastName: LastName.create(dto.last_name),
-      isActive: dto.role?.is_active ?? true,
+      username: dto.username,
+      email: dto.email,
+      firstName: dto.first_name,
+      lastName: dto.last_name,
+      isActive: dto.role.is_active,
       role,
-      notificationPreferences: UserNotificationPreferences.createDefault(),
+      notificationPreferences: {
+        email: dto.notification_preferences.email_notifications,
+        system: dto.notification_preferences.system_notifications,
+        task: dto.notification_preferences.task_notifications,
+      },
     });
-  },
+  }
 
   toSession(params: {
     accessToken: string;
@@ -83,7 +90,7 @@ export const AuthMapper = {
     const access = AccessToken.create(params.accessToken, params.accessExpEpochSeconds);
     const refresh = RefreshToken.create(params.refreshToken);
     return Session.create({ user: params.user, access, refresh });
-  },
+  }
 
   tokensFromLogin(dto: LoginResponseDTO, nowEpoch: number) {
     return {
@@ -91,7 +98,7 @@ export const AuthMapper = {
       refreshToken: dto.refresh_token,
       accessExp: nowEpoch + (dto.expires_in ?? 0),
     };
-  },
+  }
 
   tokensFromRefresh(dto: RefreshResponseDTO, nowEpoch: number) {
     return {
@@ -99,7 +106,7 @@ export const AuthMapper = {
       refreshToken: dto.refresh_token,
       accessExp: nowEpoch + (dto.expires_in ?? 0),
     };
-  },
+  }
 
   tokensFromRegister(dto: RegisterResponseDTO, nowEpoch: number) {
     return {
@@ -107,5 +114,5 @@ export const AuthMapper = {
       refreshToken: dto.refresh_token,
       accessExp: nowEpoch + (dto.expires_in ?? 0),
     };
-  },
-};
+  }
+}
