@@ -1,4 +1,4 @@
-export type MeResponseDTO = {
+export interface MeResponseDTO {
   id: number;
   username: string;
   email: string;
@@ -15,4 +15,4 @@ export type MeResponseDTO = {
     system_notifications: boolean;
     task_notifications: boolean;
   };
-};
+}

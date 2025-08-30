@@ -6,7 +6,7 @@ export interface LoginRequestDTO {
   remember_me?: boolean;
 }
 
-export type LoginResponseDTO = {
+export interface LoginResponseDTO {
   access_token: string;
   refresh_token: string;
   token_type: string;
@@ -31,4 +31,4 @@ export type LoginResponseDTO = {
     role_name: string;
     last_activity_at: string;
   };
-};
+}

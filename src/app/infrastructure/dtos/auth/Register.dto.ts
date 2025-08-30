@@ -1,6 +1,6 @@
 import { LoginResponseDTO } from './Login.dto';
 
-export type RegisterRequestDTO = {
+export interface RegisterRequestDTO {
   username: string;
   email: string;
   password: string;
@@ -8,6 +8,6 @@ export type RegisterRequestDTO = {
   first_name: string;
   last_name: string;
   role_id?: number | null;
-};
+}
 
 export type RegisterResponseDTO = LoginResponseDTO;
