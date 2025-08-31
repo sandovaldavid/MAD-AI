@@ -1,102 +1,136 @@
-/**
- * Application Error Class
- *
- * @description
- * Standardized error class for the Application Layer. This error type represents
- * normalized errors that have been processed by error handlers and are ready
- * for consumption by facades and UI components.
- *
- * @responsibilities
- * - Carry normalized error information from use cases to facades
- * - Provide structured error data with operation context
- * - Support error code classification for UI handling
- * - Maintain error traceability from domain to application layer
- *
- * @architecture
- * - Application Layer error type
- * - Used by use cases for error normalization
- * - Consumed by facades for UI error handling
- * - Bridges domain errors to user-facing messages
- *
- * @since 1.0.0
- * @layer Application
- */
+// application/errors/application-error.ts
+import { ApplicationErrorCode } from './error-codes.enum';
+
 export class ApplicationError extends Error {
-  /**
-   * Creates a new Application Error instance
-   *
-   * @param operation - The operation code that failed (e.g., 'USER_CREATION', 'LOGIN_FAILED')
-   * @param message - User-friendly error message
-   * @param code - Specific error code for programmatic handling
-   * @param originalError - Original error that caused this application error
-   */
+  public readonly code: ApplicationErrorCode;
+  public readonly userMessage: string;
+  public readonly context?: Record<string, any>;
+  public readonly suggestedAction?: string;
+  public readonly timestamp: Date;
+  public readonly errorId: string;
+  public readonly retryable: boolean;
+
   constructor(
-    public readonly operation: string,
-    message: string,
-    public readonly code: string = 'UNKNOWN_ERROR',
-    public readonly originalError?: unknown
+    code: ApplicationErrorCode,
+    technicalMessage: string,
+    userMessage: string,
+    context?: Record<string, any>,
+    suggestedAction?: string,
+    retryable = false
   ) {
-    super(message);
+    super(technicalMessage);
     this.name = 'ApplicationError';
-
-    // Maintain proper stack trace for debugging
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ApplicationError);
-    }
+    this.code = code;
+    this.userMessage = userMessage;
+    this.context = context;
+    this.suggestedAction = suggestedAction;
+    this.timestamp = new Date();
+    this.errorId = this.generateErrorId();
+    this.retryable = retryable;
   }
 
-  /**
-   * Factory method for creating application errors from domain errors
-   *
-   * @param operation - The operation that failed
-   * @param domainError - Original domain error
-   * @param customMessage - Optional custom message override
-   * @returns ApplicationError instance
-   */
-  static fromDomainError(
-    operation: string,
-    domainError: unknown,
-    customMessage?: string
-  ): ApplicationError {
-    let message = customMessage || 'An error occurred';
-    let code = 'UNKNOWN_ERROR';
-
-    if (domainError instanceof Error) {
-      message = customMessage || domainError.message;
-      // Extract error code if available from domain error
-      if ('code' in domainError && typeof domainError.code === 'string') {
-        code = domainError.code;
-      }
-    }
-
-    return new ApplicationError(operation, message, code, domainError);
+  // Auth feature factory methods
+  static authenticationFailed(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.AUTH_FAILED,
+      'User authentication failed',
+      'Invalid email or password',
+      undefined,
+      'Please check your credentials and try again'
+    );
   }
 
-  /**
-   * Factory method for creating application errors from HTTP errors
-   *
-   * @param operation - The operation that failed
-   * @param httpStatus - HTTP status code
-   * @param message - Error message
-   * @returns ApplicationError instance
-   */
-  static fromHttpError(operation: string, httpStatus: number, message?: string): ApplicationError {
-    const defaultMessage = message || `HTTP error: ${httpStatus}`;
-    const code = `HTTP_${httpStatus}`;
-
-    return new ApplicationError(operation, defaultMessage, code);
+  static sessionExpired(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.SESSION_EXPIRED,
+      'User session has expired',
+      'Your session has expired for security reasons',
+      undefined,
+      'Please log in again to continue'
+    );
   }
 
-  /**
-   * Returns a JSON representation of the error
-   */
-  toJSON(): Record<string, unknown> {
-    return {
-      name: this.name,
-      operation: this.operation,
-      message: this.message,
-      code: this.code,
-      stack: this.stack,
-    };
+  static userNotFound(email?: string): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.USER_NOT_FOUND,
+      'User not found in system',
+      'No account found with this email address',
+      { email },
+      'Please check the email address or register a new account'
+    );
+  }
+
+  static accountLocked(userId: string, unlockTime?: Date): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.ACCOUNT_LOCKED,
+      'User account is locked',
+      'Your account has been temporarily locked due to multiple failed login attempts',
+      { userId, unlockTime },
+      unlockTime
+        ? `Please try again after ${unlockTime.toLocaleString()}`
+        : 'Contact support to unlock your account'
+    );
+  }
+
+  // User Management factory methods
+  static insufficientPermissions(requiredRole: string, userRole?: string): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+      'User lacks required permissions',
+      'You do not have permission to perform this action',
+      { requiredRole, userRole },
+      'Contact your administrator if you need additional permissions'
+    );
+  }
+
+  static userAlreadyExists(email: string): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.USER_ALREADY_EXISTS,
+      'User with email already exists',
+      'An account with this email address already exists',
+      { email },
+      'Try logging in instead, or use a different email address'
+    );
+  }
+
+  // System factory methods
+  static serviceUnavailable(service: string, retryAfter?: number): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.SERVICE_UNAVAILABLE,
+      `Service ${service} is currently unavailable`,
+      'The service is temporarily unavailable. Please try again later.',
+      { service, retryAfter },
+      retryAfter
+        ? `Please try again in ${retryAfter} seconds`
+        : 'Please try again in a few minutes',
+      true
+    );
+  }
+
+  static invalidInput(details: string): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.INVALID_INPUT,
+      `Invalid input provided: ${details}`,
+      'The information provided is not valid',
+      { details },
+      'Please check your input and try again'
+    );
+  }
+
+  static unexpectedError(): ApplicationError {
+    return new ApplicationError(
+      ApplicationErrorCode.UNEXPECTED_ERROR,
+      'An unexpected error occurred',
+      'Something went wrong. Please try again.',
+      undefined,
+      'If the problem persists, please contact support',
+      true
+    );
+  }
+
+  private generateErrorId(): string {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    return `app_${timestamp}_${random}`;
   }
 }
