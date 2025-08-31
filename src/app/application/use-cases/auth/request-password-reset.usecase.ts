@@ -1,10 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { AUTH_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
 import type { PasswordResetRequest } from '@application/types/auth.types';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 
 /**
  * Request Password Reset Use Case
@@ -40,6 +42,7 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 export class RequestPasswordReset {
   private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   // Rate limiting: Track recent requests by email (in production, use Redis or similar)
@@ -72,16 +75,15 @@ export class RequestPasswordReset {
       const resetResult = await this.authRepo.requestPasswordReset(request.email);
 
       // 3. Handle side effects - logging and rate limiting tracking
-      await this.handlePasswordResetSideEffects(request, resetResult);
+      await this.handlePasswordResetSideEffects(request);
 
       return resetResult.message;
     } catch (error) {
       // 4. Normalize and re-throw error
-      throw new ApplicationError(
-        'request_password_reset',
-        this.errorTransformer.transformError(error),
-        this.extractErrorCode(error)
-      );
+      throw this.errorTransformer.transform(error, {
+        operation: 'request_password_reset',
+        correlationId: `reset-${Date.now()}`,
+      });
     }
   }
 
@@ -97,9 +99,11 @@ export class RequestPasswordReset {
 
     if (!systemAvailable) {
       throw new ApplicationError(
-        'SYSTEM_UNAVAILABLE',
-        'Password reset is temporarily unavailable. Please try again later.',
-        'SYSTEM_UNAVAILABLE'
+        ApplicationErrorCode.SERVICE_UNAVAILABLE,
+        'Password reset is temporarily unavailable',
+        'The password reset service is currently unavailable. Please try again later.',
+        undefined,
+        'Please try again in a few minutes'
       );
     }
   }
@@ -107,20 +111,21 @@ export class RequestPasswordReset {
   /**
    * Handles password reset request side effects
    */
-  private async handlePasswordResetSideEffects(
-    request: PasswordResetRequest,
-    result: { message: string }
-  ): Promise<void> {
+  private async handlePasswordResetSideEffects(request: PasswordResetRequest): Promise<void> {
     const requestTime = this.clock.nowEpochSeconds();
 
     // Record request for rate limiting (always, even if email doesn't exist for security)
     this.recordRequest(request.email, requestTime);
 
     // Log request for security monitoring
-    console.log(
+    this.logger.info(
       `Password reset requested at ${new Date(requestTime * 1000).toISOString()} for: ${
         request.email
-      }`
+      }`,
+      {
+        operation: 'password_reset_request',
+        correlationId: `reset-${requestTime}`,
+      }
     );
 
     // Additional side effects could include:
@@ -144,9 +149,11 @@ export class RequestPasswordReset {
 
     if (validRequests.length >= RequestPasswordReset.maxRequestsPerWindow) {
       throw new ApplicationError(
-        'RATE_LIMIT_EXCEEDED',
-        'Too many password reset requests. Please try again later.',
-        'RATE_LIMIT_EXCEEDED'
+        ApplicationErrorCode.RATE_LIMIT_EXCEEDED,
+        'Too many password reset requests',
+        'You have exceeded the maximum number of password reset requests. Please try again later.',
+        { email: normalizedEmail, attempts: validRequests.length },
+        'Please wait before requesting another password reset'
       );
     }
 
@@ -171,18 +178,5 @@ export class RequestPasswordReset {
     // This would typically check system configuration or feature flags
     // For now, returning true (system always available)
     return true;
-  }
-
-  /**
-   * Extracts error code from unknown error
-   */
-  private extractErrorCode(error: unknown): string {
-    if (error instanceof ApplicationError) {
-      return error.code;
-    }
-    if (error && typeof error === 'object' && 'code' in error) {
-      return String((error as any).code);
-    }
-    return 'UNKNOWN_ERROR';
   }
 }
