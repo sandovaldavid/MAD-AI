@@ -37,7 +37,7 @@ export class LoggerService implements Logger {
     }
 
     const timestamp = new Date().toISOString();
-    const levelName = LogLevel[level];
+    const levelName = this.getLevelName(level);
     const mergedContext = { ...this.globalContext, ...context };
 
     const logEntry = {
@@ -47,18 +47,46 @@ export class LoggerService implements Logger {
       ...mergedContext,
     };
 
-    // Output simple - en Core solo console
+    // Output basado en el nivel
+    this.outputLog(level, logEntry);
+  }
+
+  private getLevelName(level: LogLevel): string {
+    switch (level) {
+      case LogLevel.DEBUG:
+        return 'DEBUG';
+      case LogLevel.INFO:
+        return 'INFO';
+      case LogLevel.WARN:
+        return 'WARN';
+      case LogLevel.ERROR:
+        return 'ERROR';
+      default:
+        return 'UNKNOWN';
+    }
+  }
+
+  private outputLog(level: LogLevel, logEntry: any): void {
+    const formattedMessage = `[${logEntry.timestamp}] ${logEntry.level}: ${logEntry.message}`;
+
+    // Crear objeto de contexto limpio (sin timestamp, level, message)
+    const { timestamp, level: levelName, message, ...context } = logEntry;
+    const hasContext = Object.keys(context).length > 0;
+
     if (level >= LogLevel.ERROR) {
-      console.error(`[${timestamp}] ${levelName}: ${message}`, mergedContext);
+      console.error(formattedMessage, hasContext ? context : '');
     } else if (level >= LogLevel.WARN) {
-      console.warn(`[${timestamp}] ${levelName}: ${message}`, mergedContext);
+      console.warn(formattedMessage, hasContext ? context : '');
     } else {
-      console.log(`[${timestamp}] ${levelName}: ${message}`, mergedContext);
+      console.log(formattedMessage, hasContext ? context : '');
     }
   }
 
   private isProduction(): boolean {
-    // Método simple para detectar producción
-    return typeof window !== 'undefined' && window.location.hostname !== 'localhost';
+    return (
+      typeof window !== 'undefined' &&
+      !window.location.hostname.includes('localhost') &&
+      !window.location.hostname.includes('127.0.0.1')
+    );
   }
 }
