@@ -3,7 +3,8 @@ import { AUTH_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { EmailConfirmationRequest } from '@application/types/auth.types';
-import { ApplicationError } from '../../errors/application-error';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 
 /**
@@ -67,11 +68,10 @@ export class ConfirmEmail {
       return confirmationResult.message;
     } catch (error) {
       // 4. Normalize and re-throw error
-      throw new ApplicationError(
-        'confirm_email',
-        this.errorTransformer.transformError(error),
-        'EMAIL_CONFIRMATION_FAILED'
-      );
+      throw this.errorTransformer.transform(error, {
+        operation: 'confirm_email',
+        correlationId: `confirm-${Date.now()}`,
+      });
     }
   }
 
@@ -84,9 +84,22 @@ export class ConfirmEmail {
 
     if (maintenanceMode) {
       throw new ApplicationError(
-        'confirm_email',
-        'Email confirmation is temporarily unavailable due to system maintenance.',
-        'SYSTEM_MAINTENANCE'
+        ApplicationErrorCode.SYSTEM_MAINTENANCE,
+        'Email confirmation is temporarily unavailable due to system maintenance',
+        'The email confirmation service is currently unavailable. Please try again later.',
+        undefined,
+        'Please try again in a few minutes'
+      );
+    }
+
+    // Application-level validation: basic token format validation
+    if (!request.token || request.token.trim().length === 0) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Email confirmation token is required',
+        'Please provide a valid confirmation token',
+        { tokenProvided: !!request.token },
+        'Check that you have the complete confirmation link'
       );
     }
 
@@ -110,7 +123,7 @@ export class ConfirmEmail {
       `Email confirmed successfully at ${confirmationTime.toISOString()}: ${request.token.substring(
         0,
         8
-      )}...`
+      )}... - ${result.message}`
     );
 
     // Additional side effects could include:
@@ -127,18 +140,5 @@ export class ConfirmEmail {
     // This would typically check system configuration or feature flags
     // For now, returning false (no maintenance mode)
     return false;
-  }
-
-  /**
-   * Extracts error code from unknown error
-   */
-  private extractErrorCode(error: unknown): string {
-    if (error instanceof ApplicationError) {
-      return error.code;
-    }
-    if (error && typeof error === 'object' && 'code' in error) {
-      return String((error as any).code);
-    }
-    return 'UNKNOWN_ERROR';
   }
 }
