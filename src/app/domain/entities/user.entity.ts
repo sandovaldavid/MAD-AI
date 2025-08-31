@@ -487,6 +487,10 @@ export class User {
     return this._role;
   }
 
+  get getUserStatus(): UserStatusVO {
+    return this.status!;
+  }
+
   /**
    * Activates the user account.
    * Publishes a UserActivated domain event.
