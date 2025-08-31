@@ -205,7 +205,7 @@ export class DateTimeService {
   }
 
   getNextBusinessDay(date: Date, businessHours = this.defaultBusinessHours): Date {
-    let nextDay = new Date(date);
+    const nextDay = new Date(date);
     nextDay.setDate(nextDay.getDate() + 1);
 
     while (!this.isBusinessDay(nextDay, businessHours)) {
@@ -217,7 +217,7 @@ export class DateTimeService {
 
   calculateBusinessDays(start: Date, end: Date, businessHours = this.defaultBusinessHours): number {
     let businessDays = 0;
-    let current = new Date(start);
+    const current = new Date(start);
 
     while (current <= end) {
       if (this.isBusinessDay(current, businessHours)) {
@@ -277,7 +277,7 @@ export class DateTimeService {
     return end;
   }
 
-  getStartOfWeek(date: Date, startOfWeek: number = 1): Date {
+  getStartOfWeek(date: Date, startOfWeek = 1): Date {
     // 0 = Sunday, 1 = Monday
     const result = new Date(date);
     const day = result.getDay();
@@ -286,7 +286,7 @@ export class DateTimeService {
     return this.getStartOfDay(result);
   }
 
-  getEndOfWeek(date: Date, startOfWeek: number = 1): Date {
+  getEndOfWeek(date: Date, startOfWeek = 1): Date {
     const startOfWeekDate = this.getStartOfWeek(date, startOfWeek);
     return this.getEndOfDay(this.addDays(startOfWeekDate, 6));
   }
