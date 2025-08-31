@@ -1,12 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, SESSION_STORE_PORT, CLOCK_PORT } from '../../../di/tokens';
-import type { AuthRepository } from '@domain/repositories/business/auth.repository';
-import type { SessionStorePort } from '@domain/repositories/session/session-store.repository';
-import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import type { Session } from '@domain/entities/session.entity';
-import type { SessionSnapshotContract } from '@domain/contracts/session-store.contract';
+import { AUTH_REPOSITORY, SESSION_STORE_PORT, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { Logger } from '@core/interfaces/logger.interface';
+import type { AuthRepository } from '@domain/repositories/business/auth.repository';
+import type { SessionStoreRepository } from '@domain/repositories/session/session-store.repository';
+import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { Session } from '@domain/entities/session.entity';
+import type { SessionSnapshotContract } from '@domain/repositories/session/session-store.contract';
 
 /**
  * Refresh Session Use Case
@@ -37,9 +39,10 @@ import { ApplicationError } from '@application/errors/application-error';
 @Injectable({ providedIn: 'root' })
 export class RefreshSession {
   private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
-  private readonly sessionStore = inject<SessionStorePort>(SESSION_STORE_PORT);
+  private readonly sessionStore = inject<SessionStoreRepository>(SESSION_STORE_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
 
   /**
    * Orchestrates session refresh with validation, delegation, and side effects
@@ -59,7 +62,18 @@ export class RefreshSession {
       await this.validateApplicationRules();
 
       // 2. Execute session refresh through domain repository
-      const refreshedSession = await this.authRepo.refresh();
+      const currentSession = await this.sessionStore.readAll();
+      const refreshToken = currentSession?.tokens?.refreshToken;
+
+      if (!refreshToken) {
+        throw new ApplicationError(
+          ApplicationErrorCode.INVALID_CREDENTIALS,
+          'No refresh token available for session refresh.',
+          ApplicationErrorCode.INVALID_CREDENTIALS
+        );
+      }
+
+      const refreshedSession = await this.authRepo.refresh(refreshToken);
 
       // 3. Handle side effects - update session storage and logging
       await this.handleRefreshSideEffects(refreshedSession);
@@ -67,11 +81,8 @@ export class RefreshSession {
       return refreshedSession;
     } catch (error) {
       // 4. Normalize and re-throw error
-      throw new ApplicationError(
-        'refresh_session',
-        this.errorTransformer.transformError(error),
-        this.extractErrorCode(error)
-      );
+      const transformedError = this.errorTransformer.transform(error);
+      throw transformedError;
     }
   }
 
@@ -84,27 +95,30 @@ export class RefreshSession {
 
     if (!currentSession?.tokens?.refreshToken) {
       throw new ApplicationError(
-        'refresh_session',
+        ApplicationErrorCode.INVALID_CREDENTIALS,
         'No valid refresh token found. Please log in again.',
-        'NO_REFRESH_TOKEN'
+        'No valid refresh token found. Please log in again.',
+        { operation: 'refresh_session' }
       );
     }
 
     // Application-level validation: check if refresh is needed
     if (!this.isRefreshNeeded(currentSession)) {
       throw new ApplicationError(
-        'refresh_session',
+        ApplicationErrorCode.INVALID_INPUT,
         'Session is still valid, refresh not required.',
-        'REFRESH_NOT_NEEDED'
+        'Session is still valid, refresh not required.',
+        { operation: 'refresh_session' }
       );
     }
 
     // Application-level validation: check refresh token expiration
     if (this.isRefreshTokenExpired(currentSession)) {
       throw new ApplicationError(
-        'refresh_session',
+        ApplicationErrorCode.SESSION_EXPIRED,
         'Refresh token has expired. Please log in again.',
-        'REFRESH_TOKEN_EXPIRED'
+        'Refresh token has expired. Please log in again.',
+        { operation: 'refresh_session' }
       );
     }
   }
@@ -138,20 +152,20 @@ export class RefreshSession {
       user: session.user
         ? {
             id: session.user.id,
-            username: session.user.username,
-            email: session.user.email,
-            roleId: session.user.role?.id || null,
-            roleName: session.user.role?.name || null,
-            accessLevel: session.user.role?.accessLevel || null,
-            isEmailConfirmed: session.user.isEmailConfirmed || null,
-            status: session.user.status?.value || null,
-            updatedAt: session.user.updatedAt?.toString() || null,
+            username: session.user.username.value,
+            email: session.user.email.value,
+            roleId: session.user.getRole.id,
+            roleName: session.user.getRole.name,
+            accessLevel: session.user.getRole.getAccessLevel().getValue(),
+            isEmailConfirmed: session.user.isEmailConfirmed,
+            status: session.user.getUserStatus.value,
+            updatedAt: session.user.updatedAt?.value,
           }
         : null,
       tokens: {
-        accessToken: session.access?.value || null,
-        accessExp: session.access?.expSeconds || null,
-        refreshToken: session.refresh?.value || null,
+        accessToken: session.access ? session.access.getValue() : null,
+        accessExp: session.access ? session.access.expSeconds : null,
+        refreshToken: session.refresh ? session.refresh.getValue() : null,
       },
       version: 1,
       updatedAt: this.clock.nowEpochSeconds() * 1000,
@@ -178,22 +192,11 @@ export class RefreshSession {
    * Checks if refresh token has expired
    */
   private isRefreshTokenExpired(sessionSnapshot: SessionSnapshotContract): boolean {
-    // This would typically check refresh token expiration
-    // For now, we delegate this validation to the domain repository
-    // which will throw appropriate errors if refresh token is invalid
+    this.logger.debug('This would typically check refresh token expiration', {
+      userId: sessionSnapshot.user?.id.toString(),
+      operation: `refresh_session:${sessionSnapshot}`,
+      correlationId: `Refresh Token: ${sessionSnapshot.user?.id.toString()}:${this.clock.nowEpochSeconds()}`,
+    });
     return false;
-  }
-
-  /**
-   * Extracts error code from unknown error
-   */
-  private extractErrorCode(error: unknown): string {
-    if (error instanceof ApplicationError) {
-      return error.code;
-    }
-    if (error && typeof error === 'object' && 'code' in error) {
-      return String((error as any).code);
-    }
-    return 'UNKNOWN_ERROR';
   }
 }
