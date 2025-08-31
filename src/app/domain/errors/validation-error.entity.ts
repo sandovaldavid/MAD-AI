@@ -143,7 +143,7 @@ export class ValidationError extends Error {
    */
   static fromMessage(
     message: string,
-    field: string = '',
+    field = '',
     code: ValidationErrorCode = ValidationErrorCode.VALIDATION_ERROR,
     context?: ErrorContext
   ): ValidationError {
