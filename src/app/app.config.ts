@@ -5,7 +5,6 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { IMAGE_LOADER, ImageLoaderConfig } from '@angular/common';
 import { routes } from './app.routes';
-import { ErrorHandlerFacade } from './application/services/error-handler.facade';
 import { provideAuth } from '../app/di/provide-auth';
 import { provideNotifications } from './di/provide-notifications';
 import { provideRoles } from './di/provide-roles';
@@ -13,10 +12,10 @@ import { provideUsers } from './di/provide-users';
 import { authInterceptor } from './infrastructure/http/interceptors/auth.interceptor';
 import { provideIcons } from './di/provide-icons';
 import { provideExportServices } from './di/provide-export';
+import { provideDomainEventBus } from './di/provide-domain-event-bus';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    ErrorHandlerFacade,
     {
       provide: IMAGE_LOADER,
       useValue: (config: ImageLoaderConfig) => {
@@ -32,6 +31,7 @@ export const appConfig: ApplicationConfig = {
     provideUsers(),
     ...provideRoles(),
     provideExportServices(),
+    provideDomainEventBus(),
     ...provideIcons({
       missingStrategy: 'warn',
       defaultVariant: 'outline',
