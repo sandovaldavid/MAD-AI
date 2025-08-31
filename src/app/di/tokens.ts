@@ -10,6 +10,7 @@ import type { ExportRepository } from '@domain/repositories/system/export.reposi
 import { AuthUserStoreRepository } from '@domain/repositories/session/auth-user-store.repository';
 import { TokenStoreRepository } from '@domain/repositories/session/token-store.repository';
 import { SecurityEventRepository } from '@domain/repositories/system/security-event.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 export interface NotificationConfig {
   maxVisibleDesktop: number;
@@ -47,6 +48,13 @@ export const SESSION_STORE_PORT = new InjectionToken<SessionStoreRepository>('SE
 export const SECURITY_EVENT_REPOSITORY = new InjectionToken<SecurityEventRepository>(
   'SECURITY_EVENT_REPOSITORY'
 );
+
+// Core Services
+// Domain Event Bus
+export const DOMAIN_EVENT_BUS_REPO = new InjectionToken<any>('DOMAIN_EVENT_BUS_REPO');
+
+// Logger Port
+export const LOGGER_PORT = new InjectionToken<Logger>('LOGGER_PORT');
 
 /** Multi‑provider: cada feature aporta { [key]: rawSvg } */
 export const ICON_SVG_SET = new InjectionToken<Record<string, string>>('ICON_SVG_SET (multi)', {
