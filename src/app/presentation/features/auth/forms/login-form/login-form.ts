@@ -7,7 +7,7 @@ import { Input } from '@shared/ui/input/input';
 import { FormField } from '@shared/ui/form-field/form-field';
 import { Button } from '@shared/ui/button/button';
 import { Icon } from '@shared/ui/icon/icon';
-import type { Identifier } from '@domain/contracts/auth.contract';
+import type { Identifier } from '@/app/domain/repositories/business/auth.contract';
 
 @Component({
   selector: 'app-login-form',
