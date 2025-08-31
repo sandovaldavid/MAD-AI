@@ -103,6 +103,8 @@ export class DomainEvent {
       case DomainEventType.USER_ROLE_CHANGED:
       case DomainEventType.USER_PROFILE_MODIFIED:
       case DomainEventType.USER_ACCOUNT_ACTIVATED:
+      case DomainEventType.USER_LOGGED_OUT:
+      case DomainEventType.USER_SESSION_EXPIRED:
         return DomainEventSeverity.MEDIUM;
 
       default:
@@ -134,6 +136,8 @@ export class DomainEvent {
       DomainEventType.USER_ACCOUNT_ACTIVATED,
       DomainEventType.USER_ACCOUNT_DEACTIVATED,
       DomainEventType.USER_ROLE_CHANGED,
+      DomainEventType.USER_LOGGED_OUT,
+      DomainEventType.USER_SESSION_EXPIRED,
     ].includes(this._eventType);
   }
 
@@ -148,6 +152,8 @@ export class DomainEvent {
       DomainEventType.USER_ACCOUNT_ACTIVATED,
       DomainEventType.USER_ACCOUNT_DEACTIVATED,
       DomainEventType.USER_PASSWORD_UPDATED,
+      DomainEventType.USER_LOGGED_OUT,
+      DomainEventType.USER_SESSION_EXPIRED,
     ].includes(this._eventType);
   }
 
