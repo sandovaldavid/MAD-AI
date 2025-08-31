@@ -2,24 +2,19 @@
  * Application Layer Types for Authentication Feature
  *
  * @description
- * This module contains request/response types, result patterns, and application-specific
- * contracts for the authentication feature. These types bridge the gap between the
- * presentation layer and the domain layer, providing clean interfaces for use cases
- * and facades while maintaining separation of concerns.
+ * Simplified types for authentication operations following Application Layer guidelines.
+ * Uses simple interfaces instead of complex classes for better maintainability.
  *
  * @architecture
- * - Request types: Input data for use cases (from presentation layer)
- * - Response types: Output data from use cases (to presentation layer)
- * - Result patterns: Standardized success/failure handling
- * - Device info: Optional metadata for security and analytics
+ * - Request types: Input data for use cases
+ * - Response types: Output data from use cases
+ * - Simple interfaces: No complex inheritance or static methods
  *
  * @since 1.0.0
  * @layer Application
  */
 
-import type { Identifier } from '@domain/contracts/auth.contract';
 import type { Session } from '@domain/entities/session.entity';
-import type { User } from '@domain/entities/user.entity';
 
 // ==========================================
 // REQUEST TYPES
@@ -45,7 +40,10 @@ export interface DeviceInfo {
  */
 export interface LoginRequest {
   /** User identifier (email or username) */
-  identifier: Identifier;
+  identifier: {
+    type: 'email' | 'username';
+    value: string;
+  };
   /** User password */
   password: string;
   /** Whether to persist session across browser restarts */
@@ -102,7 +100,7 @@ export interface RefreshSessionRequest {
 export interface PasswordResetConfirmRequest {
   token: string;
   newPassword: string;
-  newPasswordConfirm: string;
+  confirmPassword: string;
   deviceInfo?: DeviceInfo;
 }
 
@@ -114,231 +112,107 @@ export interface EmailConfirmationRequest {
   deviceInfo?: DeviceInfo;
 }
 
-/**
- * Profile request data
- */
-export interface ProfileRequest {
-  includePermissions?: boolean;
-  deviceInfo?: DeviceInfo;
-}
-
 // ==========================================
-// RESULT TYPES
+// RESPONSE TYPES (Simplified Interfaces)
 // ==========================================
 
 /**
- * Base result class for application operations
+ * Login operation result - simplified interface
  */
-export abstract class ApplicationResult<T> {
-  protected constructor(
-    public readonly isSuccess: boolean,
-    public readonly data?: T,
-    public readonly error?: string,
-    public readonly metadata?: Record<string, any>
-  ) {}
+export interface LoginResult {
+  session: Session;
+  user: UserSummary;
+  expiresAt?: Date;
 }
 
 /**
- * Login operation result
+ * Registration operation result - simplified interface
  */
-export class LoginResult extends ApplicationResult<Session> {
-  private constructor(
-    isSuccess: boolean,
-    data?: Session,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(session: Session, metadata?: Record<string, any>): LoginResult {
-    return new LoginResult(true, session, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): LoginResult {
-    return new LoginResult(false, undefined, error, metadata);
-  }
-
-  get session(): Session {
-    if (!this.isSuccess || !this.data) {
-      throw new Error('Cannot access session from failed login result');
-    }
-    return this.data;
-  }
+export interface RegisterResult {
+  session: Session | null;
+  user: UserSummary;
+  emailConfirmationRequired?: boolean;
 }
 
 /**
- * Registration operation result
+ * Profile operation result - simplified interface
  */
-export class RegisterResult extends ApplicationResult<Session | null> {
-  private constructor(
-    isSuccess: boolean,
-    data?: Session | null,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(session: Session | null, metadata?: Record<string, any>): RegisterResult {
-    return new RegisterResult(true, session, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): RegisterResult {
-    return new RegisterResult(false, undefined, error, metadata);
-  }
-
-  get session(): Session | null {
-    return this.isSuccess ? this.data || null : null;
-  }
+export interface ProfileResult {
+  user: UserSummary;
+  lastLogin?: Date;
+  preferences?: UserPreferences;
 }
 
 /**
- * Profile operation result
+ * Generic message operation result - simplified interface
  */
-export class ProfileResult extends ApplicationResult<User> {
-  private constructor(
-    isSuccess: boolean,
-    data?: User,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(user: User, metadata?: Record<string, any>): ProfileResult {
-    return new ProfileResult(true, user, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): ProfileResult {
-    return new ProfileResult(false, undefined, error, metadata);
-  }
-
-  get user(): User {
-    if (!this.isSuccess || !this.data) {
-      throw new Error('Cannot access user from failed profile result');
-    }
-    return this.data;
-  }
+export interface MessageResult {
+  message: string;
+  type: 'success' | 'info' | 'warning';
 }
 
 /**
- * Message operation result
+ * Logout operation result - simplified interface
  */
-export class MessageResult extends ApplicationResult<string> {
-  private constructor(
-    isSuccess: boolean,
-    data?: string,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(message: string, metadata?: Record<string, any>): MessageResult {
-    return new MessageResult(true, message, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): MessageResult {
-    return new MessageResult(false, undefined, error, metadata);
-  }
-
-  get message(): string {
-    if (!this.isSuccess || !this.data) {
-      throw new Error('Cannot access message from failed result');
-    }
-    return this.data;
-  }
+export interface LogoutResult {
+  success: boolean;
+  message?: string;
 }
 
 /**
- * Logout operation result
+ * Refresh session operation result - simplified interface
  */
-export class LogoutResult extends ApplicationResult<boolean> {
-  private constructor(
-    isSuccess: boolean,
-    data?: boolean,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(metadata?: Record<string, any>): LogoutResult {
-    return new LogoutResult(true, true, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): LogoutResult {
-    return new LogoutResult(false, false, error, metadata);
-  }
-
-  get logoutSuccessful(): boolean {
-    return this.isSuccess && this.data === true;
-  }
-}
-
-/**
- * Refresh session operation result
- */
-export class RefreshSessionResult extends ApplicationResult<Session> {
-  private constructor(
-    isSuccess: boolean,
-    data?: Session,
-    error?: string,
-    metadata?: Record<string, any>
-  ) {
-    super(isSuccess, data, error, metadata);
-  }
-
-  static success(session: Session, metadata?: Record<string, any>): RefreshSessionResult {
-    return new RefreshSessionResult(true, session, undefined, metadata);
-  }
-
-  static failure(error: string, metadata?: Record<string, any>): RefreshSessionResult {
-    return new RefreshSessionResult(false, undefined, error, metadata);
-  }
-
-  get session(): Session {
-    if (!this.isSuccess || !this.data) {
-      throw new Error('Cannot access session from failed refresh result');
-    }
-    return this.data;
-  }
+export interface RefreshSessionResult {
+  session: Session;
+  refreshed: boolean;
+  expiresAt: Date;
 }
 
 // ==========================================
-// APPLICATION EVENTS
+// UTILITY TYPES
 // ==========================================
 
 /**
- * Application events for cross-cutting concerns
+ * User summary for application layer responses
  */
-export interface AuthApplicationEvent {
-  type: 'LOGIN_SUCCESS' | 'LOGIN_FAILURE' | 'REGISTER_SUCCESS' | 'LOGOUT' | 'SESSION_EXPIRED';
-  userId?: number;
-  timestamp: Date;
-  metadata?: Record<string, any>;
-}
-
-// ==========================================
-// VALIDATION TYPES
-// ==========================================
-
-/**
- * Validation result for application inputs
- */
-export interface ValidationResult {
-  isValid: boolean;
-  errors: Array<{
-    field: string;
-    message: string;
-    code: string;
-  }>;
+export interface UserSummary {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  permissions: string[];
+  isActive: boolean;
+  emailVerified: boolean;
 }
 
 /**
- * Input validator interface
+ * User preferences
  */
-export interface InputValidator<T> {
-  validate(input: T): ValidationResult;
+export interface UserPreferences {
+  theme?: 'light' | 'dark';
+  language?: string;
+  notifications?: {
+    email: boolean;
+    push: boolean;
+  };
+}
+
+/**
+ * Authentication status
+ */
+export interface AuthStatus {
+  isAuthenticated: boolean;
+  user?: UserSummary;
+  sessionExpiresAt?: Date;
+}
+
+/**
+ * Password reset status
+ */
+export interface PasswordResetStatus {
+  email: string;
+  tokenSent: boolean;
+  expiresAt: Date;
 }
