@@ -1,5 +1,3 @@
-import { Role } from '@domain/entities/role.entity';
-
 /**
  * Contract for creating a new role in the MAD-AI system.
  * Encapsulates all required properties for defining organizational roles
@@ -35,8 +33,19 @@ import { Role } from '@domain/entities/role.entity';
  * @domain Role Management
  */
 export type CreateRoleContract = Readonly<{
-  role: Role;
-  createdByUserId: number;
+  /** Role name (must be unique) */
+  name: string;
+  /**
+   * Access level for permission hierarchy.
+   * @range 1-5
+   */
+  accessLevel?: number;
+  /** Role description */
+  description?: string;
+  /** Project leadership permission */
+  canLeadProjects?: boolean;
+  /** Team uniqueness constraint */
+  isUniquePerTeam?: boolean;
 }>;
 
 /**
