@@ -34,6 +34,12 @@ export const API_ENDPOINTS_V1 = {
     ASSIGN: `${environment.API_URL}/auth/roles/assign`,
     UNASSIGN: `${environment.API_URL}/auth/roles/unassign`,
   },
+  EVENTS: {
+    BASE: `${environment.API_URL}/events`,
+    PUBLISH: `${environment.API_URL}/events/publish`,
+    LIST: `${environment.API_URL}/events/`,
+    DETAIL: (id: string) => `${environment.API_URL}/events/${id}/`,
+  },
 } as const;
 
 export type ApiEndpoints = typeof API_ENDPOINTS_V1;
