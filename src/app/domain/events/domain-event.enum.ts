@@ -27,10 +27,12 @@ export enum DomainEventType {
   ROLE_DEACTIVATED = 'ROLE_DEACTIVATED',
   /** Role was modified */
   ROLE_MODIFIED = 'ROLE_MODIFIED',
-  /** Session was terminated by user logout */
+  /** User session was terminated */
   SESSION_TERMINATED = 'SESSION_TERMINATED',
-  /** Session expired due to timeout */
-  SESSION_EXPIRED = 'SESSION_EXPIRED',
+  /** User logged out from the system */
+  USER_LOGGED_OUT = 'USER_LOGGED_OUT',
+  /** User session expired due to timeout */
+  USER_SESSION_EXPIRED = 'USER_SESSION_EXPIRED',
   /** Unauthorized access attempt detected */
   UNAUTHORIZED_ACCESS_ATTEMPTED = 'UNAUTHORIZED_ACCESS_ATTEMPTED',
   /** Security violation detected */
