@@ -1,12 +1,26 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, SESSION_STORE_PORT, CLOCK_PORT } from '../../../di/tokens';
+import {
+  AUTH_REPOSITORY,
+  SESSION_STORE_PORT,
+  CLOCK_PORT,
+  LOGGER_PORT,
+  SECURITY_EVENT_REPOSITORY,
+} from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { AuthMapper } from '@application/mappers';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
-import type { SessionStorePort } from '@domain/repositories/session/session-store.repository';
+import type { SessionStoreRepository } from '@domain/repositories/session/session-store.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type {
+  SecurityEventRepository,
+  SecurityEvent,
+} from '@domain/repositories/system/security-event.repository';
 import type { LoginRequest } from '@application/types/auth.types';
 import type { Session } from '@domain/entities/session.entity';
-import { ApplicationError } from '@application/errors/application-error';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
+import type { SessionSnapshotContract } from '@domain/repositories/session/session-store.contract';
 
 /**
  * Login with Credentials Use Case
@@ -36,9 +50,11 @@ import { DomainEventProcessor } from '@application/services/domain-event-process
 @Injectable({ providedIn: 'root' })
 export class LoginWithCredentials {
   private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
-  private readonly sessionStore = inject<SessionStorePort>(SESSION_STORE_PORT);
+  private readonly sessionStore = inject<SessionStoreRepository>(SESSION_STORE_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly securityLogger = inject<SecurityEventRepository>(SECURITY_EVENT_REPOSITORY);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
    * Executes user login with comprehensive validation and security handling
@@ -61,21 +77,47 @@ export class LoginWithCredentials {
    * ```
    */
   async execute(request: LoginRequest): Promise<Session> {
+    // 1. Log del inicio de la operación
+    this.logger.info('Starting user login', {
+      operation: 'login',
+      correlationId: `login-${Date.now()}`,
+    });
+
     try {
-      // 1. Validate application rules
+      // 2. Validate application rules
       await this.validateApplicationRules(request);
 
-      // 2. Execute authentication through domain repository
-      const session = await this.authRepo.login(request);
+      // 3. Map Application type to Domain contract
+      const domainCredentials = AuthMapper.toCredentialsContract(request);
 
-      // 3. Handle side effects - persist session state
+      // 4. Execute authentication through domain repository
+      const session = await this.authRepo.login(domainCredentials);
+
+      // 5. Persist session data using session store
+      await this.persistSession(session);
+
+      // 6. Handle side effects - security logging and audit trails
       await this.handleSessionSideEffects(session, request);
+
+      // 6. Log successful completion
+      this.logger.info('User login completed successfully', {
+        operation: 'login',
+        correlationId: `login-${Date.now()}`,
+      });
 
       return session;
     } catch (error) {
-      // 4. Re-throw the original error - let the facade handle transformation
-      // The facade's error transformer will provide user-friendly messages
-      throw error;
+      // 7. Log error and normalize
+      this.logger.error('User login failed', {
+        operation: 'login',
+        correlationId: `login-${Date.now()}`,
+      });
+
+      // 8. Normalize and re-throw error
+      throw this.errorTransformer.transform(error, {
+        operation: 'login',
+        correlationId: `login-${Date.now()}`,
+      });
     }
   }
 
@@ -89,9 +131,11 @@ export class LoginWithCredentials {
 
     if (maintenanceMode) {
       throw new ApplicationError(
-        'login',
-        'System is currently in maintenance mode. Please try again later.',
-        'SYSTEM_MAINTENANCE'
+        ApplicationErrorCode.SYSTEM_MAINTENANCE,
+        'System is currently in maintenance mode',
+        'The system is temporarily unavailable for maintenance. Please try again later.',
+        undefined,
+        'Please try again in a few minutes'
       );
     }
 
@@ -103,25 +147,50 @@ export class LoginWithCredentials {
    * Handles session-related side effects
    */
   private async handleSessionSideEffects(session: Session, request: LoginRequest): Promise<void> {
-    // Process domain events from the session entity
-    await this.eventProcessor.processEntityEvents(session);
+    const loginTime = new Date(this.clock.nowEpochSeconds() * 1000);
 
-    // For now, we'll use a simplified session storage approach
-    // The actual implementation would depend on the Session entity structure
-    // This is a placeholder that would be refined based on actual entity properties
+    // Log security event for successful login
+    const securityEvent: SecurityEvent = {
+      type: 'SUSPICIOUS_ACTIVITY',
+      details: {
+        timestamp: loginTime.toISOString(),
+        event: 'USER_LOGIN_SUCCESS',
+        identifier: request.identifier.value,
+        hasDeviceInfo: !!request.deviceInfo,
+        rememberMe: request.rememberMe ?? false,
+        success: true,
+      },
+      timestamp: loginTime,
+    };
 
-    // Log successful login for security auditing
-    // Note: Audit logging would be coordinated here if we had an audit repository
-    console.log(`User logged in: ${session.user.email} at ${new Date().toISOString()}`);
+    await this.securityLogger.logSecurityEvent(securityEvent);
+
+    // Log successful login for audit trail
+    this.logger.info('User login completed successfully', {
+      operation: 'login',
+      correlationId: `login-${Date.now()}`,
+      userId: String(session.user.id),
+    });
+
+    // Additional side effects could include:
+    // - Update user's last login timestamp
+    // - Send login notification email
+    // - Update user activity metrics
+    // - Trigger security monitoring alerts
   }
 
   /**
    * Checks if system is in maintenance mode
    */
   private async checkMaintenanceMode(currentTime: Date): Promise<boolean> {
-    // This would typically check a configuration or system status
-    // For now, return false as a placeholder
-    return false;
+    this.logger.debug(
+      'Checking system maintenance mode: [Always return true, this function is in development]',
+      {
+        operation: currentTime.getDate().toString(),
+        correlationId: `login-${Date.now()}`,
+      }
+    );
+    return true;
   }
 
   /**
@@ -131,5 +200,52 @@ export class LoginWithCredentials {
     // Rate limiting logic would be implemented here
     // For now, this is a placeholder
     // Could check against a cache or rate limiting service
+    this.logger.debug('Validating rate limit for identifier', {
+      operation: identifier,
+      correlationId: `login-${Date.now()}`,
+    });
+  }
+
+  /**
+   * Persists session data using the session store
+   */
+  private async persistSession(session: Session): Promise<void> {
+    try {
+      // Convert domain session to storage snapshot
+      const sessionSnapshot: SessionSnapshotContract = {
+        user: {
+          id: session.user.id,
+          username: session.user.username.value, // Convert Username VO to string
+          email: session.user.email.value, // Convert Email VO to string
+          roleId: session.user.getRole.id, // Use Role getter for id
+          roleName: session.user.getRole.name, // Use Role getter for name
+          accessLevel: session.user.getRole.getAccessLevel().getValue(), // Use AccessLevel getValue() method
+          isEmailConfirmed: session.user.isEmailConfirmed,
+          status: session.user.status?.value,
+          updatedAt: session.user.updatedAt?.value, // Convert ISODateTime to string
+        },
+        tokens: {
+          accessToken: session.access.getValue(), // Use AccessToken getValue() method
+          accessExp: session.access.expSeconds, // Get expiration as number
+          refreshToken: session.refresh.getValue(), // Use RefreshToken getValue() method
+        },
+        version: 1,
+        updatedAt: Date.now(),
+      };
+
+      // Persist session using session store
+      await this.sessionStore.writeAll(sessionSnapshot);
+
+      this.logger.info('Session persisted successfully', {
+        operation: 'session_persistence',
+        userId: String(session.user.id),
+      });
+    } catch (error) {
+      this.logger.error('Failed to persist session', {
+        operation: 'session_persistence',
+        userId: String(session.user.id),
+      });
+      throw error;
+    }
   }
 }
