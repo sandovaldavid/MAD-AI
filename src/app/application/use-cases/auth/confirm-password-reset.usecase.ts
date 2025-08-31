@@ -1,10 +1,17 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { AUTH_REPOSITORY, CLOCK_PORT, LOGGER_PORT, SECURITY_EVENT_REPOSITORY } from '@di/tokens';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { PasswordResetConfirmRequest } from '@application/types/auth.types';
-import { ApplicationError } from '../../errors/application-error';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type {
+  SecurityEventRepository,
+  SecurityEvent,
+} from '@domain/repositories/system/security-event.repository';
+import { AuthMapper } from '@application/mappers';
 
 /**
  * Confirm Password Reset Use Case
@@ -41,6 +48,8 @@ export class ConfirmPasswordReset {
   private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly securityLogger = inject<SecurityEventRepository>(SECURITY_EVENT_REPOSITORY);
 
   /**
    * Orchestrates password reset confirmation with validation, delegation, and side effects
@@ -61,24 +70,44 @@ export class ConfirmPasswordReset {
    * ```
    */
   async execute(request: PasswordResetConfirmRequest): Promise<string> {
+    // 1. Log del inicio de la operación
+    this.logger.info('Starting password reset confirmation', {
+      operation: 'confirm_password_reset',
+      correlationId: `confirm-reset-${Date.now()}`,
+    });
+
     try {
-      // 1. Validate application rules for password reset confirmation
+      // 2. Validate application rules for password reset confirmation
       await this.validateApplicationRules(request);
 
-      // 2. Execute password reset confirmation through domain repository
-      const resetResult = await this.authRepo.confirmPasswordReset(request);
+      // 3. Map Application type to Domain contract
+      const domainRequest = AuthMapper.toResetPasswordContract(request);
 
-      // 3. Handle side effects - logging and security audit
+      // 4. Execute password reset confirmation through domain repository
+      const resetResult = await this.authRepo.confirmPasswordReset(domainRequest);
+
+      // 5. Handle side effects - logging and security audit
       await this.handlePasswordResetConfirmationSideEffects(request, resetResult);
+
+      // 6. Log successful completion
+      this.logger.info('Password reset confirmation completed successfully', {
+        operation: 'confirm_password_reset',
+        correlationId: `confirm-reset-${Date.now()}`,
+      });
 
       return resetResult.message;
     } catch (error) {
-      // 4. Normalize and re-throw error
-      throw new ApplicationError(
-        'confirm_password_reset',
-        this.errorTransformer.transformError(error),
-        'PASSWORD_RESET_CONFIRMATION_FAILED'
-      );
+      // 7. Log error and normalize
+      this.logger.error('Password reset confirmation failed', {
+        operation: 'confirm_password_reset',
+        correlationId: `confirm-reset-${Date.now()}`,
+      });
+
+      // 8. Normalize and re-throw error
+      throw this.errorTransformer.transform(error, {
+        operation: 'confirm_password_reset',
+        correlationId: `confirm-reset-${Date.now()}`,
+      });
     }
   }
 
@@ -91,18 +120,22 @@ export class ConfirmPasswordReset {
 
     if (!systemAvailable) {
       throw new ApplicationError(
-        'confirm_password_reset',
-        'Password reset confirmation is temporarily unavailable. Please try again later.',
-        'SYSTEM_UNAVAILABLE'
+        ApplicationErrorCode.SERVICE_UNAVAILABLE,
+        'Password reset confirmation is temporarily unavailable',
+        'The password reset confirmation service is currently unavailable. Please try again later.',
+        undefined,
+        'Please try again in a few minutes'
       );
     }
 
     // Application-level validation: security check for password confirmation
-    if (request.newPassword !== request.newPasswordConfirm) {
+    if (request.newPassword !== request.confirmPassword) {
       throw new ApplicationError(
-        'confirm_password_reset',
-        'Password confirmation does not match. Please ensure both passwords are identical.',
-        'PASSWORD_MISMATCH'
+        ApplicationErrorCode.INVALID_INPUT,
+        'Password confirmation does not match',
+        'The password confirmation does not match the new password. Please ensure both passwords are identical.',
+        undefined,
+        'Please make sure both password fields contain the same value'
       );
     }
   }
@@ -116,20 +149,26 @@ export class ConfirmPasswordReset {
   ): Promise<void> {
     const confirmationTime = new Date(this.clock.nowEpochSeconds() * 1000);
 
-    // Log successful password reset for security audit
-    console.log(
-      `Password reset confirmed successfully at ${confirmationTime.toISOString()}: ${request.token.substring(
-        0,
-        8
-      )}...`
-    );
+    // Log security event for password reset confirmation
+    const securityEvent: SecurityEvent = {
+      type: 'SUSPICIOUS_ACTIVITY',
+      details: {
+        timestamp: confirmationTime.toISOString(),
+        event: 'PASSWORD_RESET_CONFIRMED',
+        tokenPrefix: request.token.substring(0, 8),
+        hasDeviceInfo: !!request.deviceInfo,
+        success: true,
+      },
+      timestamp: confirmationTime,
+    };
 
-    // Additional side effects could include:
-    // - Invalidating all existing sessions for the user
-    // - Sending password change notification email
-    // - Security event logging
-    // - Metrics collection
-    // - Fraud detection updates
+    await this.securityLogger.logSecurityEvent(securityEvent);
+
+    // Log successful password reset for audit trail
+    this.logger.info(`Password reset confirmed successfully: ${result.message}`, {
+      operation: 'password_reset_confirmation',
+      correlationId: `confirm-reset-${Date.now()}`,
+    });
   }
 
   /**
@@ -139,18 +178,5 @@ export class ConfirmPasswordReset {
     // This would typically check system configuration or feature flags
     // For now, returning true (system always available)
     return true;
-  }
-
-  /**
-   * Extracts error code from unknown error
-   */
-  private extractErrorCode(error: unknown): string {
-    if (error instanceof ApplicationError) {
-      return error.code;
-    }
-    if (error && typeof error === 'object' && 'code' in error) {
-      return String((error as any).code);
-    }
-    return 'UNKNOWN_ERROR';
   }
 }
