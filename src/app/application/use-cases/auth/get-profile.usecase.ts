@@ -1,11 +1,14 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, SESSION_STORE_PORT, CLOCK_PORT } from '../../../di/tokens';
-import type { AuthRepository } from '@domain/repositories/business/auth.repository';
-import type { SessionStorePort } from '@domain/repositories/session/session-store.repository';
-import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import type { User } from '@domain/entities/user.entity';
-import { ApplicationError } from '../../errors/application-error';
+import { AUTH_REPOSITORY, SESSION_STORE_PORT, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { AuthRepository } from '@domain/repositories/business/auth.repository';
+import type { SessionStoreRepository } from '@domain/repositories/session/session-store.repository';
+import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { User } from '@domain/entities/user.entity';
+import type { DeviceInfo } from '@application/types/auth.types';
 
 /**
  * Get User Profile Use Case
@@ -39,8 +42,9 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 @Injectable({ providedIn: 'root' })
 export class GetProfile {
   private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
-  private readonly sessionStore = inject<SessionStorePort>(SESSION_STORE_PORT);
+  private readonly sessionStore = inject<SessionStoreRepository>(SESSION_STORE_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   // Simple in-memory cache for profile data (in production, consider more sophisticated caching)
@@ -52,7 +56,7 @@ export class GetProfile {
    * @returns Promise resolving to user profile
    * @throws ApplicationError when session is invalid or profile inaccessible
    */
-  async execute(deviceInfo?: { userAgent: string; platform: string }): Promise<User> {
+  async execute(deviceInfo?: DeviceInfo): Promise<User> {
     try {
       // Step 1: Validate application rules
       await this.validateApplicationRules();
@@ -66,11 +70,10 @@ export class GetProfile {
       return user;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'get_profile',
-        this.errorTransformer.transformError(error),
-        'PROFILE_RETRIEVAL_FAILED'
-      );
+      throw this.errorTransformer.transform(error, {
+        operation: 'get_profile',
+        correlationId: `profile-${Date.now()}`,
+      });
     }
   }
 
@@ -87,12 +90,20 @@ export class GetProfile {
     const session = await this.sessionStore.readAll();
 
     if (!session || !session.tokens) {
-      throw new ApplicationError('get_profile', 'No active session found', 'NO_SESSION');
+      throw new ApplicationError(
+        ApplicationErrorCode.SESSION_EXPIRED,
+        'No active session found',
+        'You must be logged in to access your profile'
+      );
     }
 
     const accessExp = session.tokens.accessExp;
     if (accessExp && accessExp < this.clock.nowEpochSeconds()) {
-      throw new ApplicationError('get_profile', 'Session has expired', 'SESSION_EXPIRED');
+      throw new ApplicationError(
+        ApplicationErrorCode.SESSION_EXPIRED,
+        'Session has expired',
+        'Your session has expired. Please log in again.'
+      );
     }
   }
 
@@ -102,16 +113,29 @@ export class GetProfile {
    * @param user Retrieved user profile
    * @param deviceInfo Optional device information for security logging
    */
-  private handleProfileSideEffects(
-    user: User,
-    deviceInfo?: { userAgent: string; platform: string }
-  ): void {
+  private handleProfileSideEffects(user: User, deviceInfo?: DeviceInfo): void {
     // Log profile access for security monitoring
-    console.log(`Profile accessed for user ${user.id} at ${this.clock.nowDate().toISOString()}`, {
-      userId: user.id,
-      username: user.username,
-      timestamp: this.clock.nowDate().toISOString(),
-      deviceInfo: deviceInfo ?? null,
+    this.logger.info('GetProfile: Profile accessed for security monitoring', {
+      userId: user.id.toString(),
+      operation: 'profile_access',
+      correlationId: `profile-${user.id}-${Date.now()}`,
     });
+
+    if (deviceInfo) {
+      this.logger.info('GetProfile: Device info logged for security monitoring', {
+        userId: user.id.toString(),
+        correlationId: `profile-${user.id}-${Date.now()}-${deviceInfo.userAgent}-${deviceInfo.platform}`,
+        operation: `Profile Side Effects: ${deviceInfo}`,
+      });
+    }
+
+    // Additional debug logging with user details (if needed for troubleshooting)
+    this.logger.debug(
+      `Profile accessed for user ${user.username.value} at ${this.clock.nowDate().toISOString()}`,
+      {
+        userId: user.id.toString(),
+        operation: 'profile_access',
+      }
+    );
   }
 }
