@@ -1,10 +1,21 @@
 import { Injectable, inject } from '@angular/core';
-import { NOTIFICATION_PORT, CLOCK_PORT } from '@di/tokens';
+import { NOTIFICATION_PORT, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import { PublishEventContract } from '@domain/repositories/business/domain-event-bus.contract';
+import type { IDomainEventBusRepository } from '@domain/repositories/business/domain-event-bus.repository';
 import type { NotificationPort } from '@domain/repositories/business/notification.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
 import type { Notification } from '@domain/entities/notification.entity';
+import type {
+  GetNotificationsRequest,
+  GetNotificationsResult,
+} from '@application/types/notifications.types';
 
 /**
  * Get Notifications Use Case
@@ -34,35 +45,57 @@ import type { Notification } from '@domain/entities/notification.entity';
 export class GetNotifications {
   private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<IDomainEventBusRepository>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute notification retrieval orchestration with validation and audit logging
+   * Execute notification retrieval use case
    *
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Promise resolving to array of current notifications
-   * @throws ApplicationError when validation fails or retrieval fails
+   * @description
+   * Orchestrates the complete notification retrieval process following the 4-step Application Layer pattern:
+   * 1. Validate application rules and authorization
+   * 2. Delegate to Domain repository for data retrieval
+   * 3. Transform and prepare response
+   * 4. Handle side effects (logging, events, statistics)
+   *
+   * @param request Application-specific request containing requester information
+   * @param correlationId Optional correlation ID for request tracing
+   * @returns Promise resolving to notification retrieval result
    */
-  async execute(requesterId?: number): Promise<Notification[]> {
+  async execute(
+    request: GetNotificationsRequest,
+    correlationId?: string
+  ): Promise<GetNotificationsResult> {
     try {
-      // Step 1: Validate application rules
-      this.validateApplicationRules(requesterId);
+      // Step 1: Validate application rules and authorization
+      await this.validateApplicationRules(request, correlationId);
 
-      // Step 2: No additional domain validation needed for retrieval
+      // Step 2: Delegate to Domain repository for notification retrieval
+      const allNotifications = await this.notificationPort.snapshot();
 
-      // Step 3: Delegate to domain repository for notification retrieval
-      const notifications = this.notificationPort.snapshot();
+      // Filter notifications by user ID if specified
+      const notifications = request.requesterId
+        ? allNotifications.filter((n) => n.userId === request.requesterId?.toString())
+        : allNotifications;
 
-      // Step 4: Handle side effects
-      this.handleNotificationRetrievalSideEffects(notifications, requesterId);
+      // Step 3: Return notifications directly (transformation happens in Presentation Layer)
+      const result: GetNotificationsResult = {
+        notifications,
+        totalCount: notifications.length,
+      };
 
-      return notifications;
-    } catch (error: unknown) {
-      throw new ApplicationError(
-        'get_notifications',
-        this.errorTransformer.transformError(error),
-        'NOTIFICATION_RETRIEVAL_FAILED'
-      );
+      // Step 4: Handle side effects (logging, events, statistics)
+      await this.handleNotificationRetrievalSideEffects(notifications, request, correlationId);
+
+      return result;
+    } catch (error) {
+      // Transform and re-throw using Application Error Transformer
+      throw this.errorTransformer.transform(error, {
+        operation: 'get_notifications',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      });
     }
   }
 
@@ -73,15 +106,26 @@ export class GetNotifications {
    * Validates request parameters and basic business rules specific to the application layer.
    * Domain validation is handled by the repository layer.
    *
-   * @param requesterId Requester ID to validate (optional)
+   * @param request Application layer request to validate
+   * @param correlationId Correlation ID for tracing
    * @throws ApplicationError when validation fails
    */
-  private validateApplicationRules(requesterId?: number): void {
+  private validateApplicationRules(request: GetNotificationsRequest, correlationId?: string): void {
+    this.logger.debug('Validating application rules for notification retrieval', {
+      operation: 'get_notifications',
+      correlationId,
+      userId: request.requesterId?.toString(),
+    });
+
     // Validate requester ID if provided
-    if (requesterId !== undefined && requesterId !== null) {
-      if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+    if (request.requesterId !== undefined && request.requesterId !== null) {
+      if (
+        typeof request.requesterId !== 'number' ||
+        !Number.isInteger(request.requesterId) ||
+        request.requesterId <= 0
+      ) {
         throw new ApplicationError(
-          'get_notifications',
+          ApplicationErrorCode.INVALID_INPUT,
           'INVALID_REQUESTER_ID_FORMAT',
           'Requester ID must be a positive integer when provided'
         );
@@ -93,41 +137,66 @@ export class GetNotifications {
    * Handle side effects of notification retrieval
    *
    * @description
-   * Manages audit logging and other side effects after successful notification retrieval.
-   * Uses high-precision timestamps for accurate audit trails.
+   * Manages audit logging, domain event publishing, and statistics after successful notification retrieval.
+   * Uses high-precision timestamps for accurate audit trails and Core Logger for structured logging.
    *
    * @param notifications Retrieved notifications
-   * @param requesterId ID of user who performed the retrieval
+   * @param request The get request with requester information
+   * @param correlationId Correlation ID for tracing
    */
-  private handleNotificationRetrievalSideEffects(
+  private async handleNotificationRetrievalSideEffects(
     notifications: Notification[],
-    requesterId?: number
-  ): void {
-    const timestamp = this.clock.nowEpochSeconds();
-
-    // Calculate notification statistics for audit purposes
+    request: GetNotificationsRequest,
+    correlationId?: string
+  ): Promise<void> {
+    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
     const totalNotifications = notifications.length;
     const unreadNotifications = notifications.filter((n) => !n.isRead).length;
-    const notificationsByType = notifications.reduce(
-      (acc, n) => {
-        acc[n.type] = (acc[n.type] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
+
+    // Log comprehensive audit information using Core Logger
+    this.logger.info(
+      `Notifications retrieved successfully: ${totalNotifications} total, ${unreadNotifications} unread`,
+      {
+        operation: 'get_notifications',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      }
     );
 
-    console.log(`[AUDIT] Notifications retrieval completed`, {
-      timestamp,
-      requesterId,
-      results: {
-        totalNotifications,
-        unreadNotifications,
-        readNotifications: totalNotifications - unreadNotifications,
-        notificationsByType,
-      },
-      operation: 'get_notifications',
-      feature: 'notifications',
-      severity: 'LOW',
-    });
+    // Publish domain event for business process tracking
+    try {
+      const event = DomainEvent.create({
+        id: `notifications-retrieved-${Date.now()}`,
+        eventType: DomainEventType.NOTIFICATIONS_CLEARED, // Using existing event type for notification operations
+        aggregateId: request.requesterId?.toString() || 'system',
+        aggregateType: 'User',
+        eventData: {
+          operation: 'get_notifications',
+          totalRetrieved: totalNotifications,
+          unreadCount: unreadNotifications,
+          requesterId: request.requesterId,
+          correlationId,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.create(timestamp.toISOString()),
+      });
+
+      const publishContract: PublishEventContract = {
+        event,
+      };
+
+      await this.eventBus.publish(publishContract);
+
+      this.logger.debug('Domain event published for notification retrieval', {
+        operation: 'get_notifications',
+        correlationId,
+      });
+    } catch {
+      // Log event publishing failure but don't fail the main operation
+      this.logger.warn('Failed to publish domain event for notification retrieval', {
+        operation: 'get_notifications',
+        correlationId,
+      });
+    }
   }
 }
