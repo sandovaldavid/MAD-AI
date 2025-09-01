@@ -1,10 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { NOTIFICATION_PORT, CLOCK_PORT } from '@di/tokens';
+import { NOTIFICATION_PORT, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorTransformer } from '../../errors/application-error.transformer';
+import { LogContext } from '@core/interfaces/logger.interface';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import { ApplicationErrorCode } from '../../errors/error-codes.enum';
+import { PublishEventContract } from '@domain/repositories/business/domain-event-bus.contract';
 import type { NotificationPort } from '@domain/repositories/business/notification.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import type { NotificationId } from '@domain/entities/notification.entity';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { IDomainEventBusRepository } from '@domain/repositories/business/domain-event-bus.repository';
+import type { DismissNotificationRequest } from '../../types/notifications.types';
 
 /**
  * Dismiss Notification Use Case
@@ -34,34 +42,54 @@ import type { NotificationId } from '@domain/entities/notification.entity';
 export class DismissNotification {
   private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<IDomainEventBusRepository>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute notification dismissal orchestration with validation and audit logging
+   * Execute notification dismissal orchestration with validation, logging and event publishing
    *
-   * @param id - Notification ID to dismiss
-   * @param requesterId - ID of the user making the request (for audit logging)
+   * @param request - Application layer request for notification dismissal
    * @returns Promise resolving when dismissal is complete
    * @throws ApplicationError when validation fails or dismissal fails
    */
-  async execute(id: NotificationId, requesterId?: number): Promise<void> {
+  async execute(request: DismissNotificationRequest): Promise<void> {
+    const correlationId = `dismiss-notification-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
     try {
+      this.logger.info('Starting notification dismissal orchestration', {
+        operation: 'dismiss_notification',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      } as LogContext);
+
       // Step 1: Validate application rules
-      this.validateApplicationRules(id, requesterId);
+      this.validateApplicationRules(request, correlationId);
 
       // Step 2: Delegate to domain repository for dismissal
       // The domain layer (service) handles existence validation and idempotency
-      this.notificationPort.dismiss(id);
+      this.notificationPort.dismiss(request.notificationId);
 
-      // Step 3: Handle side effects
-      this.handleNotificationDismissalSideEffects(id, requesterId);
+      // Step 3: Handle side effects (logging, events, statistics)
+      await this.handleNotificationDismissalSideEffects(request, correlationId);
+
+      this.logger.info('Notification dismissal orchestration completed successfully', {
+        operation: 'dismiss_notification',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      } as LogContext);
     } catch (error: unknown) {
+      this.logger.error('Notification dismissal orchestration failed', {
+        operation: 'dismiss_notification',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      } as LogContext);
+
       // Normalize errors for application layer
-      throw new ApplicationError(
-        'dismiss_notification',
-        this.errorTransformer.transformError(error),
-        'NOTIFICATION_DISMISSAL_FAILED'
-      );
+      throw this.errorTransformer.transform(error, {
+        correlationId,
+        userId: request.requesterId?.toString(),
+      } as LogContext);
     }
   }
 
@@ -72,32 +100,41 @@ export class DismissNotification {
    * Validates request parameters and basic business rules specific to the application layer.
    * Domain validation is handled by the repository layer.
    *
-   * @param id Notification ID to validate
-   * @param requesterId Requester ID to validate (optional)
+   * @param request Application layer request to validate
+   * @param correlationId Correlation ID for tracing
    * @throws ApplicationError when validation fails
    */
-  private validateApplicationRules(id: NotificationId, requesterId?: number): void {
-    if (id === undefined || id === null) {
+  private validateApplicationRules(
+    request: DismissNotificationRequest,
+    correlationId?: string
+  ): void {
+    this.logger.debug('Validating application rules for notification dismissal', {
+      operation: 'dismiss_notification',
+      correlationId,
+      userId: request.requesterId?.toString(),
+    } as LogContext);
+
+    if (request.notificationId === undefined || request.notificationId === null) {
       throw new ApplicationError(
-        'dismiss_notification',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_NOTIFICATION_ID',
         'Notification ID is required for dismissal'
       );
     }
 
-    if (typeof id !== 'string' || id.trim().length === 0) {
+    if (typeof request.notificationId !== 'string' || request.notificationId.trim().length === 0) {
       throw new ApplicationError(
-        'dismiss_notification',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_NOTIFICATION_ID_FORMAT',
         'Notification ID must be a non-empty string'
       );
     }
 
     // Validate requester ID if provided
-    if (requesterId !== undefined && requesterId !== null) {
-      if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+    if (request.requesterId !== undefined && request.requesterId !== null) {
+      if (typeof request.requesterId !== 'number' || !Number.isInteger(request.requesterId) || request.requesterId <= 0) {
         throw new ApplicationError(
-          'dismiss_notification',
+          ApplicationErrorCode.INVALID_INPUT,
           'INVALID_REQUESTER_ID_FORMAT',
           'Requester ID must be a positive integer when provided'
         );
@@ -106,68 +143,64 @@ export class DismissNotification {
   }
 
   /**
-   * Validate notification exists and can be dismissed
-   *
-   * @description
-   * Validates that the notification exists in the current snapshot and is in a dismissible state.
-   *
-   * @param id Notification ID to validate
-   * @throws ApplicationError when notification cannot be dismissed
-   */
-  /**
-   * Validate notification exists and can be dismissed
-   *
-   * @description
-   * DEPRECATED: This validation is now handled by the domain service layer.
-   * The NotificationPort service handles existence validation and idempotency,
-   * making this application-layer validation redundant and potentially
-   * causing race conditions with concurrent dismissal requests.
-   *
-   * @param id Notification ID to validate
-   * @throws ApplicationError when notification not found or already dismissed
-   */
-  private async validateNotificationForDismissal(id: NotificationId): Promise<void> {
-    // DEPRECATED: Validation moved to domain service layer
-    // Keeping method for documentation purposes but it's no longer called
-    // const notifications = this.notificationPort.snapshot();
-    // const notification = notifications.find(n => n.id === id);
-    // if (!notification) {
-    //     throw new ApplicationError(
-    //         'dismiss_notification',
-    //         'NOTIFICATION_NOT_FOUND',
-    //         `Notification with ID '${id}' does not exist or has already been dismissed`
-    //     , error);
-    // }
-    // // Check if notification is already dismissed (if it has a dismissed property)
-    // if ('isDismissed' in notification && notification.isDismissed) {
-    //     throw new ApplicationError(
-    //         'dismiss_notification',
-    //         'NOTIFICATION_ALREADY_DISMISSED',
-    //         `Notification with ID '${id}' has already been dismissed`
-    //     , error);
-    // }
-  }
-
-  /**
    * Handle side effects of notification dismissal
    *
    * @description
-   * Manages audit logging and other side effects after successful notification dismissal.
-   * Uses high-precision timestamps for accurate audit trails.
+   * Manages audit logging, domain event publishing, and other side effects
+   * after successful notification dismissal. Uses high-precision timestamps
+   * for accurate audit trails and publishes domain events for business process tracking.
    *
-   * @param id The dismissed notification ID
-   * @param requesterId ID of user who performed the dismissal
+   * @param request The dismissal request with notification ID and requester
+   * @param correlationId Correlation ID for tracing
    */
-  private handleNotificationDismissalSideEffects(id: NotificationId, requesterId?: number): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async handleNotificationDismissalSideEffects(
+    request: DismissNotificationRequest,
+    correlationId?: string
+  ): Promise<void> {
+    const timestampSeconds = this.clock.nowEpochSeconds();
+    const timestamp = new Date(timestampSeconds * 1000); // Convert to milliseconds
 
-    console.log(`[AUDIT] Notification dismissal completed`, {
-      timestamp,
-      notificationId: id,
-      requesterId,
+    // Log comprehensive audit information using Core Logger
+    this.logger.info(`Notification dismissed successfully at ${timestamp.toISOString()}`, {
       operation: 'dismiss_notification',
-      feature: 'notifications',
-      severity: 'LOW',
-    });
+      correlationId,
+      userId: request.requesterId?.toString(),
+    } as LogContext);
+
+    // Publish domain event for business process tracking
+    try {
+      const event = DomainEvent.create({
+        id: `notification-dismissed-${Date.now()}`,
+        eventType: DomainEventType.NOTIFICATION_DISMISSED,
+        aggregateId: request.notificationId,
+        aggregateType: 'Notification',
+        eventData: {
+          notificationId: request.notificationId,
+          dismissedBy: request.requesterId?.toString(),
+          dismissedAt: timestamp.toISOString(),
+          correlationId,
+        },
+        occurredAt: ISODateTime.fromDate(timestamp),
+      });
+
+      const publishContract: PublishEventContract = {
+        event,
+      };
+
+      await this.eventBus.publish(publishContract);
+
+      this.logger.debug('Domain event published for notification dismissal', {
+        operation: 'dismiss_notification',
+        correlationId,
+        eventId: event.id,
+      } as LogContext);
+    } catch (eventError) {
+      // Log event publishing failure but don't fail the main operation
+      this.logger.warn('Failed to publish domain event for notification dismissal', {
+        operation: 'dismiss_notification',
+        correlationId,
+        error: eventError instanceof Error ? eventError.message : 'Unknown event error',
+      } as LogContext);
+    }
   }
 }
