@@ -1,10 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-import { NOTIFICATION_PORT, CLOCK_PORT } from '@di/tokens';
-import type { NotificationPort } from '@domain/repositories/business/notification.repository';
-import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
+import { NOTIFICATION_PORT, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import { PublishEventContract } from '@domain/repositories/business/domain-event-bus.contract';
+import type { IDomainEventBusRepository } from '@domain/repositories/business/domain-event-bus.repository';
 import type { Notification } from '@domain/entities/notification.entity';
+import type { SubscribeToNotificationsRequest } from '@application/types/notifications.types';
+import type { NotificationPort } from '@/app/domain/repositories/business/notification.repository';
+import type { ClockPort } from '@domain/repositories/system/clock.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Subscribe to Notifications Use Case
@@ -34,39 +42,50 @@ import type { Notification } from '@domain/entities/notification.entity';
 export class SubscribeToNotifications {
   private readonly notificationPort = inject<NotificationPort>(NOTIFICATION_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<IDomainEventBusRepository>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute notification subscription orchestration with validation and audit logging
+   * Execute notification subscription use case
    *
-   * @param callback - Function that receives notification updates
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Function to unsubscribe from changes
-   * @throws ApplicationError when validation fails or subscription fails
+   * @description
+   * Orchestrates the complete notification subscription process following the 4-step Application Layer pattern:
+   * 1. Validate application rules and authorization
+   * 2. Create audited callback wrapper for logging
+   * 3. Delegate to Domain repository for subscription
+   * 4. Handle side effects (logging, events, statistics)
+   *
+   * @param request Application-specific request containing callback and requester information
+   * @param correlationId Optional correlation ID for request tracing
+   * @returns Promise resolving to unsubscribe function
    */
-  execute(callback: (notifications: Notification[]) => void, requesterId?: number): () => void {
+  async execute(
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
+  ): Promise<() => void> {
     try {
-      // Step 1: Validate application rules
-      this.validateApplicationRules(callback, requesterId);
+      // Step 1: Validate application rules and authorization
+      await this.validateApplicationRules(request, correlationId);
 
-      // Step 2: Create wrapped callback for audit logging
-      const wrappedCallback = this.createAuditedCallback(callback, requesterId);
+      // Step 2: Create audited callback wrapper for logging
+      const auditedCallback = this.createAuditedCallback(request, correlationId);
 
-      // Step 3: Delegate to domain repository for subscription
-      const unsubscribe = this.notificationPort.onChange(wrappedCallback);
+      // Step 3: Delegate to Domain repository for subscription
+      const unsubscribe = this.notificationPort.onChange(auditedCallback);
 
-      // Step 4: Handle side effects (subscription started)
-      this.handleSubscriptionStartSideEffects(requesterId);
+      // Step 4: Handle side effects (logging, events, statistics)
+      await this.handleSubscriptionStartSideEffects(request, correlationId);
 
-      // Return wrapped unsubscribe function with audit logging
-      return this.createAuditedUnsubscribe(unsubscribe, requesterId);
-    } catch (error: unknown) {
-      // Normalize errors for application layer
-      throw new ApplicationError(
-        'subscribe_to_notifications',
-        this.errorTransformer.transformError(error),
-        'NOTIFICATION_SUBSCRIPTION_FAILED'
-      );
+      // Return audited unsubscribe function
+      return this.createAuditedUnsubscribe(unsubscribe, request, correlationId);
+    } catch (error) {
+      // Transform and re-throw using Application Error Transformer
+      throw this.errorTransformer.transform(error, {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      });
     }
   }
 
@@ -77,27 +96,37 @@ export class SubscribeToNotifications {
    * Validates request parameters and basic business rules specific to the application layer.
    * Domain validation is handled by the repository layer.
    *
-   * @param callback Callback function to validate
-   * @param requesterId Requester ID to validate (optional)
+   * @param request Application request containing callback and requester information
+   * @param correlationId Correlation ID for tracing
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(
-    callback: (notifications: Notification[]) => void,
-    requesterId?: number
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
   ): void {
-    if (!callback || typeof callback !== 'function') {
+    this.logger.debug('Validating application rules for notification subscription', {
+      operation: 'subscribe_to_notifications',
+      correlationId,
+      userId: request.requesterId?.toString(),
+    });
+
+    if (!request.callback || typeof request.callback !== 'function') {
       throw new ApplicationError(
-        'subscribe_to_notifications',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_CALLBACK',
         'Callback function is required for notification subscription'
       );
     }
 
     // Validate requester ID if provided
-    if (requesterId !== undefined && requesterId !== null) {
-      if (typeof requesterId !== 'number' || !Number.isInteger(requesterId) || requesterId <= 0) {
+    if (request.requesterId !== undefined && request.requesterId !== null) {
+      if (
+        typeof request.requesterId !== 'number' ||
+        !Number.isInteger(request.requesterId) ||
+        request.requesterId <= 0
+      ) {
         throw new ApplicationError(
-          'subscribe_to_notifications',
+          ApplicationErrorCode.INVALID_INPUT,
           'INVALID_REQUESTER_ID_FORMAT',
           'Requester ID must be a positive integer when provided'
         );
@@ -111,32 +140,31 @@ export class SubscribeToNotifications {
    * @description
    * Wraps the original callback with audit logging to track notification updates.
    *
-   * @param originalCallback Original callback function
-   * @param requesterId ID of the requester for audit purposes
+   * @param request Application request containing callback and requester information
+   * @param correlationId Correlation ID for tracing
    * @returns Wrapped callback with audit logging
    */
   private createAuditedCallback(
-    originalCallback: (notifications: Notification[]) => void,
-    requesterId?: number
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
   ): (notifications: Notification[]) => void {
     return (notifications: Notification[]) => {
       try {
         // Call original callback first
-        originalCallback(notifications);
+        request.callback(notifications);
 
         // Then handle audit logging
-        this.handleNotificationUpdateSideEffects(notifications, requesterId);
+        this.handleNotificationUpdateSideEffects(notifications, request, correlationId);
       } catch (error) {
         // Log callback errors but don't break the subscription
-        const timestamp = this.clock.nowEpochSeconds();
-        console.error(`[AUDIT] Notification subscription callback error`, {
-          timestamp,
-          requesterId,
-          error: error instanceof Error ? error.message : 'Unknown error',
+        this.logger.error('Notification subscription callback error', {
           operation: 'subscribe_to_notifications',
-          feature: 'notifications',
-          severity: 'HIGH',
+          correlationId,
+          userId: request.requesterId?.toString(),
         });
+
+        // Log the actual error separately for debugging
+        console.error('Subscription callback error details:', error);
       }
     };
   }
@@ -145,19 +173,21 @@ export class SubscribeToNotifications {
    * Create audited unsubscribe function
    *
    * @description
-   * Wraps the unsubscribe function with audit logging.
+   * Wraps the unsubscribe function with audit logging and domain events.
    *
    * @param originalUnsubscribe Original unsubscribe function
-   * @param requesterId ID of the requester for audit purposes
+   * @param request Application request with requester information
+   * @param correlationId Correlation ID for tracing
    * @returns Wrapped unsubscribe function with audit logging
    */
   private createAuditedUnsubscribe(
     originalUnsubscribe: () => void,
-    requesterId?: number
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
   ): () => void {
-    return () => {
+    return async () => {
       originalUnsubscribe();
-      this.handleUnsubscribeSideEffects(requesterId);
+      await this.handleUnsubscribeSideEffects(request, correlationId);
     };
   }
 
@@ -165,20 +195,57 @@ export class SubscribeToNotifications {
    * Handle side effects of subscription start
    *
    * @description
-   * Manages audit logging when a new subscription is started.
+   * Manages audit logging and domain events when a new subscription is started.
    *
-   * @param requesterId ID of user who started the subscription
+   * @param request Application request with requester information
+   * @param correlationId Correlation ID for tracing
    */
-  private handleSubscriptionStartSideEffects(requesterId?: number): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async handleSubscriptionStartSideEffects(
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
+  ): Promise<void> {
+    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
 
-    console.log(`[AUDIT] Notification subscription started`, {
-      timestamp,
-      requesterId,
+    // Log comprehensive audit information using Core Logger
+    this.logger.info('Notification subscription started successfully', {
       operation: 'subscribe_to_notifications',
-      feature: 'notifications',
-      severity: 'LOW',
+      correlationId,
+      userId: request.requesterId?.toString(),
     });
+
+    // Publish domain event for business process tracking
+    try {
+      const event = DomainEvent.create({
+        id: `subscription-started-${Date.now()}`,
+        eventType: DomainEventType.NOTIFICATIONS_CLEARED, // Using existing event type for notification operations
+        aggregateId: request.requesterId?.toString() || 'system',
+        aggregateType: 'User',
+        eventData: {
+          operation: 'subscription_started',
+          requesterId: request.requesterId,
+          correlationId,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.create(timestamp.toISOString()),
+      });
+
+      const publishContract: PublishEventContract = {
+        event,
+      };
+
+      await this.eventBus.publish(publishContract);
+
+      this.logger.debug('Domain event published for subscription start', {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+      });
+    } catch {
+      // Log event publishing failure but don't fail the main operation
+      this.logger.warn('Failed to publish domain event for subscription start', {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+      });
+    }
   }
 
   /**
@@ -188,49 +255,119 @@ export class SubscribeToNotifications {
    * Manages audit logging for each notification update received by subscription.
    *
    * @param notifications Current notifications
-   * @param requesterId ID of the subscriber
+   * @param request Application request with requester information
+   * @param correlationId Correlation ID for tracing
    */
-  private handleNotificationUpdateSideEffects(
+  private async handleNotificationUpdateSideEffects(
     notifications: Notification[],
-    requesterId?: number
-  ): void {
-    const timestamp = this.clock.nowEpochSeconds();
-
-    // Calculate notification statistics
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
+  ): Promise<void> {
+    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
     const totalNotifications = notifications.length;
     const unreadNotifications = notifications.filter((n) => !n.isRead).length;
 
-    console.log(`[AUDIT] Notification subscription update`, {
-      timestamp,
-      requesterId,
-      notificationStats: {
-        total: totalNotifications,
-        unread: unreadNotifications,
-        read: totalNotifications - unreadNotifications,
-      },
-      operation: 'subscribe_to_notifications_update',
-      feature: 'notifications',
-      severity: 'LOW',
-    });
+    // Log comprehensive audit information using Core Logger
+    this.logger.debug(
+      `Notification subscription update processed - Total: ${totalNotifications}, Unread: ${unreadNotifications}`,
+      {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+        userId: request.requesterId?.toString(),
+      }
+    );
+
+    // Publish domain event for business process tracking
+    try {
+      const event = DomainEvent.create({
+        id: `subscription-update-${Date.now()}`,
+        eventType: DomainEventType.NOTIFICATIONS_CLEARED, // Using existing event type for notification operations
+        aggregateId: request.requesterId?.toString() || 'system',
+        aggregateType: 'User',
+        eventData: {
+          operation: 'subscription_update',
+          totalNotifications,
+          unreadCount: unreadNotifications,
+          requesterId: request.requesterId,
+          correlationId,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.create(timestamp.toISOString()),
+      });
+
+      const publishContract: PublishEventContract = {
+        event,
+      };
+
+      await this.eventBus.publish(publishContract);
+
+      this.logger.debug('Domain event published for subscription update', {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+      });
+    } catch {
+      // Log event publishing failure but don't fail the main operation
+      this.logger.warn('Failed to publish domain event for subscription update', {
+        operation: 'subscribe_to_notifications',
+        correlationId,
+      });
+    }
   }
 
   /**
    * Handle side effects of unsubscribe
    *
    * @description
-   * Manages audit logging when a subscription is terminated.
+   * Manages audit logging and domain events when a subscription is terminated.
    *
-   * @param requesterId ID of user who unsubscribed
+   * @param request Application request with requester information
+   * @param correlationId Correlation ID for tracing
    */
-  private handleUnsubscribeSideEffects(requesterId?: number): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async handleUnsubscribeSideEffects(
+    request: SubscribeToNotificationsRequest,
+    correlationId?: string
+  ): Promise<void> {
+    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
 
-    console.log(`[AUDIT] Notification subscription ended`, {
-      timestamp,
-      requesterId,
+    // Log comprehensive audit information using Core Logger
+    this.logger.info('Notification subscription ended', {
       operation: 'unsubscribe_from_notifications',
-      feature: 'notifications',
-      severity: 'LOW',
+      correlationId,
+      userId: request.requesterId?.toString(),
     });
+
+    // Publish domain event for business process tracking
+    try {
+      const event = DomainEvent.create({
+        id: `subscription-ended-${Date.now()}`,
+        eventType: DomainEventType.NOTIFICATIONS_CLEARED, // Using existing event type for notification operations
+        aggregateId: request.requesterId?.toString() || 'system',
+        aggregateType: 'User',
+        eventData: {
+          operation: 'subscription_ended',
+          requesterId: request.requesterId,
+          correlationId,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.create(timestamp.toISOString()),
+      });
+
+      const publishContract: PublishEventContract = {
+        event,
+      };
+
+      await this.eventBus.publish(publishContract);
+
+      this.logger.debug('Domain event published for subscription end', {
+        operation: 'unsubscribe_from_notifications',
+        correlationId,
+      });
+    } catch {
+      // Log event publishing failure but don't fail the main operation
+      this.logger.warn('Failed to publish domain event for subscription end', {
+        operation: 'unsubscribe_from_notifications',
+        correlationId,
+      });
+    }
   }
 }
