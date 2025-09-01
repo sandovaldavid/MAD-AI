@@ -1,10 +1,19 @@
 /**
- * Notification Types - Application Layer
+ * Notification Application Types
  *
  * @description
- * Type definitions for notification operations at the application layer.
- * These types define the contract between the presentation layer and the
- * notification facade for all notification-related operations.
+ * Minimal type definitions for Application Layer coordination.
+ * These types provide simple interfaces for notification-related use case orchestration.
+ *
+ * @responsibilities
+ * - Define minimal request interfaces for notification operations
+ * - Provide type safety for notification coordination
+ * - Keep complexity in appropriate layers (Domain/Infrastructure)
+ *
+ * @architecture
+ * - Application layer: Simple coordination types only
+ * - Domain layer: Business logic and contracts
+ * - Infrastructure layer: DTOs and technical implementations
  *
  * @author MAD-AI Development Team
  * @version 1.0.0
@@ -15,173 +24,106 @@
 import type {
   Notification,
   NotificationId,
-  NotificationType,
   NewNotification,
 } from '@domain/entities/notification.entity';
+import { NotificationType } from '@domain/enums/notification-type.enum';
+
+// ============================================================================
+// Simple Request Interfaces (Application Layer Coordination)
+// ============================================================================
 
 /**
- * Request to create a new notification
+ * Simple request to create a notification
  */
 export interface NotifyRequest {
-  /** Type of notification (success, error, warning, info) */
   type: NotificationType;
-  /** Main notification message */
   message: string;
-  /** Optional detailed description */
   description?: string;
-  /** Auto-dismiss timeout in milliseconds (0 = no auto-dismiss) */
-  duration?: number;
-  /** User ID this notification is for (if user-specific) */
   userId?: number;
-  /** Additional metadata for the notification */
-  metadata?: Record<string, any>;
 }
 
 /**
- * Request to dismiss a specific notification
+ * Simple request to dismiss a notification
  */
 export interface DismissNotificationRequest {
-  /** Unique identifier of the notification to dismiss */
   notificationId: NotificationId;
-  /** ID of the user dismissing the notification */
-  userId?: number;
+  requesterId?: number;
 }
 
 /**
- * Request to update an existing notification
- */
-export interface UpdateNotificationRequest {
-  /** Unique identifier of the notification to update */
-  notificationId: NotificationId;
-  /** New message (optional) */
-  message?: string;
-  /** New description (optional) */
-  description?: string;
-  /** New duration (optional) */
-  duration?: number;
-  /** Mark as read/unread (optional) */
-  isRead?: boolean;
-  /** ID of the user making the update */
-  userId?: number;
-}
-
-/**
- * Request to clear notifications (batch operation)
+ * Simple request to clear all notifications
  */
 export interface ClearNotificationsRequest {
-  /** Clear all notifications for specific user (if provided) */
-  userId?: number;
-  /** Clear only notifications of specific types */
-  types?: NotificationType[];
-  /** Clear only read/unread notifications */
-  onlyRead?: boolean;
+  requesterId?: number;
 }
 
 /**
- * Request to subscribe to notification updates
+ * Simple request to update a notification
+ */
+export interface UpdateNotificationRequest {
+  notificationId: NotificationId;
+  patch: Partial<Notification>;
+  requesterId?: number;
+}
+
+/**
+ * Simple request to get notifications with optional filters
+ */
+export interface GetNotificationsRequest {
+  requesterId?: number;
+  filters?: {
+    type?: NotificationType;
+    isRead?: boolean;
+    limit?: number;
+  };
+}
+
+/**
+ * Simple request to subscribe to notifications
  */
 export interface SubscribeToNotificationsRequest {
-  /** User ID to filter notifications (if user-specific) */
-  userId?: number;
-  /** Types of notifications to listen for */
-  types?: NotificationType[];
+  callback: (notifications: Notification[]) => void;
+  requesterId?: number;
 }
 
+// ============================================================================
+// Minimal Result Types (Domain entities returned directly)
+// ============================================================================
+
 /**
- * Result of a notify operation
+ * Notification creation result - returns domain entity directly
  */
-export interface NotifyResult {
-  /** The created notification */
-  notification: Notification;
-  /** Success status */
-  success: boolean;
-  /** Any warning messages */
-  warnings?: string[];
-}
+export type NotifyResult = Notification;
 
 /**
- * Result of a dismiss notification operation
+ * Notification dismissal result - simple confirmation
  */
 export interface DismissNotificationResult {
-  /** ID of the dismissed notification */
+  success: boolean;
   notificationId: NotificationId;
-  /** Success status */
-  success: boolean;
-  /** Confirmation message */
-  message?: string;
 }
 
 /**
- * Result of an update notification operation
- */
-export interface UpdateNotificationResult {
-  /** The updated notification */
-  notification: Notification;
-  /** Success status */
-  success: boolean;
-  /** Any warning messages */
-  warnings?: string[];
-}
-
-/**
- * Result of a clear notifications operation
- */
-export interface ClearNotificationsResult {
-  /** Number of notifications cleared */
-  clearedCount: number;
-  /** Success status */
-  success: boolean;
-  /** Summary message */
-  message?: string;
-}
-
-/**
- * Result of getting notifications
+ * Get notifications result - returns domain entities directly
  */
 export interface GetNotificationsResult {
-  /** Array of current notifications */
   notifications: Notification[];
-  /** Total count (may differ from array length if paginated) */
-  totalCount: number;
-  /** Unread count */
-  unreadCount: number;
-}
-
-/**
- * Notification state for reactive UI binding
- */
-export interface NotificationState {
-  /** Current notifications */
-  notifications: Notification[];
-  /** Loading state for any notification operation */
-  loading: boolean;
-  /** Error state */
-  error: string | null;
-  /** Unread count */
-  unreadCount: number;
-  /** Total count */
   totalCount: number;
 }
 
 /**
- * Notification event types for real-time updates
+ * Clear notifications result with statistics
  */
-export type NotificationEventType =
-  | 'notification-created'
-  | 'notification-updated'
-  | 'notification-dismissed'
-  | 'notifications-cleared';
+export interface ClearNotificationsResult {
+  success: boolean;
+  clearedCount: number;
+}
 
 /**
- * Notification event payload
+ * Update notification result with details
  */
-export interface NotificationEvent {
-  /** Type of event */
-  type: NotificationEventType;
-  /** Associated notification (if applicable) */
-  notification?: Notification;
-  /** Additional event data */
-  metadata?: Record<string, any>;
-  /** Timestamp of the event */
-  timestamp: Date;
+export interface UpdateNotificationResult {
+  success: boolean;
+  notificationId: NotificationId;
+  updatedFields: string[];
 }
