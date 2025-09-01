@@ -105,6 +105,8 @@ export class DomainEvent {
       case DomainEventType.USER_ACCOUNT_ACTIVATED:
       case DomainEventType.USER_LOGGED_OUT:
       case DomainEventType.USER_SESSION_EXPIRED:
+      case DomainEventType.NOTIFICATION_DISMISSED:
+      case DomainEventType.NOTIFICATIONS_CLEARED:
         return DomainEventSeverity.MEDIUM;
 
       default:
@@ -138,6 +140,8 @@ export class DomainEvent {
       DomainEventType.USER_ROLE_CHANGED,
       DomainEventType.USER_LOGGED_OUT,
       DomainEventType.USER_SESSION_EXPIRED,
+      DomainEventType.NOTIFICATION_DISMISSED,
+      DomainEventType.NOTIFICATIONS_CLEARED,
     ].includes(this._eventType);
   }
 
