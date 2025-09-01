@@ -19,6 +19,10 @@ export enum DomainEventType {
   USER_ROLE_CHANGED = 'USER_ROLE_CHANGED',
   /** User preferences were updated */
   USER_PREFERENCES_UPDATED = 'USER_PREFERENCES_UPDATED',
+  /** Notification was dismissed by user */
+  NOTIFICATION_DISMISSED = 'NOTIFICATION_DISMISSED',
+  /** All user notifications were cleared */
+  NOTIFICATIONS_CLEARED = 'NOTIFICATIONS_CLEARED',
   /** Role was created */
   ROLE_CREATED = 'ROLE_CREATED',
   /** Role was activated */
