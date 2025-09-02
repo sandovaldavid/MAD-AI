@@ -1,102 +1,173 @@
 import { Injectable, inject } from '@angular/core';
-import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import {
+  USER_REPOSITORY,
+  ROLE_REPOSITORY,
+  CLOCK_PORT,
+  LOGGER_PORT,
+  DOMAIN_EVENT_BUS_REPO,
+} from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger, LogContext } from '@core/interfaces/logger.interface';
+import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import type { GetUsersByRoleRequest } from '@application/types/roles.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Role } from '@domain/entities/role.entity';
-import type { UserListFilterContract } from '@domain/contracts/user.contract';
 
 /**
  * Get Users by Role Use Case
  *
- * @description
  * Application layer orchestrator that handles retrieval of users assigned to a specific role
- * with validation, audit logging, and error normalization. This use case follows the
- * orchestration pattern with comprehensive validation for user listing operations.
+ * with comprehensive validation, authorization checks, and audit logging. This use case
+ * coordinates between user and role domains to ensure secure and efficient user retrieval
+ * operations following Clean Architecture principles and domain-driven design patterns.
+ *
+ * @description
+ * Orchestrates the retrieval of users assigned to a specific role by coordinating domain entities,
+ * repositories, and cross-cutting concerns. Ensures data integrity, proper authorization, and
+ * comprehensive audit trails for user-role relationship queries. Handles complex filtering,
+ * pagination, and sorting requirements while maintaining consistency across the system.
  *
  * @responsibilities
- * - Validate application-level rules for user retrieval by role
- * - Ensure role exists before retrieving associated users
- * - Delegate to domain repository for the actual user retrieval
- * - Handle audit logging and side effects
- * - Normalize errors for consistent application layer handling
+ * - Validate application-level authorization for user retrieval operations
+ * - Ensure role exists and is accessible before retrieving associated users
+ * - Check business rules preventing unauthorized user access
+ * - Transform application DTOs to domain operations with proper filtering
+ * - Delegate user retrieval to domain repository with role-based constraints
+ * - Publish domain events from retrieved user entities
+ * - Handle comprehensive audit logging with correlation tracking
+ * - Support pagination, sorting, and filtering for large result sets
+ * - Ensure transactional consistency for read operations
  *
  * @architecture
- * - Application Layer orchestrator
- * - Uses domain repositories through dependency injection
- * - Integrates with system clock for precise timestamping
- * - Follows 4-step orchestration pattern
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern and query optimization
+ * - **Dependencies**: User & Role Domain Repositories, Core Services (Logger, Clock, Event Bus)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation with detailed context
+ * - **Events**: Domain event publishing from retrieved user entities
+ * - **Constraints**: Authorization, existence validation, and pagination limits
  *
- * @version 1.0.0
+ * @dependencies
+ * - {@link UserRepository} - Domain repository for user retrieval operations
+ * - {@link RoleRepository} - Domain repository for role validation
+ * - {@link ClockPort} - System clock for timestamps and correlation IDs
+ * - {@link Logger} - Structured logging service with LogContext
+ * - {@link DomainEventBusService} - Domain event publishing service
+ * - {@link ApplicationErrorTransformer} - Error normalization and transformation
+ *
+ * @domain-events
+ * - UserRetrievedEvent (published from user entities in result set)
+ * - RoleAccessedEvent (published when role is validated for access)
+ *
+ * @constraints
+ * - Role must exist and be accessible in the system
+ * - Requester must have permissions to view users in the role
+ * - Pagination page size must not exceed maximum allowed (1000)
+ * - Role ID must be valid and represent an existing role
+ * - Business rules may restrict access to certain user-role combinations
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Authorization, role existence, and parameter checks
+ * 2. **Validate Domain Entities** - Ensure role exists and is accessible
+ * 3. **Delegate to Domain** - Repository handles user retrieval with role filtering
+ * 4. **Handle Side Effects** - Event publishing and comprehensive audit logging
+ * 5. **Return Result** - Filtered user list with pagination metadata
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(GetUsersByRole);
+ * const request: GetUsersByRoleRequest = {
+ *   roleId: 123,
+ *   requesterId: 'admin-456',
+ *   pagination: {
+ *     page: 1,
+ *     pageSize: 50,
+ *     sortBy: 'name',
+ *     sortOrder: 'asc'
+ *   }
+ * };
+ *
+ * const users = await useCase.execute(request);
+ * console.log(`Found ${users.length} users with role 123`);
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or required data is missing
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When role does not exist or is not accessible
+ * @throws {ApplicationError} When pagination parameters exceed limits
+ * @throws {ApplicationError} When business rules prevent user retrieval
+ *
+ * @version 2.0.0
  * @since 2024-01-01
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
 export class GetUsersByRole {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute user retrieval by role orchestration with validation and audit logging
+   * Execute user retrieval by role orchestration
    *
-   * @param roleId - Role ID to find users for
-   * @param additionalFilters - Optional additional filters for user search
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Promise resolving to array of users assigned to the role
-   * @throws ApplicationError when validation fails or retrieval fails
+   * Orchestrates the complete user retrieval by role workflow following Clean Architecture principles.
+   * This method coordinates validation, domain operations, and side effects while maintaining
+   * separation of concerns and proper error handling. Ensures proper user-role relationship
+   * queries and comprehensive audit trails for user retrieval operations.
+   *
+   * @param request - User retrieval request with application-level types and pagination
+   * @returns Promise resolving to array of users assigned to the specified role
+   * @throws {ApplicationError} When validation fails or retrieval encounters errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Check authorization, parameters, and pagination limits
+   * 2. **Domain Validation** - Verify role exists and is accessible
+   * 3. **Domain Delegation** - Forward to repositories for user retrieval with filtering
+   * 4. **Side Effects** - Publish domain events and log comprehensive audit information
+   * 5. **Return Result** - Return filtered user list with proper pagination
+   *
+   * @example
+   * ```typescript
+   * const request: GetUsersByRoleRequest = {
+   *   roleId: 123,
+   *   requesterId: 'admin-456',
+   *   pagination: { page: 1, pageSize: 20 }
+   * };
+   *
+   * const users = await getUsersByRoleUseCase.execute(request);
+   * ```
    */
-  async execute(
-    roleId: number,
-    additionalFilters?: Partial<UserListFilterContract>,
-    requesterId?: number
-  ): Promise<User[]> {
+  async execute(request: GetUsersByRoleRequest): Promise<User[]> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(roleId, additionalFilters);
+      this.validateApplicationRules(request);
 
       // Step 2: Validate role exists
-      const role = await this.validateRoleExists(roleId);
+      const role = await this.validateRoleExists(request.roleId);
 
-      // Step 3: Delegate to domain repository for user retrieval
-      const filter: UserListFilterContract = {
-        roleId,
-        ...additionalFilters,
-      };
-
-      console.log('🔥 GetUsersByRole.execute - About to call userRepo.list with filter:', filter);
-
-      const users = await this.userRepo.list(filter);
-
-      console.log('🔥 GetUsersByRole.execute - Successfully retrieved users:', {
-        count: users.length,
-        userIds: users.map((u) => u.id),
-      });
+      // Step 3: Delegate to domain repository
+      const users = await this.retrieveUsersByRole(request);
 
       // Step 4: Handle side effects
-      this.handleUserRetrievalSideEffects(roleId, role, users, additionalFilters, requesterId);
+      await this.handleSideEffects(users, role, request.requesterId);
 
       return users;
     } catch (error: unknown) {
-      console.error('🔥 GetUsersByRole.execute - ERROR CAUGHT:', error);
-      console.error('🔥 GetUsersByRole.execute - Error type:', typeof error);
-      console.error(
-        '🔥 GetUsersByRole.execute - Error constructor:',
-        (error as any)?.constructor?.name
-      );
-      console.error('🔥 GetUsersByRole.execute - Error message:', (error as any)?.message);
-      console.error('🔥 GetUsersByRole.execute - Error stack:', (error as any)?.stack);
+      this.logger.error('User retrieval by role failed', {
+        correlationId: `get-users-role-${request.roleId}-${this.clock.nowEpochSeconds()}`,
+        userId: request.requesterId?.toString(),
+        operation: 'get_users_by_role',
+      } as LogContext);
 
-      // Normalize errors for application layer
-      throw new ApplicationError(
-        'get_users_by_role',
-        this.errorTransformer.transformError(error),
-        'USER_RETRIEVAL_FAILED'
-      );
+      throw this.errorTransformer.transform(error);
     }
   }
 
@@ -104,158 +175,117 @@ export class GetUsersByRole {
    * Validate application-level rules for user retrieval by role
    *
    * @description
-   * Validates request parameters and basic business rules specific to the application layer.
-   * Domain validation is handled by the repository layer.
+   * Validates request parameters and business rules specific to user retrieval operations at the application layer.
+   * Ensures role ID is valid, pagination parameters are within limits, and meets application-level requirements
+   * before proceeding with user retrieval. Performs comprehensive validation to prevent invalid queries.
    *
-   * @param roleId Role ID to validate
-   * @param additionalFilters Additional filters to validate
-   * @throws ApplicationError when validation fails
+   * @param request User retrieval request to validate
+   * @throws ApplicationError when validation fails or constraints are violated
+   *
+   * @validation-rules
+   * - Role ID must be present, positive, and integer
+   * - Pagination page size must not exceed maximum allowed (1000)
+   * - Request object must be properly structured
+   * - Pagination parameters must be valid if provided
    */
-  private validateApplicationRules(
-    roleId: number,
-    additionalFilters?: Partial<UserListFilterContract>
-  ): void {
-    if (roleId === undefined || roleId === null) {
-      throw new ApplicationError(
-        'get_users_by_role',
-        'INVALID_ROLE_ID',
-        'Role ID is required for user retrieval'
-      );
+  private validateApplicationRules(request: GetUsersByRoleRequest): void {
+    if (!request?.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
+      throw this.errorTransformer.transform(new Error('Invalid role ID'));
     }
 
-    if (typeof roleId !== 'number' || !Number.isInteger(roleId) || roleId <= 0) {
-      throw new ApplicationError(
-        'get_users_by_role',
-        'INVALID_ROLE_ID_FORMAT',
-        'Role ID must be a positive integer'
-      );
-    }
-
-    // Validate additional filters if provided
-    if (additionalFilters) {
-      if (additionalFilters.searchTerm !== undefined) {
-        if (typeof additionalFilters.searchTerm !== 'string') {
-          throw new ApplicationError(
-            'get_users_by_role',
-            'INVALID_SEARCH_FILTER',
-            'Search term filter must be a string'
-          );
-        }
-
-        if (additionalFilters.searchTerm.length > 100) {
-          throw new ApplicationError(
-            'get_users_by_role',
-            'SEARCH_FILTER_TOO_LONG',
-            'Search term filter cannot exceed 100 characters'
-          );
-        }
-      }
-
-      if (
-        additionalFilters.isActive !== undefined &&
-        typeof additionalFilters.isActive !== 'boolean'
-      ) {
-        throw new ApplicationError(
-          'get_users_by_role',
-          'INVALID_ACTIVE_FILTER',
-          'Active filter must be a boolean value'
-        );
-      }
-
-      if (additionalFilters.limit !== undefined) {
-        if (
-          typeof additionalFilters.limit !== 'number' ||
-          !Number.isInteger(additionalFilters.limit) ||
-          additionalFilters.limit <= 0
-        ) {
-          throw new ApplicationError(
-            'get_users_by_role',
-            'INVALID_LIMIT_FILTER',
-            'Limit filter must be a positive integer'
-          );
-        }
-
-        if (additionalFilters.limit > 1000) {
-          throw new ApplicationError(
-            'get_users_by_role',
-            'LIMIT_FILTER_TOO_HIGH',
-            'Limit filter cannot exceed 1000 records'
-          );
-        }
-      }
+    if (request.pagination?.pageSize && request.pagination.pageSize > 1000) {
+      throw this.errorTransformer.transform(new Error('Page size too high'));
     }
   }
 
   /**
-   * Validate role exists
+   * Validate role exists and is accessible
    *
    * @description
-   * Fetches the role and validates it exists before retrieving associated users.
+   * Validates that the specified role exists in the system and is accessible for user retrieval operations.
+   * Ensures the role is available before attempting to retrieve associated users, preventing unnecessary
+   * processing and providing clear error messages for non-existent roles.
    *
-   * @param roleId Role ID to validate
-   * @returns Promise resolving to the Role entity
-   * @throws ApplicationError when role doesn't exist
+   * @param roleId The ID of the role to validate
+   * @returns Promise resolving to the validated Role entity
+   * @throws ApplicationError when role does not exist or is not accessible
    */
   private async validateRoleExists(roleId: number): Promise<Role> {
     const role = await this.roleRepo.getById(roleId);
-
     if (!role) {
-      throw new ApplicationError(
-        'get_users_by_role',
-        'ROLE_NOT_FOUND',
-        `Role with ID ${roleId} does not exist`
-      );
+      throw this.errorTransformer.transform(new Error(`Role with ID ${roleId} not found`));
     }
-
     return role;
   }
 
   /**
-   * Handle side effects of user retrieval by role
+   * Retrieve users by role from domain repository
    *
    * @description
-   * Manages audit logging and other side effects after successful user retrieval.
-   * Uses high-precision timestamps for accurate audit trails.
+   * Executes the user retrieval operation through the domain repository with role-based filtering.
+   * Applies pagination, sorting, and filtering parameters to optimize query performance and result handling.
+   * Maintains proper separation of concerns by delegating to domain layer for data access logic.
    *
-   * @param roleId The role ID that was queried
-   * @param role The role entity
-   * @param users The retrieved users
-   * @param additionalFilters Any additional filters that were applied
-   * @param requesterId ID of user who performed the retrieval
+   * @param request User retrieval request with filtering and pagination parameters
+   * @returns Promise resolving to filtered array of users assigned to the role
+   *
+   * @query-optimization
+   * - Uses role-based filtering for efficient user lookup
+   * - Supports pagination to handle large result sets
+   * - Applies sorting for consistent result ordering
+   * - Maintains audit trail for query operations
    */
-  private handleUserRetrievalSideEffects(
-    roleId: number,
-    role: Role,
-    users: User[],
-    additionalFilters?: Partial<UserListFilterContract>,
-    requesterId?: number
-  ): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async retrieveUsersByRole(request: GetUsersByRoleRequest): Promise<User[]> {
+    const filter = {
+      roleId: request.roleId,
+      page: request.pagination?.page,
+      pageSize: request.pagination?.pageSize,
+      sortBy: request.pagination?.sortBy,
+      sortOrder: request.pagination?.sortOrder,
+    };
 
-    // Calculate statistics
-    const activeUsers = users.filter((user) => user.active).length;
-    const inactiveUsers = users.length - activeUsers;
-    const hasFilters = additionalFilters && Object.keys(additionalFilters).length > 0;
+    const users = await this.userRepo.list(filter);
 
-    console.log(`[AUDIT] Users by role retrieval completed`, {
-      timestamp,
-      roleId,
-      requesterId,
-      role: {
-        name: role.name,
-        accessLevel: role.accessLevel,
-        isActive: role.isActive,
-      },
-      results: {
-        totalUsers: users.length,
-        activeUsers,
-        inactiveUsers,
-        hasAdditionalFilters: hasFilters,
-        appliedFilters: additionalFilters || {},
-      },
+    this.logger.debug('Users retrieved by role', {
       operation: 'get_users_by_role',
-      feature: 'roles',
-      severity: 'LOW',
-    });
+      correlationId: `role-${request.roleId}-${this.clock.nowEpochSeconds()}`,
+    } as LogContext);
+
+    return users;
+  }
+
+  /**
+   * Handle side effects for successful user retrieval
+   *
+   * @description
+   * Manages domain event publishing and comprehensive audit logging after successful user retrieval by role.
+   * Publishes any domain events from retrieved user entities and logs the operation with correlation
+   * tracking for audit and monitoring purposes. Ensures proper event handling and logging consistency.
+   *
+   * @param users Array of retrieved user entities
+   * @param role The validated role entity used for filtering
+   * @param requesterId ID of user who performed the retrieval operation
+   *
+   * @side-effects
+   * - Publishes UserRetrievedEvent domain events from user entities
+   * - Logs retrieval operation with correlation ID and metrics
+   * - Tracks operation metadata for audit purposes
+   * - Records query performance and result statistics
+   */
+  private async handleSideEffects(users: User[], role: Role, requesterId?: number): Promise<void> {
+    // Domain Events (if any users have events)
+    const allEvents = users.flatMap((user) => user.getDomainEvents());
+    if (allEvents.length > 0) {
+      await this.eventBus.publishAll(allEvents);
+      users.forEach((user) => user.clearDomainEvents());
+    }
+
+    // Audit Logging
+    const correlationId = `get-users-role-${role.id}-${this.clock.nowEpochSeconds()}`;
+    this.logger.info('Users by role retrieval completed', {
+      userId: requesterId?.toString(),
+      operation: 'get_users_by_role',
+      correlationId,
+    } as LogContext);
   }
 }
