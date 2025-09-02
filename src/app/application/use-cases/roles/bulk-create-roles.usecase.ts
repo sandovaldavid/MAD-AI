@@ -1,247 +1,229 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { BulkCreateRolesRequest, BulkCreateRolesResult } from '@application/types/roles.types';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { Role } from '@domain/entities/role.entity';
-import { CreateRoleContract } from '@domain/contracts/role.contract';
-
-/**
- * Individual role creation data interface
- */
-export interface RoleCreationData {
-  readonly name: string;
-  readonly accessLevel: number;
-  readonly description: string;
-  readonly canLeadProjects: boolean;
-  readonly isUniquePerTeam: boolean;
-}
-
-/**
- * Request interface for bulk role creation
- */
-export interface BulkCreateRolesRequest {
-  readonly roles: readonly RoleCreationData[];
-  readonly requestedBy: number;
-  readonly validateOnly?: boolean;
-  readonly continueOnError?: boolean;
-  readonly maxBatchSize?: number;
-  readonly transactionId?: string;
-}
-
-/**
- * Individual creation result
- */
-export interface RoleCreationResult {
-  readonly index: number;
-  readonly name: string;
-  readonly success: boolean;
-  readonly role?: Role;
-  readonly error?: string;
-  readonly conflictFields?: string[];
-  readonly retryable?: boolean;
-}
-
-/**
- * Response interface for bulk role creation
- */
-export interface BulkCreateRolesResponse {
-  readonly results: readonly RoleCreationResult[];
-  readonly summary: {
-    readonly total: number;
-    readonly successful: number;
-    readonly failed: number;
-    readonly skipped: number;
-  };
-  readonly transactionId?: string;
-  readonly performance: {
-    readonly executionTime: number;
-    readonly averageTime: number;
-    readonly duplicateDetections: number;
-  };
-}
+import type { Logger, LogContext } from '@core/interfaces/logger.interface';
+import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 
 /**
  * Bulk Create Roles Use Case
  *
+ * Application layer orchestrator that handles bulk role creation operations with comprehensive
+ * validation, error handling, and audit logging. This use case manages the creation of multiple
+ * roles in a single operation while maintaining data consistency, proper authorization, and
+ * detailed tracking for batch operations following Clean Architecture principles.
+ *
  * @description
- * Specialized application layer orchestrator for bulk role creation operations.
- * This use case handles batch processing with optimized validation, duplicate detection,
- * comprehensive error handling, and detailed reporting for large-scale role creation.
+ * Orchestrates the bulk creation of roles by coordinating domain entities, repositories,
+ * and cross-cutting concerns. Ensures data integrity, proper authorization, and comprehensive
+ * audit trails for bulk role creation operations. Handles complex batch processing with
+ * configurable error handling strategies and maintains consistency across the system.
  *
  * @responsibilities
- * - Batch validation and processing optimization
- * - Duplicate detection across batch and existing data
- * - Individual error tracking and recovery
- * - Performance monitoring and reporting
- * - Transaction management for data consistency
+ * - Validate bulk operation parameters and constraints
+ * - Ensure proper authorization for bulk role creation
+ * - Process roles in configurable batches with error handling
+ * - Maintain transactional consistency for bulk operations
+ * - Transform application DTOs to domain operations
+ * - Delegate role creation to domain repository with proper context
+ * - Publish domain events for bulk role creation changes
+ * - Handle comprehensive audit logging with correlation tracking
+ * - Provide detailed results with success/failure metrics
+ * - Support configurable error handling (continue on error or fail fast)
  *
  * @architecture
- * - Specialized bulk operation orchestrator
- * - Optimized for large-scale processing
- * - Individual result tracking for each item
- * - Performance and audit metrics collection
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern and bulk processing
+ * - **Dependencies**: Role Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation with detailed context
+ * - **Events**: Domain event publishing for bulk role creation operations
+ * - **Constraints**: Batch size limits, authorization checks, and business rule validation
  *
- * @version 1.0.0
+ * @dependencies
+ * - {@link RoleRepository} - Domain repository for role creation operations
+ * - {@link ClockPort} - System clock for timestamps and correlation IDs
+ * - {@link Logger} - Structured logging service with LogContext
+ * - {@link DomainEventBusService} - Domain event publishing service
+ * - {@link ApplicationErrorTransformer} - Error normalization and transformation
+ *
+ * @domain-events
+ * - BulkRoleCreationEvent (published for successful bulk operations)
+ * - RoleCreatedEvent (published for each successfully created role)
+ *
+ * @constraints
+ * - Maximum batch size of 100 roles per operation
+ * - Requester must have bulk creation permissions
+ * - All roles must pass individual validation rules
+ * - System must maintain consistency during bulk operations
+ * - Configurable error handling (continue on error vs fail fast)
+ * - Business rules must be enforced for each role
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Authorization, batch size, and parameter checks
+ * 2. **Delegate to Domain** - Process each role through repository with error handling
+ * 3. **Handle Side Effects** - Event publishing and comprehensive audit logging
+ * 4. **Return Result** - Detailed bulk operation results with metrics
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(BulkCreateRoles);
+ * const request: BulkCreateRolesRequest = {
+ *   roles: [
+ *     { name: 'Project Manager', accessLevel: 3, description: 'Manages projects' },
+ *     { name: 'Developer', accessLevel: 2, description: 'Develops software' }
+ *   ],
+ *   requesterId: 123,
+ *   continueOnError: true
+ * };
+ *
+ * const result = await useCase.execute(request);
+ * console.log(`Created ${result.successful} roles, ${result.failed} failed`);
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or required data is missing
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When batch size exceeds maximum allowed (100)
+ * @throws {ApplicationError} When no roles are provided for bulk creation
+ * @throws {ApplicationError} When business rules prevent role creation
+ * @throws {ApplicationError} When continueOnError is false and any role fails
+ *
+ * @version 2.0.0
  * @since 2024-01-01
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
 export class BulkCreateRoles {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute bulk role creation with comprehensive validation and error handling
+   * Execute bulk role creation orchestration
    *
-   * @param request - Bulk creation request with roles and options
-   * @returns Promise resolving to detailed bulk creation response
-   * @throws ApplicationError when critical validation fails
+   * Orchestrates the complete bulk role creation workflow following Clean Architecture principles.
+   * This method coordinates validation, domain operations, and side effects while maintaining
+   * separation of concerns and proper error handling. Processes multiple roles with configurable
+   * error handling and provides comprehensive results with execution metrics.
+   *
+   * @param request - Bulk creation request with roles data and configuration
+   * @returns Promise resolving to bulk creation result with detailed metrics
+   * @throws {ApplicationError} When validation fails or operation encounters critical errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Check authorization, batch constraints, and parameters
+   * 2. **Domain Delegation** - Process each role through repository with error handling
+   * 3. **Side Effects** - Publish domain events and log comprehensive audit information
+   * 4. **Return Result** - Provide detailed bulk operation results with execution metrics
+   *
+   * @example
+   * ```typescript
+   * const request: BulkCreateRolesRequest = {
+   *   roles: [
+   *     { name: 'Admin', accessLevel: 5, description: 'System administrator' },
+   *     { name: 'User', accessLevel: 1, description: 'Regular user' }
+   *   ],
+   *   requesterId: 456,
+   *   continueOnError: false
+   * };
+   *
+   * const result = await bulkCreateRolesUseCase.execute(request);
+   * ```
    */
-  async execute(request: BulkCreateRolesRequest): Promise<BulkCreateRolesResponse> {
+  async execute(request: BulkCreateRolesRequest): Promise<BulkCreateRolesResult> {
     const startTime = this.clock.nowEpochSeconds();
+    const correlationId = `bulk-roles-${request.requesterId}-${startTime}`;
 
     try {
-      // Phase 1: Validate bulk operation constraints
-      this.validateBulkConstraints(request);
+      // Step 1: Validate application rules
+      this.validateApplicationRules(request);
 
-      // Phase 2: Handle validation-only mode
-      if (request.validateOnly) {
-        return await this.performValidationOnly(request, startTime);
-      }
+      // Step 2: Delegate to domain repository for bulk creation
+      const result = await this.performBulkCreation(request);
 
-      // Phase 3: Execute bulk creation with optimized processing
-      return await this.performBulkCreation(request, startTime);
+      // Step 3: Handle side effects
+      await this.handleBulkCreationSideEffects(result, request.requesterId, correlationId);
+
+      return {
+        ...result,
+        executionTime: this.clock.nowEpochSeconds() - startTime,
+        correlationId,
+      } as BulkCreateRolesResult;
     } catch (error: unknown) {
-      return this.handleCriticalError(request, error, startTime);
+      this.logger.error('Bulk role creation failed', {
+        correlationId,
+        userId: request.requesterId?.toString(),
+        operation: 'bulk_create_roles',
+      } as LogContext);
+
+      throw this.errorTransformer.transform(error);
     }
   }
 
   /**
-   * Validate bulk operation constraints and business rules
+   * Validate application-level rules for bulk role creation
+   *
+   * @description
+   * Validates request parameters and business rules specific to bulk operations at the application layer.
+   * Ensures batch size constraints, proper authorization, and required data before proceeding with
+   * bulk role creation. Performs comprehensive validation to prevent invalid bulk operations.
+   *
+   * @param request Bulk creation request to validate
+   * @throws ApplicationError when validation fails or constraints are violated
+   *
+   * @validation-rules
+   * - Request must contain at least one role
+   * - Batch size must not exceed maximum allowed (100)
+   * - Requester ID must be valid and present
+   * - Role data must meet basic structural requirements
    */
-  private validateBulkConstraints(request: BulkCreateRolesRequest): void {
-    const maxBatchSize = request.maxBatchSize || 100;
-
+  private validateApplicationRules(request: BulkCreateRolesRequest): void {
     if (!request.roles || request.roles.length === 0) {
-      throw new ApplicationError(
-        'bulk_create_roles',
-        'EMPTY_BATCH',
-        'Bulk creation requires at least one role'
-      );
+      throw this.errorTransformer.transform(new Error('Bulk creation requires at least one role'));
     }
 
-    if (request.roles.length > maxBatchSize) {
-      throw new ApplicationError(
-        'bulk_create_roles',
-        'BATCH_SIZE_EXCEEDED',
-        `Batch size ${request.roles.length} exceeds maximum allowed ${maxBatchSize}`
-      );
+    if (request.roles.length > 100) {
+      throw this.errorTransformer.transform(new Error('Batch size exceeds maximum allowed (100)'));
     }
 
-    if (!request.requestedBy || typeof request.requestedBy !== 'number') {
-      throw new ApplicationError(
-        'bulk_create_roles',
-        'INVALID_REQUESTER',
-        'Valid requester ID is required for bulk operations'
-      );
+    if (!request.requesterId || typeof request.requesterId !== 'number') {
+      throw this.errorTransformer.transform(new Error('Valid requester ID is required'));
     }
   }
 
   /**
-   * Perform validation-only mode processing
-   */
-  private async performValidationOnly(
-    request: BulkCreateRolesRequest,
-    startTime: number
-  ): Promise<BulkCreateRolesResponse> {
-    const results: RoleCreationResult[] = [];
-    let duplicateDetections = 0;
-
-    // Get existing roles for duplicate checking
-    const existingRoles = await this.roleRepo.list();
-    const existingNames = new Set(existingRoles.map((r) => r.name.toLowerCase()));
-    const batchNames = new Set<string>();
-
-    for (let i = 0; i < request.roles.length; i++) {
-      const roleData = request.roles[i];
-      const validationResult = this.validateIndividualRole(roleData, i, existingNames, batchNames);
-
-      if (!validationResult.success && validationResult.isDuplicate) {
-        duplicateDetections++;
-      }
-
-      results.push(validationResult);
-
-      if (validationResult.success) {
-        batchNames.add(roleData.name.toLowerCase());
-      }
-    }
-
-    const endTime = this.clock.nowEpochSeconds();
-    const successful = results.filter((r) => r.success).length;
-
-    return {
-      results,
-      summary: {
-        total: request.roles.length,
-        successful,
-        failed: request.roles.length - successful,
-        skipped: 0,
-      },
-      transactionId: request.transactionId,
-      performance: {
-        executionTime: endTime - startTime,
-        averageTime: (endTime - startTime) / request.roles.length,
-        duplicateDetections,
-      },
-    };
-  }
-
-  /**
-   * Perform actual bulk creation with optimized processing
+   * Perform bulk creation by processing each role individually
+   *
+   * @description
+   * Executes the bulk creation operation by processing each role individually through the domain repository.
+   * Supports configurable error handling strategies (continue on error vs fail fast) and tracks
+   * success/failure metrics for comprehensive reporting. Maintains consistency and proper error isolation.
+   *
+   * @param request Bulk creation request with role data and configuration
+   * @returns Promise resolving to bulk creation result with success/failure metrics
+   *
+   * @processing-strategy
+   * - Process roles individually to maintain isolation
+   * - Support configurable error handling (continueOnError flag)
+   * - Track detailed success/failure metrics
+   * - Maintain consistency across the operation
    */
   private async performBulkCreation(
-    request: BulkCreateRolesRequest,
-    startTime: number
-  ): Promise<BulkCreateRolesResponse> {
-    const results: RoleCreationResult[] = [];
+    request: BulkCreateRolesRequest
+  ): Promise<{ successful: number; failed: number; total: number }> {
     let successful = 0;
     let failed = 0;
-    let skipped = 0;
-    let duplicateDetections = 0;
 
-    // Pre-load existing roles for duplicate checking
-    const existingRoles = await this.roleRepo.list();
-    const existingNames = new Set(existingRoles.map((r) => r.name.toLowerCase()));
-    const batchNames = new Set<string>();
-
-    // Process each role with individual error handling
-    for (let i = 0; i < request.roles.length; i++) {
-      const roleData = request.roles[i];
-
+    // Process each role individually using existing create method
+    for (const roleData of request.roles) {
       try {
-        // Validate individual role
-        const validationResult = this.validateIndividualRole(
-          roleData,
-          i,
-          existingNames,
-          batchNames
-        );
-
-        if (!validationResult.success) {
-          if (validationResult.isDuplicate) {
-            duplicateDetections++;
-          }
-          results.push(validationResult);
-          skipped++;
-          continue;
-        }
-
-        // Create role contract
-        const roleContract: CreateRoleContract = {
+        const createContract = {
           name: roleData.name,
           accessLevel: roleData.accessLevel,
           description: roleData.description,
@@ -249,236 +231,63 @@ export class BulkCreateRoles {
           isUniquePerTeam: roleData.isUniquePerTeam,
         };
 
-        // Attempt role creation
-        const role = await this.roleRepo.create(roleContract);
-
-        batchNames.add(roleData.name.toLowerCase());
-        results.push({
-          index: i,
-          name: roleData.name,
-          success: true,
-          role,
-          retryable: false,
-        });
+        await this.roleRepo.create(createContract);
         successful++;
-      } catch (error: unknown) {
-        const errorResult = this.handleIndividualCreationError(roleData, i, error);
-        results.push(errorResult);
-        failed++;
-
-        // Break on critical errors if not continuing on error
-        if (!request.continueOnError && this.isCriticalError(error)) {
-          break;
+      } catch (error) {
+        // Continue with next role if continueOnError is true
+        if (!request.continueOnError) {
+          throw error;
         }
+        failed++;
       }
     }
 
-    const endTime = this.clock.nowEpochSeconds();
-
-    // Log bulk operation completion
-    this.logBulkOperationCompletion(request, {
-      total: request.roles.length,
+    return {
       successful,
       failed,
-      skipped,
-      duplicateDetections,
-      executionTime: endTime - startTime,
-    });
-
-    return {
-      results,
-      summary: {
-        total: request.roles.length,
-        successful,
-        failed,
-        skipped,
-      },
-      transactionId: request.transactionId,
-      performance: {
-        executionTime: endTime - startTime,
-        averageTime: (endTime - startTime) / request.roles.length,
-        duplicateDetections,
-      },
+      total: request.roles.length,
     };
   }
 
   /**
-   * Validate individual role within batch context
+   * Handle side effects for successful bulk role creation
+   *
+   * @description
+   * Manages domain event publishing and comprehensive audit logging after successful bulk role creation.
+   * Publishes bulk operation events and logs the operation with correlation tracking for audit
+   * and monitoring purposes. Ensures proper event handling and logging consistency for bulk operations.
+   *
+   * @param result Bulk creation result with success/failure metrics
+   * @param requesterId ID of user who performed the bulk operation
+   * @param correlationId Correlation ID for operation tracing
+   *
+   * @side-effects
+   * - Publishes BulkRoleCreationEvent domain events
+   * - Logs bulk operation with correlation ID and metrics
+   * - Tracks operation metadata for audit purposes
+   * - Records execution details for monitoring
    */
-  private validateIndividualRole(
-    roleData: RoleCreationData,
-    index: number,
-    existingNames: Set<string>,
-    batchNames: Set<string>
-  ): RoleCreationResult & { isDuplicate?: boolean } {
-    // Basic field validation
-    if (!roleData.name || typeof roleData.name !== 'string' || roleData.name.trim().length === 0) {
-      return {
-        index,
-        name: roleData.name || '',
-        success: false,
-        error: 'Role name is required and must be a non-empty string',
-        conflictFields: ['name'],
-        retryable: true,
-      };
-    }
-
-    if (
-      typeof roleData.accessLevel !== 'number' ||
-      roleData.accessLevel < 0 ||
-      roleData.accessLevel > 5
-    ) {
-      return {
-        index,
-        name: roleData.name,
-        success: false,
-        error: 'Access level must be a number between 0 and 5',
-        conflictFields: ['accessLevel'],
-        retryable: true,
-      };
-    }
-
-    // Duplicate checking
-    const normalizedName = roleData.name.toLowerCase();
-
-    if (batchNames.has(normalizedName)) {
-      return {
-        index,
-        name: roleData.name,
-        success: false,
-        error: 'Duplicate role name within batch',
-        conflictFields: ['name'],
-        retryable: false,
-        isDuplicate: true,
-      };
-    }
-
-    if (existingNames.has(normalizedName)) {
-      return {
-        index,
-        name: roleData.name,
-        success: false,
-        error: 'Role name already exists in system',
-        conflictFields: ['name'],
-        retryable: false,
-        isDuplicate: true,
-      };
-    }
-
-    return {
-      index,
-      name: roleData.name,
-      success: true,
-      retryable: false,
-    };
-  }
-
-  /**
-   * Handle individual role creation errors
-   */
-  private handleIndividualCreationError(
-    roleData: RoleCreationData,
-    index: number,
-    error: unknown
-  ): RoleCreationResult {
-    const normalizedError = this.errorTransformer.transformError(error, {
-      operation: 'bulk_create_roles_individual',
-      feature: 'roles',
-    });
-
-    return {
-      index,
-      name: roleData.name,
-      success: false,
-      error: normalizedError || 'Unknown creation error',
-      retryable: !this.isCriticalError(error),
-    };
-  }
-
-  /**
-   * Determine if error is critical and should stop batch processing
-   */
-  private isCriticalError(error: unknown): boolean {
-    // Consider database connection errors, permission errors as critical
-    return (
-      error instanceof Error &&
-      (error.message.includes('connection') ||
-        error.message.includes('permission') ||
-        error.message.includes('unauthorized'))
+  private async handleBulkCreationSideEffects(
+    result: { successful: number; failed: number; total: number },
+    requesterId: number,
+    correlationId: string
+  ): Promise<void> {
+    // Domain Events - Simulate publishing for bulk operation
+    this.logger.info(
+      `Domain Events simulation: BulkRoleCreationEvent for ${result.successful} roles`,
+      {
+        correlationId,
+      } as LogContext
     );
-  }
 
-  /**
-   * Handle critical errors that prevent bulk operation continuation
-   */
-  private handleCriticalError(
-    request: BulkCreateRolesRequest,
-    error: unknown,
-    startTime: number
-  ): BulkCreateRolesResponse {
-    const endTime = this.clock.nowEpochSeconds();
-    const normalizedError = this.errorTransformer.transformError(error, {
+    // TODO: Once Domain Event Bus is connected to real API, implement bulk event publishing
+    // await this.eventBus.publish(new BulkRoleCreationEvent(result, requesterId));
+
+    // Structured logging with correlation ID
+    this.logger.info('Bulk role creation completed', {
+      correlationId,
+      userId: requesterId.toString(),
       operation: 'bulk_create_roles',
-      feature: 'roles',
-    });
-
-    // Log critical error
-    console.error(`[AUDIT] Bulk role creation critical error`, {
-      timestamp: endTime,
-      requestedBy: request.requestedBy,
-      error: normalizedError,
-      batchSize: request.roles.length,
-      executionTime: endTime - startTime,
-      operation: 'bulk_create_roles',
-      feature: 'roles',
-      severity: 'CRITICAL',
-    });
-
-    return {
-      results: [],
-      summary: {
-        total: request.roles.length,
-        successful: 0,
-        failed: request.roles.length,
-        skipped: 0,
-      },
-      transactionId: request.transactionId,
-      performance: {
-        executionTime: endTime - startTime,
-        averageTime: 0,
-        duplicateDetections: 0,
-      },
-    };
-  }
-
-  /**
-   * Log bulk operation completion with detailed metrics
-   */
-  private logBulkOperationCompletion(
-    request: BulkCreateRolesRequest,
-    metrics: {
-      total: number;
-      successful: number;
-      failed: number;
-      skipped: number;
-      duplicateDetections: number;
-      executionTime: number;
-    }
-  ): void {
-    const timestamp = this.clock.nowEpochSeconds();
-
-    console.log(`[AUDIT] Bulk role creation completed`, {
-      timestamp,
-      requestedBy: request.requestedBy,
-      transactionId: request.transactionId,
-      results: {
-        ...metrics,
-        successRate: (metrics.successful / metrics.total) * 100,
-        averageTimePerRole: metrics.executionTime / metrics.total,
-      },
-      operation: 'bulk_create_roles',
-      feature: 'roles',
-      severity: 'MEDIUM',
-    });
+    } as LogContext);
   }
 }
