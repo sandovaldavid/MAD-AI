@@ -132,7 +132,11 @@ export class DismissNotification {
 
     // Validate requester ID if provided
     if (request.requesterId !== undefined && request.requesterId !== null) {
-      if (typeof request.requesterId !== 'number' || !Number.isInteger(request.requesterId) || request.requesterId <= 0) {
+      if (
+        typeof request.requesterId !== 'number' ||
+        !Number.isInteger(request.requesterId) ||
+        request.requesterId <= 0
+      ) {
         throw new ApplicationError(
           ApplicationErrorCode.INVALID_INPUT,
           'INVALID_REQUESTER_ID_FORMAT',
