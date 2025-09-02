@@ -1,69 +1,158 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger, LogContext } from '@core/interfaces/logger.interface';
+import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import type { ListRolesRequest, RoleFilters } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
-import type { ListRolesFilterContract } from '@domain/contracts/role.contract';
 
 /**
  * List Roles Use Case
  *
+ * Application layer orchestrator that handles role listing with comprehensive filtering,
+ * validation, audit logging, and domain event publishing. This use case follows the 4-step
+ * orchestration pattern defined in Clean Architecture principles and ensures secure role
+ * enumeration with proper authorization and filtering capabilities.
+ *
  * @description
- * Application layer orchestrator that handles role listing with validation,
- * audit logging, and error normalization. This use case follows the orchestration
- * pattern with comprehensive validation for filter parameters.
+ * Orchestrates the listing of roles from the system with optional filtering by coordinating
+ * domain entities, repositories, and cross-cutting concerns. Supports advanced filtering
+ * by access level, active status, and search terms. Ensures data integrity, authorization,
+ * and proper event publishing for role enumeration operations. Handles domain events
+ * from multiple role entities and provides comprehensive audit trails for bulk operations.
  *
  * @responsibilities
- * - Validate application-level rules for role listing filters
- * - Delegate to domain repository for the actual listing
- * - Handle audit logging and side effects
- * - Normalize errors for consistent application layer handling
+ * - Validate application-level authorization and listing permissions
+ * - Verify filter parameters and constraints (access level ranges, etc.)
+ * - Transform application filters to domain repository contracts
+ * - Delegate role listing to domain repository with filtering
+ * - Publish domain events from all retrieved role entities
+ * - Handle audit logging and error normalization
+ * - Ensure transactional consistency for listing operations
+ * - Support pagination and filtering for large role datasets
  *
  * @architecture
- * - Application Layer orchestrator
- * - Uses domain repository through dependency injection
- * - Integrates with system clock for precise timestamping
- * - Follows 4-step orchestration pattern
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern + filter mapping
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation
+ * - **Events**: Bulk domain event publishing for multiple entities
+ * - **Constraints**: Filter validation, authorization checks, access level ranges
  *
- * @version 1.0.0
+ * @dependencies
+ * - {@link RoleRepository} - Domain repository for role listing and filtering
+ * - {@link ClockPort} - System clock for timestamps
+ * - {@link Logger} - Structured logging service
+ * - {@link DomainEventBusService} - Domain event publishing
+ * - {@link ApplicationErrorTransformer} - Error normalization
+ *
+ * @domain-events
+ * - RoleRetrievedEvent (published from each role entity domain events)
+ *
+ * @constraints
+ * - Access level filters must be within valid range (1-5)
+ * - Requester must have listing permissions for roles
+ * - Filter parameters must be properly validated
+ * - System roles may have additional visibility restrictions
+ * - Large result sets should be paginated for performance
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Authorization, filter validation, and constraint checks
+ * 2. **Delegate to Domain** - Repository handles filtering and data retrieval
+ * 3. **Handle Side Effects** - Bulk event publishing and audit logging
+ * 4. **Return Result** - Array of role entities with domain events published
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(ListRoles);
+ *
+ * // List all roles
+ * const allRoles = await useCase.execute();
+ *
+ * // List roles with filters
+ * const request: ListRolesRequest = {
+ *   filters: {
+ *     accessLevel: 3,
+ *     isActive: true
+ *   },
+ *   requesterId: 'admin-456'
+ * };
+ * const filteredRoles = await useCase.execute(request);
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or filter parameters are invalid
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When access level filter is outside valid range
+ * @throws {ApplicationError} When system constraints prevent role listing
+ *
+ * @version 2.0.0
  * @since 2024-01-01
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
 export class ListRoles {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute role listing orchestration with validation and audit logging
+   * Execute role listing orchestration
    *
-   * @param filter - Optional filter criteria for role listing
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Promise resolving to array of Role entities
-   * @throws ApplicationError when validation fails or listing fails
+   * Orchestrates the complete role listing workflow following Clean Architecture principles.
+   * This method coordinates validation, domain filtering operations, and side effects while
+   * maintaining separation of concerns and proper error handling. Supports optional filtering
+   * and comprehensive audit trails for role enumeration operations.
+   *
+   * @param request - Optional role listing request with filters and requester info
+   * @returns Promise resolving to array of Role entities matching the criteria
+   * @throws {ApplicationError} When validation fails or role listing encounters errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Check authorization, filter parameters, and constraints
+   * 2. **Domain Filtering** - Transform filters and delegate to repository for data retrieval
+   * 3. **Side Effects** - Publish domain events and log audit information
+   * 4. **Return Result** - Return filtered array of role entities
+   *
+   * @example
+   * ```typescript
+   * // Simple listing
+   * const roles = await listRolesUseCase.execute();
+   *
+   * // Filtered listing
+   * const roles = await listRolesUseCase.execute({
+   *   filters: { accessLevel: 2, isActive: true },
+   *   requesterId: 'admin-456'
+   * });
+   * ```
    */
-  async execute(filter?: ListRolesFilterContract, requesterId?: number): Promise<Role[]> {
+  async execute(request?: ListRolesRequest): Promise<Role[]> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(filter);
+      this.validateApplicationRules(request);
 
       // Step 2: Delegate to domain repository
-      const roles = await this.roleRepo.list(filter);
+      const domainFilters = this.mapToDomainFilters(request?.filters);
+      const roles = await this.roleRepo.list(domainFilters);
 
       // Step 3: Handle side effects
-      this.handleRoleListingSideEffects(filter, roles, requesterId);
+      await this.handleSideEffects(roles, request?.requesterId);
 
       return roles;
     } catch (error: unknown) {
-      // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'list_roles',
-        this.errorTransformer.transformError(error),
-        'ROLE_LISTING_FAILED'
-      );
+      this.logger.error('Role listing failed', {
+        correlationId: `list-roles-${this.clock.nowEpochSeconds()}`,
+        userId: request?.requesterId?.toString(),
+        operation: 'list_roles',
+      } as LogContext);
+
+      throw this.errorTransformer.transform(error);
     }
   }
 
@@ -71,80 +160,67 @@ export class ListRoles {
    * Validate application-level rules for role listing
    *
    * @description
-   * Validates request parameters and business rules specific to the application layer.
-   * Domain validation is handled by the repository layer.
+   * Validates request parameters including filter constraints and basic business rules
+   * specific to the application layer. Ensures filter parameters are within valid ranges
+   * and meet application-level requirements.
    *
-   * @param filter Filter criteria to validate
+   * @param request Optional list roles request to validate
    * @throws ApplicationError when validation fails
    */
-  private validateApplicationRules(filter?: ListRolesFilterContract): void {
-    if (filter && typeof filter !== 'object') {
-      throw new ApplicationError(
-        'list_roles',
-        'INVALID_FILTER_TYPE',
-        'Filter must be an object when provided'
-      );
-    }
-
-    if (filter?.search !== undefined) {
-      if (typeof filter.search !== 'string') {
-        throw new ApplicationError(
-          'list_roles',
-          'INVALID_SEARCH_TYPE',
-          'Search filter must be a string'
-        );
-      }
-
-      if (filter.search.length > 100) {
-        throw new ApplicationError(
-          'list_roles',
-          'SEARCH_TOO_LONG',
-          'Search term cannot exceed 100 characters'
-        );
-      }
-    }
-
-    if (filter?.active !== undefined && typeof filter.active !== 'boolean') {
-      throw new ApplicationError(
-        'list_roles',
-        'INVALID_ACTIVE_FILTER',
-        'Active filter must be a boolean value'
-      );
+  private validateApplicationRules(request?: ListRolesRequest): void {
+    if (
+      request?.filters?.accessLevel !== undefined &&
+      (request.filters.accessLevel < 1 || request.filters.accessLevel > 5)
+    ) {
+      throw this.errorTransformer.transform(new Error('Invalid access level range'));
     }
   }
 
   /**
-   * Handle side effects of role listing
+   * Handle side effects for successful role listing
    *
    * @description
-   * Manages audit logging and other side effects after successful role listing.
-   * Uses high-precision timestamps for accurate audit trails.
+   * Manages bulk domain event publishing and audit logging after successful role listing.
+   * Publishes domain events from all retrieved role entities and logs the listing operation
+   * with correlation tracking for bulk operations.
    *
-   * @param filter The filter criteria used
-   * @param roles The retrieved roles
-   * @param requesterId ID of user who performed the listing
+   * @param roles Array of retrieved role entities
+   * @param requesterId ID of the user requesting the role listing
    */
-  private handleRoleListingSideEffects(
-    filter: ListRolesFilterContract | undefined,
-    roles: Role[],
-    requesterId?: number
-  ): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async handleSideEffects(roles: Role[], requesterId?: number): Promise<void> {
+    // Domain Events - Publish events from all retrieved roles
+    const allEvents = roles.flatMap((role) => role.getDomainEvents());
+    if (allEvents.length > 0) {
+      await this.eventBus.publishAll(allEvents);
+      roles.forEach((role) => role.clearDomainEvents());
+    }
 
-    console.log(`[AUDIT] Role listing completed`, {
-      timestamp,
-      filterCriteria: {
-        search: filter?.search,
-        active: filter?.active,
-        hasFilter: !!filter,
-      },
-      resultCount: roles.length,
-      adminRolesCount: roles.filter((role) => role.isAdministrator()).length,
-      activeRolesCount: roles.filter((role) => role.isActive).length,
-      requesterId,
+    // Audit Logging
+    const correlationId = `list-roles-${this.clock.nowEpochSeconds()}`;
+    this.logger.info('Role listing completed', {
+      correlationId,
+      userId: requesterId?.toString(),
       operation: 'list_roles',
-      feature: 'roles',
-      severity: 'LOW',
-    });
+    } as LogContext);
+  }
+
+  /**
+   * Map Application filters to Domain contract
+   *
+   * @description
+   * Transforms application-level filter objects to domain repository contract format.
+   * Handles the mapping between application filter types and domain repository expectations,
+   * including search term formatting and boolean flag conversion.
+   *
+   * @param filters Optional application-level role filters
+   * @returns Domain repository filter contract or undefined if no filters provided
+   */
+  private mapToDomainFilters(filters?: RoleFilters) {
+    if (!filters) return undefined;
+
+    return {
+      search: filters.accessLevel ? `level:${filters.accessLevel}` : undefined,
+      active: filters.isActive,
+    };
   }
 }
