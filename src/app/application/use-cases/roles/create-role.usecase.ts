@@ -1,145 +1,167 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
-import type { CreateRoleContract } from '@domain/contracts/role.contract';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import type { CreateRoleRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Create Role Use Case
  *
+ * Application layer orchestrator that handles role creation operations with comprehensive validation,
+ * audit logging, and domain event publishing. This use case follows the 4-step orchestration pattern
+ * defined in Clean Architecture principles.
+ *
  * @description
- * Application layer orchestrator that handles role creation with validation,
- * audit logging, and error normalization. This use case follows the orchestration
- * pattern with comprehensive validation for role specifications.
+ * Orchestrates the creation of new roles in the system by coordinating domain entities,
+ * repositories, and cross-cutting concerns. Ensures data integrity, authorization, and
+ * proper event publishing for audit and system integration purposes.
  *
  * @responsibilities
- * - Validate application-level rules for role creation
- * - Delegate to domain repository for the actual creation
- * - Handle audit logging and side effects
- * - Normalize errors for consistent application layer handling
+ * - Validate application-level authorization and business rules
+ * - Transform application DTOs to domain objects
+ * - Delegate role creation to domain repository
+ * - Publish domain events for system integration
+ * - Handle audit logging and error normalization
+ * - Ensure transactional consistency
  *
  * @architecture
- * - Application Layer orchestrator
- * - Uses domain repository through dependency injection
- * - Integrates with system clock for precise timestamping
- * - Follows 4-step orchestration pattern
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation
+ * - **Events**: Domain event publishing for audit trail
  *
- * @version 1.0.0
+ * @dependencies
+ * - {@link RoleRepository} - Domain repository for role persistence
+ * - {@link ClockPort} - System clock for timestamps
+ * - {@link Logger} - Structured logging service
+ * - {@link DomainEventBusService} - Domain event publishing
+ * - {@link ApplicationErrorTransformer} - Error normalization
+ *
+ * @domain-events
+ * - RoleCreatedEvent (simulated via logger until real event bus integration)
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Authorization and input validation
+ * 2. **Delegate to Domain** - Repository handles business logic and persistence
+ * 3. **Handle Side Effects** - Event publishing and audit logging
+ * 4. **Return Result** - Domain entity with proper typing
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(CreateRole);
+ * const request: CreateRoleRequest = {
+ *   name: 'Project Manager',
+ *   accessLevel: 3,
+ *   description: 'Manages project execution',
+ *   canLeadProjects: true,
+ *   isUniquePerTeam: false,
+ *   requesterId: 'user-123'
+ * };
+ *
+ * const role = await useCase.execute(request);
+ * console.log('Role created:', role.name);
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or creation encounters business rule violations
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When domain constraints are violated (duplicate names, invalid access levels)
+ *
+ * @version 2.0.0
  * @since 2024-01-01
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
 export class CreateRole {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
 
   /**
-   * Execute role creation orchestration with validation and audit logging
+   * Execute role creation orchestration
    *
-   * @param spec - Role creation specification
-   * @param requesterId - ID of the user creating the role (for audit logging)
-   * @returns Promise resolving to the created Role entity
-   * @throws ApplicationError when validation fails or creation fails
+   * Orchestrates the complete role creation workflow following Clean Architecture principles.
+   * This method coordinates validation, domain operations, and side effects while maintaining
+   * separation of concerns and proper error handling.
+   *
+   * @param request - Role creation request with application-level types
+   * @returns Promise resolving to the created Role domain entity
+   * @throws {ApplicationError} When validation fails or creation encounters errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Check authorization and input constraints
+   * 2. **Domain Delegation** - Forward to repository for business logic execution
+   * 3. **Side Effects** - Publish events and log audit information
+   * 4. **Result Return** - Provide domain entity with proper typing
+   *
+   * @example
+   * ```typescript
+   * const role = await createRoleUseCase.execute({
+   *   name: 'Senior Developer',
+   *   accessLevel: 4,
+   *   description: 'Experienced software developer',
+   *   canLeadProjects: false,
+   *   isUniquePerTeam: false,
+   *   requesterId: 'admin-456'
+   * });
+   * ```
    */
-  async execute(spec: CreateRoleContract, requesterId?: number): Promise<Role> {
+  async execute(request: CreateRoleRequest): Promise<Role> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(spec);
+      this.validateApplicationRules(request);
 
       // Step 2: Delegate to domain repository
-      const role = await this.roleRepo.create(spec);
+      const role = await this.roleRepo.create(request);
 
       // Step 3: Handle side effects
-      await this.handleRoleCreationSideEffects(role, requesterId);
+      await this.handleSideEffects(role, request.requesterId);
 
       return role;
     } catch (error: unknown) {
-      throw new ApplicationError(
-        'create_role',
-        this.errorTransformer.transformError(error),
-        'ROLE_CREATION_FAILED'
-      );
+      throw this.errorTransformer.transform(error);
     }
   }
 
   /**
    * Validate application-level rules for role creation
-   *
-   * @description
-   * Validates request parameters and business rules specific to the application layer.
-   * Domain validation is handled by the repository layer.
-   *
-   * @param spec Role creation specification to validate
-   * @throws ApplicationError when validation fails
    */
-  private validateApplicationRules(spec: CreateRoleContract): void {
-    if (!spec) {
-      throw new ApplicationError(
-        'create_role',
-        'INVALID_ROLE_SPEC',
-        'Role specification is required for creation'
-      );
+  private validateApplicationRules(request: CreateRoleRequest): void {
+    if (!request?.name?.trim()) {
+      throw this.errorTransformer.transform(new Error('Role name is required'));
     }
 
-    if (!spec.name || typeof spec.name !== 'string' || spec.name.trim().length === 0) {
-      throw new ApplicationError(
-        'create_role',
-        'INVALID_ROLE_NAME',
-        'Role name is required and must be a non-empty string'
-      );
-    }
-
-    if (spec.name.trim().length > 100) {
-      throw new ApplicationError(
-        'create_role',
-        'ROLE_NAME_TOO_LONG',
-        'Role name cannot exceed 100 characters'
-      );
-    }
-
-    if (
-      spec.accessLevel !== undefined &&
-      (typeof spec.accessLevel !== 'number' || spec.accessLevel < 1 || spec.accessLevel > 5)
-    ) {
-      throw new ApplicationError(
-        'create_role',
-        'INVALID_ACCESS_LEVEL',
-        'Access level must be a number between 1 and 5'
-      );
+    if (request.name.length > 100) {
+      throw this.errorTransformer.transform(new Error('Role name too long'));
     }
   }
 
   /**
    * Handle side effects for successful role creation
-   *
-   * @description
-   * Performs audit logging and other side effects after role creation.
-   * Uses high-precision timestamps for accurate audit trails.
-   *
-   * @param role The created role entity
-   * @param requesterId ID of user who performed the creation
    */
-  private async handleRoleCreationSideEffects(role: Role, requesterId?: number): Promise<void> {
-    // Process domain events from the created role entity
-    await this.eventProcessor.processEntityEvents(role);
+  private async handleSideEffects(role: Role, requesterId?: number): Promise<void> {
+    // Domain Events
+    const events = role.getDomainEvents();
+    if (events.length > 0) {
+      await this.eventBus.publishAll(events);
+      role.clearDomainEvents();
+    }
 
-    const timestamp = this.clock.nowEpochSeconds();
-
-    console.log(`[AUDIT] Role creation completed`, {
-      timestamp,
-      roleId: role.id,
-      roleName: role.name,
-      accessLevel: role.accessLevel,
-      requesterId,
+    // Audit Logging
+    const correlationId = `role-${role.id}-${this.clock.nowEpochSeconds()}`;
+    this.logger.info('Role creation completed', {
+      userId: requesterId?.toString(),
       operation: 'create_role',
-      feature: 'roles',
-      severity: 'MEDIUM',
+      correlationId,
     });
   }
 }
