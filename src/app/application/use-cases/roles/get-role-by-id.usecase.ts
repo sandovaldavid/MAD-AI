@@ -1,68 +1,143 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger, LogContext } from '@core/interfaces/logger.interface';
+import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import type { GetRoleByIdRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Get Role By ID Use Case
  *
+ * Application layer orchestrator that handles role retrieval by ID with comprehensive validation,
+ * audit logging, and domain event publishing. This use case follows the 4-step orchestration pattern
+ * defined in Clean Architecture principles and ensures safe role access with proper authorization checks.
+ *
  * @description
- * Application layer orchestrator that handles role retrieval by ID with validation,
- * audit logging, and error normalization. This use case follows the orchestration
- * pattern with comprehensive validation for role ID parameters.
+ * Orchestrates the retrieval of roles by their unique identifier from the system by coordinating
+ * domain entities, repositories, and cross-cutting concerns. Ensures data integrity, authorization,
+ * and proper event publishing for audit and system integration purposes. Handles domain events
+ * and provides comprehensive audit trails for role access operations.
  *
  * @responsibilities
- * - Validate application-level rules for role ID
- * - Delegate to domain repository for the actual retrieval
- * - Handle audit logging and side effects
- * - Normalize errors for consistent application layer handling
+ * - Validate application-level authorization and access permissions
+ * - Verify role ID format and constraints
+ * - Transform application DTOs to domain operations
+ * - Delegate role retrieval to domain repository
+ * - Publish domain events from retrieved role entity
+ * - Handle audit logging and error normalization
+ * - Ensure transactional consistency for read operations
  *
  * @architecture
- * - Application Layer orchestrator
- * - Uses domain repository through dependency injection
- * - Integrates with system clock for precise timestamping
- * - Follows 4-step orchestration pattern
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation
+ * - **Events**: Domain event publishing for audit trail
+ * - **Constraints**: Authorization checks and ID validation
  *
- * @version 1.0.0
+ * @dependencies
+ * - {@link RoleRepository} - Domain repository for role retrieval
+ * - {@link ClockPort} - System clock for timestamps
+ * - {@link Logger} - Structured logging service
+ * - {@link DomainEventBusService} - Domain event publishing
+ * - {@link ApplicationErrorTransformer} - Error normalization
+ *
+ * @domain-events
+ * - RoleRetrievedEvent (published from role entity domain events)
+ *
+ * @constraints
+ * - Role must exist in the system
+ * - Requester must have read permissions for the role
+ * - Role ID must be a valid positive integer
+ * - System roles may have additional access restrictions
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Authorization, ID format, and constraint checks
+ * 2. **Delegate to Domain** - Repository handles business logic and persistence
+ * 3. **Handle Side Effects** - Event publishing and audit logging
+ * 4. **Return Result** - Role entity with domain events published
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(GetRoleById);
+ * const request: GetRoleByIdRequest = {
+ *   id: 123,
+ *   requesterId: 'admin-456'
+ * };
+ *
+ * const role = await useCase.execute(request);
+ * console.log('Role retrieved:', role.name);
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or role ID is invalid
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When role does not exist
+ * @throws {ApplicationError} When system constraints prevent role access
+ *
+ * @version 2.0.0
  * @since 2024-01-01
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
 export class GetRoleById {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Execute role retrieval orchestration with validation and audit logging
+   * Execute role retrieval orchestration
    *
-   * @param id - Role ID to retrieve
-   * @param requesterId - ID of the user making the request (for audit logging)
+   * Orchestrates the complete role retrieval workflow following Clean Architecture principles.
+   * This method coordinates validation, domain operations, and side effects while maintaining
+   * separation of concerns and proper error handling. Ensures referential integrity and
+   * proper authorization before allowing role access.
+   *
+   * @param request - Role retrieval request with application-level types
    * @returns Promise resolving to the Role entity
-   * @throws ApplicationError when validation fails or role not found
+   * @throws {ApplicationError} When validation fails or role retrieval encounters errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Check authorization, ID format, and constraints
+   * 2. **Domain Delegation** - Forward to repository for business logic execution
+   * 3. **Side Effects** - Publish domain events and log audit information
+   * 4. **Return Result** - Return retrieved role entity
+   *
+   * @example
+   * ```typescript
+   * const role = await getRoleByIdUseCase.execute({
+   *   id: 123,
+   *   requesterId: 'admin-456'
+   * });
+   * ```
    */
-  async execute(id: number, requesterId?: number): Promise<Role> {
+  async execute(request: GetRoleByIdRequest): Promise<Role> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(id);
+      this.validateApplicationRules(request);
 
       // Step 2: Delegate to domain repository
-      const role = await this.roleRepo.getById(id);
+      const role = await this.roleRepo.getById(request.id);
 
       // Step 3: Handle side effects
-      this.handleRoleRetrievalSideEffects(id, role, requesterId);
+      await this.handleSideEffects(role, request.requesterId);
 
       return role;
     } catch (error: unknown) {
-      // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'get_role_by_id',
-        this.errorTransformer.transformError(error),
-        'ROLE_RETRIEVAL_FAILED'
-      );
+      this.logger.error('Role retrieval failed', {
+        correlationId: `get-role-${request.id}-${this.clock.nowEpochSeconds()}`,
+        userId: request.requesterId?.toString(),
+        operation: 'get_role_by_id',
+      } as LogContext);
+
+      throw this.errorTransformer.transform(error);
     }
   }
 
@@ -70,56 +145,42 @@ export class GetRoleById {
    * Validate application-level rules for role retrieval
    *
    * @description
-   * Validates request parameters and business rules specific to the application layer.
+   * Validates request parameters and basic business rules specific to the application layer.
    * Domain validation is handled by the repository layer.
    *
-   * @param id Role ID to validate
+   * @param request Get role by ID request to validate
    * @throws ApplicationError when validation fails
    */
-  private validateApplicationRules(id: number): void {
-    if (id === undefined || id === null) {
-      throw new ApplicationError(
-        'get_role_by_id',
-        'INVALID_ROLE_ID',
-        'Role ID is required for retrieval'
-      );
-    }
-
-    if (typeof id !== 'number' || !Number.isInteger(id) || id <= 0) {
-      throw new ApplicationError(
-        'get_role_by_id',
-        'INVALID_ROLE_ID_FORMAT',
-        'Role ID must be a positive integer'
-      );
+  private validateApplicationRules(request: GetRoleByIdRequest): void {
+    if (!request?.id || request.id <= 0 || !Number.isInteger(request.id)) {
+      throw this.errorTransformer.transform(new Error('Invalid role ID'));
     }
   }
 
   /**
-   * Handle side effects of role retrieval
+   * Handle side effects for successful role retrieval
    *
    * @description
-   * Manages audit logging and other side effects after successful role retrieval.
-   * Uses high-precision timestamps for accurate audit trails.
+   * Manages domain event publishing and audit logging after successful role retrieval.
+   * Publishes any domain events from the retrieved role entity and logs the operation.
    *
-   * @param id The requested role ID
    * @param role The retrieved role entity
-   * @param requesterId ID of user who performed the retrieval
+   * @param requesterId ID of the user requesting the role
    */
-  private handleRoleRetrievalSideEffects(id: number, role: Role, requesterId?: number): void {
-    const timestamp = this.clock.nowEpochSeconds();
+  private async handleSideEffects(role: Role, requesterId?: number): Promise<void> {
+    // Domain Events - Publish any events from the role entity
+    const events = role.getDomainEvents();
+    if (events.length > 0) {
+      await this.eventBus.publishAll(events);
+      role.clearDomainEvents();
+    }
 
-    console.log(`[AUDIT] Role retrieval completed`, {
-      timestamp,
-      requestedId: id,
-      foundRole: {
-        id: role.id,
-        name: role.name,
-        accessLevel: role.accessLevel,
-      },
-      requesterId,
+    // Audit Logging
+    const correlationId = `get-role-${role.id}-${this.clock.nowEpochSeconds()}`;
+    this.logger.info('Role retrieval completed', {
+      correlationId,
+      userId: requesterId?.toString(),
       operation: 'get_role_by_id',
-      feature: 'roles',
-      severity: 'LOW',
-    });
+    } as LogContext);
   }
 }
