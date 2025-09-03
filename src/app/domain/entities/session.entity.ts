@@ -184,7 +184,7 @@ export class Session {
     this.addDomainEvent(
       DomainEvent.create({
         id: `session-expired-${this._user.id}-${Date.now()}`,
-        eventType: DomainEventType.SESSION_EXPIRED,
+        eventType: DomainEventType.USER_SESSION_EXPIRED,
         aggregateId: `session-${this._user.id}`,
         aggregateType: 'Session',
         eventData: {
@@ -284,7 +284,7 @@ export class Session {
       // Solo registramos si no hay eventos de expiración recientes para evitar spam
       const hasRecentExpirationEvent = this._domainEvents.some(
         (event) =>
-          event.eventType === DomainEventType.SESSION_EXPIRED &&
+          event.eventType === DomainEventType.USER_SESSION_EXPIRED &&
           Date.now() - event.occurredAt.toDate().getTime() < 60000 // Último minuto
       );
 
