@@ -1,13 +1,19 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import type { Logger } from '@core/interfaces/logger.interface';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { CreateUserRequest, CreateUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { User } from '@domain/entities/user.entity';
-import type { CreateUserContract } from '@domain/contracts/user.contract';
-import { ApplicationError } from '../../errors/application-error';
+import type { CreateUserContract } from '@/app/domain/repositories/business/user.contract';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
 
 /**
  * Create User Use Case
@@ -40,35 +46,34 @@ export class CreateUser {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject(DomainEventBusService);
 
   /**
    * Execute user creation orchestration with validation and side effects
    *
-   * @param userData User data for creation
-   * @param createdBy ID of the user creating this user (for audit purposes)
+   * @param request User creation request with data and options
    * @returns Promise resolving to created user
    * @throws ApplicationError when validation fails or creation is not allowed
    */
-  async execute(userData: CreateUserContract, createdBy?: number): Promise<User> {
+  async execute(request: CreateUserRequest): Promise<CreateUserResult> {
     try {
       // Step 1: Validate application rules
-      await this.validateApplicationRules(userData);
+      await this.validateApplicationRules(request.userData);
 
       // Step 2: Delegate to domain repository
-      const user = await this.userRepo.create(userData);
+      const user = await this.userRepo.create(request.userData);
 
       // Step 3: Handle side effects
-      await this.handleUserCreationSideEffects(user, userData, createdBy);
+      await this.handleUserCreationSideEffects(user, request.userData, request.createdBy);
 
       return user;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'create_user',
-        this.errorTransformer.transformError(error),
-        'USER_CREATION_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'create_user',
+      });
+      throw appError;
     }
   }
 
@@ -88,9 +93,10 @@ export class CreateUser {
     const existingUserByEmail = await this.userRepo.getByEmail(userData.email);
     if (existingUserByEmail) {
       throw new ApplicationError(
-        'create_user',
+        ApplicationErrorCode.USER_ALREADY_EXISTS,
         'Email address is already registered',
-        'EMAIL_ALREADY_EXISTS'
+        'Email address is already registered',
+        { email: userData.email }
       );
     }
 
@@ -98,9 +104,10 @@ export class CreateUser {
     const existingUserByUsername = await this.userRepo.getByUsername(userData.username);
     if (existingUserByUsername) {
       throw new ApplicationError(
-        'create_user',
+        ApplicationErrorCode.USER_ALREADY_EXISTS,
         'Username is already taken',
-        'USERNAME_ALREADY_EXISTS'
+        'Username is already taken',
+        { username: userData.username }
       );
     }
 
@@ -108,9 +115,10 @@ export class CreateUser {
     const role = await this.roleRepo.getById(userData.roleId);
     if (!role.isActive) {
       throw new ApplicationError(
-        'create_user',
+        ApplicationErrorCode.INVALID_ROLE_SPEC,
         'Cannot assign inactive role to new user',
-        'INACTIVE_ROLE_ASSIGNMENT'
+        'Cannot assign inactive role to new user',
+        { roleId: userData.roleId }
       );
     }
   }
@@ -127,17 +135,29 @@ export class CreateUser {
     userData: CreateUserContract,
     createdBy?: number
   ): Promise<void> {
-    // Process domain events from the user entity
-    await this.eventProcessor.processEntityEvents(user);
+    // Create and publish UserCreated domain event
+    const userCreatedEvent = DomainEvent.create({
+      id: `user-created-${user.id}-${Date.now()}`,
+      eventType: DomainEventType.USER_CREATED,
+      aggregateId: user.id.toString(),
+      aggregateType: 'User',
+      eventData: {
+        userId: user.id,
+        email: user.email.value,
+        username: user.username.value,
+        roleId: user.getRole.id,
+        createdBy: createdBy?.toString(),
+        createdAt: user.createdAt?.toString(),
+      },
+      causedByUserId: createdBy?.toString(),
+      occurredAt: ISODateTime.fromDate(this.clock.nowDate()),
+    });
+
+    await this.eventBus.publish(userCreatedEvent);
 
     // Log user creation for audit trail
-    console.log(`User ${user.id} created at ${this.clock.nowDate().toISOString()}`, {
-      userId: user.id,
-      username: user.username,
-      email: user.email,
-      roleId: userData.roleId,
-      createdBy: createdBy ?? 'system',
-      timestamp: this.clock.nowDate().toISOString(),
+    this.logger.info('User created successfully', {
+      userId: user.id.toString(),
       operation: 'create_user',
     });
 
