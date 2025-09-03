@@ -1,10 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { GetUserByIdRequest, GetUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { User } from '@domain/entities/user.entity';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 
 /**
  * Get User By ID Use Case
@@ -36,34 +39,34 @@ export class GetUserById {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
 
   /**
    * Execute user retrieval orchestration with validation and audit logging
    *
-   * @param id - User ID to retrieve
-   * @param requesterId - ID of the user making the request (for audit logging)
+   * @param request User retrieval request with ID
    * @returns Promise resolving to user entity
    * @throws ApplicationError when user not found or access denied
    */
-  async execute(id: number, requesterId?: number): Promise<User> {
+  async execute(request: GetUserByIdRequest): Promise<GetUserResult> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(id);
+      this.validateApplicationRules(request.userId);
 
       // Step 2: Delegate to domain repository
-      const user = await this.userRepo.getById(id);
+      const user = await this.userRepo.getById(request.userId);
 
       // Step 3: Handle side effects
-      this.handleUserAccessSideEffects(user, requesterId);
+      this.handleUserAccessSideEffects(user);
 
       return user;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'get_user_by_id',
-        this.errorTransformer.transformError(error),
-        'USER_RETRIEVAL_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'get_user_by_id',
+        userId: request.userId.toString(),
+      });
+      throw appError;
     }
   }
 
@@ -79,14 +82,18 @@ export class GetUserById {
    */
   private validateApplicationRules(id: number): void {
     if (id === undefined || id === null) {
-      throw new ApplicationError('get_user_by_id', 'User ID is required', 'MISSING_USER_ID');
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'User ID is required',
+        'User ID is required'
+      );
     }
 
     if (!Number.isInteger(id) || id <= 0) {
       throw new ApplicationError(
-        'get_user_by_id',
+        ApplicationErrorCode.INVALID_INPUT,
         'User ID must be a positive integer',
-        'INVALID_USER_ID_FORMAT'
+        'User ID must be a positive integer'
       );
     }
   }
@@ -97,13 +104,10 @@ export class GetUserById {
    * @param user Retrieved user entity
    * @param requesterId ID of the user making the request
    */
-  private handleUserAccessSideEffects(user: User, requesterId?: number): void {
+  private handleUserAccessSideEffects(user: User): void {
     // Log user access for security and audit purposes
-    console.log(`User ${user.id} accessed at ${this.clock.nowDate().toISOString()}`, {
-      userId: user.id,
-      username: user.username,
-      accessedBy: requesterId ?? 'system',
-      timestamp: this.clock.nowDate().toISOString(),
+    this.logger.info('User accessed by ID', {
+      userId: user.id.toString(),
       operation: 'get_user_by_id',
     });
   }
