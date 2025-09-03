@@ -19,6 +19,7 @@
 import { Provider } from '@angular/core';
 import { DOMAIN_EVENT_BUS_REPO } from './tokens';
 import { HttpDomainEventBusRepository } from '@infrastructure/repositories/business/http-domain-event-bus.repository';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
 
 /**
  * Domain Event Bus provider configuration
@@ -30,3 +31,12 @@ export function provideDomainEventBus(): Provider {
     useClass: HttpDomainEventBusRepository,
   };
 }
+
+/**
+ * Domain Event Bus Service provider configuration
+ * Provides the DomainEventBusService for dependency injection
+ */
+export const provideDomainEventBusService: Provider = {
+  provide: DomainEventBusService,
+  useClass: DomainEventBusService,
+};
