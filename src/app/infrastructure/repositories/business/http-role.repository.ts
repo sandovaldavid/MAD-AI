@@ -46,11 +46,11 @@ export class HttpRoleRepository implements RoleRepository {
   async create(spec: CreateRoleContract): Promise<Role> {
     try {
       const requestDto: CreateRoleRequestDTO = {
-        name: spec.role.name,
-        access_level: spec.role.getAccessLevel().getValue(),
-        description: spec.role.description,
-        can_lead_projects: spec.role.canLeadProjects(),
-        is_unique_per_team: spec.role.isUniqueForTeam(),
+        name: spec.name,
+        access_level: spec.accessLevel ?? 0,
+        description: spec.description ?? '',
+        can_lead_projects: spec.canLeadProjects ?? false,
+        is_unique_per_team: spec.isUniquePerTeam ?? false,
         created_by_user_id: spec.createdByUserId,
       };
 
