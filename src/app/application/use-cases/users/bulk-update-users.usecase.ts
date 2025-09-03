@@ -1,32 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-
-import { USER_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
-import type { UpdateUserPatchContract } from '@domain/contracts/user.contract';
+import type { BulkUpdateUsersRequest, BulkUpdateUsersResult } from '@application/types/users.types';
 import type { User } from '@domain/entities/user.entity';
-
-export interface BulkUpdateUsersRequest {
-  readonly updates: readonly (UpdateUserPatchContract & { id: number })[];
-  readonly performingUserId: number;
-}
-
-export interface BulkUpdateUserResult {
-  readonly userId: number;
-  readonly success: boolean;
-  readonly user?: User;
-  readonly error?: string;
-}
-
-export interface BulkUpdateUsersResponse {
-  readonly totalRequested: number;
-  readonly successfulUpdates: number;
-  readonly failedUpdates: number;
-  readonly results: readonly BulkUpdateUserResult[];
-}
+import type { UpdateUserPatchContract } from '@domain/repositories/business/user.contract';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Bulk Update Users Use Case
@@ -56,10 +42,11 @@ export interface BulkUpdateUsersResponse {
 export class BulkUpdateUsers {
   private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly eventBus = inject(DomainEventBusService);
 
-  async execute(request: BulkUpdateUsersRequest): Promise<BulkUpdateUsersResponse> {
+  async execute(request: BulkUpdateUsersRequest): Promise<BulkUpdateUsersResult> {
     try {
       // Step 1: Validate application-level rules
       this.validateApplicationRules(request);
@@ -74,54 +61,58 @@ export class BulkUpdateUsers {
       await this.handleBulkUpdateSideEffects(request, results, operationTimestamp);
 
       return results;
-    } catch (error) {
-      throw new ApplicationError(
-        'bulk_update_users',
-        this.errorTransformer.transformError(error),
-        'BULK_USER_UPDATE_FAILED'
-      );
+    } catch (error: unknown) {
+      // Step 4: Normalize errors for application layer
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'bulk_update_users',
+      });
+      throw appError;
     }
   }
 
   private validateApplicationRules(request: BulkUpdateUsersRequest): void {
     if (!request.updates || request.updates.length === 0) {
       throw new ApplicationError(
-        'bulk_update_users',
-        'VALIDATION_ERROR',
-        'Update data is required for bulk updates'
+        ApplicationErrorCode.INVALID_INPUT,
+        'Update data is required for bulk updates',
+        'Update data is required for bulk updates',
+        { updates: request.updates }
       );
     }
 
     if (request.updates.length > 50) {
       throw new ApplicationError(
-        'bulk_update_users',
-        'BATCH_SIZE_EXCEEDED',
-        'Cannot update more than 50 users at once'
+        ApplicationErrorCode.INVALID_INPUT,
+        'Cannot update more than 50 users at once',
+        'Cannot update more than 50 users at once',
+        { count: request.updates.length }
       );
     }
 
     // Check for duplicate user IDs in the batch
-    const userIds = request.updates.map((update) => update.id);
+    const userIds = request.updates.map((update) => update.userId);
     const uniqueIds = new Set(userIds);
     if (uniqueIds.size !== userIds.length) {
       throw new ApplicationError(
-        'bulk_update_users',
-        'DUPLICATE_IDS',
-        'Duplicate user IDs detected in bulk update request'
+        ApplicationErrorCode.INVALID_INPUT,
+        'Duplicate user IDs detected in bulk update request',
+        'Duplicate user IDs detected in bulk update request',
+        { userIds }
       );
     }
 
     // Validate each update has at least one field to update
     for (const update of request.updates) {
-      const hasUpdatableFields = Object.keys(update).some(
-        (key) => key !== 'id' && update[key as keyof typeof update] !== undefined
+      const hasUpdatableFields = Object.keys(update.updateData).some(
+        (key) => update.updateData[key as keyof typeof update.updateData] !== undefined
       );
 
       if (!hasUpdatableFields) {
         throw new ApplicationError(
-          'bulk_update_users',
-          'NO_UPDATE_FIELDS',
-          `No updatable fields provided for user ID ${update.id}`
+          ApplicationErrorCode.INVALID_INPUT,
+          `No updatable fields provided for user ID ${update.userId}`,
+          `No updatable fields provided for user ID ${update.userId}`,
+          { userId: update.userId }
         );
       }
     }
@@ -129,74 +120,78 @@ export class BulkUpdateUsers {
 
   private async updateUsersInBatch(
     request: BulkUpdateUsersRequest
-  ): Promise<BulkUpdateUsersResponse> {
-    const results: BulkUpdateUserResult[] = [];
-    let successfulUpdates = 0;
-    let failedUpdates = 0;
+  ): Promise<BulkUpdateUsersResult> {
+    const updated: User[] = [];
+    const failed: {
+      userId: number;
+      updateData: UpdateUserPatchContract;
+      error: string;
+    }[] = [];
 
     for (const updateData of request.updates) {
-      const { id, ...updateFields } = updateData;
       try {
         // Use individual repository calls since no bulk method exists
-        const user = await this.userRepository.update(id, updateFields);
+        const user = await this.userRepository.update(updateData.userId, updateData.updateData);
 
-        results.push({
-          userId: id,
-          success: true,
-          user,
+        updated.push(user);
+      } catch (error: unknown) {
+        failed.push({
+          userId: updateData.userId,
+          updateData: updateData.updateData,
+          error: error instanceof Error ? error.message : 'Unknown error during user update',
         });
-        successfulUpdates++;
-      } catch (error: any) {
-        results.push({
-          userId: id,
-          success: false,
-          error: error?.message || 'Unknown error during user update',
-        });
-        failedUpdates++;
       }
     }
 
     return {
-      totalRequested: request.updates.length,
-      successfulUpdates,
-      failedUpdates,
-      results,
+      updated,
+      failed,
+      totalProcessed: request.updates.length,
+      successCount: updated.length,
+      failureCount: failed.length,
     };
   }
 
   private async handleBulkUpdateSideEffects(
     request: BulkUpdateUsersRequest,
-    results: BulkUpdateUsersResponse,
+    results: BulkUpdateUsersResult,
     operationTimestamp: number
   ): Promise<void> {
     // Process domain events for all successfully updated users
-    const successfulUsers = results.results
-      .filter((result) => result.success && result.user)
-      .map((result) => result.user!);
+    const successfulUsers = results.updated;
 
+    // Publish domain events for successful user updates
     for (const user of successfulUsers) {
-      await this.eventProcessor.processEntityEvents(user);
+      // Find the corresponding update request to get the changed fields
+      const updateRequest = request.updates.find((update) => update.userId === user.id);
+      const changedFields = updateRequest
+        ? Object.keys(updateRequest.updateData).filter(
+            (key) =>
+              updateRequest.updateData[key as keyof typeof updateRequest.updateData] !== undefined
+          )
+        : [];
+
+      const userUpdatedEvent = DomainEvent.create({
+        id: `bulk-user-updated-${user.id}-${Date.now()}`,
+        eventType: DomainEventType.USER_PROFILE_MODIFIED,
+        aggregateId: user.id.toString(),
+        aggregateType: 'User',
+        eventData: {
+          userId: user.id.toString(),
+          changedFields,
+          requesterId: request.requesterId?.toString(),
+          updatedAt: ISODateTime.fromDate(new Date(operationTimestamp * 1000)).toString(),
+          bulkOperation: true,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.fromDate(new Date(operationTimestamp * 1000)),
+      });
+
+      await this.eventBus.publish(userUpdatedEvent);
     }
 
-    const successfulIds = results.results
-      .filter((result) => result.success)
-      .map((result) => result.userId);
-
-    const failedIds = results.results
-      .filter((result) => !result.success)
-      .map((result) => result.userId);
-
-    console.log(`[AUDIT] Bulk user update completed`, {
-      timestamp: operationTimestamp,
-      performedBy: request.performingUserId,
-      operation: 'bulk_update_users',
-      feature: 'users',
-      totalRequested: results.totalRequested,
-      successfulUpdates: results.successfulUpdates,
-      failedUpdates: results.failedUpdates,
-      successfulUserIds: successfulIds,
-      failedUserIds: failedIds,
-      severity: 'MEDIUM',
-    });
+    this.logger.info(
+      `Bulk user update completed: ${results.successCount} successful, ${results.failureCount} failed`
+    );
   }
 }
