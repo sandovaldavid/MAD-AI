@@ -38,7 +38,7 @@ import type {
  */
 export interface CreateUserRequest {
   userData: CreateUserContract;
-  sendWelcomeNotification?: boolean;
+  createdBy?: number;
 }
 
 /**
@@ -54,6 +54,75 @@ export interface UpdateUserRequest {
  */
 export interface ListUsersRequest {
   filter?: UserListFilterContract;
+}
+
+/**
+ * Simple request for getting user by ID
+ */
+export interface GetUserByIdRequest {
+  userId: number;
+}
+
+/**
+ * Simple request for getting user by email
+ */
+export interface GetUserByEmailRequest {
+  email: string;
+}
+
+/**
+ * Simple request for getting user by username
+ */
+export interface GetUserByUsernameRequest {
+  username: string;
+}
+
+/**
+ * Simple request for deleting a user
+ */
+export interface DeleteUserRequest {
+  userId: number;
+}
+
+/**
+ * Simple request for activating a user
+ */
+export interface ActivateUserRequest {
+  userId: number;
+}
+
+/**
+ * Simple request for deactivating a user
+ */
+export interface DeactivateUserRequest {
+  userId: number;
+}
+
+/**
+ * Simple request for bulk creating users
+ */
+export interface BulkCreateUsersRequest {
+  usersData: CreateUserContract[];
+  createdBy?: number;
+}
+
+/**
+ * Simple request for bulk updating users
+ */
+export interface BulkUpdateUsersRequest {
+  updates: Array<{
+    userId: number;
+    updateData: UpdateUserPatchContract;
+  }>;
+  requesterId?: number;
+}
+
+/**
+ * Simple request for bulk deleting users
+ */
+export interface BulkDeleteUsersRequest {
+  userIds: number[];
+  requesterId?: number;
 }
 
 // ============================================================================
@@ -89,4 +158,47 @@ export type GetUserResult = User;
 export interface DeleteUserResult {
   success: boolean;
   userId: number;
+}
+
+/**
+ * Bulk create users result
+ */
+export interface BulkCreateUsersResult {
+  created: User[];
+  failed: Array<{
+    data: CreateUserContract;
+    error: string;
+  }>;
+  totalProcessed: number;
+  successCount: number;
+  failureCount: number;
+}
+
+/**
+ * Bulk update users result
+ */
+export interface BulkUpdateUsersResult {
+  updated: User[];
+  failed: Array<{
+    userId: number;
+    updateData: UpdateUserPatchContract;
+    error: string;
+  }>;
+  totalProcessed: number;
+  successCount: number;
+  failureCount: number;
+}
+
+/**
+ * Bulk delete users result
+ */
+export interface BulkDeleteUsersResult {
+  deleted: number[];
+  failed: Array<{
+    userId: number;
+    error: string;
+  }>;
+  totalProcessed: number;
+  successCount: number;
+  failureCount: number;
 }
