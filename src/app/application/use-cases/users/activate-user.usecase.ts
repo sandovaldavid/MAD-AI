@@ -1,10 +1,17 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { ActivateUserRequest, GetUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
+import type { User } from '@domain/entities/user.entity';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Activate User Use Case
@@ -36,37 +43,38 @@ export class ActivateUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject(DomainEventBusService);
 
   /**
    * Execute user activation orchestration with validation and audit logging
    *
-   * @param userId - ID of the user to activate
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @param reason - Optional reason for activation (for audit trail)
-   * @returns Promise resolving when activation is complete
+   * @param request User activation request with ID
+   * @returns Promise resolving to activated user
    * @throws ApplicationError when user not found or activation fails
    */
-  async execute(userId: number, requesterId?: number, reason?: string): Promise<void> {
+  async execute(request: ActivateUserRequest): Promise<GetUserResult> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(userId, requesterId);
+      this.validateApplicationRules(request.userId, undefined);
 
       // Step 2: Delegate to domain repository
-      await this.userRepo.activate(userId);
+      await this.userRepo.activate(request.userId);
 
       // Step 3: Get the activated user for event processing
-      const activatedUser = await this.userRepo.getById(userId);
+      const activatedUser = await this.userRepo.getById(request.userId);
 
       // Step 4: Handle side effects
-      await this.handleUserActivationSideEffects(activatedUser, requesterId, reason);
+      await this.handleUserActivationSideEffects(activatedUser, undefined, undefined);
+
+      return activatedUser;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'activate_user',
-        this.errorTransformer.transformError(error),
-        'USER_ACTIVATION_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'activate_user',
+        userId: request.userId.toString(),
+      });
+      throw appError;
     }
   }
 
@@ -84,8 +92,8 @@ export class ActivateUser {
   private validateApplicationRules(userId: number, requesterId?: number): void {
     if (userId === undefined || userId === null) {
       throw new ApplicationError(
-        'activate_user',
-        'INVALID_USER_ID',
+        ApplicationErrorCode.INVALID_INPUT,
+        'User ID is required and must be a valid number',
         'User ID is required and must be a valid number',
         { providedUserId: userId }
       );
@@ -93,8 +101,8 @@ export class ActivateUser {
 
     if (typeof userId !== 'number' || userId <= 0) {
       throw new ApplicationError(
-        'activate_user',
-        'INVALID_USER_ID_FORMAT',
+        ApplicationErrorCode.INVALID_INPUT,
+        'User ID must be a positive number',
         'User ID must be a positive number',
         { providedUserId: userId }
       );
@@ -104,44 +112,47 @@ export class ActivateUser {
     // This could be relaxed depending on business rules
     if (requesterId && userId === requesterId) {
       // Log self-activation but allow it (common use case)
-      console.log('[User Activation] Self-activation detected', {
-        userId,
-        requesterId,
-        action: 'activate_user',
-        type: 'self_activation',
+      this.logger.info('Self-activation detected', {
+        userId: userId.toString(),
+        operation: 'activate_user',
       });
     }
   }
 
   /**
-   * Handle side effects after successful user activation
+   * Handle side effects for successful user activation
    *
-   * @description
-   * Manages audit logging and other side effects related to user activation operations.
-   * This includes compliance logging and notification triggers.
-   *
-   * @param activatedUserId ID of the activated user
-   * @param requesterId ID of user making the request
-   * @param reason Optional reason for activation
+   * @param activatedUser The activated user entity
+   * @param requesterId ID of user who performed the activation
+   * @param reason Optional reason for the activation
    */
   private async handleUserActivationSideEffects(
-    activatedUser: any,
+    activatedUser: User,
     requesterId?: number,
     reason?: string
   ): Promise<void> {
-    // Process domain events from the activated user entity
-    await this.eventProcessor.processEntityEvents(activatedUser);
+    // Create and publish UserAccountActivated domain event
+    const userActivatedEvent = DomainEvent.create({
+      id: `user-activated-${activatedUser.id}-${Date.now()}`,
+      eventType: DomainEventType.USER_ACCOUNT_ACTIVATED,
+      aggregateId: activatedUser.id.toString(),
+      aggregateType: 'User',
+      eventData: {
+        userId: activatedUser.id.toString(),
+        requesterId: requesterId?.toString(),
+        reason: reason,
+        activatedAt: ISODateTime.fromDate(new Date()).toString(),
+      },
+      causedByUserId: requesterId?.toString(),
+      occurredAt: ISODateTime.fromDate(new Date()),
+    });
 
-    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
+    await this.eventBus.publish(userActivatedEvent);
 
     // Log user activation for audit trail
-    console.log('[User Activation] User successfully activated', {
-      timestamp: timestamp.toISOString(),
-      activatedUserId: activatedUser.id,
-      requesterId: requesterId || 'system',
-      reason: reason || 'No reason provided',
-      action: 'activate_user',
-      status: 'success',
+    this.logger.info('User activated successfully', {
+      userId: activatedUser.id.toString(),
+      operation: 'activate_user',
     });
 
     // Additional side effects can be added here:
