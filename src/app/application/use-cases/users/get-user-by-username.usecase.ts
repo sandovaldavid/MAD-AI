@@ -1,10 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { GetUserByUsernameRequest, GetUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { User } from '@domain/entities/user.entity';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 
 /**
  * Get User By Username Use Case
@@ -36,44 +39,43 @@ export class GetUserByUsername {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
 
   /**
    * Execute user lookup orchestration with validation and audit logging
    *
-   * @param username - Username to search for
-   * @param requesterId - ID of the user making the request (for audit logging)
+   * @param request User lookup request with username
    * @returns Promise resolving to user entity
    * @throws ApplicationError when user not found or access denied
    */
-  async execute(username: string, requesterId?: number): Promise<User> {
+  async execute(request: GetUserByUsernameRequest): Promise<GetUserResult> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(username);
+      this.validateApplicationRules(request.username);
 
       // Step 2: Delegate to domain repository
-      const user = await this.userRepo.getByUsername(username);
+      const user = await this.userRepo.getByUsername(request.username);
 
       // Check if user was found
       if (!user) {
         throw new ApplicationError(
-          'get_user_by_username',
-          'USER_NOT_FOUND',
+          ApplicationErrorCode.USER_NOT_FOUND,
           'No user found with the provided username',
-          { searchedUsername: username }
+          'No user found with the provided username',
+          { searchedUsername: request.username }
         );
       }
 
       // Step 3: Handle side effects
-      this.handleUserLookupSideEffects(user, username, requesterId);
+      this.handleUserLookupSideEffects(user);
 
       return user;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'get_user_by_username',
-        this.errorTransformer.transformError(error),
-        'USER_LOOKUP_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'get_user_by_username',
+      });
+      throw appError;
     }
   }
 
@@ -90,8 +92,8 @@ export class GetUserByUsername {
   private validateApplicationRules(username: string): void {
     if (!username || typeof username !== 'string') {
       throw new ApplicationError(
-        'get_user_by_username',
-        'INVALID_USERNAME_PARAMETER',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Username parameter is required and must be a non-empty string',
         'Username parameter is required and must be a non-empty string',
         { providedUsername: username }
       );
@@ -100,8 +102,8 @@ export class GetUserByUsername {
     const trimmedUsername = username.trim();
     if (trimmedUsername.length === 0) {
       throw new ApplicationError(
-        'get_user_by_username',
-        'EMPTY_USERNAME_PARAMETER',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Username parameter cannot be empty or contain only whitespace',
         'Username parameter cannot be empty or contain only whitespace',
         { providedUsername: username }
       );
@@ -111,8 +113,8 @@ export class GetUserByUsername {
     const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
     if (!usernameRegex.test(trimmedUsername)) {
       throw new ApplicationError(
-        'get_user_by_username',
-        'INVALID_USERNAME_FORMAT',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Username can only contain letters, numbers, dots, hyphens, and underscores',
         'Username can only contain letters, numbers, dots, hyphens, and underscores',
         { providedUsername: username }
       );
@@ -120,8 +122,8 @@ export class GetUserByUsername {
 
     if (trimmedUsername.length < 3) {
       throw new ApplicationError(
-        'get_user_by_username',
-        'USERNAME_TOO_SHORT',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Username must be at least 3 characters long',
         'Username must be at least 3 characters long',
         {
           providedUsername: username,
@@ -133,8 +135,8 @@ export class GetUserByUsername {
 
     if (trimmedUsername.length > 50) {
       throw new ApplicationError(
-        'get_user_by_username',
-        'USERNAME_TOO_LONG',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Username cannot exceed 50 characters',
         'Username cannot exceed 50 characters',
         {
           providedUsername: username,
@@ -156,17 +158,11 @@ export class GetUserByUsername {
    * @param username Username used for lookup
    * @param requesterId ID of user making the request
    */
-  private handleUserLookupSideEffects(user: User, username: string, requesterId?: number): void {
-    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-
+  private handleUserLookupSideEffects(user: User): void {
     // Log user lookup for security monitoring
-    console.log('[User Lookup] User found by username', {
-      timestamp: timestamp.toISOString(),
-      foundUserId: user.id,
-      searchedUsername: username,
-      requesterId: requesterId || 'anonymous',
-      action: 'get_user_by_username',
-      status: 'success',
+    this.logger.info('User found by username', {
+      userId: user.id.toString(),
+      operation: 'get_user_by_username',
     });
 
     // Additional side effects can be added here:
