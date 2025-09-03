@@ -14,7 +14,8 @@
  *   accessLevel: 80,
  *   description: 'Leads development teams and manages project execution',
  *   canLeadProjects: true,
- *   isUniquePerTeam: true
+ *   isUniquePerTeam: true,
+ *   createdByUserId: 123
  * };
  * ```
  *
@@ -25,7 +26,8 @@
  *   accessLevel: 50,
  *   description: 'Develops software solutions and implements features',
  *   canLeadProjects: false,
- *   isUniquePerTeam: false
+ *   isUniquePerTeam: false,
+ *   createdByUserId: 456
  * };
  * ```
  *
@@ -46,6 +48,8 @@ export type CreateRoleContract = Readonly<{
   canLeadProjects?: boolean;
   /** Team uniqueness constraint */
   isUniquePerTeam?: boolean;
+  /** ID of the user who created this role (for audit purposes) */
+  createdByUserId: number;
 }>;
 
 /**
