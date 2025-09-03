@@ -1,11 +1,13 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { ListUsersRequest, ListUsersResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import type { User } from '@domain/entities/user.entity';
-import type { UserListFilterContract } from '@domain/contracts/user.contract';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { UserListFilterContract } from '@/app/domain/repositories/business/user.contract';
 
 /**
  * List Users Use Case
@@ -37,34 +39,36 @@ export class ListUsers {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
 
   /**
    * Execute user listing orchestration with validation and audit logging
    *
-   * @param filter - Optional filter criteria for user listing
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Promise resolving to array of user entities
+   * @param request User listing request with optional filter
+   * @returns Promise resolving to list of users with total count
    * @throws ApplicationError when listing fails or access denied
    */
-  async execute(filter?: UserListFilterContract, requesterId?: number): Promise<User[]> {
+  async execute(request?: ListUsersRequest): Promise<ListUsersResult> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(filter);
+      this.validateApplicationRules(request?.filter);
 
       // Step 2: Delegate to domain repository
-      const users = await this.userRepo.list(filter);
+      const users = await this.userRepo.list(request?.filter);
 
       // Step 3: Handle side effects
-      this.handleUserListingSideEffects(users.length, filter, requesterId);
+      this.handleUserListingSideEffects();
 
-      return users;
+      return {
+        users,
+        totalCount: users.length,
+      };
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'list_users',
-        this.errorTransformer.transformError(error),
-        'USER_LISTING_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'list_users',
+      });
+      throw appError;
     }
   }
 
@@ -81,8 +85,8 @@ export class ListUsers {
   private validateApplicationRules(filter?: UserListFilterContract): void {
     if (filter === null) {
       throw new ApplicationError(
-        'list_users',
-        'INVALID_FILTER_PARAMETER',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Filter parameter cannot be null',
         'Filter parameter cannot be null',
         { providedFilter: filter }
       );
@@ -90,8 +94,8 @@ export class ListUsers {
 
     if (filter && typeof filter !== 'object') {
       throw new ApplicationError(
-        'list_users',
-        'INVALID_FILTER_TYPE',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Filter parameter must be a valid object',
         'Filter parameter must be a valid object',
         { providedFilter: filter }
       );
@@ -101,8 +105,8 @@ export class ListUsers {
     if (filter?.limit !== undefined) {
       if (typeof filter.limit !== 'number' || filter.limit <= 0) {
         throw new ApplicationError(
-          'list_users',
-          'INVALID_LIMIT_PARAMETER',
+          ApplicationErrorCode.INVALID_INPUT,
+          'Limit must be a positive number',
           'Limit must be a positive number',
           { providedLimit: filter.limit }
         );
@@ -110,8 +114,8 @@ export class ListUsers {
 
       if (filter.limit > 1000) {
         throw new ApplicationError(
-          'list_users',
-          'LIMIT_TOO_LARGE',
+          ApplicationErrorCode.INVALID_INPUT,
+          'Limit cannot exceed 1000 records per request',
           'Limit cannot exceed 1000 records per request',
           { providedLimit: filter.limit, maxLimit: 1000 }
         );
@@ -121,8 +125,8 @@ export class ListUsers {
     if (filter?.offset !== undefined) {
       if (typeof filter.offset !== 'number' || filter.offset < 0) {
         throw new ApplicationError(
-          'list_users',
-          'INVALID_OFFSET_PARAMETER',
+          ApplicationErrorCode.INVALID_INPUT,
+          'Offset must be a non-negative number',
           'Offset must be a non-negative number',
           { providedOffset: filter.offset }
         );
@@ -141,30 +145,10 @@ export class ListUsers {
    * @param filter Filter criteria that was applied
    * @param requesterId ID of user making the request
    */
-  private handleUserListingSideEffects(
-    resultCount: number,
-    filter?: UserListFilterContract,
-    requesterId?: number
-  ): void {
-    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-
+  private handleUserListingSideEffects(): void {
     // Log user listing for audit trail
-    console.log('[User Listing] Users successfully listed', {
-      timestamp: timestamp.toISOString(),
-      resultCount,
-      filterApplied: !!filter,
-      filter: filter
-        ? {
-            limit: filter.limit,
-            offset: filter.offset,
-            roleId: filter.roleId,
-            isActive: filter.isActive,
-            searchTerm: filter.searchTerm ? '[REDACTED]' : undefined,
-          }
-        : null,
-      requesterId: requesterId || 'anonymous',
-      action: 'list_users',
-      status: 'success',
+    this.logger.info('Users listed successfully', {
+      operation: 'list_users',
     });
 
     // Additional side effects can be added here:
