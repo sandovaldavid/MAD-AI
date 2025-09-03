@@ -1,9 +1,16 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { DeleteUserRequest, DeleteUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Delete User Use Case
@@ -34,36 +41,41 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 export class DeleteUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly eventBus = inject(DomainEventBusService);
 
   /**
    * Execute user deletion orchestration with validation and audit logging
    *
-   * @param userId - ID of the user to delete
-   * @param requesterId - ID of the user making the request (for audit logging)
-   * @returns Promise resolving when deletion is complete
+   * @param request User deletion request with ID
+   * @returns Promise resolving to deletion result
    * @throws ApplicationError when user not found or deletion fails
    */
-  async execute(userId: number, requesterId?: number): Promise<void> {
+  async execute(request: DeleteUserRequest): Promise<DeleteUserResult> {
     try {
-      console.log('Delete Use Case - Starting execution');
+      this.logger.info('Delete Use Case - Starting execution');
       // Step 1: Validate application rules
-      this.validateApplicationRules(userId, requesterId);
-      console.log('Application use case - Validation complete');
-      console.log('Delete Use Case');
+      this.validateApplicationRules(request.userId, undefined);
+      this.logger.info('Application use case - Validation complete');
+      this.logger.info('Delete Use Case');
 
       // Step 2: Delegate to domain repository
-      await this.userRepo.delete(userId);
+      await this.userRepo.delete(request.userId);
 
       // Step 3: Handle side effects
-      this.handleUserDeletionSideEffects(userId, requesterId);
+      this.handleUserDeletionSideEffects(request.userId, undefined);
+
+      return {
+        success: true,
+        userId: request.userId,
+      };
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'delete_user',
-        this.errorTransformer.transformError(error),
-        'USER_DELETION_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'delete_user',
+      });
+      throw appError;
     }
   }
 
@@ -79,22 +91,22 @@ export class DeleteUser {
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(userId: number, requesterId?: number): void {
-    console.log('Delete Use Case - Validating application rules');
-    console.log(`userId: ${userId} - requesterId: ${requesterId}`);
+    this.logger.info('Delete Use Case - Validating application rules');
+    this.logger.info(`userId: ${userId} - requesterId: ${requesterId}`);
     if (userId === undefined || userId === null) {
       throw new ApplicationError(
-        'delete_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'User ID is required and must be a valid number',
-        'INVALID_USER_ID',
+        'User ID is required and must be a valid number',
         { providedUserId: userId }
       );
     }
 
     if (typeof userId !== 'number' || userId <= 0) {
       throw new ApplicationError(
-        'delete_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'User ID must be a positive number',
-        'INVALID_USER_ID_FORMAT',
+        'User ID must be a positive number',
         { providedUserId: userId }
       );
     }
@@ -102,9 +114,9 @@ export class DeleteUser {
     // Prevent self-deletion (basic application-level rule)
     if (requesterId && userId === requesterId) {
       throw new ApplicationError(
-        'delete_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'Users cannot delete their own account through this operation',
-        'SELF_DELETION_NOT_ALLOWED',
+        'Users cannot delete their own account through this operation',
         {
           userId,
           requesterId,
@@ -124,18 +136,32 @@ export class DeleteUser {
    * @param deletedUserId ID of the deleted user
    * @param requesterId ID of user making the request
    */
-  private handleUserDeletionSideEffects(deletedUserId: number, requesterId?: number): void {
+  private async handleUserDeletionSideEffects(
+    deletedUserId: number,
+    requesterId?: number
+  ): Promise<void> {
     const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
 
-    // Log user deletion for audit trail
-    console.log('[User Deletion] User successfully deleted', {
-      timestamp: timestamp.toISOString(),
-      deletedUserId,
-      requesterId: requesterId || 'system',
-      action: 'delete_user',
-      status: 'success',
-      severity: 'high', // User deletion is a high-severity action
+    // Create and publish UserAccountDeactivated domain event (deletion is a form of deactivation)
+    const userDeletedEvent = DomainEvent.create({
+      id: `user-deleted-${deletedUserId}-${Date.now()}`,
+      eventType: DomainEventType.USER_ACCOUNT_DEACTIVATED,
+      aggregateId: deletedUserId.toString(),
+      aggregateType: 'User',
+      eventData: {
+        userId: deletedUserId.toString(),
+        requesterId: requesterId?.toString(),
+        deletedAt: ISODateTime.fromDate(timestamp).toString(),
+        deletionType: 'permanent',
+      },
+      causedByUserId: requesterId?.toString(),
+      occurredAt: ISODateTime.fromDate(timestamp),
     });
+
+    await this.eventBus.publish(userDeletedEvent);
+
+    // Log user deletion for audit trail
+    this.logger.info(`User successfully deleted: ${deletedUserId} by ${requesterId || 'system'}`);
 
     // Additional side effects can be added here:
     // - Send notification to administrators
