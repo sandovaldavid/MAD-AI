@@ -1,36 +1,26 @@
 import { Injectable, inject } from '@angular/core';
-
-import { USER_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { BulkDeleteUsersRequest, BulkDeleteUsersResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-
-export interface BulkDeleteUsersRequest {
-  readonly userIds: readonly number[];
-  readonly performingUserId: number;
-}
-
-export interface BulkDeleteUserResult {
-  readonly userId: number;
-  readonly success: boolean;
-  readonly error?: string;
-}
-
-export interface BulkDeleteUsersResponse {
-  readonly totalRequested: number;
-  readonly successfulDeletions: number;
-  readonly failedDeletions: number;
-  readonly results: readonly BulkDeleteUserResult[];
-}
+import type { Logger } from '@core/interfaces/logger.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BulkDeleteUsers {
   private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
-  private readonly errorTransformer = new ApplicationErrorTransformer();
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
+  private readonly eventBus = inject(DomainEventBusService);
 
-  async execute(request: BulkDeleteUsersRequest): Promise<BulkDeleteUsersResponse> {
+  async execute(request: BulkDeleteUsersRequest): Promise<BulkDeleteUsersResult> {
     try {
       // Step 1: Validate application-level rules
       this.validateApplicationRules(request);
@@ -46,40 +36,40 @@ export class BulkDeleteUsers {
 
       return results;
     } catch (error: unknown) {
-      throw new ApplicationError(
-        'bulk_delete_users',
-        this.errorTransformer.transformError(error),
-        'BULK_USER_DELETION_FAILED'
-      );
+      // Step 4: Normalize errors for application layer
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'bulk_delete_users',
+      });
+      throw appError;
     }
   }
 
   private validateApplicationRules(request: BulkDeleteUsersRequest): void {
     if (!request.userIds || request.userIds.length === 0) {
       throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
         'User IDs are required for bulk deletion',
-        'VALIDATION_ERROR',
-        'bulk-delete-users',
-        'users'
+        'User IDs are required for bulk deletion',
+        { userIds: request.userIds }
       );
     }
 
     if (request.userIds.length > 50) {
       throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
         'Cannot delete more than 50 users at once',
-        'BATCH_SIZE_EXCEEDED',
-        'bulk-delete-users',
-        'users'
+        'Cannot delete more than 50 users at once',
+        { count: request.userIds.length }
       );
     }
 
     // Check for self-deletion
-    if (request.userIds.includes(request.performingUserId)) {
+    if (request.userIds.includes(request.requesterId || 0)) {
       throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
         'Cannot delete your own user account',
-        'SELF_DELETION_NOT_ALLOWED',
-        'bulk-delete-users',
-        'users'
+        'Cannot delete your own user account',
+        { requesterId: request.requesterId }
       );
     }
 
@@ -87,85 +77,83 @@ export class BulkDeleteUsers {
     const uniqueIds = new Set(request.userIds);
     if (uniqueIds.size !== request.userIds.length) {
       throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
         'Duplicate user IDs detected in deletion request',
-        'DUPLICATE_IDS',
-        'bulk-delete-users',
-        'users'
+        'Duplicate user IDs detected in deletion request',
+        { userIds: request.userIds }
       );
     }
   }
 
   private async deleteUsersInBatch(
     request: BulkDeleteUsersRequest
-  ): Promise<BulkDeleteUsersResponse> {
-    const results: BulkDeleteUserResult[] = [];
-    let successfulDeletions = 0;
-    let failedDeletions = 0;
+  ): Promise<BulkDeleteUsersResult> {
+    const deleted: number[] = [];
+    const failed: {
+      userId: number;
+      error: string;
+    }[] = [];
 
     for (const userId of request.userIds) {
       try {
         // Check if user exists before attempting deletion
         const user = await this.userRepository.getById(userId);
         if (!user) {
-          results.push({
+          failed.push({
             userId,
-            success: false,
             error: 'User not found',
           });
-          failedDeletions++;
           continue;
         }
 
         // Perform deletion
         await this.userRepository.delete(userId);
-
-        results.push({
+        deleted.push(userId);
+      } catch (error: unknown) {
+        failed.push({
           userId,
-          success: true,
+          error: error instanceof Error ? error.message : 'Unknown error during deletion',
         });
-        successfulDeletions++;
-      } catch (error: any) {
-        results.push({
-          userId,
-          success: false,
-          error: error?.message || 'Unknown error during deletion',
-        });
-        failedDeletions++;
       }
     }
 
     return {
-      totalRequested: request.userIds.length,
-      successfulDeletions,
-      failedDeletions,
-      results,
+      deleted,
+      failed,
+      totalProcessed: request.userIds.length,
+      successCount: deleted.length,
+      failureCount: failed.length,
     };
   }
 
   private async handleBulkDeletionSideEffects(
     request: BulkDeleteUsersRequest,
-    results: BulkDeleteUsersResponse,
+    results: BulkDeleteUsersResult,
     operationTimestamp: number
   ): Promise<void> {
-    const successfulIds = results.results
-      .filter((result) => result.success)
-      .map((result) => result.userId);
+    // Publish domain events for successful user deletions
+    for (const userId of results.deleted) {
+      const userDeletedEvent = DomainEvent.create({
+        id: `bulk-user-deleted-${userId}-${Date.now()}`,
+        eventType: DomainEventType.USER_ACCOUNT_DEACTIVATED,
+        aggregateId: userId.toString(),
+        aggregateType: 'User',
+        eventData: {
+          userId: userId.toString(),
+          requesterId: request.requesterId?.toString(),
+          deletedAt: ISODateTime.fromDate(new Date(operationTimestamp * 1000)).toString(),
+          deletionType: 'permanent',
+          bulkOperation: true,
+        },
+        causedByUserId: request.requesterId?.toString(),
+        occurredAt: ISODateTime.fromDate(new Date(operationTimestamp * 1000)),
+      });
 
-    const failedIds = results.results
-      .filter((result) => !result.success)
-      .map((result) => result.userId);
+      await this.eventBus.publish(userDeletedEvent);
+    }
 
-    console.log(`[AUDIT] Bulk user deletion completed`, {
-      timestamp: operationTimestamp,
-      performedBy: request.performingUserId,
-      operation: 'bulk-delete-users',
-      feature: 'users',
-      totalRequested: results.totalRequested,
-      successfulDeletions: results.successfulDeletions,
-      failedDeletions: results.failedDeletions,
-      successfulUserIds: successfulIds,
-      failedUserIds: failedIds,
-      severity: 'HIGH',
-    });
+    this.logger.info(
+      `Bulk user deletion completed: ${results.successCount} successful, ${results.failureCount} failed`
+    );
   }
 }
