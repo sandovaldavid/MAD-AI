@@ -37,3 +37,6 @@ export { provideIcons } from './provide-icons';
 
 // Logger providers
 export { provideLogger } from './provide-logger';
+
+// Domain Event Bus providers
+export { provideDomainEventBus, provideDomainEventBusService } from './provide-domain-event-bus';
