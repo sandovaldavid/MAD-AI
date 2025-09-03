@@ -1,12 +1,18 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { UpdateUserRequest, UpdateUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { User } from '@domain/entities/user.entity';
-import type { UpdateUserPatchContract } from '@domain/contracts/user.contract';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
+import type { UpdateUserPatchContract } from '@domain/repositories/business/user.contract';
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Update User Use Case
@@ -38,40 +44,35 @@ export class UpdateUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject(DomainEventBusService);
 
   /**
    * Execute user update orchestration with validation and audit logging
    *
-   * @param userId - ID of the user to update
-   * @param patch - Update data patch containing fields to modify
-   * @param requesterId - ID of the user making the request (for audit logging)
+   * @param request User update request with ID and data
    * @returns Promise resolving to updated user entity
    * @throws ApplicationError when user not found or update fails
    */
-  async execute(
-    userId: number,
-    patch: UpdateUserPatchContract,
-    requesterId?: number
-  ): Promise<User> {
+  async execute(request: UpdateUserRequest): Promise<UpdateUserResult> {
     try {
       // Step 1: Validate application rules
-      this.validateApplicationRules(userId, patch);
+      this.validateApplicationRules(request.userId, request.updateData);
 
       // Step 2: Delegate to domain repository
-      const updatedUser = await this.userRepo.update(userId, patch);
+      const updatedUser = await this.userRepo.update(request.userId, request.updateData);
 
       // Step 3: Handle side effects
-      await this.handleUserUpdateSideEffects(updatedUser, patch, requesterId);
+      await this.handleUserUpdateSideEffects(updatedUser, request.updateData, undefined);
 
       return updatedUser;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      throw new ApplicationError(
-        'update_user',
-        this.errorTransformer.transformError(error),
-        'USER_UPDATE_FAILED'
-      );
+      const appError = this.errorTransformer.transform(error, {
+        operation: 'update_user',
+        userId: request.userId.toString(),
+      });
+      throw appError;
     }
   }
 
@@ -89,7 +90,7 @@ export class UpdateUser {
   private validateApplicationRules(userId: number, patch: UpdateUserPatchContract): void {
     if (userId === undefined || userId === null) {
       throw new ApplicationError(
-        'update_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_USER_ID',
         'User ID is required and must be a valid number',
         { providedUserId: userId }
@@ -98,7 +99,7 @@ export class UpdateUser {
 
     if (typeof userId !== 'number' || userId <= 0) {
       throw new ApplicationError(
-        'update_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_USER_ID_FORMAT',
         'User ID must be a positive number',
         { providedUserId: userId }
@@ -107,7 +108,7 @@ export class UpdateUser {
 
     if (!patch || typeof patch !== 'object') {
       throw new ApplicationError(
-        'update_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'INVALID_PATCH_DATA',
         'Update patch is required and must be a valid object',
         { providedPatch: patch }
@@ -118,7 +119,7 @@ export class UpdateUser {
     const patchKeys = Object.keys(patch);
     if (patchKeys.length === 0) {
       throw new ApplicationError(
-        'update_user',
+        ApplicationErrorCode.INVALID_INPUT,
         'EMPTY_PATCH_DATA',
         'Update patch must contain at least one field to update',
         { providedPatch: patch }
@@ -145,20 +146,31 @@ export class UpdateUser {
     patch: UpdateUserPatchContract,
     requesterId?: number
   ): Promise<void> {
-    // Process domain events from the updated user entity
-    await this.eventProcessor.processEntityEvents(updatedUser);
-
     const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
     const changedFields = Object.keys(patch);
 
+    // Create and publish domain event for user profile modification
+    const userProfileModifiedEvent = DomainEvent.create({
+      id: `user-profile-modified-${updatedUser.id}-${Date.now()}`,
+      eventType: DomainEventType.USER_PROFILE_MODIFIED,
+      aggregateId: updatedUser.id.toString(),
+      aggregateType: 'User',
+      eventData: {
+        userId: updatedUser.id.toString(),
+        changedFields,
+        requesterId: requesterId?.toString(),
+        timestamp: ISODateTime.fromDate(timestamp).toString(),
+      },
+      causedByUserId: requesterId?.toString(),
+      occurredAt: ISODateTime.fromDate(timestamp),
+    });
+
+    await this.eventBus.publish(userProfileModifiedEvent);
+
     // Log user update for audit trail
-    console.log('[User Update] User successfully updated', {
-      timestamp: timestamp.toISOString(),
-      updatedUserId: updatedUser.id,
-      changedFields,
-      requesterId: requesterId || 'system',
-      action: 'update_user',
-      status: 'success',
+    this.logger.info('User updated successfully', {
+      userId: updatedUser.id.toString(),
+      operation: 'update_user',
     });
 
     // Additional side effects can be added here:
