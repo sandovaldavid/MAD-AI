@@ -1,33 +1,18 @@
 import { Injectable, inject } from '@angular/core';
-
-import { USER_REPOSITORY, CLOCK_PORT } from '@di/tokens';
+import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import { DomainEvent } from '@domain/events/domain-event.entity';
+import { DomainEventType } from '@domain/events/domain-event.enum';
+import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
+import type { BulkCreateUsersRequest, BulkCreateUsersResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import { ApplicationError } from '../../errors/application-error';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventProcessor } from '@application/services/domain-event-processor.service';
-import type { CreateUserContract } from '@domain/contracts/user.contract';
+import type { CreateUserContract } from '@/app/domain/repositories/business/user.contract';
 import type { User } from '@domain/entities/user.entity';
-
-export interface BulkCreateUsersRequest {
-  readonly users: readonly CreateUserContract[];
-  readonly performingUserId: number;
-}
-
-export interface BulkCreateUserResult {
-  readonly index: number;
-  readonly success: boolean;
-  readonly user?: User;
-  readonly error?: string;
-  readonly email?: string;
-}
-
-export interface BulkCreateUsersResponse {
-  readonly totalRequested: number;
-  readonly successfulCreations: number;
-  readonly failedCreations: number;
-  readonly results: readonly BulkCreateUserResult[];
-}
+import type { Logger } from '@core/interfaces/logger.interface';
 
 /**
  * Bulk Create Users Use Case
@@ -58,9 +43,10 @@ export class BulkCreateUsers {
   private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventProcessor = inject(DomainEventProcessor);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly eventBus = inject(DomainEventBusService);
 
-  async execute(request: BulkCreateUsersRequest): Promise<BulkCreateUsersResponse> {
+  async execute(request: BulkCreateUsersRequest): Promise<BulkCreateUsersResult> {
     try {
       // Step 1: Validate application-level rules
       this.validateApplicationRules(request);
@@ -77,114 +63,106 @@ export class BulkCreateUsers {
       return results;
     } catch (error: unknown) {
       throw new ApplicationError(
-        'bulk_create_users',
-        this.errorTransformer.transformError(error),
-        'BULK_USER_CREATION_FAILED'
+        ApplicationErrorCode.UNEXPECTED_ERROR,
+        this.errorTransformer.transform(error, {
+          operation: 'bulk_create_users',
+          userId: request.createdBy?.toString(),
+        }).userMessage,
+        'Bulk user creation failed'
       );
     }
   }
 
   private validateApplicationRules(request: BulkCreateUsersRequest): void {
-    if (!request.users || request.users.length === 0) {
+    if (!request.usersData || request.usersData.length === 0) {
       throw new ApplicationError(
-        'bulk_create_users',
-        'VALIDATION_ERROR',
-        'User data is required for bulk creation'
+        ApplicationErrorCode.INVALID_INPUT,
+        'No users provided for bulk creation',
+        'No users provided for bulk creation'
       );
     }
 
-    if (request.users.length > 100) {
+    if (request.usersData.length > 100) {
       throw new ApplicationError(
-        'bulk_create_users',
-        'BATCH_SIZE_EXCEEDED',
+        ApplicationErrorCode.INVALID_INPUT,
+        'Cannot create more than 100 users at once',
         'Cannot create more than 100 users at once'
       );
     }
 
-    // Check for duplicate emails in the batch
-    const emails = request.users.map((user) => user.email.toLowerCase());
+    // Check for duplicate emails within the batch
+    const emails = request.usersData.map((user) => user.email.toLowerCase());
     const uniqueEmails = new Set(emails);
-    if (uniqueEmails.size !== emails.length) {
+    if (emails.length !== uniqueEmails.size) {
       throw new ApplicationError(
-        'bulk_create_users',
-        'DUPLICATE_EMAILS',
-        'Duplicate email addresses detected in bulk creation request'
+        ApplicationErrorCode.INVALID_INPUT,
+        'Duplicate emails found in the batch',
+        'Duplicate emails found in the batch'
       );
     }
   }
 
   private async createUsersInBatch(
     request: BulkCreateUsersRequest
-  ): Promise<BulkCreateUsersResponse> {
-    const results: BulkCreateUserResult[] = [];
-    let successfulCreations = 0;
-    let failedCreations = 0;
+  ): Promise<BulkCreateUsersResult> {
+    const created: User[] = [];
+    const failed: {
+      data: CreateUserContract;
+      error: string;
+    }[] = [];
 
-    for (let i = 0; i < request.users.length; i++) {
-      const userData = request.users[i];
+    for (const userData of request.usersData) {
       try {
         // Use individual repository calls since no bulk method exists
         const user = await this.userRepository.create(userData);
-
-        results.push({
-          index: i,
-          success: true,
-          user,
-          email: userData.email,
+        created.push(user);
+      } catch (error: unknown) {
+        failed.push({
+          data: userData,
+          error: error instanceof Error ? error.message : 'Unknown error during user creation',
         });
-        successfulCreations++;
-      } catch (error: any) {
-        results.push({
-          index: i,
-          success: false,
-          error: error?.message || 'Unknown error during user creation',
-          email: userData.email,
-        });
-        failedCreations++;
       }
     }
 
     return {
-      totalRequested: request.users.length,
-      successfulCreations,
-      failedCreations,
-      results,
+      created,
+      failed,
+      totalProcessed: request.usersData.length,
+      successCount: created.length,
+      failureCount: failed.length,
     };
   }
 
   private async handleBulkCreationSideEffects(
     request: BulkCreateUsersRequest,
-    results: BulkCreateUsersResponse,
+    results: BulkCreateUsersResult,
     operationTimestamp: number
   ): Promise<void> {
-    // Process domain events for all successfully created users
-    const successfulUsers = results.results
-      .filter((result) => result.success && result.user)
-      .map((result) => result.user!);
+    // Publish domain events for successful user creations
+    for (const user of results.created) {
+      const userCreatedEvent = DomainEvent.create({
+        id: `bulk-user-created-${user.id}-${Date.now()}`,
+        eventType: DomainEventType.USER_CREATED,
+        aggregateId: user.id.toString(),
+        aggregateType: 'User',
+        eventData: {
+          userId: user.id,
+          email: user.email.value,
+          username: user.username.value,
+          roleId: user.getRole.id,
+          createdBy: request.createdBy?.toString(),
+          createdAt: user.createdAt?.toString(),
+          bulkOperation: true,
+        },
+        causedByUserId: request.createdBy?.toString(),
+        occurredAt: ISODateTime.fromDate(new Date(operationTimestamp * 1000)),
+      });
 
-    for (const user of successfulUsers) {
-      await this.eventProcessor.processEntityEvents(user);
+      await this.eventBus.publish(userCreatedEvent);
     }
 
-    const successfulEmails = results.results
-      .filter((result) => result.success)
-      .map((result) => result.email);
-
-    const failedEmails = results.results
-      .filter((result) => !result.success)
-      .map((result) => result.email);
-
-    console.log(`[AUDIT] Bulk user creation completed`, {
-      timestamp: operationTimestamp,
-      performedBy: request.performingUserId,
+    this.logger.info('Bulk user creation completed', {
       operation: 'bulk_create_users',
-      feature: 'users',
-      totalRequested: results.totalRequested,
-      successfulCreations: results.successfulCreations,
-      failedCreations: results.failedCreations,
-      successfulEmails,
-      failedEmails,
-      severity: 'MEDIUM',
     });
   }
 }
