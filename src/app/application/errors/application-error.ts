@@ -4,7 +4,7 @@ import { ApplicationErrorCode } from './error-codes.enum';
 export class ApplicationError extends Error {
   public readonly code: ApplicationErrorCode;
   public readonly userMessage: string;
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
   public readonly suggestedAction?: string;
   public readonly timestamp: Date;
   public readonly errorId: string;
@@ -14,7 +14,7 @@ export class ApplicationError extends Error {
     code: ApplicationErrorCode,
     technicalMessage: string,
     userMessage: string,
-    context?: Record<string, any>,
+    context?: Record<string, unknown>,
     suggestedAction?: string,
     retryable = false
   ) {
