@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApplicationError } from './application-error';
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { BusinessRuleError } from '@domain/errors/business-rule-error.entity';
@@ -9,7 +9,7 @@ import { ApplicationErrorCode } from './error-codes.enum';
 
 @Injectable({ providedIn: 'root' })
 export class ApplicationErrorTransformer {
-  constructor(private logger: LoggerService) {}
+  private logger = inject(LoggerService);
 
   transform(error: unknown, context?: LogContext): ApplicationError {
     // Log usando la interface correcta
