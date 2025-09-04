@@ -39,6 +39,7 @@ import type {
 export interface CreateUserRequest {
   userData: CreateUserContract;
   createdBy?: number;
+  sendWelcomeNotification?: boolean;
 }
 
 /**
@@ -47,6 +48,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   userId: number;
   updateData: UpdateUserPatchContract;
+  notifyUser?: boolean;
 }
 
 /**
@@ -110,10 +112,10 @@ export interface BulkCreateUsersRequest {
  * Simple request for bulk updating users
  */
 export interface BulkUpdateUsersRequest {
-  updates: Array<{
+  updates: {
     userId: number;
     updateData: UpdateUserPatchContract;
-  }>;
+  }[];
   requesterId?: number;
 }
 
@@ -165,10 +167,10 @@ export interface DeleteUserResult {
  */
 export interface BulkCreateUsersResult {
   created: User[];
-  failed: Array<{
+  failed: {
     data: CreateUserContract;
     error: string;
-  }>;
+  }[];
   totalProcessed: number;
   successCount: number;
   failureCount: number;
@@ -179,11 +181,11 @@ export interface BulkCreateUsersResult {
  */
 export interface BulkUpdateUsersResult {
   updated: User[];
-  failed: Array<{
+  failed: {
     userId: number;
     updateData: UpdateUserPatchContract;
     error: string;
-  }>;
+  }[];
   totalProcessed: number;
   successCount: number;
   failureCount: number;
@@ -194,11 +196,74 @@ export interface BulkUpdateUsersResult {
  */
 export interface BulkDeleteUsersResult {
   deleted: number[];
-  failed: Array<{
+  failed: {
     userId: number;
     error: string;
-  }>;
+  }[];
   totalProcessed: number;
   successCount: number;
   failureCount: number;
+}
+
+// ============================================================================
+// Additional Types for Facade Operations
+// ============================================================================
+
+/**
+ * User lookup criteria for flexible user finding
+ */
+export interface UserLookupCriteria {
+  id?: number;
+  email?: string;
+  username?: string;
+}
+
+/**
+ * User search criteria for advanced filtering
+ */
+export interface UserSearchCriteria {
+  query: string;
+  filters?: UserListFilterContract;
+}
+
+/**
+ * User event types for cross-facade communication
+ */
+export type UserEvent =
+  | { type: 'user-created'; user: User; notificationSent?: boolean }
+  | { type: 'user-updated'; user: User; updatedFields?: string[] }
+  | { type: 'user-deleted'; userId: number }
+  | { type: 'user-activated'; user: User }
+  | { type: 'user-deactivated'; user: User }
+  | { type: 'bulk-operation-completed'; operation: string; results: Record<string, unknown> };
+
+/**
+ * User statistics for analytics
+ */
+export interface UserStatistics {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  usersByRole: Record<string, number>;
+  recentActivity: {
+    recentlyCreated: number;
+    recentlyUpdated: number;
+    recentlyLoggedIn: number;
+  };
+}
+
+/**
+ * Users facade state interface
+ */
+export interface UsersState {
+  users: User[];
+  selectedUser: User | null;
+  loading: boolean;
+  error: string | null;
+  currentFilter: UserListFilterContract | null;
+  totalCount: number;
+  lastBulkOperation: {
+    type: 'create' | 'update' | 'delete' | null;
+    result: BulkCreateUsersResult | BulkUpdateUsersResult | BulkDeleteUsersResult | null;
+  };
 }
