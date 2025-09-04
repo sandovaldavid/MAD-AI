@@ -12,12 +12,13 @@ import type {
   LoginRequest,
   RegisterRequest,
   LogoutRequest,
-  RefreshSessionRequest,
+  PasswordResetConfirmRequest,
 } from '@application/types/auth.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Session } from '@domain/entities/session.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import { ApplicationErrorTransformer } from '../errors/application-error.transformer';
+import { LoggerService } from '@core/services/logger.service';
 
 /**
  * Authentication Facade - Clean Orchestrator Following MAD-AI Patterns
@@ -51,76 +52,139 @@ import { ApplicationErrorTransformer } from '../errors/application-error.transfo
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
   // ============================================================================
-  // Dependencies Injection
+  // Dependencies
   // ============================================================================
 
-  // Use Case Dependencies
   private readonly loginUC = inject(LoginWithCredentials);
   private readonly logoutUC = inject(Logout);
-  private readonly profileUC = inject(GetProfile);
+  private readonly getProfileUC = inject(GetProfile);
   private readonly registerUC = inject(Register);
   private readonly refreshUC = inject(RefreshSession);
   private readonly confirmEmailUC = inject(ConfirmEmail);
   private readonly reqResetUC = inject(RequestPasswordReset);
   private readonly confirmResetUC = inject(ConfirmPasswordReset);
 
-  // Error Transformer
-  private readonly errorTransformer = inject(ApplicationErrorTransformer);
-
-  // Cross-Facade Dependencies
   private readonly notifications = inject(NotificationsFacade);
+  private readonly logger = inject(LoggerService);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   // ============================================================================
   // Private State Signals
   // ============================================================================
 
-  /** Loading state for async operations */
+  /**
+   * Loading state signal for async operations
+   * @private
+   * @type {Signal<boolean>}
+   * @default false
+   */
   private readonly _loading = signal(false);
 
-  /** Current authenticated user */
+  /**
+   * Current authenticated user signal
+   * @private
+   * @type {Signal<User | null>}
+   * @default null
+   */
   private readonly _user = signal<User | null>(null);
 
-  /** Current session data */
+  /**
+   * Current session data signal
+   * @private
+   * @type {Signal<Session | null>}
+   * @default null
+   */
   private readonly _session = signal<Session | null>(null);
 
-  /** Current error state */
+  /**
+   * Current authentication error state signal
+   * @private
+   * @type {Signal<string | null>}
+   * @default null
+   */
   private readonly _authError = signal<string | null>(null);
 
-  /** Flag to track if session restoration has been attempted */
+  /**
+   * Flag to track if session restoration has been attempted
+   * Prevents multiple initialization attempts
+   * @private
+   * @type {Signal<boolean>}
+   * @default false
+   */
   private readonly _sessionRestoreAttempted = signal(false);
 
   // ============================================================================
   // Public Computed Properties (Reactive State)
   // ============================================================================
 
-  /** Loading state for async operations */
+  /**
+   * Loading state for async operations
+   * Reactive computed property that updates when _loading signal changes
+   * @type {Signal<boolean>}
+   * @readonly
+   */
   readonly loading = computed(() => this._loading());
 
-  /** Current authenticated user */
+  /**
+   * Current authenticated user
+   * Reactive computed property that updates when _user signal changes
+   * @type {Signal<User | null>}
+   * @readonly
+   */
   readonly user = computed(() => this._user());
 
-  /** Current session data */
+  /**
+   * Current session data
+   * Reactive computed property that updates when _session signal changes
+   * @type {Signal<Session | null>}
+   * @readonly
+   */
   readonly session = computed(() => this._session());
 
-  /** Current error state */
+  /**
+   * Current error state
+   * Reactive computed property that updates when _authError signal changes
+   * @type {Signal<string | null>}
+   * @readonly
+   */
   readonly error = computed(() => this._authError());
 
-  /** Whether user is authenticated */
+  /**
+   * Whether user is authenticated
+   * Reactive computed property based on user presence
+   * @type {Signal<boolean>}
+   * @readonly
+   */
   readonly isAuthenticated = computed(() => !!this._user());
 
-  /** Whether session restoration has been attempted */
+  /**
+   * Whether session restoration has been attempted
+   * Reactive computed property that updates when _sessionRestoreAttempted signal changes
+   * @type {Signal<boolean>}
+   * @readonly
+   */
   readonly sessionRestoreAttempted = computed(() => this._sessionRestoreAttempted());
 
-  /** User display name for UI */
+  /**
+   * User display name for UI components
+   * Combines first and last name, returns empty string if no user
+   * @type {Signal<string>}
+   * @readonly
+   */
   readonly userDisplayName = computed(() => {
     const user = this._user();
     return user ? `${user.firstName} ${user.lastName}` : '';
   });
 
-  /** Whether current user has admin role */
+  /**
+   * Whether current user has admin role
+   * Reactive computed property that checks user role permissions
+   * @type {Signal<boolean>}
+   * @readonly
+   */
   readonly isAdmin = computed(() => {
     const user = this._user();
-    return user?.roleName === 'Admin' || false;
+    return user ? user.getRole.canAccessAdmin() : false;
   });
 
   // ============================================================================
@@ -130,6 +194,20 @@ export class AuthFacade {
   /**
    * Initialize authentication state from storage
    * Uses the existing refreshProfile use case following Clean Architecture
+   *
+   * This method attempts to restore the user's session on application startup.
+   * It prevents multiple initialization attempts and handles token expiration gracefully.
+   *
+   * @async
+   * @returns {Promise<void>} Promise that resolves when initialization is complete
+   * @throws {ApplicationError} When initialization fails due to network or authentication issues
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * await authFacade.initializeAuth();
+   * ```
    */
   async initializeAuth(): Promise<void> {
     if (this._sessionRestoreAttempted()) {
@@ -142,7 +220,7 @@ export class AuthFacade {
       // Use existing use case instead of accessing storage directly
       // This follows Clean Architecture by delegating to use cases
       await this.refreshProfile({ skipLoading: true });
-    } catch (error) {
+    } catch {
       // If profile refresh fails (no tokens or expired), ensure clean state
       this.clearAuthStateCompletely();
     }
@@ -154,6 +232,14 @@ export class AuthFacade {
 
   /**
    * Executes user login through robust use case
+   *
+   * @param request - User login credentials
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when login is complete
+   * @throws ApplicationError when login fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   async login(request: LoginRequest, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -174,22 +260,23 @@ export class AuthFacade {
         'Welcome back!',
         `Hello ${session.user.firstName}, you've successfully logged in.`
       );
-    } catch (error: any) {
-      // DEBUG: Log the original error to console for debugging
-      console.error('🔥 AuthFacade Login Error - Original Error:', error);
-      console.error('🔥 AuthFacade Login Error - Error Type:', typeof error);
-      console.error('🔥 AuthFacade Login Error - Error Constructor:', error?.constructor?.name);
-      console.error('🔥 AuthFacade Login Error - Error Message:', error?.message);
-      console.error('🔥 AuthFacade Login Error - Error Stack:', error?.stack);
+    } catch (error: unknown) {
+      // Log error details for debugging
+      this.logger.error('Login failed', {
+        operation: 'login',
+        userId: this._user()?.id?.toString(),
+      });
 
       // Transform error to user-friendly message
-      const errorMessage = this.errorTransformer.transformError(error as Error, {
-        feature: 'auth',
+      const errorMessage = this.errorTransformer.transform(error as Error, {
         operation: 'login',
       });
-      console.error('🔥 AuthFacade Login Error - Transformed Message:', errorMessage);
 
-      this._authError.set(errorMessage);
+      this.logger.debug('Login error transformed', {
+        operation: 'login',
+      });
+
+      this._authError.set(errorMessage.userMessage);
 
       // Clear session state on login failure to ensure clean state
       this._session.set(null);
@@ -206,6 +293,14 @@ export class AuthFacade {
 
   /**
    * Executes user registration through robust use case
+   *
+   * @param request - User registration data
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when registration is complete
+   * @throws ApplicationError when registration fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   async register(request: RegisterRequest, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -221,9 +316,9 @@ export class AuthFacade {
         'Registration successful!',
         'Please check your email to confirm your account.'
       );
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -234,6 +329,14 @@ export class AuthFacade {
 
   /**
    * Executes user logout through robust use case
+   *
+   * @param request - Optional logout request data
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when logout is complete
+   * @throws ApplicationError when logout fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -253,9 +356,9 @@ export class AuthFacade {
         'Logged out successfully',
         'You have been safely logged out of your account.'
       );
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       // Don't throw on logout errors - still clear session
       this._session.set(null);
       this._user.set(null);
@@ -268,6 +371,13 @@ export class AuthFacade {
 
   /**
    * Executes session refresh through robust use case
+   *
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when session refresh is complete
+   * @throws ApplicationError when session refresh fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   async refreshSession(opts?: FacadeOpts): Promise<void> {
     // Session refresh is typically silent
@@ -283,10 +393,10 @@ export class AuthFacade {
 
       this._session.set(session);
       this._user.set(session.user);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Failed session refresh usually means logout
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
 
       this._session.set(null);
       this._user.set(null);
@@ -303,6 +413,13 @@ export class AuthFacade {
 
   /**
    * Refreshes user profile data
+   *
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when profile refresh is complete
+   * @throws ApplicationError when profile refresh fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   async refreshProfile(opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -311,12 +428,12 @@ export class AuthFacade {
     this._authError.set(null);
 
     try {
-      const user = await this.profileUC.execute();
+      const user = await this.getProfileUC.execute();
       this._user.set(user);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Profile refresh errors usually indicate session expiration
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       this._user.set(null);
       this._session.set(null);
       throw error;
@@ -333,6 +450,21 @@ export class AuthFacade {
 
   /**
    * Gets authentication token for manual API calls
+   *
+   * Returns the access token from the current session if available.
+   * Useful for making authenticated API calls outside of the facade.
+   *
+   * @returns {string | null} The access token value or null if no session exists
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * const token = authFacade.getAccessTokenOrNull();
+   * if (token) {
+   *   // Make authenticated API call
+   * }
+   * ```
    */
   getAccessTokenOrNull(): string | null {
     const session = this._session();
@@ -341,6 +473,22 @@ export class AuthFacade {
 
   /**
    * Checks if current session is valid (not expired)
+   *
+   * Validates whether the current session's access token is still valid
+   * by comparing against the provided timestamp.
+   *
+   * @param {number} nowEpochSeconds - Current timestamp in epoch seconds
+   * @returns {boolean} True if session exists and is not expired, false otherwise
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * const isValid = authFacade.isSessionValid(Date.now() / 1000);
+   * if (!isValid) {
+   *   // Handle expired session
+   * }
+   * ```
    */
   isSessionValid(nowEpochSeconds: number): boolean {
     const session = this._session();
@@ -349,6 +497,22 @@ export class AuthFacade {
 
   /**
    * Gets remaining session time in seconds
+   *
+   * Calculates how many seconds remain until the current session expires.
+   * Returns null if no session exists.
+   *
+   * @param {number} nowEpochSeconds - Current timestamp in epoch seconds
+   * @returns {number | null} Remaining seconds until expiration, or null if no session
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * const remaining = authFacade.getSessionTimeRemaining(Date.now() / 1000);
+   * if (remaining && remaining < 300) { // Less than 5 minutes
+   *   // Warn user about impending expiration
+   * }
+   * ```
    */
   getSessionTimeRemaining(nowEpochSeconds: number): number | null {
     const session = this._session();
@@ -359,6 +523,17 @@ export class AuthFacade {
   // Email and Password Reset Operations
   // ============================================================================
 
+  /**
+   * Confirms user email address
+   *
+   * @param token - Email confirmation token
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when email confirmation is complete
+   * @throws ApplicationError when email confirmation fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
   async confirmEmail(token: string, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
@@ -374,9 +549,9 @@ export class AuthFacade {
         'Email confirmed!',
         'Your email address has been successfully confirmed.'
       );
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -385,6 +560,17 @@ export class AuthFacade {
     }
   }
 
+  /**
+   * Requests password reset for user
+   *
+   * @param email - User email address
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when password reset request is complete
+   * @throws ApplicationError when password reset request fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
   async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
@@ -399,9 +585,9 @@ export class AuthFacade {
         'Password reset requested',
         'Please check your email for password reset instructions.'
       );
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -410,7 +596,18 @@ export class AuthFacade {
     }
   }
 
-  async confirmPasswordReset(data: any, opts?: FacadeOpts): Promise<void> {
+  /**
+   * Confirms password reset with new password
+   *
+   * @param data - Password reset confirmation data
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when password reset confirmation is complete
+   * @throws ApplicationError when password reset confirmation fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
+  async confirmPasswordReset(data: PasswordResetConfirmRequest, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -424,9 +621,9 @@ export class AuthFacade {
         'Password reset successful!',
         'Your password has been updated. Please log in with your new password.'
       );
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error as Error);
-      this._authError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -440,14 +637,44 @@ export class AuthFacade {
   // ============================================================================
 
   /**
-   * Clear current error state
+   * Clears the current authentication error state
+   *
+   * This method resets the error signal to null, effectively clearing any
+   * authentication-related error messages that may be displayed to the user.
+   * Useful when transitioning between authentication states or when starting
+   * new authentication operations.
+   *
+   * @returns {void}
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * // Clear error when user starts typing in login form
+   * authFacade.clearError();
+   * ```
    */
   clearError(): void {
     this._authError.set(null);
   }
 
   /**
-   * Clear error and loading states (useful when entering auth pages)
+   * Clears authentication error and loading states for UI transitions
+   *
+   * This method is specifically designed for use when entering authentication
+   * pages or forms. It clears both error messages and loading states to ensure
+   * a clean slate for user interaction, while preserving other authentication
+   * state like user session data.
+   *
+   * @returns {void}
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * // Clear state when navigating to login page
+   * authFacade.clearAuthState();
+   * ```
    */
   clearAuthState(): void {
     this._authError.set(null);
@@ -455,13 +682,17 @@ export class AuthFacade {
   }
 
   /**
-   * Clear all auth state including session and user data
-   * This is more aggressive than clearAuthState and is used
-   * when we need to ensure completely clean state
-   */
-  /**
-   * Clear authentication state without affecting loading state
-   * Used during login process to clear previous errors/data while preserving loading
+   * Clears authentication state for new operations while preserving loading
+   *
+   * Internal method used during authentication operations (login, registration)
+   * to clear previous authentication data and errors, but preserve the loading
+   * state to maintain proper UI feedback during the operation.
+   *
+   * @private
+   * @returns {void}
+   *
+   * @since 1.0.0
+   * @application AuthFacade
    */
   private clearAuthStateForNewOperation(): void {
     this._authError.set(null);
@@ -470,8 +701,22 @@ export class AuthFacade {
   }
 
   /**
-   * Clear authentication state completely including loading state
-   * Used for complete cleanup (logout, initialization, etc.)
+   * Performs complete authentication state cleanup
+   *
+   * This method clears all authentication-related state including user data,
+   * session information, error messages, and loading states. Used for complete
+   * cleanup scenarios like logout, initialization failures, or when a fresh
+   * authentication state is required.
+   *
+   * @returns {void}
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * // Complete cleanup on logout
+   * authFacade.clearAuthStateCompletely();
+   * ```
    */
   clearAuthStateCompletely(): void {
     this._authError.set(null);
@@ -481,7 +726,22 @@ export class AuthFacade {
   }
 
   /**
-   * Reset facade state (useful for testing or logout)
+   * Resets the entire authentication facade to its initial state
+   *
+   * This method performs a complete reset of all authentication state,
+   * including user data, session information, error messages, loading states,
+   * and session restoration flags. Useful for testing scenarios, complete
+   * logout operations, or when a fresh start is required.
+   *
+   * @returns {void}
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   * @example
+   * ```typescript
+   * // Complete reset for testing or logout
+   * authFacade.reset();
+   * ```
    */
   reset(): void {
     this._loading.set(false);
