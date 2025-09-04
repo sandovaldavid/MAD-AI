@@ -1,5 +1,5 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { Observable, BehaviorSubject, EMPTY } from 'rxjs';
+import { Observable, EMPTY, Subject } from 'rxjs';
 import { catchError, startWith } from 'rxjs/operators';
 
 // Use Cases imports
@@ -22,16 +22,35 @@ import type {
   UpdateNotificationResult,
   ClearNotificationsResult,
   GetNotificationsResult,
-  NotificationState,
-  NotificationEvent,
-  NotificationEventType,
+  GetNotificationsRequest,
 } from '@application/types/notifications.types';
 
 // Domain entities
-import type { Notification, NotificationType } from '@domain/entities/notification.entity';
+import type { Notification } from '@domain/entities/notification.entity';
+import { NotificationType } from '@domain/enums/notification-type.enum';
 
 // Shared facade types
 import type { FacadeOpts } from '@application/types/facade-opts';
+
+/**
+ * Notification event types for real-time coordination
+ */
+export enum NotificationEventType {
+  NOTIFICATION_CREATED = 'notification-created',
+  NOTIFICATION_DISMISSED = 'notification-dismissed',
+  NOTIFICATIONS_CLEARED = 'notifications-cleared',
+  NOTIFICATION_UPDATED = 'notification-updated',
+}
+
+/**
+ * Notification event data structure
+ */
+export interface NotificationEvent {
+  type: NotificationEventType;
+  notification?: Notification;
+  timestamp: Date;
+  metadata?: Record<string, unknown>;
+}
 
 /**
  * Notifications Facade - Pure Orchestrator
@@ -73,16 +92,15 @@ export class NotificationsFacade {
   private readonly getUC = inject(GetNotifications);
   private readonly subscribeUC = inject(SubscribeToNotifications);
 
+  // Event emission system
+  private readonly _eventSubject = new Subject<NotificationEvent>();
+
   // Private Reactive State
   private readonly _notifications = signal<Notification[]>([]);
   private readonly _loading = signal(false);
   private readonly _notificationError = signal<string | null>(null);
   private readonly _unreadCount = signal(0);
   private readonly _totalCount = signal(0);
-
-  // Real-time subscription management
-  private notificationSubject = new BehaviorSubject<NotificationEvent | null>(null);
-  private subscription: Observable<Notification[]> | null = null;
 
   constructor() {
     // Auto-initialize synchronization with notification service
@@ -99,18 +117,38 @@ export class NotificationsFacade {
   readonly hasUnread = computed(() => this._unreadCount() > 0);
 
   // Combined state for easy UI binding
-  readonly state = computed(
-    (): NotificationState => ({
-      notifications: this._notifications(),
-      loading: this._loading(),
-      error: this._notificationError(),
-      unreadCount: this._unreadCount(),
-      totalCount: this._totalCount(),
-    })
-  );
+  readonly state = computed(() => ({
+    notifications: this._notifications(),
+    loading: this._loading(),
+    error: this._notificationError(),
+    unreadCount: this._unreadCount(),
+    totalCount: this._totalCount(),
+  }));
 
-  // Real-time notification events stream
-  readonly events$ = this.notificationSubject.asObservable();
+  /**
+   * Subscribe to notification events for real-time coordination
+   *
+   * @returns Observable of notification events
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @example
+   * ```typescript
+   * notificationsFacade.onEvent().subscribe(event => {
+   *   switch (event.type) {
+   *     case NotificationEventType.NOTIFICATION_CREATED:
+   *       console.log('New notification:', event.notification);
+   *       break;
+   *     case NotificationEventType.NOTIFICATION_DISMISSED:
+   *       console.log('Notification dismissed:', event.notification?.id);
+   *       break;
+   *   }
+   * });
+   * ```
+   */
+  onEvent(): Observable<NotificationEvent> {
+    return this._eventSubject.asObservable();
+  }
 
   /**
    * Create a new notification
@@ -128,10 +166,8 @@ export class NotificationsFacade {
       const notificationId = await this.notifyUC.execute({
         type: request.type,
         message: request.message,
-        title: request.description, // Map description to title
-        userId: request.userId?.toString(), // Convert number to string
-        duration: request.duration,
-        metadata: request.metadata,
+        description: request.description,
+        userId: request.userId,
       });
 
       // State is automatically updated via subscription, no manual refresh needed
@@ -140,12 +176,9 @@ export class NotificationsFacade {
 
       if (notification) {
         // Emit event for real-time coordination
-        this.emitEvent('notification-created', notification);
+        this.emitEvent(NotificationEventType.NOTIFICATION_CREATED, notification);
 
-        return {
-          notification,
-          success: true,
-        };
+        return notification;
       } else {
         throw new Error('Failed to retrieve created notification');
       }
@@ -179,18 +212,20 @@ export class NotificationsFacade {
       );
 
       // Delegate to use case - the service will handle state changes
-      await this.dismissUC.execute(request.notificationId, request.userId);
+      await this.dismissUC.execute({
+        notificationId: request.notificationId,
+        requesterId: request.requesterId,
+      });
 
       // State is automatically updated via subscription, no manual update needed
       // The initializeNotificationSync() method ensures facade stays in sync
 
       // Emit event for real-time coordination
-      this.emitEvent('notification-dismissed', dismissedNotification);
+      this.emitEvent(NotificationEventType.NOTIFICATION_DISMISSED, dismissedNotification);
 
       return {
         notificationId: request.notificationId,
         success: true,
-        message: 'Notification dismissed successfully',
       };
     } catch (error: unknown) {
       const errorMessage =
@@ -205,9 +240,23 @@ export class NotificationsFacade {
   /**
    * Update an existing notification
    *
-   * @param request - Notification update request
-   * @param opts - Optional facade configuration
+   * Delegates the update operation to the use case following Clean Architecture.
+   * The facade focuses on orchestration, not business logic.
+   *
+   * @param request - Notification update request with patch data
+   * @param opts - Optional facade execution options
    * @returns Promise resolving to the update result
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @example
+   * ```typescript
+   * await notificationsFacade.update({
+   *   notificationId: '123',
+   *   patch: { isRead: true },
+   *   requesterId: userId
+   * });
+   * ```
    */
   async update(
     request: UpdateNotificationRequest,
@@ -217,46 +266,24 @@ export class NotificationsFacade {
     this._notificationError.set(null);
 
     try {
-      // Get notification before updating for state tracking
-      const existingNotification = this._notifications().find(
-        (n) => n.id === request.notificationId
-      );
-      const wasRead = existingNotification?.isRead;
+      // Delegate to use case - the use case handles all business logic
+      await this.updateUC.execute(request);
 
-      // Delegate to use case - returns void, creamos el objeto patch con tipo propio
-      type NotificationPatch = { message?: string; isRead?: boolean };
-      const updateData: NotificationPatch = {};
-      if (request.message !== undefined) updateData.message = request.message;
-      if (request.isRead !== undefined) updateData.isRead = request.isRead;
-      // Note: description and duration might not be supported by the entity
+      // Refresh state to get updated data from use case
+      await this.refresh(request.requesterId);
 
-      await this.updateUC.execute(request.notificationId, updateData, request.userId);
-
-      // Refresh to get updated notification
-      await this.refresh(request.userId);
+      // Emit event for real-time coordination
       const updatedNotification = this._notifications().find(
         (n) => n.id === request.notificationId
       );
-
-      if (!updatedNotification) {
-        throw new Error('Failed to retrieve updated notification');
-      }
-
-      // Update unread count if read status changed
-      if (wasRead !== updatedNotification.isRead) {
-        if (updatedNotification.isRead && !wasRead) {
-          this._unreadCount.update((count) => Math.max(0, count - 1));
-        } else if (!updatedNotification.isRead && wasRead) {
-          this._unreadCount.update((count) => count + 1);
-        }
-      }
-
-      // Emit event for real-time updates
-      this.emitEvent('notification-updated', updatedNotification);
+      this.emitEvent(NotificationEventType.NOTIFICATION_UPDATED, updatedNotification, {
+        updatedFields: Object.keys(request.patch),
+      });
 
       return {
-        notification: updatedNotification,
         success: true,
+        notificationId: request.notificationId,
+        updatedFields: Object.keys(request.patch),
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update notification';
@@ -270,9 +297,19 @@ export class NotificationsFacade {
   /**
    * Clear notifications (bulk operation)
    *
+   * Delegates the clear operation to the use case following Clean Architecture.
+   * The facade focuses on orchestration, not business logic.
+   *
    * @param request - Clear notifications request
-   * @param opts - Optional facade configuration
+   * @param opts - Optional facade execution options
    * @returns Promise resolving to the clear operation result
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @example
+   * ```typescript
+   * await notificationsFacade.clear({ requesterId: userId });
+   * ```
    */
   async clear(
     request: ClearNotificationsRequest = {},
@@ -285,23 +322,22 @@ export class NotificationsFacade {
       // Count current notifications before clearing
       const beforeCount = this._notifications().length;
 
-      // Delegate to use case (only takes requesterId)
-      await this.clearUC.execute(request.userId);
+      // Delegate to use case
+      await this.clearUC.execute(request);
 
       // Update state - refresh from source to see what's left
-      await this.refresh(request.userId);
+      await this.refresh(request.requesterId);
 
       // Calculate cleared count
       const afterCount = this._notifications().length;
       const clearedCount = beforeCount - afterCount;
 
       // Emit event for real-time updates
-      this.emitEvent('notifications-cleared');
+      this.emitEvent(NotificationEventType.NOTIFICATIONS_CLEARED);
 
       return {
-        clearedCount,
         success: true,
-        message: `${clearedCount} notifications cleared successfully`,
+        clearedCount,
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to clear notifications';
@@ -315,28 +351,40 @@ export class NotificationsFacade {
   /**
    * Get current notifications and refresh state
    *
+   * Delegates the get operation to the use case following Clean Architecture.
+   * The facade focuses on orchestration, not business logic.
+   *
    * @param userId - Optional user ID to filter notifications
-   * @param opts - Optional facade configuration
+   * @param opts - Optional facade execution options
    * @returns Promise resolving to the current notifications
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @example
+   * ```typescript
+   * const result = await notificationsFacade.refresh(userId);
+   * console.log(`Found ${result.totalCount} notifications`);
+   * ```
    */
   async refresh(userId?: number, opts?: FacadeOpts): Promise<GetNotificationsResult> {
     if (!opts?.skipLoading) this._loading.set(true);
     this._notificationError.set(null);
 
     try {
-      // Delegate to use case
-      const notifications = await this.getUC.execute(userId);
-
-      // Update state
-      this._notifications.set(notifications);
-      this._totalCount.set(notifications.length);
-      this._unreadCount.set(notifications.filter((n) => !n.isRead).length);
-
-      return {
-        notifications,
-        totalCount: notifications.length,
-        unreadCount: notifications.filter((n) => !n.isRead).length,
+      // Create proper request object for use case
+      const request: GetNotificationsRequest = {
+        requesterId: userId,
       };
+
+      // Delegate to use case
+      const result = await this.getUC.execute(request);
+
+      // Update state with the result
+      this._notifications.set(result.notifications);
+      this._totalCount.set(result.totalCount);
+      this._unreadCount.set(result.notifications.filter((n) => !n.isRead).length);
+
+      return result;
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to refresh notifications';
@@ -350,63 +398,76 @@ export class NotificationsFacade {
   /**
    * Subscribe to real-time notification updates
    *
-   * @param request - Subscription configuration
+   * @param request - Subscription configuration with callback and requester ID
    * @returns Observable of notification updates
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
    */
-  subscribeToUpdates(request: SubscribeToNotificationsRequest = {}): Observable<Notification[]> {
-    try {
-      // Create new observable from subscription use case
-      const observable = new Observable<Notification[]>((subscriber) => {
-        // Create callback for use case
-        const callback = (notifications: Notification[]) => {
-          // Update internal state when real-time updates arrive
-          this._notifications.set(notifications);
-          this._totalCount.set(notifications.length);
-          this._unreadCount.set(notifications.filter((n) => !n.isRead).length);
+  subscribeToUpdates(request: SubscribeToNotificationsRequest): Observable<Notification[]> {
+    return new Observable<Notification[]>((subscriber) => {
+      let unsubscribeFunction: (() => void) | null = null;
 
-          // Emit to observable subscribers
+      // Create a callback that emits to the subscriber
+      const notificationCallback = (notifications: Notification[]) => {
+        if (!subscriber.closed) {
           subscriber.next(notifications);
-        };
+        }
+      };
 
-        // Subscribe through use case
-        const unsubscribe = this.subscribeUC.execute(callback, request.userId);
+      // Create the subscription request with our callback
+      const subscriptionRequest: SubscribeToNotificationsRequest = {
+        callback: notificationCallback,
+        requesterId: request.requesterId,
+      };
 
-        // Return cleanup function
-        return () => {
-          if (unsubscribe) {
-            unsubscribe();
+      // Execute the use case to establish subscription
+      this.subscribeUC
+        .execute(subscriptionRequest)
+        .then((unsubscribe) => {
+          unsubscribeFunction = unsubscribe;
+
+          // Emit current notifications immediately
+          subscriber.next(this._notifications());
+        })
+        .catch((error) => {
+          if (!subscriber.closed) {
+            subscriber.error(error);
           }
-        };
-      });
+        });
 
-      // Cache the subscription
-      this.subscription = observable.pipe(
-        catchError((error) => {
-          this._notificationError.set(error?.message ?? 'Subscription error');
-          return EMPTY;
-        }),
-        startWith(this._notifications()) // Start with current state
-      );
-
-      return this.subscription;
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to subscribe to notifications';
-      this._notificationError.set(errorMessage);
-      return EMPTY;
-    }
+      // Return cleanup function
+      return () => {
+        if (unsubscribeFunction) {
+          unsubscribeFunction();
+        }
+      };
+    }).pipe(
+      catchError((error) => {
+        this._notificationError.set(error?.message ?? 'Subscription error');
+        return EMPTY;
+      }),
+      startWith(this._notifications())
+    );
   }
 
   /**
    * Convenience method to show success notification
+   *
+   * @param message - Success message to display
+   * @param description - Optional description for the notification
+   * @param opts - Optional facade execution options
+   * @returns Promise resolving to the notification creation result
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
    */
   async success(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
     return this.notify(
       {
-        type: 'success',
+        type: NotificationType.SUCCESS,
         message,
         description,
-        duration: 5000, // Auto-dismiss after 5 seconds
       },
       opts
     );
@@ -422,10 +483,9 @@ export class NotificationsFacade {
   ): Promise<NotifyResult> {
     return this.notify(
       {
-        type: 'error',
+        type: NotificationType.ERROR,
         message,
         description,
-        // Don't specify duration to prevent auto-dismiss for errors
       },
       opts
     );
@@ -437,10 +497,9 @@ export class NotificationsFacade {
   async warning(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
     return this.notify(
       {
-        type: 'warning',
+        type: NotificationType.WARNING,
         message,
         description,
-        duration: 8000, // Auto-dismiss after 8 seconds
       },
       opts
     );
@@ -452,10 +511,9 @@ export class NotificationsFacade {
   async info(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
     return this.notify(
       {
-        type: 'info',
+        type: NotificationType.INFO,
         message,
         description,
-        duration: 5000, // Auto-dismiss after 5 seconds
       },
       opts
     );
@@ -463,19 +521,48 @@ export class NotificationsFacade {
 
   /**
    * Mark all notifications as read
+   *
+   * This method delegates the bulk update operation to a dedicated use case
+   * following Clean Architecture principles. The facade only orchestrates
+   * the operation without containing business logic.
+   *
+   * @param userId - Optional user ID to filter notifications
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when bulk update is complete
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @example
+   * ```typescript
+   * await notificationsFacade.markAllAsRead(userId);
+   * ```
    */
-  async markAllAsRead(userId?: number): Promise<void> {
-    const unreadNotifications = this._notifications().filter((n) => !n.isRead);
+  async markAllAsRead(userId?: number, opts?: FacadeOpts): Promise<void> {
+    const skipLoading = opts?.skipLoading ?? false;
+    if (!skipLoading) this._loading.set(true);
+    this._notificationError.set(null);
 
-    for (const notification of unreadNotifications) {
-      await this.update(
-        {
-          notificationId: notification.id,
-          isRead: true,
-          userId,
-        },
-        { skipLoading: true }
-      );
+    try {
+      // TODO: Create dedicated MarkAllAsReadUseCase to handle this logic
+      // For now, delegate to existing update method but this should be refactored
+      const unreadNotifications = this._notifications().filter((n) => !n.isRead);
+
+      for (const notification of unreadNotifications) {
+        await this.update(
+          {
+            notificationId: notification.id,
+            patch: { isRead: true },
+            requesterId: userId,
+          },
+          { skipLoading: true }
+        );
+      }
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mark all as read';
+      this._notificationError.set(errorMessage);
+      throw error;
+    } finally {
+      if (!skipLoading) this._loading.set(false);
     }
   }
 
@@ -509,7 +596,23 @@ export class NotificationsFacade {
     this._notificationError.set(null);
     this._unreadCount.set(0);
     this._totalCount.set(0);
-    this.subscription = null;
+  }
+
+  /**
+   * Complete the event system and clean up resources
+   *
+   * @description
+   * Completes the event Subject to notify all subscribers that no more events
+   * will be emitted. This should be called when the facade is being destroyed
+   * or when you want to stop all event emissions.
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   */
+  complete(): void {
+    if (!this._eventSubject.closed) {
+      this._eventSubject.complete();
+    }
   }
 
   // Private helper methods
@@ -533,7 +636,10 @@ export class NotificationsFacade {
       };
 
       // Use the subscribe use case to establish the connection
-      this.subscribeUC.execute(callback);
+      const request: SubscribeToNotificationsRequest = {
+        callback,
+      };
+      this.subscribeUC.execute(request);
     } catch (error) {
       // Log initialization error but don't fail the facade construction
       console.warn('NotificationsFacade: Failed to initialize sync with service layer', error);
@@ -543,13 +649,50 @@ export class NotificationsFacade {
 
   /**
    * Emit notification event for real-time coordination
+   *
+   * @description
+   * Emits events to notify other parts of the application about notification changes.
+   * This enables cross-component coordination and real-time UI updates.
+   *
+   * @param type - The type of notification event
+   * @param notification - Optional notification data associated with the event
+   * @param metadata - Optional additional metadata for the event
+   *
+   * @since 1.0.0
+   * @application NotificationsFacade
+   * @private
    */
-  private emitEvent(type: NotificationEventType, notification?: Notification): void {
-    const event: NotificationEvent = {
-      type,
-      notification,
-      timestamp: new Date(),
-    };
-    this.notificationSubject.next(event);
+  private emitEvent(
+    type: NotificationEventType,
+    notification?: Notification,
+    metadata?: Record<string, unknown>
+  ): void {
+    try {
+      const event: NotificationEvent = {
+        type,
+        notification,
+        timestamp: new Date(),
+        metadata,
+      };
+
+      // Emit the event to all subscribers
+      this._eventSubject.next(event);
+
+      // Log the event for debugging (only in development)
+      if (typeof window !== 'undefined' && (window as { ngDevMode?: boolean }).ngDevMode) {
+        console.log(`[NotificationsFacade] Event emitted:`, {
+          type: event.type,
+          notificationId: notification?.id,
+          timestamp: event.timestamp,
+        });
+      }
+    } catch (error) {
+      // Log emission errors but don't fail the operation
+      console.warn('[NotificationsFacade] Failed to emit event:', {
+        type,
+        notificationId: notification?.id,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
 }
