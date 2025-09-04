@@ -139,7 +139,7 @@ export interface RoleUpdateResult {
   readonly index: number;
   readonly id: number;
   readonly success: boolean;
-  readonly updatedRole?: any; // Will be defined by Domain
+  readonly updatedRole?: unknown; // Will be defined by Domain
   readonly error?: string;
 }
 
