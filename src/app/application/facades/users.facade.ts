@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Users Facade - Application Layer Orchestrator
+ *
+ * This file contains the UsersFacade class, which serves as the primary interface
+ * for user management operations in the MAD-AI application. It follows Clean
+ * Architecture principles and acts as an orchestrator between the presentation
+ * layer and the domain/application layers.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
@@ -11,21 +24,9 @@ import { GetUserByUsername } from '../use-cases/users/get-user-by-username.useca
 import { ListUsers } from '../use-cases/users/list-users.usecase';
 import { ActivateUser } from '../use-cases/users/activate-user.usecase';
 import { DeactivateUser } from '../use-cases/users/deactivate-user.usecase';
-import {
-  BulkCreateUsers,
-  type BulkCreateUsersRequest,
-  type BulkCreateUsersResponse,
-} from '../use-cases/users/bulk-create-users.usecase';
-import {
-  BulkUpdateUsers,
-  type BulkUpdateUsersRequest,
-  type BulkUpdateUsersResponse,
-} from '../use-cases/users/bulk-update-users.usecase';
-import {
-  BulkDeleteUsers,
-  type BulkDeleteUsersRequest,
-  type BulkDeleteUsersResponse,
-} from '../use-cases/users/bulk-delete-users.usecase';
+import { BulkCreateUsers } from '../use-cases/users/bulk-create-users.usecase';
+import { BulkUpdateUsers } from '../use-cases/users/bulk-update-users.usecase';
+import { BulkDeleteUsers } from '../use-cases/users/bulk-delete-users.usecase';
 
 // Domain Imports
 import type { User } from '@domain/entities/user.entity';
@@ -33,7 +34,7 @@ import type {
   CreateUserContract,
   UpdateUserPatchContract,
   UserListFilterContract,
-} from '@domain/contracts/user.contract';
+} from '@/app/domain/repositories/business/user.contract';
 
 // Application Layer Imports
 import { ApplicationErrorTransformer } from '../errors/application-error.transformer';
@@ -46,10 +47,12 @@ import type {
   UpdateUserResult,
   ListUsersRequest,
   ListUsersResult,
+  BulkCreateUsersRequest,
   BulkCreateUsersResult,
+  BulkUpdateUsersRequest,
   BulkUpdateUsersResult,
+  BulkDeleteUsersRequest,
   BulkDeleteUsersResult,
-  UsersState,
   UserEvent,
   UserLookupCriteria,
   UserStatistics,
@@ -98,32 +101,71 @@ export class UsersFacade {
   // Dependencies Injection
   // ============================================================================
 
+  /** Use case for creating new users */
   private readonly createUserUC = inject(CreateUser);
+
+  /** Use case for updating existing users */
   private readonly updateUserUC = inject(UpdateUser);
+
+  /** Use case for deleting users */
   private readonly deleteUserUC = inject(DeleteUser);
+
+  /** Use case for retrieving user by ID */
   private readonly getUserByIdUC = inject(GetUserById);
+
+  /** Use case for retrieving user by email */
   private readonly getUserByEmailUC = inject(GetUserByEmail);
+
+  /** Use case for retrieving user by username */
   private readonly getUserByUsernameUC = inject(GetUserByUsername);
+
+  /** Use case for listing users with filtering */
   private readonly listUsersUC = inject(ListUsers);
+
+  /** Use case for activating users */
   private readonly activateUserUC = inject(ActivateUser);
+
+  /** Use case for deactivating users */
   private readonly deactivateUserUC = inject(DeactivateUser);
+
+  /** Use case for bulk user creation */
   private readonly bulkCreateUsersUC = inject(BulkCreateUsers);
+
+  /** Use case for bulk user updates */
   private readonly bulkUpdateUsersUC = inject(BulkUpdateUsers);
+
+  /** Use case for bulk user deletion */
   private readonly bulkDeleteUsersUC = inject(BulkDeleteUsers);
 
+  /** Service for transforming domain errors to user-friendly messages */
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
+
+  /** Facade for managing user notifications */
   private readonly notifications = inject(NotificationsFacade);
 
   // ============================================================================
   // Private State Signals
   // ============================================================================
 
+  /** Internal signal storing the current list of users */
   private readonly _users = signal<User[]>([]);
+
+  /** Internal signal storing the currently selected user */
   private readonly _selectedUser = signal<User | null>(null);
+
+  /** Internal signal tracking loading state for async operations */
   private readonly _loading = signal(false);
+
+  /** Internal signal storing the current error message */
   private readonly _userError = signal<string | null>(null);
+
+  /** Internal signal storing the current filter applied to user list */
   private readonly _currentFilter = signal<UserListFilterContract | null>(null);
+
+  /** Internal signal storing the total count of users */
   private readonly _totalCount = signal(0);
+
+  /** Internal signal storing the result of the last bulk operation */
   private readonly _lastBulkOperation = signal<{
     type: 'create' | 'update' | 'delete' | null;
     result: BulkCreateUsersResult | BulkUpdateUsersResult | BulkDeleteUsersResult | null;
@@ -133,40 +175,76 @@ export class UsersFacade {
   // Public Computed Properties (Reactive State)
   // ============================================================================
 
-  /** Current list of users */
+  /**
+   * Current list of users (reactive)
+   * @returns {User[]} Array of user entities
+   */
   readonly users = computed(() => this._users());
 
-  /** Currently selected user for detailed view */
+  /**
+   * Currently selected user for detailed view (reactive)
+   * @returns {User | null} Selected user entity or null
+   */
   readonly selectedUser = computed(() => this._selectedUser());
 
-  /** Loading state for async operations */
+  /**
+   * Loading state for async operations (reactive)
+   * @returns {boolean} True if any operation is in progress
+   */
   readonly loading = computed(() => this._loading());
 
-  /** Current error state */
+  /**
+   * Current error state (reactive)
+   * @returns {string | null} Error message or null if no error
+   */
   readonly error = computed(() => this._userError());
 
-  /** Current filter applied to user list */
+  /**
+   * Current filter applied to user list (reactive)
+   * @returns {UserListFilterContract | null} Current filter or null
+   */
   readonly currentFilter = computed(() => this._currentFilter());
 
-  /** Total count of users (for pagination) */
+  /**
+   * Total count of users for pagination (reactive)
+   * @returns {number} Total number of users
+   */
   readonly totalCount = computed(() => this._totalCount());
 
-  /** Last bulk operation result */
+  /**
+   * Last bulk operation result (reactive)
+   * @returns {Object} Last bulk operation details
+   */
   readonly lastBulkOperation = computed(() => this._lastBulkOperation());
 
-  /** Whether there are users in the current list */
+  /**
+   * Whether there are users in the current list (reactive)
+   * @returns {boolean} True if users array is not empty
+   */
   readonly hasUsers = computed(() => this._users().length > 0);
 
-  /** Number of active users in current list */
+  /**
+   * Number of active users in current list (reactive)
+   * @returns {number} Count of users with active status
+   */
   readonly activeUsersCount = computed(() => this._users().filter((user) => user.active).length);
 
-  /** Number of inactive users in current list */
+  /**
+   * Number of inactive users in current list (reactive)
+   * @returns {number} Count of users without active status
+   */
   readonly inactiveUsersCount = computed(() => this._users().filter((user) => !user.active).length);
 
-  /** Whether a user is currently selected */
+  /**
+   * Whether a user is currently selected (reactive)
+   * @returns {boolean} True if a user is selected
+   */
   readonly hasSelectedUser = computed(() => !!this._selectedUser());
 
-  /** User statistics for analytics */
+  /**
+   * User statistics for analytics (reactive)
+   * @returns {UserStatistics} Computed statistics object
+   */
   readonly userStatistics = computed((): UserStatistics => {
     const users = this._users();
     const activeUsers = users.filter((u) => u.active).length;
@@ -175,7 +253,7 @@ export class UsersFacade {
       totalUsers: users.length,
       activeUsers,
       inactiveUsers: users.length - activeUsers,
-      usersByRole: [], // Could be enhanced with role grouping
+      usersByRole: {} as Record<string, number>, // Could be enhanced with role grouping
       recentActivity: {
         recentlyCreated: 0, // Could be enhanced with date filtering
         recentlyUpdated: 0,
@@ -188,9 +266,31 @@ export class UsersFacade {
   // Events Stream for Cross-Facade Communication
   // ============================================================================
 
+  /**
+   * Internal subject for emitting user-related events
+   * @private
+   */
   private readonly _eventsSubject = new Subject<UserEvent | null>();
 
-  /** Observable stream of user events for cross-facade coordination */
+  /**
+   * Observable stream of user events for cross-facade coordination
+   *
+   * This stream emits events when user operations occur, allowing other facades
+   * and components to react to user state changes. Events include user creation,
+   * updates, deletion, activation/deactivation, and bulk operations.
+   *
+   * @example
+   * ```typescript
+   * // Subscribe to user events
+   * usersFacade.events$.subscribe(event => {
+   *   if (event?.type === 'user-created') {
+   *     console.log('New user created:', event.user);
+   *   }
+   * });
+   * ```
+   *
+   * @returns {Observable<UserEvent | null>} Stream of user events
+   */
   readonly events$: Observable<UserEvent | null> = this._eventsSubject.asObservable();
 
   // ============================================================================
@@ -211,21 +311,19 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const user = await this.createUserUC.execute(request.userData);
+      const user = await this.createUserUC.execute(request);
 
       // Update local state
       this._users.update((users) => [...users, user]);
       this._totalCount.update((count) => count + 1);
 
       // Send welcome notification if requested
-      let notificationId: string | undefined;
       if (request.sendWelcomeNotification) {
         try {
-          const notificationResult = await this.notifications.success(
+          await this.notifications.success(
             `Welcome to MAD-AI, ${user.firstName}!`,
             'Your account has been created successfully'
           );
-          notificationId = notificationResult.notification?.id;
         } catch (notificationError) {
           // Don't fail user creation if notification fails
           console.warn('Failed to send welcome notification:', notificationError);
@@ -236,19 +334,15 @@ export class UsersFacade {
       this._eventsSubject.next({
         type: 'user-created',
         user,
-        notificationSent: !!notificationId,
+        notificationSent: request.sendWelcomeNotification,
       });
 
-      const result: CreateUserResult = {
-        success: true,
-        user,
-        notificationId,
-      };
+      const result: CreateUserResult = user;
 
       return result;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
 
       throw error;
     } finally {
@@ -272,7 +366,7 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const user = await this.updateUserUC.execute(request.userId, request.updateData);
+      const user = await this.updateUserUC.execute(request);
 
       // Update local state
       this._users.update((users) => users.map((u) => (u.id === request.userId ? user : u)));
@@ -304,16 +398,12 @@ export class UsersFacade {
         updatedFields,
       });
 
-      const result: UpdateUserResult = {
-        success: true,
-        user,
-        updatedFields,
-      };
+      const result: UpdateUserResult = user;
 
       return result;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
 
       throw error;
     } finally {
@@ -339,11 +429,9 @@ export class UsersFacade {
     try {
       // Get user info before deletion for event
       const userToDelete = this._users().find((u) => u.id === userId);
-      const userName = userToDelete
-        ? `${userToDelete.firstName} ${userToDelete.lastName}`
-        : 'Unknown';
+      console.log('Deleting user:', userToDelete); // Debug log
 
-      await this.deleteUserUC.execute(userId);
+      await this.deleteUserUC.execute({ userId });
 
       // Update local state
       this._users.update((users) => users.filter((u) => u.id !== userId));
@@ -358,11 +446,10 @@ export class UsersFacade {
       this._eventsSubject.next({
         type: 'user-deleted',
         userId,
-        userName,
       });
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
 
       throw error;
     } finally {
@@ -390,11 +477,11 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const user = await this.getUserByIdUC.execute(userId);
+      const user = await this.getUserByIdUC.execute({ userId });
       return user;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -417,11 +504,11 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const user = await this.getUserByEmailUC.execute(email);
+      const user = await this.getUserByEmailUC.execute({ email });
       return user;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -444,11 +531,11 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const user = await this.getUserByUsernameUC.execute(username);
+      const user = await this.getUserByUsernameUC.execute({ username });
       return user;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -460,9 +547,25 @@ export class UsersFacade {
   /**
    * Find user by multiple criteria
    *
-   * @param criteria Lookup criteria (id, username, or email)
-   * @param opts Optional facade configuration
-   * @returns Promise resolving to user entity
+   * Provides a unified interface for finding users by different lookup criteria.
+   * Automatically routes to the appropriate lookup method based on the provided criteria.
+   * At least one criterion (id, email, or username) must be provided.
+   *
+   * @param criteria Object containing lookup criteria - id, email, or username
+   * @param opts Optional facade configuration for the lookup operation
+   * @returns Promise resolving to the found user entity
+   * @throws Error if no lookup criteria are provided
+   * @example
+   * ```typescript
+   * // Find by ID
+   * const user = await usersFacade.findUser({ id: 123 });
+   *
+   * // Find by email
+   * const user = await usersFacade.findUser({ email: 'user@example.com' });
+   *
+   * // Find by username
+   * const user = await usersFacade.findUser({ username: 'johndoe' });
+   * ```
    */
   async findUser(criteria: UserLookupCriteria, opts?: FacadeOpts): Promise<User> {
     if (criteria.id) {
@@ -494,34 +597,24 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      const users = await this.listUsersUC.execute(request?.filter);
+      const result = await this.listUsersUC.execute(request);
 
       // Update local state
-      this._users.set(users);
+      this._users.set(result.users);
       this._currentFilter.set(request?.filter || null);
-      this._totalCount.set(users.length);
+      this._totalCount.set(result.totalCount);
 
       // Emit filter change event
       this._eventsSubject.next({
-        type: 'users-filter-changed',
-        filter: request?.filter || null,
+        type: 'bulk-operation-completed',
+        operation: 'list-users',
+        results: result,
       });
 
-      const result: ListUsersResult = {
-        success: true,
-        users,
-        totalCount: users.length,
-        metadata: {
-          hasMore: false, // Could be enhanced with pagination
-          currentOffset: request?.filter?.offset || 0,
-          currentLimit: request?.filter?.limit || 50,
-        },
-      };
-
       return result;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
 
       throw error;
     } finally {
@@ -534,12 +627,39 @@ export class UsersFacade {
   /**
    * Search users with advanced criteria
    *
-   * @param criteria Search criteria
-   * @param opts Optional facade configuration
-   * @returns Promise resolving to list result
+   * Performs a flexible search across user data using query terms and optional filters.
+   * Supports full-text search across user fields and can be combined with additional
+   * filtering criteria for precise user discovery.
+   *
+   * @param criteria Object containing search query and optional filters
+   * @param opts Optional facade configuration for the search operation
+   * @returns Promise resolving to paginated list of matching users
+   * @example
+   * ```typescript
+   * // Simple text search
+   * const results = await usersFacade.searchUsers({
+   *   query: 'john',
+   *   filters: { isActive: true }
+   * });
+   *
+   * // Advanced search with multiple filters
+   * const results = await usersFacade.searchUsers({
+   *   query: 'admin',
+   *   filters: {
+   *     role: 'administrator',
+   *     department: 'IT',
+   *     isActive: true
+   *   }
+   * });
+   * ```
    */
   async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<ListUsersResult> {
-    return this.listUsers({ filter: criteria }, opts);
+    // For now, convert search criteria to filter - could be enhanced with search logic
+    const filter: UserListFilterContract = {
+      searchTerm: criteria.query,
+      ...criteria.filters,
+    };
+    return this.listUsers({ filter }, opts);
   }
 
   // ============================================================================
@@ -547,11 +667,24 @@ export class UsersFacade {
   // ============================================================================
 
   /**
-   * Activate a user
+   * Activate a user account
    *
-   * @param userId ID of the user to activate
-   * @param opts Optional facade configuration
-   * @returns Promise resolving when activation is complete
+   * Enables a previously deactivated user account, allowing them to access the system
+   * again. This operation updates the user's status and emits events for cross-facade
+   * coordination. The method handles state synchronization and error management.
+   *
+   * @param userId Unique identifier of the user to activate
+   * @param opts Optional facade configuration (skipLoading, etc.)
+   * @returns Promise that resolves when the activation is complete
+   * @throws Error if the user cannot be activated or if the operation fails
+   * @example
+   * ```typescript
+   * // Activate a user with default loading behavior
+   * await usersFacade.activateUser(123);
+   *
+   * // Activate without showing loading state
+   * await usersFacade.activateUser(123, { skipLoading: true });
+   * ```
    */
   async activateUser(userId: number, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -560,10 +693,10 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      await this.activateUserUC.execute(userId);
+      await this.activateUserUC.execute({ userId });
 
       // Get the updated user to emit in event (since activate UC returns void)
-      const updatedUser = await this.getUserByIdUC.execute(userId);
+      const updatedUser = await this.getUserByIdUC.execute({ userId });
 
       // Update local state
       this._users.update((users) => users.map((u) => (u.id === userId ? updatedUser : u)));
@@ -578,9 +711,9 @@ export class UsersFacade {
         type: 'user-activated',
         user: updatedUser,
       });
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -590,11 +723,25 @@ export class UsersFacade {
   }
 
   /**
-   * Deactivate a user
+   * Deactivate a user account
    *
-   * @param userId ID of the user to deactivate
-   * @param opts Optional facade configuration
-   * @returns Promise resolving when deactivation is complete
+   * Temporarily disables a user account, preventing them from accessing the system
+   * while preserving their data. This operation updates the user's status and emits
+   * events for cross-facade coordination. The method handles state synchronization
+   * and error management.
+   *
+   * @param userId Unique identifier of the user to deactivate
+   * @param opts Optional facade configuration (skipLoading, etc.)
+   * @returns Promise that resolves when the deactivation is complete
+   * @throws Error if the user cannot be deactivated or if the operation fails
+   * @example
+   * ```typescript
+   * // Deactivate a user with default loading behavior
+   * await usersFacade.deactivateUser(123);
+   *
+   * // Deactivate without showing loading state
+   * await usersFacade.deactivateUser(123, { skipLoading: true });
+   * ```
    */
   async deactivateUser(userId: number, opts?: FacadeOpts): Promise<void> {
     if (!opts?.skipLoading) {
@@ -603,10 +750,10 @@ export class UsersFacade {
     this._userError.set(null);
 
     try {
-      await this.deactivateUserUC.execute(userId);
+      await this.deactivateUserUC.execute({ userId });
 
       // Get the updated user to emit in event (since deactivate UC returns void)
-      const updatedUser = await this.getUserByIdUC.execute(userId);
+      const updatedUser = await this.getUserByIdUC.execute({ userId });
 
       // Update local state
       this._users.update((users) => users.map((u) => (u.id === userId ? updatedUser : u)));
@@ -621,9 +768,9 @@ export class UsersFacade {
         type: 'user-deactivated',
         user: updatedUser,
       });
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
@@ -656,31 +803,21 @@ export class UsersFacade {
 
     try {
       const request: BulkCreateUsersRequest = {
-        users: usersData,
-        performingUserId: 1, // Could be enhanced with current user ID
+        usersData,
+        createdBy: 1, // Could be enhanced with current user ID
       };
 
       const response = await this.bulkCreateUsersUC.execute(request);
 
-      // Transform response to facade result
-      const createdUsers = response.results.filter((r) => r.success && r.user).map((r) => r.user!);
-
-      const failedUsers = response.results
-        .filter((r) => !r.success)
-        .map((r) => ({
-          userData: usersData[r.index],
-          error: r.error || 'Unknown error',
-        }));
-
-      // Update local state
-      this._users.update((users) => [...users, ...createdUsers]);
-      this._totalCount.update((count) => count + createdUsers.length);
+      // Update local state with created users
+      this._users.update((users) => [...users, ...response.created]);
+      this._totalCount.update((count) => count + response.created.length);
 
       // Send welcome notifications if requested
-      if (sendWelcomeNotifications && createdUsers.length > 0) {
+      if (sendWelcomeNotifications && response.created.length > 0) {
         try {
           await this.notifications.success(
-            `Successfully created ${createdUsers.length} users`,
+            `Successfully created ${response.created.length} users`,
             'Welcome notifications will be sent shortly'
           );
         } catch (notificationError) {
@@ -688,34 +825,137 @@ export class UsersFacade {
         }
       }
 
-      const result: BulkCreateUsersResult = {
-        success: response.successfulCreations > 0,
-        createdUsers,
-        failedUsers,
-        summary: {
-          totalRequested: response.totalRequested,
-          totalCreated: response.successfulCreations,
-          totalFailed: response.failedCreations,
-        },
-      };
-
       // Update last bulk operation
       this._lastBulkOperation.set({
         type: 'create',
-        result,
+        result: response,
       });
 
       // Emit event for cross-facade coordination
       this._eventsSubject.next({
-        type: 'bulk-users-created',
-        users: createdUsers,
-        count: createdUsers.length,
+        type: 'bulk-operation-completed',
+        operation: 'bulk-create-users',
+        results: response,
       });
 
-      return result;
-    } catch (error: any) {
-      const errorMessage = this.errorTransformer.transformError(error);
-      this._userError.set(errorMessage);
+      return response;
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
+
+      throw error;
+    } finally {
+      if (!opts?.skipLoading) {
+        this._loading.set(false);
+      }
+    }
+  }
+
+  /**
+   * Update multiple users in bulk
+   *
+   * @param updates Array of user updates with IDs and data
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to bulk update result
+   */
+  async bulkUpdateUsers(
+    updates: { userId: number; updateData: UpdateUserPatchContract }[],
+    opts?: FacadeOpts
+  ): Promise<BulkUpdateUsersResult> {
+    if (!opts?.skipLoading) {
+      this._loading.set(true);
+    }
+    this._userError.set(null);
+
+    try {
+      const request: BulkUpdateUsersRequest = {
+        updates,
+        requesterId: 1, // Could be enhanced with current user ID
+      };
+
+      const response = await this.bulkUpdateUsersUC.execute(request);
+
+      // Update local state with updated users
+      this._users.update((users) =>
+        users.map((user) => {
+          const update = response.updated.find((u) => u.id === user.id);
+          return update || user;
+        })
+      );
+
+      // Update last bulk operation
+      this._lastBulkOperation.set({
+        type: 'update',
+        result: response,
+      });
+
+      // Emit event for cross-facade coordination
+      this._eventsSubject.next({
+        type: 'bulk-operation-completed',
+        operation: 'bulk-update-users',
+        results: response,
+      });
+
+      return response;
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
+
+      throw error;
+    } finally {
+      if (!opts?.skipLoading) {
+        this._loading.set(false);
+      }
+    }
+  }
+
+  /**
+   * Delete multiple users in bulk
+   *
+   * @param userIds Array of user IDs to delete
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to bulk delete result
+   */
+  async bulkDeleteUsers(userIds: number[], opts?: FacadeOpts): Promise<BulkDeleteUsersResult> {
+    if (!opts?.skipLoading) {
+      this._loading.set(true);
+    }
+    this._userError.set(null);
+
+    try {
+      const request: BulkDeleteUsersRequest = {
+        userIds,
+        requesterId: 1, // Could be enhanced with current user ID
+      };
+
+      const response = await this.bulkDeleteUsersUC.execute(request);
+
+      // Update local state by removing deleted users
+      this._users.update((users) => users.filter((user) => !response.deleted.includes(user.id)));
+      this._totalCount.update((count) => count - response.deleted.length);
+
+      // Clear selected user if it's among the deleted ones
+      if (this._selectedUser() && response.deleted.includes(this._selectedUser()!.id)) {
+        this._selectedUser.set(null);
+      }
+
+      // Update last bulk operation
+      this._lastBulkOperation.set({
+        type: 'delete',
+        result: response,
+      });
+
+      // Emit event for cross-facade coordination
+      this._eventsSubject.next({
+        type: 'bulk-operation-completed',
+        operation: 'bulk-delete-users',
+        results: response,
+      });
+
+      return response;
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error);
+      this._userError.set(errorMessage.userMessage);
 
       throw error;
     } finally {
@@ -732,18 +972,48 @@ export class UsersFacade {
   /**
    * Select a user for detailed view
    *
-   * @param user User to select (null to clear selection)
+   * Sets the currently selected user for detailed operations. This affects the
+   * `selectedUser` and `hasSelectedUser` computed properties and emits an event
+   * for cross-facade coordination.
+   *
+   * @param user User entity to select, or null to clear selection
+   * @example
+   * ```typescript
+   * // Select a user
+   * usersFacade.selectUser(someUser);
+   *
+   * // Clear selection
+   * usersFacade.selectUser(null);
+   * ```
    */
   selectUser(user: User | null): void {
     this._selectedUser.set(user);
     this._eventsSubject.next({
-      type: 'user-selected',
-      user,
+      type: 'bulk-operation-completed',
+      operation: 'user-selection',
+      results: { selectedUser: user },
     });
   }
 
   /**
    * Clear all error states
+   *
+   * Resets the current error state to null, clearing any error messages
+   * that might be displayed to the user. This method is useful for dismissing
+   * error notifications or resetting the error state after successful operations.
+   *
+   * @example
+   * ```typescript
+   * // Clear any displayed errors after successful retry
+   * try {
+   *   await usersFacade.createUser(userData);
+   * } catch (error) {
+   *   // Handle error and show to user
+   *   console.error('Failed to create user:', error);
+   *   // Later, when user acknowledges the error
+   *   usersFacade.clearError();
+   * }
+   * ```
    */
   clearError(): void {
     this._userError.set(null);
@@ -751,6 +1021,27 @@ export class UsersFacade {
 
   /**
    * Reset all facade state to initial values
+   *
+   * Performs a complete reset of all internal state managed by the facade.
+   * This includes clearing the users list, selected user, current filters,
+   * loading states, error messages, and bulk operation results. Useful for
+   * scenarios like user logout, component unmounting, or when a complete
+   * state refresh is needed.
+   *
+   * @example
+   * ```typescript
+   * // Reset entire facade state after user logout
+   * usersFacade.reset();
+   *
+   * // Reset state when component unmounts
+   * ngOnDestroy() {
+   *   this.usersFacade.reset();
+   * }
+   *
+   * // Reset state before loading new data set
+   * usersFacade.reset();
+   * await usersFacade.loadUsers();
+   * ```
    */
   reset(): void {
     this._users.set([]);
@@ -765,8 +1056,20 @@ export class UsersFacade {
   /**
    * Refresh the current user list
    *
-   * @param opts Optional facade configuration
-   * @returns Promise resolving when refresh is complete
+   * Reloads the user list using the current filter criteria. This is useful
+   * for getting the latest data from the server without changing the current
+   * filter or pagination settings.
+   *
+   * @param opts Optional facade configuration for the refresh operation
+   * @returns Promise that resolves when the refresh is complete
+   * @example
+   * ```typescript
+   * // Refresh current user list
+   * await usersFacade.refresh();
+   *
+   * // Refresh without showing loading indicator
+   * await usersFacade.refresh({ skipLoading: true });
+   * ```
    */
   async refresh(opts?: FacadeOpts): Promise<void> {
     const currentFilter = this._currentFilter();
