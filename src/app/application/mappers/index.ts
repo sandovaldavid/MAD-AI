@@ -15,3 +15,4 @@
  */
 
 export { AuthMapper } from './auth.mapper';
+export { UsersMapper } from './users.mapper';
