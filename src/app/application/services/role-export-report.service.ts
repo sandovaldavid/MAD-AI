@@ -9,11 +9,7 @@ import { EXPORT_PORT, LOGGER_PORT } from '@di/tokens';
 import type { Role } from '@domain/entities/role.entity';
 import type { Logger } from '@core/interfaces/logger.interface';
 import { ApplicationError } from '@application/errors/application-error';
-import type {
-  RoleExportData,
-  RoleExportConfig,
-  ExportFormat,
-} from '@application/types/role-export.types';
+import type { RoleExportData, RoleExportConfig } from '@application/types/role-export.types';
 import { DEFAULT_ROLE_EXPORT_CONFIG } from '@application/types/role-export.types';
 
 @Injectable({
@@ -58,7 +54,7 @@ export class RoleExportService {
           try {
             const accessLevel = role.getAccessLevel();
             data.accessLevel = accessLevel.getName();
-          } catch (error) {
+          } catch {
             this.logger.warn('Failed to get access level for role', {
               operation: 'role_export',
               correlationId: `export-${Date.now()}`,
