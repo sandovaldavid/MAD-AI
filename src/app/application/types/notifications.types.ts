@@ -21,11 +21,7 @@
  * @layer Application
  */
 
-import type {
-  Notification,
-  NotificationId,
-  NewNotification,
-} from '@domain/entities/notification.entity';
+import type { Notification, NotificationId } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification-type.enum';
 
 // ============================================================================
