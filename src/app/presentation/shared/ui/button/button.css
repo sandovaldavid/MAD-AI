@@ -1,0 +1,145 @@
+@reference '../../../../../styles.css';
+
+/* Base */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+    transition-all duration-200 disabled:cursor-not-allowed select-none
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+    focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-900;
+  min-height: 2.25rem;
+  padding-inline: 0.875rem;
+}
+
+/* Tamaños */
+.btn--sm {
+  @apply text-xs min-h-8 px-3;
+}
+.btn--md {
+  @apply text-sm min-h-9 px-3.5;
+}
+.btn--lg {
+  @apply text-base min-h-10 px-4;
+}
+
+.btn--block {
+  @apply w-full;
+}
+
+/* Variantes */
+
+/* Primary Button */
+.btn--primary {
+  @apply text-white bg-primary-500 shadow-sm
+    hover:bg-primary-600 hover:shadow-md
+    active:bg-primary-700 active:shadow-sm active:scale-95
+    focus-visible:ring-primary-500/25
+    dark:bg-primary-600 dark:hover:bg-primary-500 dark:active:bg-primary-700
+    dark:focus-visible:ring-primary-400/25;
+}
+
+/* Secondary Button */
+.btn--secondary {
+  @apply text-secondary-800 bg-secondary-100 border border-secondary-200 shadow-sm
+    hover:bg-secondary-200 hover:border-secondary-300 hover:shadow-md
+    active:bg-secondary-300 active:shadow-sm active:scale-95
+    focus-visible:ring-secondary-500/25
+    dark:text-secondary-200 dark:bg-secondary-800 dark:border-secondary-700
+    dark:hover:bg-secondary-700 dark:hover:border-secondary-600
+    dark:active:bg-secondary-600 dark:focus-visible:ring-secondary-400/25;
+}
+
+/* Danger Button */
+.btn--danger {
+  @apply text-white bg-error-500 shadow-sm
+    hover:bg-error-600 hover:shadow-md
+    active:bg-error-700 active:shadow-sm active:scale-95
+    focus-visible:ring-error-500/25
+    dark:bg-error-600 dark:hover:bg-error-500 dark:active:bg-error-700
+    dark:focus-visible:ring-error-400/25;
+}
+
+/* Ghost Button */
+.btn--ghost {
+  @apply text-neutral-700 bg-transparent border border-neutral-200
+    hover:bg-neutral-100 hover:border-neutral-300 hover:text-neutral-800
+    active:bg-neutral-200 active:scale-95
+    focus-visible:ring-neutral-500/25
+    dark:text-neutral-300 dark:border-neutral-700
+    dark:hover:bg-neutral-800 dark:hover:border-neutral-600 dark:hover:text-neutral-200
+    dark:active:bg-neutral-700 dark:focus-visible:ring-neutral-400/25;
+}
+
+/* Disabled State */
+.btn--disabled {
+  @apply bg-neutral-200 text-neutral-500 border-neutral-200 cursor-not-allowed shadow-none
+    hover:bg-neutral-200 hover:text-neutral-500 hover:border-neutral-200 hover:shadow-none
+    active:bg-neutral-200 active:text-neutral-500 active:scale-100
+    dark:bg-neutral-800 dark:text-neutral-600 dark:border-neutral-700
+    dark:hover:bg-neutral-800 dark:hover:text-neutral-600 dark:hover:border-neutral-700;
+}
+
+/* Loading State Enhancements */
+.btn--loading {
+  @apply pointer-events-none;
+}
+
+/* Spinner */
+.spinner {
+  @apply w-4 h-4 rounded-full border-2 border-current border-r-transparent animate-spin;
+}
+
+/* Success Button (additional variant) */
+.btn--success {
+  @apply text-white bg-successful-500 shadow-sm
+    hover:bg-successful-600 hover:shadow-md
+    active:bg-successful-700 active:shadow-sm active:scale-95
+    focus-visible:ring-successful-500/25
+    dark:bg-successful-600 dark:hover:bg-successful-500 dark:active:bg-successful-700
+    dark:focus-visible:ring-successful-400/25;
+}
+
+/* Warning Button (additional variant) */
+.btn--warning {
+  @apply text-warning-900 bg-warning-400 shadow-sm
+    hover:bg-warning-500 hover:shadow-md
+    active:bg-warning-600 active:text-white active:shadow-sm active:scale-95
+    focus-visible:ring-warning-500/25
+    dark:text-warning-100 dark:bg-warning-600 dark:hover:bg-warning-500 
+    dark:active:bg-warning-700 dark:focus-visible:ring-warning-400/25;
+}
+
+/* Info Button (additional variant) */
+.btn--info {
+  @apply text-white bg-info-500 shadow-sm
+    hover:bg-info-600 hover:shadow-md
+    active:bg-info-700 active:shadow-sm active:scale-95
+    focus-visible:ring-info-500/25
+    dark:bg-info-600 dark:hover:bg-info-500 dark:active:bg-info-700
+    dark:focus-visible:ring-info-400/25;
+}
+
+/* Outline variants */
+.btn--outline-primary {
+  @apply text-primary-600 bg-transparent border border-primary-300
+    hover:bg-primary-50 hover:border-primary-400 hover:text-primary-700
+    active:bg-primary-100 active:scale-95
+    focus-visible:ring-primary-500/25
+    dark:text-primary-400 dark:border-primary-600
+    dark:hover:bg-primary-950/20 dark:hover:border-primary-500 dark:hover:text-primary-300
+    dark:active:bg-primary-900/30 dark:focus-visible:ring-primary-400/25;
+}
+
+.btn--outline-secondary {
+  @apply text-secondary-600 bg-transparent border border-secondary-300
+    hover:bg-secondary-50 hover:border-secondary-400 hover:text-secondary-700
+    active:bg-secondary-100 active:scale-95
+    focus-visible:ring-secondary-500/25
+    dark:text-secondary-400 dark:border-secondary-600
+    dark:hover:bg-secondary-950/20 dark:hover:border-secondary-500 dark:hover:text-secondary-300
+    dark:active:bg-secondary-900/30 dark:focus-visible:ring-secondary-400/25;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  @apply absolute -inset-px w-px h-px p-0 m-0 overflow-hidden whitespace-nowrap border-0;
+}
