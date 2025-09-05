@@ -3,7 +3,7 @@ import { environment } from '@/env/environment';
 export const API_ENDPOINTS_V1 = {
   AUTH: {
     BASE: `${environment.API_URL}/auth`,
-    LOGIN: `${environment.API_URL}/auth/login`,
+    LOGIN: `${environment.API_URL}/auth/login/`,
     ME: `${environment.API_URL}/auth/me`,
     REFRESH: `${environment.API_URL}/auth/refresh-token`,
     LOGOUT: `${environment.API_URL}/auth/logout`,
