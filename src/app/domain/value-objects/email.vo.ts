@@ -151,6 +151,9 @@ export class Email {
    * ```
    */
   equals(other: Email): boolean {
+    if (!other || typeof other.value !== 'string') {
+      return false;
+    }
     return this.value === other.value;
   }
 
