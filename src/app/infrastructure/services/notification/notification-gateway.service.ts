@@ -6,7 +6,7 @@ import {
   Notification,
   NotificationId,
 } from '@domain/entities/notification.entity';
-import { UINotificationPosition } from '@shared/components/toast/enums/ui-notification-position.enum';
+import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 import { NotificationType } from '@/app/domain/enums/notification-type.enum';
 
 /**
