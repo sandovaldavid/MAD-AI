@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { ThemeToggle } from '@shared/ui/theme-toggle/theme-toggle';
+import { ThemeToggle } from '@presentation/shared/ui/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-auth-header',

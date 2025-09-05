@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { NavSection } from '@presentation/navigation/types';
 import { NavigationService } from '@presentation/navigation/navigation.service';
-import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
+import { LayoutService } from '../../services/layout.service';
 import { NavRailItem } from '../nav-rail-item/nav-rail-item';
 
 @Component({

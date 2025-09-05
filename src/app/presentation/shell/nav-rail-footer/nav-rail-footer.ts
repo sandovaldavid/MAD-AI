@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
-import { Icon } from '@shared/ui/icon/icon';
-import { ThemeToggle } from '@shared/ui/theme-toggle/theme-toggle';
+import { Icon } from '@presentation/shared/ui/icon/icon';
+import { ThemeToggle } from '@presentation/shared/ui/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-nav-rail-footer',

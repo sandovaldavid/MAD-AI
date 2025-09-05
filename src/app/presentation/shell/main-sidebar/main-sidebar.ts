@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { CommonModule } from '@angular/common';
 
 import { NavigationService } from '@presentation/navigation/navigation.service';
-import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
-import { Icon } from '@shared/ui/icon/icon';
+import { LayoutService } from '../../services/layout.service';
+import { Icon } from '@presentation/shared/ui/icon/icon';
 import { NavRailToggler } from '../nav-rail-toggler/nav-rail-toggler';
 import { NavRailSection } from '../nav-rail-section/nav-rail-section';
 import { NavRailFooter } from '../nav-rail-footer/nav-rail-footer';

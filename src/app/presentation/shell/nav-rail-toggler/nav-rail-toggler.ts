@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
-import { Icon } from '@shared/ui/icon/icon';
+import { LayoutService } from '../../services/layout.service';
+import { Icon } from '@presentation/shared/ui/icon/icon';
 
 @Component({
   selector: 'app-nav-rail-toggler',
