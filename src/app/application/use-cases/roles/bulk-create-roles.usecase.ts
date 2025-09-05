@@ -229,6 +229,7 @@ export class BulkCreateRoles {
           description: roleData.description,
           canLeadProjects: roleData.canLeadProjects,
           isUniquePerTeam: roleData.isUniquePerTeam,
+          createdByUserId: request.requesterId,
         };
 
         await this.roleRepo.create(createContract);
