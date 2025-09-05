@@ -8,19 +8,22 @@ import { User } from '@domain/entities/user.entity';
 import { Session } from '@domain/entities/session.entity';
 import { AccessToken, RefreshToken } from '@domain/value-objects/local-tokens.vo';
 import { Role } from '@domain/entities/role.entity';
-import type { RoleRepository } from '@domain/repositories/business/role.repository';
-import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY } from '@di/tokens';
+import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthMapper {
-  private readonly roleRepository = inject<RoleRepository>(ROLE_REPOSITORY);
 
   async loginUserToEntity(dto: LoginResponseDTO['user']): Promise<User> {
-    // Get complete Role entity
-    const role = await this.roleRepository.getById(dto.role_id);
+    // Create basic Role entity with available information from login response
+    // Note: We don't make HTTP calls in mappers - that's Infrastructure responsibility
+    // The use case will handle fetching complete role details if needed
+    const role = Role.create({
+      id: dto.role_id,
+      name: dto.role_name,
+      isActive: true, // Assume active since user is logging in
+    });
 
     return User.create({
       id: dto.id,
