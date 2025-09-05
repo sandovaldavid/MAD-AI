@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
@@ -120,8 +122,25 @@ export class CreateRole {
       // Step 1: Validate application rules
       this.validateApplicationRules(request);
 
-      // Step 2: Delegate to domain repository
-      const role = await this.roleRepo.create(request);
+      // Step 2: Validate requester and map to domain contract
+      if (!request.requesterId) {
+        throw new ApplicationError(
+          ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+          'Requester ID is required for role creation',
+          'You must be authenticated to create roles'
+        );
+      }
+
+      const createContract = {
+        name: request.name,
+        accessLevel: request.accessLevel,
+        description: request.description,
+        canLeadProjects: request.canLeadProjects,
+        isUniquePerTeam: request.isUniquePerTeam,
+        createdByUserId: request.requesterId,
+      };
+
+      const role = await this.roleRepo.create(createContract);
 
       // Step 3: Handle side effects
       await this.handleSideEffects(role, request.requesterId);
