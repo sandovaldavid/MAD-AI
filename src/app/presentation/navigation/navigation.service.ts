@@ -27,8 +27,8 @@ export class NavigationService {
       })).filter((section) => section.items.length > 0);
     }
 
-    const userRoles = [user.role.name];
-    const isAdmin = user.isAdministrator();
+    const userRoles = [user.getRole.name];
+    const isAdmin = user.getRole.canAccessAdmin();
 
     return NAV_SECTIONS.map((section) => ({
       ...section,
