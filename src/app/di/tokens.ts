@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { UINotificationPosition } from '@shared/components/toast/enums/ui-notification-position.enum';
+import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { NotificationPort } from '@domain/repositories/business/notification.repository';
