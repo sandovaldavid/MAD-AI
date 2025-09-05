@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MainSidebar } from '@presentation/shell/main-sidebar/main-sidebar';
-import { LayoutService } from '@core/cross-cutting/ui-state/layout.service';
+import { LayoutService } from '../../services/layout.service';
 
 @Component({
   selector: 'app-main-layout',
