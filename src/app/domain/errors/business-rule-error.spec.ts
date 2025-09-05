@@ -43,6 +43,9 @@ describe('BusinessRuleError - Domain Tests', () => {
 
   describe('Factory Methods - Role Management', () => {
     describe('cannotDeleteRoleWithUsers', () => {
+      // REGLA DE NEGOCIO: Un rol no puede eliminarse si tiene usuarios asignados
+      // RAZÓN: Prevenir inconsistencias en el sistema
+      // CONTEXTO: Integridad referencial del dominio
       it('should create error for role deletion with assigned users', () => {
         const roleId = 42;
         const userCount = 5;
@@ -354,6 +357,12 @@ describe('BusinessRuleError - Domain Tests', () => {
       expect(error.context).toEqual(context);
       expect(error.context?.['roleId']).toBe(1);
       expect(error.context?.['userCount']).toBe(5);
+    });
+
+    it('should always generate unique IDs even in rapid succession', () => {
+      const errors = Array.from({ length: 100 }, () => new BusinessRuleError('Test', 'CODE'));
+      const uniqueIds = new Set(errors.map(e => e.errorId));
+      expect(uniqueIds.size).toBe(100);
     });
   });
 
