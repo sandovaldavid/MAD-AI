@@ -1,9 +1,9 @@
 import { EnvironmentProviders, makeEnvironmentProviders, APP_INITIALIZER } from '@angular/core';
 import { NOTIFICATION_CONFIG, NOTIFICATION_PORT, NotificationConfig } from './tokens';
 import { NotificationGatewayService } from '@/app/infrastructure/services/notification/notification-gateway.service';
-import { NotificationActionRegistryService } from '@shared/components/toast/services/notification-action-registry.service';
+import { NotificationActionRegistryService } from '@presentation/shared/components/toast/services/notification-action-registry.service';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
-import { UINotificationPosition } from '@shared/components/toast/enums/ui-notification-position.enum';
+import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 
 export function provideNotifications(): EnvironmentProviders {
   const config: NotificationConfig = {
