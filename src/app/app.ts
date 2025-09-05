@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ToastContainer } from '@shared/components/toast/toast-container/toast-container';
+import { ToastContainer } from '@presentation/shared/components/toast/toast-container/toast-container';
 
 @Component({
   selector: 'app-root',
