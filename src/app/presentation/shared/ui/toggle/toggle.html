@@ -1,0 +1,41 @@
+<div class="toggle-container">
+  <!-- Label on the left -->
+  @if (label() && labelPosition() === 'left') {
+    <label
+      [for]="toggleId"
+      class="toggle__label toggle__label--left"
+      [class.toggle__label--disabled]="disabled()">
+      {{ label() }}
+    </label>
+  }
+
+  <!-- Toggle component -->
+  <div
+    [id]="toggleId"
+    [class]="toggleClasses()"
+    role="switch"
+    [attr.aria-checked]="checked()"
+    [attr.aria-disabled]="disabled()"
+    [attr.aria-label]="label() || 'Toggle switch'"
+    [tabindex]="disabled() ? -1 : 0"
+    (click)="onToggle()"
+    (keydown)="onKeyDown($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()">
+    <!-- Background track -->
+    <div [class]="switchClasses()">
+      <!-- Moving thumb -->
+      <div [class]="thumbClasses()"></div>
+    </div>
+  </div>
+
+  <!-- Label on the right -->
+  @if (label() && labelPosition() === 'right') {
+    <label
+      [for]="toggleId"
+      class="toggle__label toggle__label--right"
+      [class.toggle__label--disabled]="disabled()">
+      {{ label() }}
+    </label>
+  }
+</div>

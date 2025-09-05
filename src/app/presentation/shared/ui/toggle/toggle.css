@@ -1,0 +1,216 @@
+@reference '../../../../../styles.css';
+
+/* Toggle Container */
+.toggle-container {
+  @apply flex items-center gap-2 select-none;
+}
+
+/* Toggle Base */
+.toggle {
+  @apply relative inline-flex items-center cursor-pointer 
+    outline-none focus-visible:ring-2 focus-visible:ring-offset-2 
+    rounded-full transition-all duration-200 ease-in-out;
+}
+
+.toggle--disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+.toggle--focused {
+  @apply focus-visible:ring-primary-500/25 dark:focus-visible:ring-primary-400/25;
+}
+
+/* Toggle Sizes */
+.toggle--sm {
+  @apply w-8 h-4;
+}
+
+.toggle--md {
+  @apply w-11 h-6;
+}
+
+.toggle--lg {
+  @apply w-14 h-8;
+}
+
+/* Toggle Switch (Background Track) */
+.toggle__switch {
+  @apply w-full h-full rounded-full transition-all duration-200 ease-in-out relative;
+}
+
+/* Switch Default States */
+.toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle__switch--checked {
+  @apply border-solid;
+}
+
+.toggle__switch--disabled {
+  @apply opacity-50;
+}
+
+/* Color Variants - Unchecked */
+.toggle--primary .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--secondary .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--tertiary .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--successful .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--error .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--warning .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+.toggle--info .toggle__switch {
+  @apply bg-neutral-300 border-neutral-300 dark:bg-neutral-600 dark:border-neutral-600;
+}
+
+/* Color Variants - Checked */
+.toggle--primary .toggle__switch--checked {
+  @apply bg-primary-500 border-primary-500 dark:bg-primary-600 dark:border-primary-600;
+}
+
+.toggle--secondary .toggle__switch--checked {
+  @apply bg-secondary-500 border-secondary-500 dark:bg-secondary-600 dark:border-secondary-600;
+}
+
+.toggle--tertiary .toggle__switch--checked {
+  @apply bg-tertiary-500 border-tertiary-500 dark:bg-tertiary-600 dark:border-tertiary-600;
+}
+
+.toggle--successful .toggle__switch--checked {
+  @apply bg-successful-500 border-successful-500 dark:bg-successful-600 dark:border-successful-600;
+}
+
+.toggle--error .toggle__switch--checked {
+  @apply bg-error-500 border-error-500 dark:bg-error-600 dark:border-error-600;
+}
+
+.toggle--warning .toggle__switch--checked {
+  @apply bg-warning-500 border-warning-500 dark:bg-warning-600 dark:border-warning-600;
+}
+
+.toggle--info .toggle__switch--checked {
+  @apply bg-info-500 border-info-500 dark:bg-info-600 dark:border-info-600;
+}
+
+/* Toggle Thumb */
+.toggle__thumb {
+  @apply absolute top-0.5 left-0.5 bg-white dark:bg-neutral-100 
+    rounded-full transition-transform duration-200 ease-in-out
+    shadow-sm border border-neutral-200 dark:border-neutral-300;
+}
+
+/* Thumb Sizes */
+.toggle--sm .toggle__thumb {
+  @apply w-3 h-3;
+}
+
+.toggle--md .toggle__thumb {
+  @apply w-5 h-5;
+}
+
+.toggle--lg .toggle__thumb {
+  @apply w-7 h-7;
+}
+
+/* Thumb Position - Checked */
+.toggle--sm .toggle__thumb--checked {
+  @apply translate-x-4;
+}
+
+.toggle--md .toggle__thumb--checked {
+  @apply translate-x-5;
+}
+
+.toggle--lg .toggle__thumb--checked {
+  @apply translate-x-6;
+}
+
+.toggle__thumb--disabled {
+  @apply opacity-75;
+}
+
+/* Label Styles */
+.toggle__label {
+  @apply text-sm font-medium text-neutral-700 dark:text-neutral-300 
+    cursor-pointer transition-colors duration-150;
+}
+
+.toggle__label--left {
+  @apply order-1;
+}
+
+.toggle__label--right {
+  @apply order-2;
+}
+
+.toggle__label--disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Hover Effects */
+.toggle:hover:not(.toggle--disabled) .toggle__switch {
+  @apply shadow-md;
+}
+
+.toggle:hover:not(.toggle--disabled) .toggle__thumb {
+  @apply shadow-lg;
+}
+
+/* Focus Effects */
+.toggle--focused.toggle--primary {
+  @apply focus-visible:ring-primary-500/25 dark:focus-visible:ring-primary-400/25;
+}
+
+.toggle--focused.toggle--secondary {
+  @apply focus-visible:ring-secondary-500/25 dark:focus-visible:ring-secondary-400/25;
+}
+
+.toggle--focused.toggle--tertiary {
+  @apply focus-visible:ring-tertiary-500/25 dark:focus-visible:ring-tertiary-400/25;
+}
+
+.toggle--focused.toggle--successful {
+  @apply focus-visible:ring-successful-500/25 dark:focus-visible:ring-successful-400/25;
+}
+
+.toggle--focused.toggle--error {
+  @apply focus-visible:ring-error-500/25 dark:focus-visible:ring-error-400/25;
+}
+
+.toggle--focused.toggle--warning {
+  @apply focus-visible:ring-warning-500/25 dark:focus-visible:ring-warning-400/25;
+}
+
+.toggle--focused.toggle--info {
+  @apply focus-visible:ring-info-500/25 dark:focus-visible:ring-info-400/25;
+}
+
+/* Active (Pressed) State */
+.toggle:active:not(.toggle--disabled) .toggle__thumb {
+  @apply scale-95;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .toggle__switch,
+  .toggle__thumb {
+    @apply transition-none;
+  }
+}
