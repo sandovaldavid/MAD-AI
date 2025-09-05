@@ -1,0 +1,26 @@
+@reference '../../../../../styles.css';
+
+.in-group {
+  @apply flex items-center gap-2;
+}
+
+.in {
+  @apply w-full border border-neutral-300 bg-white text-neutral-900 rounded-xl outline-none transition-all duration-150 ease-in-out px-3 py-2 hover:border-neutral-400 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/25;
+  @apply dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:border-neutral-600 dark:focus-visible:border-primary-400 dark:focus-visible:ring-primary-400/25;
+}
+
+.in--disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+.in-sm {
+  @apply h-9 text-sm;
+}
+
+.in-md {
+  @apply h-10 text-base;
+}
+
+.in-lg {
+  @apply h-11 text-lg;
+}

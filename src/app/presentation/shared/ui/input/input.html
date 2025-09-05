@@ -1,0 +1,15 @@
+<div class="in-group">
+  <ng-content select="[prefix]" />
+  <input
+    [id]="id() ?? null"
+    [name]="name() ?? null"
+    [type]="type()"
+    [value]="value"
+    [placeholder]="placeholder()"
+    [required]="required()"
+    [disabled]="isDisabled()"
+    [class]="classes()"
+    (input)="handleInput($event)"
+    (blur)="handleBlur()" />
+  <ng-content select="[suffix]" />
+</div>
