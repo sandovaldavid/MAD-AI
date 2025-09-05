@@ -1,0 +1,107 @@
+@reference '../../../../../styles.css';
+
+.theme-toggle {
+  @apply relative inline-flex items-center justify-center p-2.5 rounded-xl
+    bg-primary-100 border border-primary-200 text-primary-700
+    hover:bg-primary-200 hover:border-primary-300 hover:text-primary-800
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25
+    focus-visible:border-primary-500 active:scale-95
+    dark:bg-primary-800 dark:border-primary-700 dark:text-primary-300
+    dark:hover:bg-primary-700 dark:hover:border-primary-600 dark:hover:text-primary-200
+    dark:focus-visible:ring-primary-400/25 dark:focus-visible:border-primary-400;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  transition:
+    background-color 200ms ease-in-out,
+    border-color 200ms ease-in-out,
+    color 200ms ease-in-out,
+    box-shadow 200ms ease-in-out,
+    transform 150ms ease-in-out;
+}
+
+.theme-toggle__icon {
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hover suave sin rotación para evitar temblores */
+.theme-toggle:hover .theme-toggle__icon {
+  transform: scale(1.08);
+}
+
+.theme-toggle:active .theme-toggle__icon {
+  transform: scale(0.95);
+  transition-duration: 100ms;
+}
+
+/* Enhanced hover effect with subtle shadow */
+.theme-toggle:hover {
+  @apply shadow-md shadow-primary-300/30 dark:shadow-primary-600/30;
+}
+
+.theme-toggle:focus-visible {
+  @apply shadow-md shadow-primary-300/30 dark:shadow-primary-600/30;
+}
+
+/* Theme-specific icon animations - solo en toggle, no en hover */
+.theme-toggle[aria-pressed='true'] .theme-toggle__icon {
+  animation: sunRotate 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle[aria-pressed='false'] .theme-toggle__icon {
+  animation: moonBounce 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animaciones más suaves */
+@keyframes sunRotate {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  30% {
+    transform: rotate(90deg) scale(1.05);
+  }
+  70% {
+    transform: rotate(270deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes moonBounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Prevenir conflictos entre hover y animaciones */
+.theme-toggle[aria-pressed] .theme-toggle__icon:hover {
+  /* Durante la animación de toggle, mantener transform de la animación */
+  animation-play-state: running;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle {
+    transition:
+      background-color 200ms ease-in-out,
+      border-color 200ms ease-in-out,
+      color 200ms ease-in-out;
+  }
+
+  .theme-toggle__icon {
+    transition: none;
+  }
+
+  .theme-toggle:hover .theme-toggle__icon,
+  .theme-toggle[aria-pressed] .theme-toggle__icon {
+    transform: none;
+    animation: none;
+  }
+}
