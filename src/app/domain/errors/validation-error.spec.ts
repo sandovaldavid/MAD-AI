@@ -511,6 +511,22 @@ describe('ValidationError - Domain Tests', () => {
           configurable: true,
         });
       });
+
+      it('should serialize and deserialize maintaining integrity', () => {
+        const original = ValidationError.create({
+          field: 'email',
+          value: 'invalid',
+          message: 'Invalid email',
+          code: ValidationErrorCode.EMAIL_INVALID,
+        });
+        const json = original.toJSON();
+        const parsed = JSON.parse(JSON.stringify(json));
+
+        expect(parsed.errorId).toBe(original.errorId);
+        expect(parsed.code).toBe(original.code);
+        expect(parsed.errors.length).toBe(original.errors.length);
+        expect(parsed.message).toBe(original.message);
+      });
     });
 
     describe('toUserFriendlyMessage', () => {
