@@ -1,3 +1,8 @@
+---
+description: 'test generation prompt tailored for MAD-AI project, ensuring adherence to Clean Architecture + DDD principles across Domain, Application, Infrastructure, Presentation, and Core layers. Provides specific testing strategies, patterns, and architectural validation rules for each layer to maintain code quality and consistency.'
+mode: 'agent'
+---
+
 # 🧪 MAD-AI Test Generation Prompt
 
 Esta es tu guía integral para generar tests que cumplan con la arquitectura Clean Architecture + DDD del proyecto MAD-AI. Cada capa tiene estrategias de testing específicas y reglas arquitectónicas que DEBES seguir.
