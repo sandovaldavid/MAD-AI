@@ -766,7 +766,7 @@ export class RolesFacade {
       // Update reactive state
       const updatedRoles = response.results
         .filter((result) => result.success && result.updatedRole)
-        .map((result) => result.updatedRole!);
+        .map((result) => result.updatedRole as Role); // Cast to Role type
 
       const updatedRoleSummarys = updatedRoles.map(RoleApplicationMapper.toRoleSummary);
       this._roles.update((roles) => {
