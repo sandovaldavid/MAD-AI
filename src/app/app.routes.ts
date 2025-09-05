@@ -4,8 +4,8 @@ import {
   noAuthGuard as guestOnly,
 } from './presentation/services/guards/auth.guard';
 import { emailConfirmedOnly } from './presentation/services/guards/email-confirmed.guard';
-import { securedRoutes } from '@presentation/features/secured.routes';
-import { authRoutes } from '@presentation/features/auth/auth.routes';
+import { securedRoutes } from '@/app/presentation/pages/secured.routes';
+import { authRoutes } from '@/app/presentation/pages/auth/auth.routes';
 
 export const routes: Routes = [
   {
@@ -25,7 +25,7 @@ export const routes: Routes = [
   {
     path: '**',
     loadComponent: () =>
-      import('@presentation/features/not-found/not-found').then((m) => m.NotFoundPage),
+      import('@presentation/pages/not-found/not-found').then((m) => m.NotFoundPage),
     title: 'Página no encontrada',
   },
 ];
