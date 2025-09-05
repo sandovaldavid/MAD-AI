@@ -1,0 +1,21 @@
+<div class="ff">
+  @if (label()) {
+    <label class="ff__label">
+      {{ label() }}
+      @if (required()) {
+        <span [class.ff__req]="!error()" [class.text-error-500]="!!error()">(*)</span>
+      }
+    </label>
+  }
+  <div class="ff__ctrl" [attr.aria-describedby]="describedBy()">
+    <ng-content />
+  </div>
+  <!-- Siempre mostramos el contenedor para evitar saltos visuales -->
+  <div class="ff__message">
+    @if (error()) {
+      <div class="ff__error text-error-500" [id]="controlId() + '-err'">{{ error() }}</div>
+    } @else if (hint()) {
+      <div class="ff__hint" [id]="controlId() + '-hint'">{{ hint() }}</div>
+    }
+  </div>
+</div>
