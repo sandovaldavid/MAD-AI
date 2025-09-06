@@ -1,3 +1,4 @@
+export * from './accesslevel-permissions.specs';
 export * from './datetime-business-rules.specs';
 export * from './email-domain-blacklist.specs';
 export * from './firstname-business-rules.specs';
