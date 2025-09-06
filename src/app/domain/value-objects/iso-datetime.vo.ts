@@ -93,16 +93,25 @@ export class ISODateTime {
       });
     } else {
       // Year range validation (technical constraint)
-      const year = new Date(timestamp).getFullYear();
-      if (year < IsoDatetimeYearRange.MIN) {
+      // Extract year directly from ISO string to avoid Date parsing limitations
+      const yearMatch = normalized.match(/^(\d{4})/);
+      const year = yearMatch ? parseInt(yearMatch[1], 10) : NaN;
+
+      if (isNaN(year)) {
+        errors.push({
+          field: 'isoDateTime',
+          value: normalized,
+          message: 'Invalid year format',
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        });
+      } else if (year < IsoDatetimeYearRange.MIN) {
         errors.push({
           field: 'isoDateTime',
           value: normalized,
           message: `Year must be >= ${IsoDatetimeYearRange.MIN}`,
           code: ValidationErrorCode.VALUE_TOO_LOW,
         });
-      }
-      if (year > IsoDatetimeYearRange.MAX) {
+      } else if (year > IsoDatetimeYearRange.MAX) {
         errors.push({
           field: 'isoDateTime',
           value: normalized,
