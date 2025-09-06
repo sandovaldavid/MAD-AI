@@ -84,6 +84,9 @@ export class UserStatusVO {
   }
 
   equals(other: UserStatusVO): boolean {
+    if (!other || typeof other !== 'object') {
+      return false;
+    }
     return this.value === other.value;
   }
 
