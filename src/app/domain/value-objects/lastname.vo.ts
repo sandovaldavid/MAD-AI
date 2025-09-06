@@ -58,9 +58,14 @@ export class LastName {
     return value
       .trim()
       .split(/(\s+|-+)/)
-      .map((part) =>
-        /^\s|-$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-      )
+      .map((part) => {
+        // Si es un delimitador (espacios o guiones), mantenerlo como está
+        if (/^\s+$/.test(part) || /^-+$/.test(part)) {
+          return part;
+        }
+        // Si es una palabra, capitalizarla
+        return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+      })
       .join('');
   }
 
