@@ -162,6 +162,9 @@ export class Username {
    * ```
    */
   equals(other: Username): boolean {
+    if (!other || typeof other !== 'object' || !(other instanceof Username)) {
+      return false;
+    }
     return this.value === other.value;
   }
 
