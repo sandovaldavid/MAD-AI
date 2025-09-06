@@ -9,6 +9,8 @@
     "watch": "ng build --watch --configuration development",
     "serve:ssr": "node dist/MAD-AI-NEW/server/server.mjs",
     "test": "ng test",
+    "test:domain": "ng test --include=\"src/app/domain/**/*.spec.ts\" --watch=false",
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "eslint . --ext .ts,.js,.html",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write \"src/**/*.{ts,js,html,css,scss,json,md}\"",
