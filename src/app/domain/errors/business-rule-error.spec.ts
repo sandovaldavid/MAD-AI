@@ -361,7 +361,7 @@ describe('BusinessRuleError - Domain Tests', () => {
 
     it('should always generate unique IDs even in rapid succession', () => {
       const errors = Array.from({ length: 100 }, () => new BusinessRuleError('Test', 'CODE'));
-      const uniqueIds = new Set(errors.map(e => e.errorId));
+      const uniqueIds = new Set(errors.map((e) => e.errorId));
       expect(uniqueIds.size).toBe(100);
     });
   });
