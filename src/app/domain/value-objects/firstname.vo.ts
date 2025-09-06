@@ -15,7 +15,14 @@ import { ValidationErrorCode } from '../errors/validation-error-code.enum';
  * - Domain behavior: initials, soundex, display helpers
  */
 export class FirstName {
-  private constructor(public readonly value: string) {}
+  private constructor(private readonly _value: string) {}
+
+  /**
+   * Gets the firstname value
+   */
+  get value(): string {
+    return this._value;
+  }
 
   /**
    * Factory method
@@ -48,7 +55,7 @@ export class FirstName {
       });
     }
     if (errors.length > 0) {
-      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+      throw ValidationError.createFromFields(errors);
     }
     return new FirstName(FirstName.format(normalized));
   }
@@ -59,6 +66,7 @@ export class FirstName {
   private static format(value: string): string {
     return value
       .trim()
+      .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
       .split(/(\s+|-+)/)
       .map((part) =>
         /^\s|-$/.test(part) ? part : part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
@@ -67,17 +75,20 @@ export class FirstName {
   }
 
   equals(other: FirstName): boolean {
-    return this.value === other.value;
+    if (!other || typeof other !== 'object' || !(other instanceof FirstName)) {
+      return false;
+    }
+    return this._value === other._value;
   }
 
   toString(): string {
-    return this.value;
+    return this._value;
   }
 
   /**
    * Gets the length of the firstname
    */
   getLength(): number {
-    return this.value.length;
+    return this._value.length;
   }
 }
