@@ -1,11 +1,12 @@
 import { AccessLevel, RoleName } from '@domain/value-objects';
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
-import type { FieldError } from '@domain/errors/field-error.type';
 import { DomainEvent } from '../events/domain-event.entity';
 import { ISODateTime } from '../value-objects/iso-datetime.vo';
 import { DomainEventType } from '../events/domain-event.enum';
 import { RoleNameReservedSpec } from '../specifications/role-name-reserved.specs';
+import { AccessLevelPermissionsSpec } from '../specifications/accesslevel-permissions.specs';
+import type { FieldError } from '@domain/errors/field-error.type';
 
 /**
  * Role Entity - Represents organizational roles in the MAD-AI system.
@@ -42,19 +43,27 @@ export class Role {
     this._userCount = userCount || 0;
   }
 
-  static create(props: {
-    id: number;
-    name: string;
-    accessLevel?: number;
-    isActive?: boolean;
-    description?: string | null;
-    userCount?: number;
-    canLeadProjects?: boolean;
-  }): Role {
+  static create(
+    props: {
+      id: number;
+      name: string;
+      accessLevel?: number;
+      isActive?: boolean;
+      description?: string | null;
+      userCount?: number;
+      canLeadProjects?: boolean;
+    },
+    isSystemCreation = false
+  ): Role {
     const errors: FieldError[] = [];
 
     // Validación mínima sobre id
-    if (typeof props.id !== 'number' || !Number.isInteger(props.id) || props.id < 0) {
+    if (
+      typeof props.id !== 'number' ||
+      !Number.isInteger(props.id) ||
+      props.id <= 0 ||
+      props.id > Number.MAX_SAFE_INTEGER
+    ) {
       errors.push({
         field: 'id',
         value: props.id,
@@ -69,40 +78,35 @@ export class Role {
       nameVO = RoleName.create(props.name);
 
       // 2. Validar reglas de negocio: nombre de rol no reservado
-      RoleNameReservedSpec.isSatisfiedBy(nameVO);
+      RoleNameReservedSpec.isSatisfiedBy(nameVO, isSystemCreation);
     } catch (e: unknown) {
-      // Map field errors from RoleName VO to Role context
+      // Para errores de validación, mantener ValidationError
       if (e instanceof ValidationError) {
         const mappedError = e.mapFieldName('name');
         errors.push(...mappedError.errors);
       } else {
+        // Para otros errores, crear ValidationError
         errors.push({
           field: 'name',
           value: props.name,
-          message: (e as Error)?.message || 'Invalid RoleName',
+          message: (e as Error)?.message || 'Invalid role name',
           code: ValidationErrorCode.FIELD_FORMAT_INVALID,
         });
       }
     }
 
     // Validar y construir AccessLevel VO
-    let accessLevelVO: AccessLevel;
+    let accessLevelVO: AccessLevel | undefined;
     if (props.accessLevel) {
       try {
         accessLevelVO = AccessLevel.create(props.accessLevel);
       } catch (e: unknown) {
-        // Map field errors from AccessLevel VO to Role context
-        if (e instanceof ValidationError) {
-          const mappedError = e.mapFieldName('accessLevel');
-          errors.push(...mappedError.errors);
-        } else {
-          errors.push({
-            field: 'accessLevel',
-            value: props.accessLevel,
-            message: (e as Error)?.message || 'Invalid AccessLevel',
-            code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-          });
-        }
+        errors.push({
+          field: 'accessLevel',
+          value: props.accessLevel,
+          message: 'Invalid access level',
+          code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
+        });
       }
     }
 
@@ -113,7 +117,7 @@ export class Role {
     return new Role(
       props.id,
       nameVO!,
-      accessLevelVO!,
+      accessLevelVO || AccessLevel.create(5),
       !!props.isActive,
       props.description ?? undefined,
       props.userCount
@@ -175,23 +179,23 @@ export class Role {
   }
 
   canManageUsers(): boolean {
-    return this._accessLevel.canManageUsers();
+    return AccessLevelPermissionsSpec.canManageUsers(this._accessLevel);
   }
 
   canAccessAdmin(): boolean {
-    return this._accessLevel.canAccessAdmin();
+    return AccessLevelPermissionsSpec.canAccessAdmin(this._accessLevel);
   }
 
   canLeadProjects(): boolean {
-    return this._accessLevel.canLeadProjects();
+    return AccessLevelPermissionsSpec.canLeadProjects(this._accessLevel);
   }
 
   getPermissions() {
-    return this._accessLevel.getPermissions();
+    return AccessLevelPermissionsSpec.getPermissions(this._accessLevel);
   }
 
   isUniqueForTeam(): boolean {
-    return this._accessLevel.isUniqueForTeam();
+    return AccessLevelPermissionsSpec.isUniqueForTeam(this._accessLevel);
   }
 
   /**
@@ -271,11 +275,12 @@ export class Role {
     }
   }
 
-  equals(other: Role): boolean {
+  equals(other: Role | null | undefined): boolean {
+    if (!other) return false;
     return this.id === other.id;
   }
 
   toString(): string {
-    return `Role(${this.id}, ${this.name}, L${this._accessLevel}, active=${this.isActive})`;
+    return `Role(${this.id}, ${this.name}, L${this._accessLevel.getValue()}, active=${this.isActive})`;
   }
 }
