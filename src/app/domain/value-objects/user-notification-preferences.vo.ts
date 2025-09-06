@@ -66,6 +66,9 @@ export class UserNotificationPreferencesVO {
   }
 
   public equals(other: UserNotificationPreferencesVO): boolean {
+    if (!other || typeof other !== 'object') {
+      return false;
+    }
     return this.email === other.email && this.system === other.system && this.task === other.task;
   }
 
