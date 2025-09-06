@@ -65,7 +65,7 @@ export class RoleName {
     const errors: FieldError[] = [];
 
     // Required field validation
-    if (!raw || typeof raw !== 'string') {
+    if (!raw || typeof raw !== 'string' || raw.trim().length === 0) {
       errors.push({
         field: 'roleName',
         value: raw,
@@ -101,10 +101,10 @@ export class RoleName {
     }
 
     // Format validation (invariants)
-    if (!RoleNameUtils.isValidFormat(normalized)) {
+    if (!RoleNameUtils.isValidFormat(raw.trim())) {
       errors.push({
         field: 'roleName',
-        value: normalized,
+        value: raw.trim(),
         message: ROLE_NAME_VALIDATION_MESSAGES.INVALID_FORMAT,
         code: ValidationErrorCode.FIELD_FORMAT_INVALID,
       });
@@ -126,7 +126,8 @@ export class RoleName {
    * @param other - The other RoleName instance to compare
    * @returns True if both role names have the same normalized value
    */
-  equals(other: RoleName): boolean {
+  equals(other: RoleName | null | undefined): boolean {
+    if (!other) return false;
     return this.value.toLowerCase() === other.value.toLowerCase();
   }
 
@@ -160,6 +161,6 @@ export class RoleName {
    * @returns The normalized role name string
    */
   toString(): string {
-    return this.value;
+    return RoleNameUtils.formatForDisplay(this.value);
   }
 }
