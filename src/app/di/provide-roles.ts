@@ -4,7 +4,7 @@ import { HttpRoleRepository } from '@infrastructure/repositories/business/http-r
 import { ListRoles } from '@application/use-cases/roles/list-roles.usecase';
 import { GetRoleById } from '@application/use-cases/roles/get-role-by-id.usecase';
 import { CreateRole } from '@application/use-cases/roles/create-role.usecase';
-import { UpdateRole } from '@application/use-cases/roles/update-role.usecase';
+import { UpdateRoleUseCase } from '@application/use-cases/roles/update-role.usecase';
 import { DeleteRole } from '@application/use-cases/roles/delete-role.usecase';
 
 export function provideRoles(): Provider[] {
@@ -16,7 +16,7 @@ export function provideRoles(): Provider[] {
     ListRoles,
     GetRoleById,
     CreateRole,
-    UpdateRole,
+    UpdateRoleUseCase,
     DeleteRole,
   ];
 }
