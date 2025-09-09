@@ -40,7 +40,7 @@ export class DomainEvent {
   }): DomainEvent {
     const errors: FieldError[] = [];
 
-    if (!props.id?.trim()) {
+    if (!props.id || !props.id.trim()) {
       errors.push({
         field: 'id',
         value: props.id,
@@ -49,7 +49,7 @@ export class DomainEvent {
       });
     }
 
-    if (!props.aggregateId?.trim()) {
+    if (!props.aggregateId || !props.aggregateId.trim()) {
       errors.push({
         field: 'aggregateId',
         value: props.aggregateId,
@@ -58,7 +58,7 @@ export class DomainEvent {
       });
     }
 
-    if (!props.aggregateType?.trim()) {
+    if (!props.aggregateType || !props.aggregateType.trim()) {
       errors.push({
         field: 'aggregateType',
         value: props.aggregateType,
@@ -74,6 +74,28 @@ export class DomainEvent {
     const occurredAt = props.occurredAt || ISODateTime.create(new Date().toISOString())!;
     const severity = DomainEvent.determineSeverity(props.eventType);
 
+    let normalizedCausedByUserId: string | undefined;
+    if (typeof props.causedByUserId === 'string') {
+      const trimmed = props.causedByUserId.trim();
+      normalizedCausedByUserId = trimmed.length > 0 ? trimmed : '';
+    } else {
+      normalizedCausedByUserId = undefined;
+    }
+    // Deep clone eventData to ensure immutability
+    function deepClone<T>(obj: T): T {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) {
+        return obj.map(deepClone) as T;
+      }
+      const cloned: Record<string, unknown> = {};
+      for (const key in obj as Record<string, unknown>) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          cloned[key] = deepClone((obj as Record<string, unknown>)[key]);
+        }
+      }
+      return cloned as T;
+    }
+    const eventDataClone = deepClone<Record<string, unknown>>(props.eventData || {});
     return new DomainEvent(
       props.id.trim(),
       props.eventType,
@@ -81,8 +103,8 @@ export class DomainEvent {
       props.aggregateType.trim(),
       occurredAt,
       severity,
-      props.eventData || {},
-      props.causedByUserId?.trim()
+      eventDataClone,
+      normalizedCausedByUserId
     );
   }
 
@@ -198,7 +220,21 @@ export class DomainEvent {
   }
 
   get eventData(): Record<string, unknown> {
-    return { ...this._eventData };
+    // Deep clone to prevent mutation of nested objects/arrays
+    function deepClone<T>(obj: T): T {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) {
+        return obj.map(deepClone) as T;
+      }
+      const cloned: Record<string, unknown> = {};
+      for (const key in obj as Record<string, unknown>) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+          cloned[key] = deepClone((obj as Record<string, unknown>)[key]);
+        }
+      }
+      return cloned as T;
+    }
+    return deepClone<Record<string, unknown>>(this._eventData);
   }
 
   get causedByUserId(): string | undefined {
@@ -216,6 +252,9 @@ export class DomainEvent {
   }
 
   equals(other: DomainEvent): boolean {
+    if (!other || !(other instanceof DomainEvent)) {
+      return false;
+    }
     return this._id === other._id;
   }
 
