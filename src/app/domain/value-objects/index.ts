@@ -61,8 +61,7 @@ export * from './username.vo';
 export * from './firstname.vo';
 export * from './lastname.vo';
 export * from './local-tokens.vo';
-export * from './accesslevel.vo';
-export * from './role-name.vo';
+
 export * from './user-status.vo';
 export * from './user-notification-preferences.vo';
 export * from './iso-datetime.vo';
