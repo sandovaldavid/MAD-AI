@@ -10,7 +10,15 @@ export class UserBusinessRules {
    * @param user - User entity
    */
   static hasCompleteProfile(user: User): boolean {
-    return !!user.username && !!user.email && !!user.firstName && !!user.lastName;
+    // Basic fields must exist
+    const hasBasicFields = !!user.username && !!user.email && !!user.firstName && !!user.lastName;
+
+    // Users with pending status are considered incomplete
+    if (user.status?.value === 'pending') {
+      return false;
+    }
+
+    return hasBasicFields;
   }
 
   /**
@@ -18,7 +26,8 @@ export class UserBusinessRules {
    * @param user - User entity
    */
   static canAccess(user: User): boolean {
-    return user.active && (user.isEmailConfirmed ?? false);
+    // All users need confirmed email to be valid
+    return user.isEmailConfirmed ?? false;
   }
 
   /**
