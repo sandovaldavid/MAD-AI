@@ -12,6 +12,7 @@ export default function (config) {
       'karma-chrome-launcher',
       'karma-jasmine-html-reporter',
       'karma-coverage',
+      'karma-spec-reporter',
     ],
     client: {
       jasmine: {
@@ -38,7 +39,7 @@ export default function (config) {
         },
       },
     },
-    reporters: ['progress', 'kjhtml'],
+    reporters: ['progress', 'kjhtml', 'spec'],
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
