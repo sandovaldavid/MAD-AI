@@ -14,17 +14,8 @@ import { Role } from './role.entity';
 import { ValidationError } from '../errors/validation-error.entity';
 import { ValidationErrorCode } from '../errors/validation-error-code.enum';
 import type { FieldError } from '../errors/field-error.type';
-import { DomainEvent } from '../events/domain-event.entity';
-import { DomainEventType } from '../events/domain-event.enum';
-import { EmailDomainPolicySpec } from '../specifications/email-domain-blacklist.specs';
-import { FirstNameCompoundPolicySpec } from '../specifications/firstname-compound.specs';
-import { AccessLevelPermissionsSpec } from '../specifications/accesslevel-permissions.specs';
-import { UserBusinessRules } from '../specifications/user-business-rules.specification';
-import { UsernameBusinessRules } from '../specifications/username-business-rules.specs';
-import { FirstNameBusinessRules } from '../specifications/firstname-business-rules.specs';
 
 export class User {
-  private _domainEvents: DomainEvent[] = [];
   public readonly id: number;
   private _username: Username;
   private _email: Email;
@@ -32,12 +23,12 @@ export class User {
   private _lastName: LastName;
   private _active: boolean;
   private _role: Role;
-  public readonly createdAt?: ISODateTime;
-  public readonly updatedAt?: ISODateTime;
-  public readonly lastActivityAt?: ISODateTime;
-  public status?: UserStatusVO;
-  public isEmailConfirmed?: boolean;
-  public notificationPreferences?: UserNotificationPreferencesVO;
+  private readonly _createdAt?: ISODateTime;
+  private readonly _updatedAt?: ISODateTime;
+  private readonly _lastActivityAt?: ISODateTime;
+  private _status?: UserStatusVO;
+  private _isEmailConfirmed?: boolean;
+  private _notificationPreferences?: UserNotificationPreferencesVO;
 
   private constructor(
     id: number,
@@ -47,12 +38,14 @@ export class User {
     lastName: LastName,
     isActive: boolean,
     role: Role,
-    createdAt?: ISODateTime,
-    updatedAt?: ISODateTime,
-    lastActivityAt?: ISODateTime,
-    status?: UserStatusVO,
-    isEmailConfirmed?: boolean,
-    notificationPreferences?: UserNotificationPreferencesVO
+    options?: {
+      createdAt?: ISODateTime;
+      updatedAt?: ISODateTime;
+      lastActivityAt?: ISODateTime;
+      status?: UserStatusVO;
+      isEmailConfirmed?: boolean;
+      notificationPreferences?: UserNotificationPreferencesVO;
+    }
   ) {
     this.id = id;
     this._username = username;
@@ -61,12 +54,12 @@ export class User {
     this._lastName = lastName;
     this._active = isActive;
     this._role = role;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-    this.lastActivityAt = lastActivityAt;
-    this.status = status || UserStatusVO.create('pending');
-    this.isEmailConfirmed = isEmailConfirmed || false;
-    this.notificationPreferences = notificationPreferences;
+    this._createdAt = options?.createdAt;
+    this._updatedAt = options?.updatedAt;
+    this._lastActivityAt = options?.lastActivityAt;
+    this._status = options?.status;
+    this._isEmailConfirmed = options?.isEmailConfirmed;
+    this._notificationPreferences = options?.notificationPreferences;
   }
 
   /** Factory method con validación de invariantes */
@@ -184,226 +177,8 @@ export class User {
       }
     }
 
-    if (errors.length) {
-      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
-    }
-
-    // Business Rule Validations using Specifications
-    // These are complex business rules that go beyond simple technical validations
-
-    // 1. Username Business Rules - Validate username is not reserved
-    try {
-      if (UsernameBusinessRules.isReserved(props.username)) {
-        errors.push({
-          field: 'username',
-          value: props.username,
-          message: 'Username is reserved and cannot be used',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    } catch (error) {
-      // If validation fails, we don't block creation but log it
-      console.warn('Username business rule validation failed:', error);
-    }
-
-    // 2. Username Security Validation - Check for weak security patterns
-    try {
-      const securityValidation = UsernameBusinessRules.validateSecurity(props.username);
-      if (!securityValidation.isSecure) {
-        errors.push({
-          field: 'username',
-          value: props.username,
-          message: 'Username does not meet security requirements',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    } catch (error) {
-      // If validation fails, we don't block creation but log it
-      console.warn('Username security validation failed:', error);
-    }
-
-    // 3. FirstName Business Rules - Validate firstname phonetic rules
-    try {
-      // Generate phonetic code for the first name
-      const phoneticCode = FirstNameBusinessRules.generateSoundex(props.firstName);
-
-      // Check if phonetic code indicates potential security concerns
-      // This is a business rule to prevent names that sound like system accounts
-      const suspiciousPatterns = ['ADM', 'SYS', 'ROOT', 'SUPR'];
-      if (suspiciousPatterns.some((pattern) => phoneticCode.startsWith(pattern))) {
-        errors.push({
-          field: 'firstName',
-          value: props.firstName,
-          message: 'First name may conflict with system account patterns',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    } catch (error) {
-      // If phonetic validation fails, we don't block creation but log it
-      console.warn('FirstName phonetic validation failed:', error);
-    }
-
-    // 4. Email Domain Policy - Validate email domain business rules
-    try {
-      // Create temporary user for specification validation
-      const tempUser = new User(
-        props.id || 0,
-        usernameVO!,
-        emailVO!,
-        firstNameVO!,
-        lastNameVO!,
-        props.isActive ?? true,
-        props.role!,
-        createdAtVO,
-        updatedAtVO,
-        lastActivityAtVO,
-        statusVO!,
-        props.isEmailConfirmed,
-        notificationPreferecesVO
-      );
-
-      const emailDomainContext: keyof typeof EmailDomainPolicySpec.BUSINESS_CONTEXTS = 'ENTERPRISE';
-      const additionalEmailRules = {
-        allowedDomains: ['company.com', 'enterprise.org', 'microsoft.com'],
-        blockedDomains: ['temp-mail.org', 'spam.com'],
-        requireCorporateDomain: true,
-        regionRestrictions: ['us', 'eu'],
-      };
-
-      EmailDomainPolicySpec.isSatisfiedBy(
-        emailVO!,
-        tempUser,
-        emailDomainContext,
-        additionalEmailRules
-      );
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        errors.push(
-          ...error.errors.map((err) => ({
-            field: err.field,
-            value: err.value,
-            message: err.message,
-            code: err.code,
-          }))
-        );
-      } else {
-        errors.push({
-          field: 'email',
-          value: props.email,
-          message: 'Email domain policy violation',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    }
-
-    // 2. First Name Compound Policy - Validate compound name business rules
-    try {
-      // Create temporary user for specification validation
-      const tempUser = new User(
-        props.id || 0,
-        usernameVO!,
-        emailVO!,
-        firstNameVO!,
-        lastNameVO!,
-        props.isActive ?? true,
-        props.role!,
-        createdAtVO,
-        updatedAtVO,
-        lastActivityAtVO,
-        statusVO!,
-        props.isEmailConfirmed,
-        notificationPreferecesVO
-      );
-
-      const culturalContext: keyof typeof FirstNameCompoundPolicySpec.CULTURAL_CONTEXTS =
-        'LATIN_AMERICAN';
-      const organizationalContext: keyof typeof FirstNameCompoundPolicySpec.ORGANIZATIONAL_CONTEXTS =
-        'FORMAL_BUSINESS';
-      const additionalNameRules = {
-        maxParts: 2,
-        allowHyphenated: true,
-        requireFormalFormat: true,
-        regionSpecificRules: {
-          latin_america: { maxParts: 2, allowHyphenated: true },
-        },
-      };
-
-      FirstNameCompoundPolicySpec.isSatisfiedBy(
-        firstNameVO!,
-        tempUser,
-        culturalContext,
-        organizationalContext,
-        additionalNameRules
-      );
-    } catch (error) {
-      if (error instanceof ValidationError) {
-        errors.push(
-          ...error.errors.map((err) => ({
-            field: err.field,
-            value: err.value,
-            message: err.message,
-            code: err.code,
-          }))
-        );
-      } else {
-        errors.push({
-          field: 'firstName',
-          value: props.firstName,
-          message: 'First name compound policy violation',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    }
-
-    // 3. User Business Rules - General user validation rules
-    try {
-      // Create a temporary user instance for business rule validation
-      const tempUser = new User(
-        props.id,
-        usernameVO!,
-        emailVO!,
-        firstNameVO!,
-        lastNameVO!,
-        props.isActive,
-        props.role,
-        createdAtVO,
-        updatedAtVO,
-        lastActivityAtVO,
-        statusVO!,
-        props.isEmailConfirmed,
-        notificationPreferecesVO
-      );
-
-      // Validate user has complete profile (business rule)
-      if (!UserBusinessRules.hasCompleteProfile(tempUser)) {
-        errors.push({
-          field: 'profile',
-          value: 'incomplete',
-          message: 'User profile must be complete',
-          code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
-        });
-      }
-
-      // Validate user can access system (business rule)
-      if (!UserBusinessRules.canAccess(tempUser)) {
-        errors.push({
-          field: 'access',
-          value: tempUser.active ? 'email_not_confirmed' : 'inactive',
-          message: 'User does not meet access requirements',
-          code: ValidationErrorCode.PERMISSION_DENIED,
-        });
-      }
-    } catch {
-      errors.push({
-        field: 'user',
-        value: 'validation_failed',
-        message: 'User business rule validation failed',
-        code: ValidationErrorCode.INVALID_STATE,
-      });
-    }
-
-    // If any business rule validations failed, throw combined error
-    if (errors.length) {
+    // Throw validation errors if any
+    if (errors.length > 0) {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
@@ -415,51 +190,27 @@ export class User {
       lastNameVO!,
       props.isActive,
       props.role,
-      createdAtVO,
-      updatedAtVO,
-      lastActivityAtVO,
-      statusVO!,
-      props.isEmailConfirmed,
-      notificationPreferecesVO
+      {
+        createdAt: createdAtVO,
+        updatedAt: updatedAtVO,
+        lastActivityAt: lastActivityAtVO,
+        status: statusVO!,
+        isEmailConfirmed: props.isEmailConfirmed,
+        notificationPreferences: notificationPreferecesVO,
+      }
     );
   }
 
   // --- Domain Events Management ---
 
-  /**
-   * Adds a domain event to the aggregate.
-   * Events will be published when the aggregate is persisted.
-   *
-   * @param event - Domain event to add
-   * @private
-   */
-  private addDomainEvent(event: DomainEvent): void {
-    this._domainEvents.push(event);
-  }
-
-  /**
-   * Gets all unpublished domain events from this aggregate.
-   *
-   * @returns Array of domain events
-   */
-  getDomainEvents(): DomainEvent[] {
-    return [...this._domainEvents];
-  }
-
-  /**
-   * Clears all domain events from this aggregate.
-   * Should be called after events have been published.
-   */
-  clearDomainEvents(): void {
-    this._domainEvents = [];
-  }
+  // --- Domain Events Management Removed ---
 
   canDeleteUsers(): boolean {
-    return AccessLevelPermissionsSpec.canDeleteUsers(this._role.getAccessLevel());
+    return this._role.canDeleteUsers();
   }
 
   getPermissions() {
-    return AccessLevelPermissionsSpec.getPermissions(this._role.getAccessLevel());
+    return this._role.getPermissions();
   }
 
   // --- Getters / Domain Logic ---
@@ -484,12 +235,36 @@ export class User {
     return this._active;
   }
 
-  get getRole(): Role {
+  get role(): Role {
     return this._role;
   }
 
-  get getUserStatus(): UserStatusVO {
-    return this.status!;
+  get userStatus(): UserStatusVO {
+    return this._status!;
+  }
+
+  get createdAt(): ISODateTime | undefined {
+    return this._createdAt;
+  }
+
+  get updatedAt(): ISODateTime | undefined {
+    return this._updatedAt;
+  }
+
+  get lastActivityAt(): ISODateTime | undefined {
+    return this._lastActivityAt;
+  }
+
+  get status(): UserStatusVO | undefined {
+    return this._status;
+  }
+
+  get isEmailConfirmed(): boolean | undefined {
+    return this._isEmailConfirmed;
+  }
+
+  get notificationPreferences(): UserNotificationPreferencesVO | undefined {
+    return this._notificationPreferences;
   }
 
   /**
@@ -512,21 +287,7 @@ export class User {
   activate(): void {
     if (!this._active) {
       this._active = true;
-      this.addDomainEvent(
-        DomainEvent.create({
-          id: `user-activated-${this.id}-${Date.now()}`,
-          aggregateId: this.id.toString(),
-          aggregateType: 'User',
-          eventType: DomainEventType.USER_ACCOUNT_ACTIVATED,
-          eventData: {
-            userId: this.id,
-            username: this._username.value,
-            email: this._email.value,
-            activatedAt: new Date().toISOString(),
-          },
-          occurredAt: ISODateTime.now(),
-        })
-      );
+      // Domain event removed: USER_ACCOUNT_ACTIVATED
     }
   }
 
@@ -550,21 +311,7 @@ export class User {
   deactivate(): void {
     if (this._active) {
       this._active = false;
-      this.addDomainEvent(
-        DomainEvent.create({
-          id: `user-deactivated-${this.id}-${Date.now()}`,
-          aggregateId: this.id.toString(),
-          aggregateType: 'User',
-          eventType: DomainEventType.USER_ACCOUNT_DEACTIVATED,
-          eventData: {
-            userId: this.id,
-            username: this._username.value,
-            email: this._email.value,
-            deactivatedAt: new Date().toISOString(),
-          },
-          occurredAt: ISODateTime.now(),
-        })
-      );
+      // Domain event removed: USER_ACCOUNT_DEACTIVATED
     }
   }
 
@@ -594,25 +341,8 @@ export class User {
       throw ValidationError.forMissingRequiredFields(['email']);
     }
 
-    const oldEmail = this._email.value;
     this._email = newEmail;
-
-    this.addDomainEvent(
-      DomainEvent.create({
-        id: `user-email-changed-${this.id}-${Date.now()}`,
-        aggregateId: this.id.toString(),
-        aggregateType: 'User',
-        eventType: DomainEventType.USER_PROFILE_MODIFIED,
-        eventData: {
-          userId: this.id,
-          username: this._username.value,
-          oldEmail,
-          newEmail: newEmail.value,
-          changedAt: new Date().toISOString(),
-        },
-        occurredAt: ISODateTime.now(),
-      })
-    );
+    // Domain event removed: USER_PROFILE_MODIFIED
   }
 
   /**
@@ -641,25 +371,8 @@ export class User {
       throw ValidationError.forMissingRequiredFields(['username']);
     }
 
-    const oldUsername = this._username.value;
     this._username = newUsername;
-
-    this.addDomainEvent(
-      DomainEvent.create({
-        id: `user-username-changed-${this.id}-${Date.now()}`,
-        aggregateId: this.id.toString(),
-        aggregateType: 'User',
-        eventType: DomainEventType.USER_PROFILE_MODIFIED,
-        eventData: {
-          userId: this.id,
-          oldUsername,
-          newUsername: newUsername.value,
-          email: this._email.value,
-          changedAt: new Date().toISOString(),
-        },
-        occurredAt: ISODateTime.now(),
-      })
-    );
+    // Domain event removed: USER_PROFILE_MODIFIED
   }
 
   updateName(firstName: FirstName, lastName: LastName): void {
@@ -677,22 +390,8 @@ export class User {
   /** Business logic: Update user notification preferences */
   updateNotificationPreferences(preferences: UserNotificationPreferences): void {
     // Validar y actualizar el VO de preferencias
-    this.notificationPreferences = UserNotificationPreferencesVO.create(preferences);
-
-    // Agregar evento de dominio
-    this.addDomainEvent(
-      DomainEvent.create({
-        id: `user-preferences-updated-${this.id}-${Date.now()}`,
-        aggregateId: this.id.toString(),
-        aggregateType: 'User',
-        eventType: DomainEventType.USER_PREFERENCES_UPDATED,
-        eventData: {
-          userId: this.id,
-          updatedAt: new Date().toISOString(),
-        },
-        occurredAt: ISODateTime.now(),
-      })
-    );
+    this._notificationPreferences = UserNotificationPreferencesVO.create(preferences);
+    // Domain event removed: USER_PREFERENCES_UPDATED
   }
 
   /**
@@ -721,28 +420,8 @@ export class User {
       throw ValidationError.forMissingRequiredFields(['role']);
     }
 
-    const oldRole = this._role;
     this._role = newRole;
-
-    this.addDomainEvent(
-      DomainEvent.create({
-        id: `user-role-changed-${this.id}-${Date.now()}`,
-        aggregateId: this.id.toString(),
-        aggregateType: 'User',
-        eventType: DomainEventType.USER_ROLE_CHANGED,
-        eventData: {
-          userId: this.id,
-          username: this._username.value,
-          email: this._email.value,
-          oldRoleId: oldRole.id,
-          oldRoleName: oldRole.name,
-          newRoleId: newRole.id,
-          newRoleName: newRole.name,
-          changedAt: new Date().toISOString(),
-        },
-        occurredAt: ISODateTime.now(),
-      })
-    );
+    // Domain event removed: USER_ROLE_CHANGED
   }
 
   /**
@@ -787,7 +466,7 @@ export class User {
    * @domain Authentication
    */
   hasVerifiedEmail(): boolean {
-    return this.isEmailConfirmed ?? false;
+    return this._isEmailConfirmed ?? false;
   }
 
   /** Método equals para comparación de entidades */
@@ -797,6 +476,6 @@ export class User {
   }
 
   toString(): string {
-    return `User(${this.id}, ${this.username}, ${this.email}, ${this.firstName} ${this.lastName}, Active: ${this.active}, Role: ${this.getRole.name})`;
+    return `User(${this.id}, ${this.username}, ${this.email}, ${this.firstName} ${this.lastName}, Active: ${this.active}, Role: ${this.role.name})`;
   }
 }
