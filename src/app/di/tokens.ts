@@ -51,7 +51,6 @@ export const SECURITY_EVENT_REPOSITORY = new InjectionToken<SecurityEventReposit
 
 // Core Services
 // Domain Event Bus
-export const DOMAIN_EVENT_BUS_REPO = new InjectionToken<any>('DOMAIN_EVENT_BUS_REPO');
 
 // Logger Port
 export const LOGGER_PORT = new InjectionToken<Logger>('LOGGER_PORT');
