@@ -1,7 +1,7 @@
-import { EnvironmentProviders, makeEnvironmentProviders, APP_INITIALIZER } from '@angular/core';
+import { EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { NOTIFICATION_CONFIG, NOTIFICATION_PORT, NotificationConfig } from './tokens';
 import { NotificationGatewayService } from '@/app/infrastructure/services/notification/notification-gateway.service';
-import { NotificationActionRegistryService } from '@presentation/shared/components/toast/services/notification-action-registry.service';
+
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 
@@ -26,15 +26,6 @@ export function provideNotifications(): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: NOTIFICATION_CONFIG, useValue: config },
     { provide: NOTIFICATION_PORT, useClass: NotificationGatewayService },
-    NotificationActionRegistryService,
     NotificationsFacade, // Add the facade to DI
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (registry: NotificationActionRegistryService) => () => {
-        registry.initializeActionHandlers();
-      },
-      deps: [NotificationActionRegistryService],
-      multi: true,
-    },
   ]);
 }
