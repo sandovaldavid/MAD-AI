@@ -18,6 +18,7 @@ import { DomainEvent } from '../events/domain-event.entity';
 import { DomainEventType } from '../events/domain-event.enum';
 import { EmailDomainPolicySpec } from '../specifications/email-domain-blacklist.specs';
 import { FirstNameCompoundPolicySpec } from '../specifications/firstname-compound.specs';
+import { AccessLevelPermissionsSpec } from '../specifications/accesslevel-permissions.specs';
 import { UserBusinessRules } from '../specifications/user-business-rules.specification';
 import { UsernameBusinessRules } from '../specifications/username-business-rules.specs';
 import { FirstNameBusinessRules } from '../specifications/firstname-business-rules.specs';
@@ -263,7 +264,7 @@ export class User {
 
       const emailDomainContext: keyof typeof EmailDomainPolicySpec.BUSINESS_CONTEXTS = 'ENTERPRISE';
       const additionalEmailRules = {
-        allowedDomains: ['company.com', 'enterprise.org'],
+        allowedDomains: ['company.com', 'enterprise.org', 'microsoft.com'],
         blockedDomains: ['temp-mail.org', 'spam.com'],
         requireCorporateDomain: true,
         regionRestrictions: ['us', 'eu'],
@@ -454,11 +455,11 @@ export class User {
   }
 
   canDeleteUsers(): boolean {
-    return this._role.getAccessLevel().canDeleteUsers();
+    return AccessLevelPermissionsSpec.canDeleteUsers(this._role.getAccessLevel());
   }
 
   getPermissions() {
-    return this._role.getAccessLevel().getPermissions();
+    return AccessLevelPermissionsSpec.getPermissions(this._role.getAccessLevel());
   }
 
   // --- Getters / Domain Logic ---
@@ -790,7 +791,8 @@ export class User {
   }
 
   /** Método equals para comparación de entidades */
-  equals(other: User): boolean {
+  equals(other: User | null | undefined): boolean {
+    if (!other) return false;
     return this.id === other.id;
   }
 
