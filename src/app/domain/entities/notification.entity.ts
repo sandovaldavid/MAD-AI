@@ -796,7 +796,8 @@ export class Notification {
   /**
    * Compares notifications for equality based on ID.
    */
-  equals(other: Notification): boolean {
+  equals(other: Notification | null | undefined): boolean {
+    if (!other) return false;
     return this._id === other._id;
   }
 
