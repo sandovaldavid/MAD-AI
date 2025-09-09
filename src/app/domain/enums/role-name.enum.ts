@@ -31,6 +31,7 @@ export const ROLE_NAME_VALIDATION_PATTERNS = {
 
 /**
  * Reserved names that cannot be used for roles (business rule)
+ * These are completely forbidden names that should never be used
  */
 export const RESERVED_ROLE_NAMES = [
   'system',
@@ -39,7 +40,6 @@ export const RESERVED_ROLE_NAMES = [
   'internal',
   'bot',
   'admin',
-  'administrator',
   'root',
   'superuser',
   'god',
@@ -47,12 +47,13 @@ export const RESERVED_ROLE_NAMES = [
 ] as const;
 
 /**
- * System-defined role categories (business rule)
+ * System role categories (business rule)
+ * These are names that the system can create automatically but users cannot create manually
  */
 export const SYSTEM_ROLE_CATEGORIES = {
-  ADMINISTRATOR: ['administrator', 'admin', 'root', 'superuser'],
+  ADMINISTRATOR: ['admin', 'root', 'superuser'],
   MODERATOR: ['moderator', 'mod', 'moderador'],
-  USER: ['user', 'member', 'usuario'],
+  USER: ['user', 'member', 'usuario', 'guest'],
 } as const;
 
 /**
@@ -78,8 +79,6 @@ export const RoleNameUtils = {
   isValidFormat(name: string): boolean {
     if (!ROLE_NAME_VALIDATION_PATTERNS.VALID_CHARACTERS.test(name)) return false;
     if (!ROLE_NAME_VALIDATION_PATTERNS.VALID_START.test(name)) return false;
-    if (ROLE_NAME_VALIDATION_PATTERNS.NO_CONSECUTIVE_SPACES.test(name)) return false;
-    if (ROLE_NAME_VALIDATION_PATTERNS.NO_CONSECUTIVE_HYPHENS.test(name)) return false;
     return true;
   },
 
@@ -91,8 +90,16 @@ export const RoleNameUtils = {
       .trim()
       .replace(/\s+/g, ' ')
       .replace(/-+/g, '-')
-      .split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .split(/[\s-]/)
+      .map((word) => {
+        if (word.length === 0) return '';
+        // If word is all uppercase, convert to title case
+        if (word === word.toUpperCase()) {
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }
+        // Otherwise, just capitalize first letter
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
       .join(' ');
   },
 
@@ -100,7 +107,16 @@ export const RoleNameUtils = {
    * Formats role name for display
    */
   formatForDisplay(name: string): string {
-    return this.normalize(name);
+    return name
+      .replace(/-/g, ' ') // Convert hyphens to spaces for display
+      .replace(/\b\w+\b/g, (word) => {
+        // If word is all uppercase, convert to title case
+        if (word === word.toUpperCase()) {
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }
+        // Otherwise, just capitalize first letter
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
   },
 
   /**
@@ -125,9 +141,16 @@ export const RoleNameUtils = {
   },
 
   /**
-   * Gets all reserved names as a flat array
+   * Gets only the completely reserved names (not system roles)
    */
   getAllReservedNames(): string[] {
+    return [...RESERVED_ROLE_NAMES];
+  },
+
+  /**
+   * Gets all forbidden names (reserved + system roles)
+   */
+  getAllForbiddenNames(): string[] {
     return [...RESERVED_ROLE_NAMES, ...this.getAllSystemRoles()];
   },
 };
