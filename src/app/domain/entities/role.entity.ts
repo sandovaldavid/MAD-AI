@@ -1,63 +1,55 @@
-import { AccessLevel, RoleName } from '@domain/value-objects';
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
-import { DomainEvent } from '../events/domain-event.entity';
-import { ISODateTime } from '../value-objects/iso-datetime.vo';
-import { DomainEventType } from '../events/domain-event.enum';
-import { RoleNameReservedSpec } from '../specifications/role-name-reserved.specs';
-import { AccessLevelPermissionsSpec } from '../specifications/accesslevel-permissions.specs';
 import type { FieldError } from '@domain/errors/field-error.type';
 
 /**
  * Role Entity - Represents organizational roles in the MAD-AI system.
  *
- * @description This entity encapsulates the concept of organizational roles
- * with access levels, permissions, and business rules. It follows DDD principles
- * by maintaining role-specific business logic and invariants.
+ * @description Simplified role entity without over-engineering.
+ * Focuses on essential business logic and data integrity.
  *
  * @since 1.0.0
  * @domain Role Management
  */
 export class Role {
-  private _domainEvents: DomainEvent[] = [];
   private readonly _id: number;
-  private readonly _name: RoleName;
-  private readonly _accessLevel: AccessLevel;
+  private readonly _name: string;
+  private readonly _accessLevel: number;
   private _isActive: boolean;
   private _description?: string;
   private _userCount?: number;
 
   private constructor(
     id: number,
-    name: RoleName,
-    accessLevel?: AccessLevel,
-    isActive?: boolean,
+    name: string,
+    accessLevel: number,
+    isActive = false,
     description?: string,
     userCount?: number
   ) {
     this._id = id;
     this._name = name;
-    this._accessLevel = accessLevel || AccessLevel.create(5);
-    this._isActive = isActive || false;
+    this._accessLevel = accessLevel;
+    this._isActive = isActive;
     this._description = description;
     this._userCount = userCount || 0;
   }
 
-  static create(
-    props: {
-      id: number;
-      name: string;
-      accessLevel?: number;
-      isActive?: boolean;
-      description?: string | null;
-      userCount?: number;
-      canLeadProjects?: boolean;
-    },
-    isSystemCreation = false
-  ): Role {
+  /**
+   * Factory method to create a Role with essential validations.
+   */
+  static create(props: {
+    id: number;
+    name: string;
+    accessLevel?: number;
+    isActive?: boolean;
+    description?: string | null;
+    userCount?: number;
+    isSystemCreated?: boolean;
+  }): Role {
     const errors: FieldError[] = [];
 
-    // Validación mínima sobre id
+    // Validate ID
     if (
       typeof props.id !== 'number' ||
       !Number.isInteger(props.id) ||
@@ -72,97 +64,78 @@ export class Role {
       });
     }
 
-    // Validar y construir RoleName VO
-    let nameVO: RoleName;
-    try {
-      nameVO = RoleName.create(props.name);
-
-      // 2. Validar reglas de negocio: nombre de rol no reservado
-      RoleNameReservedSpec.isSatisfiedBy(nameVO, isSystemCreation);
-    } catch (e: unknown) {
-      // Para errores de validación, mantener ValidationError
-      if (e instanceof ValidationError) {
-        const mappedError = e.mapFieldName('name');
-        errors.push(...mappedError.errors);
-      } else {
-        // Para otros errores, crear ValidationError
-        errors.push({
-          field: 'name',
-          value: props.name,
-          message: (e as Error)?.message || 'Invalid role name',
-          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-        });
-      }
+    // Validate name
+    if (!props.name || typeof props.name !== 'string' || props.name.trim().length === 0) {
+      errors.push({
+        field: 'name',
+        value: props.name,
+        message: 'Role name is required',
+        code: ValidationErrorCode.VALIDATION_ERROR,
+      });
+    } else if (props.name.trim().length > 50) {
+      errors.push({
+        field: 'name',
+        value: props.name,
+        message: 'Role name cannot exceed 50 characters',
+        code: ValidationErrorCode.FIELD_TOO_LONG,
+      });
+    } else if (!props.isSystemCreated && Role.isReservedName(props.name.trim())) {
+      errors.push({
+        field: 'name',
+        value: props.name,
+        message: 'Role name is reserved',
+        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+      });
     }
 
-    // Validar y construir AccessLevel VO
-    let accessLevelVO: AccessLevel | undefined;
-    if (props.accessLevel) {
-      try {
-        accessLevelVO = AccessLevel.create(props.accessLevel);
-      } catch (e: unknown) {
-        errors.push({
-          field: 'accessLevel',
-          value: props.accessLevel,
-          message: 'Invalid access level',
-          code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
-        });
-      }
+    // Validate access level
+    const accessLevel = props.accessLevel ?? 5;
+    if (
+      typeof accessLevel !== 'number' ||
+      !Number.isInteger(accessLevel) ||
+      accessLevel < 1 ||
+      accessLevel > 10
+    ) {
+      errors.push({
+        field: 'accessLevel',
+        value: props.accessLevel,
+        message: 'Access level must be an integer between 1 and 10',
+        code: ValidationErrorCode.FIELD_OUT_OF_RANGE,
+      });
     }
 
-    if (errors.length) {
+    if (errors.length > 0) {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
     return new Role(
       props.id,
-      nameVO!,
-      accessLevelVO || AccessLevel.create(5),
+      props.name.trim(),
+      accessLevel,
       !!props.isActive,
       props.description ?? undefined,
       props.userCount
     );
   }
 
-  // ---------- Domain Events Management ----------
-
   /**
-   * Adds a domain event to the aggregate.
-   * Events will be published when the aggregate is persisted.
-   *
-   * @param event - Domain event to add
-   * @private
+   * Simple validation for reserved role names.
    */
-  private addDomainEvent(event: DomainEvent): void {
-    this._domainEvents.push(event);
-  }
-
-  /**
-   * Gets all unpublished domain events from this aggregate.
-   *
-   * @returns Array of domain events
-   */
-  getDomainEvents(): DomainEvent[] {
-    return [...this._domainEvents];
-  }
-
-  /**
-   * Clears all domain events from this aggregate.
-   * Should be called after events have been published.
-   */
-  clearDomainEvents(): void {
-    this._domainEvents = [];
+  private static isReservedName(name: string): boolean {
+    const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
+    return reservedNames.includes(name.toLowerCase());
   }
 
   // ---------- Getters ----------
   get id(): number {
     return this._id;
   }
+
   get name(): string {
-    return this._name.value;
+    return this._name;
   }
 
-  getAccessLevel(): AccessLevel {
+  get accessLevel(): number {
     return this._accessLevel;
   }
 
@@ -178,101 +151,61 @@ export class Role {
     return this._userCount ?? 0;
   }
 
+  // ---------- Business Methods ----------
   canManageUsers(): boolean {
-    return AccessLevelPermissionsSpec.canManageUsers(this._accessLevel);
+    return this._accessLevel <= 2;
   }
 
   canAccessAdmin(): boolean {
-    return AccessLevelPermissionsSpec.canAccessAdmin(this._accessLevel);
+    return this._accessLevel <= 3;
   }
 
   canLeadProjects(): boolean {
-    return AccessLevelPermissionsSpec.canLeadProjects(this._accessLevel);
+    return this._accessLevel <= 4;
   }
 
-  getPermissions() {
-    return AccessLevelPermissionsSpec.getPermissions(this._accessLevel);
+  /**
+   * Get permissions based on access level.
+   */
+  getPermissions(): string[] {
+    const level = this._accessLevel;
+    const permissions: string[] = [];
+
+    if (level <= 1) {
+      permissions.push('SYSTEM_ADMIN', 'USER_MANAGEMENT', 'PROJECT_MANAGEMENT', 'READ_ALL');
+    } else if (level <= 2) {
+      permissions.push('USER_MANAGEMENT', 'PROJECT_MANAGEMENT', 'READ_ALL');
+    } else if (level <= 3) {
+      permissions.push('PROJECT_MANAGEMENT', 'READ_ALL');
+    } else if (level <= 4) {
+      permissions.push('PROJECT_LEAD', 'READ_ALL');
+    } else {
+      permissions.push('READ_ALL');
+    }
+
+    return permissions;
   }
 
   isUniqueForTeam(): boolean {
-    return AccessLevelPermissionsSpec.isUniqueForTeam(this._accessLevel);
+    return this._accessLevel <= 2;
+  }
+
+  canDeleteUsers(): boolean {
+    return this._accessLevel <= 2;
   }
 
   /**
    * Activates the role.
-   * Publishes a RoleActivated domain event.
-   *
-   * @description Changes the role's active status to true, enabling its
-   * use for user assignments. This is a significant business operation
-   * that affects user permissions system-wide.
-   *
-   * @example
-   * ```typescript
-   * role.activate();
-   * // RoleActivated event will be published
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Role Management
    */
   activate(): void {
-    if (!this._isActive) {
-      this._isActive = true;
-      this.addDomainEvent(
-        DomainEvent.create({
-          id: `role-activated-${this.id}-${Date.now()}`,
-          aggregateId: this.id.toString(),
-          aggregateType: 'Role',
-          eventType: DomainEventType.ROLE_ACTIVATED,
-          eventData: {
-            roleId: this.id,
-            roleName: this.name,
-            accessLevel: this._accessLevel,
-            activatedAt: new Date().toISOString(),
-          },
-          occurredAt: ISODateTime.now(),
-        })
-      );
-    }
+    this._isActive = true;
   }
 
   /**
    * Deactivates the role.
-   * Publishes a RoleDeactivated domain event.
-   *
-   * @description Changes the role's active status to false, preventing
-   * new assignments and potentially affecting existing users. This is
-   * a critical business operation requiring careful consideration.
-   *
-   * @example
-   * ```typescript
-   * role.deactivate();
-   * // RoleDeactivated event will be published
-   * ```
-   *
-   * @since 1.0.0
-   * @domain Role Management
    */
   deactivate(): void {
-    if (this._isActive) {
-      this._isActive = false;
-      this.addDomainEvent(
-        DomainEvent.create({
-          id: `role-deactivated-${this.id}-${Date.now()}`,
-          aggregateId: this.id.toString(),
-          aggregateType: 'Role',
-          eventType: DomainEventType.ROLE_DEACTIVATED,
-          eventData: {
-            roleId: this.id,
-            roleName: this.name,
-            accessLevel: this._accessLevel,
-            userCount: this.userCount,
-            deactivatedAt: new Date().toISOString(),
-          },
-          occurredAt: ISODateTime.now(),
-        })
-      );
-    }
+    this._isActive = false;
   }
 
   equals(other: Role | null | undefined): boolean {
@@ -281,6 +214,6 @@ export class Role {
   }
 
   toString(): string {
-    return `Role(${this.id}, ${this.name}, L${this._accessLevel.getValue()}, active=${this.isActive})`;
+    return `Role(${this.id}, ${this.name}, L${this._accessLevel}, active=${this.isActive})`;
   }
 }
