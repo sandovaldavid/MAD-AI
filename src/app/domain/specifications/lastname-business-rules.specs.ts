@@ -144,7 +144,7 @@ export class LastNameBusinessRules {
   } {
     return {
       mainPart: this.extractMainPart(surname),
-      soundex: this.generateSoundex(surname),
+      soundex: this.generateSoundex(this.extractMainPart(surname)),
       sortKey: this.createSortKey(surname),
       isCompound: this.isCompound(surname),
       hasParticle: this.hasParticle(surname),
