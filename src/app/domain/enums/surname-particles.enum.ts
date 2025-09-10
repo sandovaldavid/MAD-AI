@@ -1,5 +1,21 @@
 export const SURNAME_PARTICLES: readonly string[] = [
   'van',
   'van de',
-  // ...otros particles...
+  'de',
+  'la',
+  'los',
+  'las',
+  'del',
+  'de la',
+  'de los',
+  'de las',
+  'von',
+  'da',
+  'di',
+  'du',
+  'le',
+  'mc',
+  'mac',
+  'o',
+  'al',
 ];
