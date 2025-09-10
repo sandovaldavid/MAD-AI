@@ -34,6 +34,20 @@ export class InfrastructureError extends Error implements InfrastructureErrorInt
       endpoint ?? (typeof context?.['endpoint'] === 'string' ? context['endpoint'] : undefined);
   }
 
+  toJSON(): Record<string, unknown> {
+    return {
+      name: this.name,
+      message: this.message,
+      code: this.code,
+      type: this.type,
+      retryable: this.retryable,
+      context: this.context,
+      statusCode: this.statusCode,
+      endpoint: this.endpoint,
+      timestamp: this.timestamp,
+    };
+  }
+
   static networkTimeout(endpoint: string, timeout: number): InfrastructureError {
     return new InfrastructureError(
       `Network timeout after ${timeout}ms`,
