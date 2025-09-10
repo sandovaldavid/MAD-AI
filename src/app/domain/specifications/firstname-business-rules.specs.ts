@@ -74,7 +74,7 @@ export class FirstNameBusinessRules {
    * ```
    */
   static getNicknames(name: string): string[] {
-    return FIRSTNAME_COMMON_NICKNAMES[name.toLowerCase()] || [];
+    return [...(FIRSTNAME_COMMON_NICKNAMES[name.toLowerCase()] || [])];
   }
 
   /**
