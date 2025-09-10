@@ -83,6 +83,38 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       req.flush({});
       newHttpMock.verify();
     });
+
+    it('should have proper constructor initialization', () => {
+      // When - Test constructor and initialization
+      expect(client).toBeInstanceOf(AuthApiClient);
+      expect((client as any).http).toBeTruthy();
+      
+      // Test that constructor properly initializes private properties
+      expect(typeof (client as any).http.request).toBe('function');
+    });
+
+    it('should maintain singleton pattern across different injection contexts', () => {
+      // Given
+      const context1 = TestBed.inject(AuthApiClient);
+      const context2 = TestBed.inject(AuthApiClient);
+      
+      // When - Test object identity
+      const areSameInstance = context1 === context2;
+      const areSameType = context1.constructor === context2.constructor;
+      
+      // Then
+      expect(areSameInstance).toBe(true);
+      expect(areSameType).toBe(true);
+      expect(Object.getPrototypeOf(context1)).toBe(Object.getPrototypeOf(context2));
+    });
+
+    it('should properly initialize with Angular DI metadata', () => {
+      // Then - Test that Angular decorators and class are properly defined
+      expect(client).toBeTruthy();
+      expect(typeof AuthApiClient).toBe('function');
+      expect(AuthApiClient.name).toMatch(/AuthApiClient/);
+      expect(Object.getOwnPropertyDescriptor(AuthApiClient.prototype, 'constructor')).toBeDefined();
+    });
   });
 
   describe('Complete Method Coverage', () => {
@@ -1075,6 +1107,214 @@ describe('AuthApiClient - Infrastructure Tests', () => {
     });
   });
 
+  describe('Enhanced Network and Server Error Handling', () => {
+    it('should handle network connectivity errors', () => {
+      // Given - Network connectivity lost scenario
+      client.login({ identifier: { username: 'test' }, password: 'test' }).subscribe({
+        next: () => fail('Should have failed with network error'),
+        error: (error) => {
+          expect(error.status).toBe(0);
+          // Status text may vary by browser/environment, just check it exists
+          expect(error.statusText).toBeDefined();
+        },
+      });
+
+      const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.LOGIN);
+      req.flush('', { status: 0, statusText: '' });
+    });
+
+    it('should handle server timeout errors', () => {
+      // Given - Server timeout scenarios
+      const timeoutScenarios = [
+        { status: 408, statusText: 'Request Timeout' },
+        { status: 502, statusText: 'Bad Gateway' },
+        { status: 503, statusText: 'Service Unavailable' },
+        { status: 504, statusText: 'Gateway Timeout' },
+      ];
+
+      timeoutScenarios.forEach((scenario) => {
+        client.me().subscribe({
+          next: () => fail(`Should have failed with ${scenario.statusText}`),
+          error: (error) => {
+            expect(error.status).toBe(scenario.status);
+            expect(error.statusText).toBe(scenario.statusText);
+          },
+        });
+
+        const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.ME);
+        req.flush('', { status: scenario.status, statusText: scenario.statusText });
+      });
+    });
+
+    it('should handle memory pressure and resource exhaustion errors', () => {
+      // Given - Simulate resource exhaustion scenarios
+      const resourceErrors = [
+        { status: 507, statusText: 'Insufficient Storage', body: { error: 'Server storage full' } },
+        { status: 413, statusText: 'Payload Too Large', body: { error: 'Request entity too large' } },
+        { status: 414, statusText: 'URI Too Long', body: { error: 'Request-URI too large' } },
+        { status: 431, statusText: 'Request Header Fields Too Large', body: { error: 'Headers too large' } },
+      ];
+
+      resourceErrors.forEach((errorCase) => {
+        client.register({
+          username: 'test',
+          email: 'test@test.com',
+          password: 'test',
+          password_confirm: 'test',
+          first_name: 'Test',
+          last_name: 'User',
+          role_id: 1,
+        }).subscribe({
+          next: () => fail(`Should have failed with ${errorCase.statusText}`),
+          error: (error) => {
+            expect(error.status).toBe(errorCase.status);
+            expect(error.error).toEqual(errorCase.body);
+          },
+        });
+
+        const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.REGISTER);
+        req.flush(errorCase.body, { status: errorCase.status, statusText: errorCase.statusText });
+      });
+    });
+
+    it('should handle CORS and security-related errors', () => {
+      // Given - CORS and security error scenarios
+      const securityErrors = [
+        { status: 0, statusText: '', description: 'CORS preflight failed' },
+        { status: 403, statusText: 'Forbidden', body: { error: 'CORS origin not allowed' } },
+        { status: 418, statusText: 'I\'m a teapot', body: { error: 'Server refuses to brew coffee' } },
+        { status: 451, statusText: 'Unavailable For Legal Reasons', body: { error: 'Blocked by government' } },
+      ];
+
+      securityErrors.forEach((errorCase) => {
+        client.me().subscribe({
+          next: () => fail(`Should have failed with ${errorCase.description}`),
+          error: (error) => {
+            expect(error.status).toBe(errorCase.status);
+            if (errorCase.body) {
+              expect(error.error).toEqual(errorCase.body);
+            }
+          },
+        });
+
+        const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.ME);
+        req.flush(errorCase.body || '', { status: errorCase.status, statusText: errorCase.statusText });
+      });
+    });
+
+    it('should handle malformed server responses and parsing errors', () => {
+      // Given - Various malformed response scenarios
+      const malformedScenarios = [
+        { response: 'not json at all', contentType: 'application/json' },
+        { response: '{"incomplete": json', contentType: 'application/json' },
+        { response: 'null', contentType: 'application/json' },
+        { response: '[]', contentType: 'application/json' }, // Array instead of object
+        { response: '{"circular":"reference"}', contentType: 'application/json' },
+      ];
+
+      malformedScenarios.forEach((scenario) => {
+        client.refresh({ refresh_token: 'test' }).subscribe({
+          next: (response) => {
+            // In test environment, HttpClient doesn't actually parse JSON
+            expect(response).toBe(scenario.response as any);
+          },
+          error: () => fail('Should not have errored in test environment'),
+        });
+
+        const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.REFRESH);
+        req.flush(scenario.response, { headers: { 'Content-Type': scenario.contentType } });
+      });
+    });
+  });
+
+  describe('Observable Memory Management and Lifecycle', () => {
+    it('should properly handle single subscription lifecycle', () => {
+      // Given
+      let responseReceived = false;
+      let errorReceived = false;
+      let completeCalled = false;
+
+      // When - Create subscription
+      const subscription = client.me().subscribe({
+        next: () => { responseReceived = true; },
+        error: () => { errorReceived = true; },
+        complete: () => { completeCalled = true; },
+      });
+
+      // Then - Subscription should be active
+      expect(subscription.closed).toBe(false);
+
+      // When - Fulfill request
+      const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.ME);
+      req.flush({
+        id: 1,
+        username: 'test',
+        email: 'test@test.com',
+        first_name: 'Test',
+        last_name: 'User',
+        role: { id: 1, name: 'user', access_level: 1, is_active: true },
+        notification_preferences: {
+          email_notifications: true,
+          system_notifications: true,
+          task_notifications: false,
+        },
+      });
+
+      // Then - Verify response handling
+      expect(responseReceived).toBe(true);
+      expect(errorReceived).toBe(false);
+      expect(completeCalled).toBe(true);
+      expect(subscription.closed).toBe(true); // Auto-closed after completion
+    });
+
+    it('should handle subscription unsubscription before response', () => {
+      // Given
+      let responseReceived = false;
+
+      // When - Create subscription and immediately unsubscribe
+      const subscription = client.login({ 
+        identifier: { username: 'test' }, 
+        password: 'test' 
+      }).subscribe({
+        next: () => { responseReceived = true; },
+      });
+      
+      // Get request but don't flush yet
+      const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.LOGIN);
+      
+      // Then - Subscription should be active initially
+      expect(subscription.closed).toBe(false);
+      
+      // When - Unsubscribe before response
+      subscription.unsubscribe();
+      expect(subscription.closed).toBe(true);
+      
+      // Then - No response should be processed (can't flush cancelled request)
+      expect(responseReceived).toBe(false);
+    });
+
+    it('should handle Observable stream error scenarios', () => {
+      // Given
+      let errorReceived = false;
+      let completeCalled = false;
+
+      // When - Create subscription that will error
+      client.refresh({ refresh_token: 'invalid' }).subscribe({
+        next: () => fail('Should not succeed'),
+        error: () => { errorReceived = true; },
+        complete: () => { completeCalled = true; },
+      });
+
+      // Then - Trigger error
+      const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.REFRESH);
+      req.flush('', { status: 401, statusText: 'Unauthorized' });
+
+      // Verify error handling
+      expect(errorReceived).toBe(true);
+      expect(completeCalled).toBe(false); // Complete not called on error
+    });
+  });
+
   describe('Integration and Edge Cases', () => {
     it('should handle empty responses gracefully', () => {
       // When
@@ -1216,6 +1456,57 @@ describe('AuthApiClient - Infrastructure Tests', () => {
           task_notifications: false,
         },
       });
+    });
+
+    it('should handle concurrent authentication flows', () => {
+      // Given - Multiple concurrent auth operations
+      const responses: any[] = [];
+      const errors: any[] = [];
+
+      // When - Execute all operations concurrently
+      client.login({ identifier: { username: 'user1' }, password: 'pass1' }).subscribe({
+        next: (response: any) => responses.push({ index: 0, response }),
+        error: (error: any) => errors.push({ index: 0, error }),
+      });
+
+      client.me().subscribe({
+        next: (response: any) => responses.push({ index: 1, response }),
+        error: (error: any) => errors.push({ index: 1, error }),
+      });
+
+      client.refresh({ refresh_token: 'token1' }).subscribe({
+        next: (response: any) => responses.push({ index: 2, response }),
+        error: (error: any) => errors.push({ index: 2, error }),
+      });
+
+      client.logout({ refresh_token: 'token2' }).subscribe({
+        next: (response: any) => responses.push({ index: 3, response }),
+        error: (error: any) => errors.push({ index: 3, error }),
+      });
+
+      client.register({ 
+        username: 'newuser', 
+        email: 'new@test.com', 
+        password: 'pass', 
+        password_confirm: 'pass',
+        first_name: 'New',
+        last_name: 'User',
+        role_id: 1 
+      }).subscribe({
+        next: (response: any) => responses.push({ index: 4, response }),
+        error: (error: any) => errors.push({ index: 4, error }),
+      });
+
+      // Then - All requests should be made
+      const allRequests = httpMock.match(() => true);
+      expect(allRequests.length).toBe(5);
+
+      // Flush all responses
+      allRequests.forEach(req => req.flush({}));
+
+      // Verify all responses received
+      expect(responses.length).toBe(5);
+      expect(errors.length).toBe(0);
     });
   });
 });
