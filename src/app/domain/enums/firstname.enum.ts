@@ -9,7 +9,7 @@ export const FIRSTNAME_COMMON_NICKNAMES: Record<string, string[]> = {
   alexander: ['Alex', 'Al', 'Xander'],
   elizabeth: ['Liz', 'Beth', 'Lizzy', 'Betty'],
   christopher: ['Chris', 'Kit'],
-  david: ['Dave', 'Davy', 'd5v5'],
+  david: ['Dave', 'Davy'],
 };
 
 export enum FirstnameMaxLength {
