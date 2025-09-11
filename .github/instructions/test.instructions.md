@@ -1,764 +1,519 @@
 ---
-description: 'Testing implementation guidelines for Clean Architecture layers'
-applyTo: '**/*.spec.ts, **/*.test.ts'
+description: 'Comprehensive testing strategy for all architectural layers with specific coverage requirements'
+applyTo: '**/*.spec.ts, **/*.test.ts, **/*.cy.ts'
 ---
 
-# Testing Implementation Instructions
+# Testing Implementation Guidelines for MAD-AI
 
-## Core Principles
+## Core Testing Philosophy
 
-You WILL implement comprehensive testing following these fundamental rules:
+You WILL follow the testing pyramid strategy with these fundamental principles:
 
-**CRITICAL**: Testing in Clean Architecture is NOT optional - it is MANDATORY for guaranteeing code robustness and maintainability. Each layer requires a different testing strategy following the testing pyramid.
+- You MUST test behavior, not implementation details
+- You WILL prioritize fast, isolated unit tests at the base of the pyramid
+- You MUST ensure each layer has appropriate test coverage and strategy
+- You NEVER allow tests to depend on external systems without proper mocking
 
-You MUST follow this **Golden Rule**: Test the behavior, not the implementation. A test should verify WHAT the code does, not HOW it does it. This allows you to refactor internal method logic without breaking tests.
+## Testing Pyramid Structure
 
-You WILL ensure your testing strategy:
+You WILL implement testing following this hierarchy:
 
-- **Follows the Testing Pyramid**: Fast unit tests at the base, integration tests in the middle, E2E tests at the top
-- **Tests Behavior**: Verify expected outcomes and side effects, not internal implementation details
-- **Maintains Layer Isolation**: Each layer tests its own concerns without crossing architectural boundaries
-- **Provides Fast Feedback**: Tests should run quickly and fail fast when behavior changes
-- **Supports Refactoring**: Tests should remain stable when implementation details change
+### Level 1: Unit Tests (Domain & Core) - Base of Pyramid
 
-**MANDATORY**: Every feature MUST have comprehensive test coverage across all relevant layers before it can be considered complete.
+- **Coverage Requirement**: 100% for Domain entities and value objects
+- **Speed**: Ultra-fast (< 5ms per test)
+- **Isolation**: Complete - no external dependencies
+- **Tools**: Jest only
 
-## Structural Requirements
+### Level 2: Orchestration Tests (Application) - Fast Integration
 
-### Domain Layer Testing (CRITICAL - 100% Coverage Required)
+- **Coverage Requirement**: 95% for use cases and facades
+- **Speed**: Very fast (< 50ms per test)
+- **Isolation**: Mock all external dependencies
+- **Tools**: Jest with extensive mocking
 
-You WILL implement Domain testing with these requirements:
+### Level 3: Component Tests (Presentation) - UI Behavior
 
-**Strategy**: Pure unit tests - fast, zero external dependencies, zero mocks of classes
-**Tools**: Jest only
-**Coverage**: 100% - NON-NEGOTIABLE
+- **Coverage Requirement**: 85% for components and services
+- **Speed**: Fast (< 200ms per test)
+- **Isolation**: Mock all facades and external services
+- **Tools**: Jest + TestBed
 
-You MUST test:
+### Level 4: Integration Tests (Infrastructure) - External Contracts
 
-- **Entity Business Rules**: Call entity methods and verify state changes or `BusinessRuleError` exceptions
-- **Value Object Validation**: Ensure VOs cannot be created with invalid values and equality works by value
-- **Domain Errors**: Verify correct `ValidationError` and `BusinessRuleError` creation for each scenario
-- **All Edge Cases**: Cover happy paths, boundary conditions, null values, format errors, rule violations
+- **Coverage Requirement**: 80% for repositories and mappers
+- **Speed**: Medium (< 500ms per test)
+- **Isolation**: Mock HTTP calls but test real mapping logic
+- **Tools**: Jest + HttpClientTestingModule
 
-You WILL implement Domain tests by:
+### Level 5: E2E Tests - Complete User Flows
 
-- Instantiating classes directly: `new User(...)`, `Email.create(...)`
-- Testing without any mocks - pure object instantiation and method calls
-- Covering every business rule path including violations
-- Verifying proper error types and messages for all failure scenarios
+- **Coverage**: Critical user journeys only
+- **Speed**: Slow (acceptable for CI/CD)
+- **Isolation**: Mock API responses, test real UI flows
+- **Tools**: Cypress
 
-**Example Domain Test:**
+## Domain & Core Layer Testing Rules
+
+### Domain Entities Testing
+
+You MUST test all business logic in Domain entities:
 
 ```typescript
-// ✅ CORRECT - Pure unit test for business rule
+// ✅ CORRECT: Test business behavior
 describe('User Entity', () => {
-  describe('deactivate', () => {
-    it('should deactivate an active user', () => {
-      // Arrange
-      const user = User.create('user-123', 'test@example.com', 'John', 'Doe');
-
-      // Act
-      user.deactivate();
-
-      // Assert
-      expect(user.isActive()).toBe(false);
+  it('should deactivate user and change status to inactive', () => {
+    // Arrange
+    const user = new User({
+      id: new UserId('user-123'),
+      email: new Email('test@example.com'),
+      status: UserStatus.Active,
     });
 
-    it('should throw BusinessRuleError when deactivating already inactive user', () => {
-      // Arrange
-      const user = User.create('user-123', 'test@example.com', 'John', 'Doe');
-      user.deactivate(); // Already inactive
+    // Act
+    user.deactivate();
 
-      // Act & Assert
-      expect(() => user.deactivate()).toThrow(BusinessRuleError);
-      expect(() => user.deactivate()).toThrow('User is already deactivated');
-    });
+    // Assert
+    expect(user.properties.status).toBe(UserStatus.Inactive);
+    expect(user.properties.deactivatedAt).toBeInstanceOf(Date);
   });
 
-  describe('Email Value Object', () => {
-    it('should create valid email', () => {
-      // Act
-      const email = Email.create('test@example.com');
+  it('should throw error when trying to deactivate already inactive user', () => {
+    // Arrange
+    const user = new User({ status: UserStatus.Inactive });
 
-      // Assert
-      expect(email.toString()).toBe('test@example.com');
-    });
-
-    it('should throw ValidationError for invalid email format', () => {
-      // Act & Assert
-      expect(() => Email.create('invalid-email')).toThrow(ValidationError);
-      expect(() => Email.create('')).toThrow(ValidationError);
-      expect(() => Email.create(null)).toThrow(ValidationError);
-    });
-
-    it('should compare emails by value', () => {
-      // Arrange
-      const email1 = Email.create('test@example.com');
-      const email2 = Email.create('test@example.com');
-
-      // Assert
-      expect(email1.equals(email2)).toBe(true);
-    });
+    // Act & Assert
+    expect(() => user.deactivate()).toThrow('User is already inactive');
   });
 });
 ```
 
-### Infrastructure Layer Testing
+### Value Objects Testing
 
-You WILL implement Infrastructure testing with these requirements:
-
-**Strategy**: Integration tests at the boundary - mock external endpoints, not internal classes
-**Tools**: HttpClientTestingModule, HttpTestingController, jest.spyOn for browser APIs
-**Focus**: Communication with external world and data mapping
-
-You MUST test:
-
-- **Repository HTTP Communication**: Correct URL construction, HTTP methods, request bodies, response handling
-- **Mapper Data Transformation**: DTO to Domain entity conversion and vice versa with edge cases
-- **Storage Services**: Proper interaction with browser APIs (localStorage, sessionStorage)
-- **Error Handling**: Network failures, API errors, storage quota issues
-
-You WILL implement Infrastructure tests by:
-
-- Using HttpTestingController to mock API responses - NEVER make real network calls
-- Creating example DTOs and verifying entity mapping correctness
-- Using spyOn for browser APIs and verifying correct method calls
-- Testing both success and failure scenarios for all external integrations
-
-**Example Infrastructure Test:**
+You MUST verify validation logic and immutability:
 
 ```typescript
-// ✅ CORRECT - Integration test with mocked external dependencies
+// ✅ CORRECT: Test validation and immutability
+describe('Email Value Object', () => {
+  it('should create valid email', () => {
+    const email = new Email('test@example.com');
+    expect(email.value).toBe('test@example.com');
+  });
+
+  it('should throw error for invalid email format', () => {
+    expect(() => new Email('invalid-email')).toThrow('Invalid email format');
+  });
+
+  it('should be immutable', () => {
+    const email = new Email('test@example.com');
+    expect(() => ((email as any).value = 'new@example.com')).toThrow();
+  });
+});
+```
+
+### Core Services Testing
+
+You MUST test utility logic without dependencies:
+
+```typescript
+// ✅ CORRECT: Test pure utility functions
+describe('DateTimeService', () => {
+  it('should format date to ISO string', () => {
+    const date = new Date('2023-01-01T10:00:00Z');
+    const result = DateTimeService.formatToISO(date);
+    expect(result).toBe('2023-01-01T10:00:00.000Z');
+  });
+});
+```
+
+## Application Layer Testing Rules
+
+### Use Case Testing
+
+You MUST test orchestration flow with complete mocking:
+
+```typescript
+// ✅ CORRECT: Mock all dependencies, test flow
+describe('DeactivateUserUseCase', () => {
+  let useCase: DeactivateUserUseCase;
+  let mockUserRepository: jest.Mocked<IUserRepository>;
+  let mockNotificationService: jest.Mocked<INotificationService>;
+
+  beforeEach(() => {
+    mockUserRepository = {
+      findById: jest.fn(),
+      save: jest.fn(),
+    } as jest.Mocked<IUserRepository>;
+
+    mockNotificationService = {
+      sendEmail: jest.fn(),
+    } as jest.Mocked<INotificationService>;
+
+    useCase = new DeactivateUserUseCase(mockUserRepository, mockNotificationService);
+  });
+
+  it('should deactivate user and send notification', async () => {
+    // Arrange
+    const mockUser = {
+      deactivate: jest.fn(),
+      properties: { email: { value: 'test@example.com' } },
+    };
+    mockUserRepository.findById.mockResolvedValue(mockUser as any);
+    mockUserRepository.save.mockResolvedValue(undefined);
+
+    // Act
+    await useCase.execute('user-123');
+
+    // Assert
+    expect(mockUserRepository.findById).toHaveBeenCalledWith('user-123');
+    expect(mockUser.deactivate).toHaveBeenCalled();
+    expect(mockUserRepository.save).toHaveBeenCalledWith(mockUser);
+    expect(mockNotificationService.sendEmail).toHaveBeenCalledWith(
+      'test@example.com',
+      'Account Deactivated'
+    );
+  });
+});
+```
+
+### Facade Testing
+
+You MUST test state management and use case coordination:
+
+```typescript
+// ✅ CORRECT: Test Signal updates and use case calls
+describe('UsersFacade', () => {
+  let facade: UsersFacade;
+  let mockDeactivateUserUseCase: jest.Mocked<DeactivateUserUseCase>;
+
+  beforeEach(() => {
+    mockDeactivateUserUseCase = {
+      execute: jest.fn(),
+    } as jest.Mocked<DeactivateUserUseCase>;
+
+    facade = new UsersFacade(mockDeactivateUserUseCase);
+  });
+
+  it('should update loading state and call use case when deactivating user', async () => {
+    // Arrange
+    mockDeactivateUserUseCase.execute.mockResolvedValue(undefined);
+
+    // Act
+    await facade.deactivateUser('user-123');
+
+    // Assert
+    expect(mockDeactivateUserUseCase.execute).toHaveBeenCalledWith('user-123');
+    expect(facade.loading()).toBe(false);
+    expect(facade.error()).toBeNull();
+  });
+});
+```
+
+## Infrastructure Layer Testing Rules
+
+### Repository Testing
+
+You MUST test HTTP integration with mocked responses:
+
+```typescript
+// ✅ CORRECT: Test HTTP calls and mapping
 describe('HttpUserRepository', () => {
   let repository: HttpUserRepository;
-  let httpTestingController: HttpTestingController;
-  let userMapper: UserMapper;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [
-        HttpUserRepository,
-        UserMapper,
-        { provide: API_ENDPOINTS, useValue: { users: '/api/users' } },
-      ],
+      providers: [HttpUserRepository],
     });
-
     repository = TestBed.inject(HttpUserRepository);
-    httpTestingController = TestBed.inject(HttpTestingController);
-    userMapper = TestBed.inject(UserMapper);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
-  describe('findUserByEmail', () => {
-    it('should return user when API returns user data', async () => {
-      // Arrange
-      const email = Email.create('test@example.com');
-      const mockUserDto: UserResponseDto = {
-        id: 'user-123',
-        email: 'test@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        status: 'active',
-      };
+  it('should fetch user by ID and map to User entity', () => {
+    // Arrange
+    const userDto = {
+      id: 'user-123',
+      email: 'test@example.com',
+      status: 'active',
+    };
 
-      // Act
-      const resultPromise = repository.findUserByEmail(email);
-
+    // Act
+    repository.findById('user-123').subscribe((user) => {
       // Assert
-      const req = httpTestingController.expectOne('/api/users/by-email?email=test%40example.com');
-      expect(req.request.method).toBe('GET');
-
-      req.flush(mockUserDto);
-
-      const result = await resultPromise;
-      expect(result).toBeInstanceOf(User);
-      expect(result.getEmail().toString()).toBe('test@example.com');
+      expect(user).toBeInstanceOf(User);
+      expect(user.properties.email.value).toBe('test@example.com');
+      expect(user.properties.status).toBe(UserStatus.Active);
     });
 
-    it('should return null when API returns 404', async () => {
-      // Arrange
-      const email = Email.create('notfound@example.com');
-
-      // Act
-      const resultPromise = repository.findUserByEmail(email);
-
-      // Assert
-      const req = httpTestingController.expectOne(
-        '/api/users/by-email?email=notfound%40example.com'
-      );
-      req.flush('User not found', { status: 404, statusText: 'Not Found' });
-
-      const result = await resultPromise;
-      expect(result).toBeNull();
-    });
+    // Assert HTTP call
+    const req = httpMock.expectOne('api/v1/users/user-123');
+    expect(req.request.method).toBe('GET');
+    req.flush(userDto);
   });
 });
+```
 
-// ✅ CORRECT - Mapper unit test
+### Mapper Testing
+
+You MUST test DTO to Entity transformation:
+
+```typescript
+// ✅ CORRECT: Test bidirectional mapping
 describe('UserMapper', () => {
-  let mapper: UserMapper;
+  it('should map UserDto to User entity', () => {
+    // Arrange
+    const dto: UserDto = {
+      id: 'user-123',
+      email: 'test@example.com',
+      status: 'active',
+    };
 
-  beforeEach(() => {
-    mapper = new UserMapper();
+    // Act
+    const user = UserMapper.toEntity(dto);
+
+    // Assert
+    expect(user).toBeInstanceOf(User);
+    expect(user.properties.id.value).toBe('user-123');
+    expect(user.properties.email.value).toBe('test@example.com');
   });
 
-  describe('fromDto', () => {
-    it('should convert DTO to User entity', () => {
-      // Arrange
-      const dto: UserResponseDto = {
-        id: 'user-123',
-        email: 'test@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        status: 'active',
-      };
-
-      // Act
-      const user = mapper.fromDto(dto);
-
-      // Assert
-      expect(user.getId()).toBe('user-123');
-      expect(user.getEmail().toString()).toBe('test@example.com');
-      expect(user.isActive()).toBe(true);
+  it('should map User entity to UserDto', () => {
+    // Arrange
+    const user = new User({
+      id: new UserId('user-123'),
+      email: new Email('test@example.com'),
+      status: UserStatus.Active,
     });
 
-    it('should throw MappingError for invalid DTO', () => {
-      // Arrange
-      const invalidDto = { id: '', email: 'invalid' } as UserResponseDto;
+    // Act
+    const dto = UserMapper.toDto(user);
 
-      // Act & Assert
-      expect(() => mapper.fromDto(invalidDto)).toThrow(MappingError);
-    });
-  });
-});
-```
-
-### Application Layer Testing
-
-You WILL implement Application testing with these requirements:
-
-**Strategy**: Orchestration tests - verify workflow and interaction between components
-**Tools**: Jest with comprehensive mocking
-**Focus**: Use case coordination and Facade state management
-
-You MUST test:
-
-- **Use Case Orchestration**: Correct method calls in expected order with proper parameters
-- **Facade State Management**: Signal/Observable updates reflecting operation results
-- **Error Handling**: Proper error transformation and state updates
-- **Transaction Flow**: Multi-step operations and rollback scenarios
-
-You WILL implement Application tests by:
-
-- Mocking ALL dependencies using jest.fn() or createSpyFromClass
-- Verifying mock method calls with expected parameters
-- Testing both success and failure Result outcomes
-- Verifying Facade state changes after operations
-
-**Example Application Test:**
-
-```typescript
-// ✅ CORRECT - Use case orchestration test
-describe('LoginUseCase', () => {
-  let useCase: LoginUseCase;
-  let mockAuthRepository: jest.Mocked<IAuthRepository>;
-  let mockLogger: jest.Mocked<ILogger>;
-
-  beforeEach(() => {
-    mockAuthRepository = {
-      login: jest.fn(),
-      logout: jest.fn(),
-      refreshToken: jest.fn(),
-    } as jest.Mocked<IAuthRepository>;
-
-    mockLogger = {
-      info: jest.fn(),
-      error: jest.fn(),
-      warn: jest.fn(),
-      debug: jest.fn(),
-    } as jest.Mocked<ILogger>;
-
-    useCase = new LoginUseCase(mockAuthRepository, mockLogger);
-  });
-
-  describe('execute', () => {
-    it('should return success result when login succeeds', async () => {
-      // Arrange
-      const credentials = { email: 'test@example.com', password: 'password123' };
-      const mockSession = Session.create('user-123', 'token-456');
-      mockAuthRepository.login.mockResolvedValue(Result.ok(mockSession));
-
-      // Act
-      const result = await useCase.execute(credentials);
-
-      // Assert
-      expect(mockAuthRepository.login).toHaveBeenCalledWith('test@example.com', 'password123');
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        'User logged in successfully',
-        expect.objectContaining({ userId: 'user-123', email: 'test@example.com' })
-      );
-      expect(result.isSuccess()).toBe(true);
-      expect(result.value).toBe(mockSession);
-    });
-
-    it('should return failure result when login fails', async () => {
-      // Arrange
-      const credentials = { email: 'test@example.com', password: 'wrongpassword' };
-      const loginError = new AuthenticationError('Invalid credentials');
-      mockAuthRepository.login.mockResolvedValue(Result.fail(loginError));
-
-      // Act
-      const result = await useCase.execute(credentials);
-
-      // Assert
-      expect(mockLogger.warn).toHaveBeenCalledWith('Login attempt failed', {
-        email: 'test@example.com',
-      });
-      expect(result.isFailure()).toBe(true);
-      expect(result.error).toBe(loginError);
-    });
-  });
-});
-
-// ✅ CORRECT - Facade state management test
-describe('AuthFacade', () => {
-  let facade: AuthFacade;
-  let mockLoginUseCase: jest.Mocked<LoginUseCase>;
-
-  beforeEach(() => {
-    mockLoginUseCase = {
-      execute: jest.fn(),
-    } as jest.Mocked<LoginUseCase>;
-
-    facade = new AuthFacade(mockLoginUseCase);
-  });
-
-  describe('login', () => {
-    it('should update state correctly on successful login', async () => {
-      // Arrange
-      const credentials = { email: 'test@example.com', password: 'password123' };
-      const mockUser = User.create('user-123', 'test@example.com', 'John', 'Doe');
-      const mockSession = Session.create('user-123', 'token-456', mockUser);
-      mockLoginUseCase.execute.mockResolvedValue(Result.ok(mockSession));
-
-      // Act
-      await facade.login(credentials);
-
-      // Assert
-      expect(facade.currentUser()).toBe(mockUser);
-      expect(facade.isLoading()).toBe(false);
-      expect(facade.error()).toBeNull();
-      expect(facade.isAuthenticated()).toBe(true);
-    });
-
-    it('should update error state on failed login', async () => {
-      // Arrange
-      const credentials = { email: 'test@example.com', password: 'wrongpassword' };
-      const loginError = new AuthenticationError('Invalid credentials');
-      mockLoginUseCase.execute.mockResolvedValue(Result.fail(loginError));
-
-      // Act
-      await facade.login(credentials);
-
-      // Assert
-      expect(facade.currentUser()).toBeNull();
-      expect(facade.isLoading()).toBe(false);
-      expect(facade.error()).toBe('Invalid credentials');
-      expect(facade.isAuthenticated()).toBe(false);
-    });
+    // Assert
+    expect(dto.id).toBe('user-123');
+    expect(dto.email).toBe('test@example.com');
+    expect(dto.status).toBe('active');
   });
 });
 ```
 
-### Presentation Layer Testing
+## Presentation Layer Testing Rules
 
-You WILL implement Presentation testing with these requirements:
+### Smart Component Testing
 
-**Strategy**: Component tests - focus on user interaction and rendering
-**Tools**: Angular TestBed and Jest
-**Focus**: UI behavior and Facade integration
-
-You MUST test:
-
-- **Dumb Component Rendering**: Correct display based on @Input properties
-- **Dumb Component Events**: Proper @Output emission on user interactions
-- **Smart Component Integration**: Facade method calls and state subscription
-- **User Interaction Flows**: Complete interaction scenarios
-
-You WILL implement Presentation tests by:
-
-- Using TestBed to configure isolated component testing
-- Mocking ALL Facades and injectable services
-- Testing DOM rendering with fixture.nativeElement
-- Simulating user events and verifying component responses
-
-**Example Presentation Test:**
+You MUST test facade integration and user interactions:
 
 ```typescript
-// ✅ CORRECT - Dumb component test
-describe('ButtonComponent', () => {
-  let component: ButtonComponent;
-  let fixture: ComponentFixture<ButtonComponent>;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [ButtonComponent],
-    });
-
-    fixture = TestBed.createComponent(ButtonComponent);
-    component = fixture.componentInstance;
-  });
-
-  describe('rendering', () => {
-    it('should display button text from content projection', () => {
-      // Arrange
-      fixture.nativeElement.innerHTML = '<app-button>Save Changes</app-button>';
-
-      // Act
-      fixture.detectChanges();
-
-      // Assert
-      expect(fixture.nativeElement.textContent.trim()).toBe('Save Changes');
-    });
-
-    it('should apply correct CSS classes based on variant', () => {
-      // Arrange
-      component.variant = 'primary';
-      component.size = 'large';
-
-      // Act
-      fixture.detectChanges();
-
-      // Assert
-      const button = fixture.nativeElement.querySelector('button');
-      expect(button.classList).toContain('btn--primary');
-      expect(button.classList).toContain('btn--large');
-    });
-
-    it('should disable button when loading', () => {
-      // Arrange
-      component.loading = true;
-
-      // Act
-      fixture.detectChanges();
-
-      // Assert
-      const button = fixture.nativeElement.querySelector('button');
-      expect(button.disabled).toBe(true);
-    });
-  });
-
-  describe('user interaction', () => {
-    it('should emit clicked event when button is clicked', () => {
-      // Arrange
-      spyOn(component.clicked, 'emit');
-
-      // Act
-      const button = fixture.nativeElement.querySelector('button');
-      button.click();
-
-      // Assert
-      expect(component.clicked.emit).toHaveBeenCalled();
-    });
-
-    it('should not emit clicked event when disabled', () => {
-      // Arrange
-      component.disabled = true;
-      fixture.detectChanges();
-      spyOn(component.clicked, 'emit');
-
-      // Act
-      const button = fixture.nativeElement.querySelector('button');
-      button.click();
-
-      // Assert
-      expect(component.clicked.emit).not.toHaveBeenCalled();
-    });
-  });
-});
-
-// ✅ CORRECT - Smart component test
-describe('UserManagementPageComponent', () => {
-  let component: UserManagementPageComponent;
-  let fixture: ComponentFixture<UserManagementPageComponent>;
+// ✅ CORRECT: Mock facades, test interactions
+describe('UserListComponent', () => {
+  let component: UserListComponent;
+  let fixture: ComponentFixture<UserListComponent>;
   let mockUsersFacade: jest.Mocked<UsersFacade>;
 
   beforeEach(() => {
     mockUsersFacade = {
-      users: signal([]),
-      isLoading: signal(false),
-      error: signal(null),
+      users: jest.fn().mockReturnValue(signal([])),
+      loading: jest.fn().mockReturnValue(signal(false)),
       loadUsers: jest.fn(),
-      createUser: jest.fn(),
-      updateUser: jest.fn(),
-      deleteUser: jest.fn(),
-    } as any;
+      deactivateUser: jest.fn(),
+    } as jest.Mocked<UsersFacade>;
 
     TestBed.configureTestingModule({
-      declarations: [UserManagementPageComponent],
+      declarations: [UserListComponent],
       providers: [{ provide: UsersFacade, useValue: mockUsersFacade }],
     });
 
-    fixture = TestBed.createComponent(UserManagementPageComponent);
+    fixture = TestBed.createComponent(UserListComponent);
     component = fixture.componentInstance;
   });
 
-  describe('facade integration', () => {
-    it('should call facade.loadUsers on component init', () => {
-      // Act
-      component.ngOnInit();
+  it('should call facade.deactivateUser when deactivate button is clicked', () => {
+    // Act
+    component.onDeactivateUser('user-123');
 
-      // Assert
-      expect(mockUsersFacade.loadUsers).toHaveBeenCalled();
-    });
-
-    it('should call facade.createUser when handleCreateUser is called', () => {
-      // Arrange
-      const userData = { email: 'new@example.com', name: 'New User' };
-
-      // Act
-      component.handleCreateUser(userData);
-
-      // Assert
-      expect(mockUsersFacade.createUser).toHaveBeenCalledWith(userData);
-    });
-  });
-
-  describe('state subscription', () => {
-    it('should display users from facade state', () => {
-      // Arrange
-      const mockUsers = [
-        User.create('1', 'user1@example.com', 'John', 'Doe'),
-        User.create('2', 'user2@example.com', 'Jane', 'Smith'),
-      ];
-      mockUsersFacade.users.set(mockUsers);
-
-      // Act
-      fixture.detectChanges();
-
-      // Assert
-      const userElements = fixture.nativeElement.querySelectorAll('.user-item');
-      expect(userElements.length).toBe(2);
-    });
-
-    it('should show loading spinner when isLoading is true', () => {
-      // Arrange
-      mockUsersFacade.isLoading.set(true);
-
-      // Act
-      fixture.detectChanges();
-
-      // Assert
-      const spinner = fixture.nativeElement.querySelector('app-spinner');
-      expect(spinner).toBeTruthy();
-    });
+    // Assert
+    expect(mockUsersFacade.deactivateUser).toHaveBeenCalledWith('user-123');
   });
 });
 ```
 
-## Implementation Standards
+### Dumb Component Testing
 
-### Testing Tools and Configuration
-
-You MUST use these tools for testing:
-
-- **Jest**: Primary testing framework for all unit and integration tests
-- **Angular TestBed**: For component testing and Angular service testing
-- **HttpClientTestingModule**: For testing HTTP interactions
-- **cypress**: For end-to-end testing (when required)
-
-### Coverage Requirements
-
-You WILL maintain these coverage standards:
-
-- **Domain Layer**: 100% coverage - NON-NEGOTIABLE
-- **Infrastructure Layer**: 90%+ coverage focusing on integration points
-- **Application Layer**: 95%+ coverage focusing on orchestration paths
-- **Presentation Layer**: 80%+ coverage focusing on user interactions
-
-### Test Organization
-
-You MUST organize tests following these patterns:
-
-- One test file per source file with `.spec.ts` extension
-- Describe blocks for each public method or major functionality
-- Clear test names following "should [expected behavior] when [condition]" pattern
-- Arrange-Act-Assert pattern for all test implementations
-- Proper setup and teardown in beforeEach/afterEach blocks
-
-## Integration Guidelines
-
-### Cross-Layer Testing Strategy
-
-You WILL ensure proper integration testing by:
-
-- Testing each layer in isolation with mocked dependencies
-- Verifying contract compliance between layers
-- Testing error propagation and transformation across layers
-- Maintaining clear test boundaries that respect architectural layers
-
-### Mock Strategy
-
-You MUST implement mocking consistently:
-
-- **Domain Layer**: No mocks - pure object testing
-- **Infrastructure Layer**: Mock external endpoints and browser APIs only
-- **Application Layer**: Mock all injected dependencies
-- **Presentation Layer**: Mock all Facades and Angular services
-
-### Test Data Management
-
-You WILL manage test data by:
-
-- Creating factory functions for consistent test object creation
-- Using realistic test data that matches actual usage patterns
-- Centralizing common test fixtures and utilities
-- Ensuring test data independence between test cases
-
-## Anti-Pattern Prevention
-
-### ABSOLUTE PROHIBITIONS
-
-You NEVER:
-
-- Test implementation details instead of behavior
-- Create tests that break when refactoring internal logic
-- Mock classes or methods within the same architectural layer
-- Write tests that depend on external services or databases
-- Create tests that require specific execution order
-- Test multiple architectural layers in a single test
-- Use real HTTP calls or external dependencies in tests
-
-### Common Testing Mistakes to Avoid
-
-**❌ WRONG - Testing implementation details:**
+You MUST test input/output behavior without facades:
 
 ```typescript
-// Never test private methods or internal state
-describe('UserService', () => {
-  it('should call private validation method', () => {
-    // ❌ Testing implementation, not behavior
-    spyOn(service, 'validateUserData' as any);
-    service.createUser(userData);
-    expect(service.validateUserData).toHaveBeenCalled();
+// ✅ CORRECT: Test pure component behavior
+describe('UserCardComponent', () => {
+  let component: UserCardComponent;
+  let fixture: ComponentFixture<UserCardComponent>;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [UserCardComponent],
+    });
+    fixture = TestBed.createComponent(UserCardComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('should emit userDeactivated when deactivate button is clicked', () => {
+    // Arrange
+    const user = { id: 'user-123', email: 'test@example.com' };
+    component.user = user;
+    spyOn(component.userDeactivated, 'emit');
+
+    // Act
+    const button = fixture.nativeElement.querySelector('.deactivate-btn');
+    button.click();
+
+    // Assert
+    expect(component.userDeactivated.emit).toHaveBeenCalledWith('user-123');
   });
 });
 ```
 
-**❌ WRONG - Mocking within the same layer:**
+## E2E Testing Rules
+
+### Critical User Journey Testing
+
+You MUST test complete user flows with mocked API responses:
 
 ```typescript
-// Never mock classes from the same architectural layer
-describe('LoginUseCase', () => {
-  it('should create user session', () => {
-    // ❌ Don't mock domain entities in application tests
-    const mockUser = jest.createMockFromModule<User>('./user.entity');
+// ✅ CORRECT: Test real user interactions
+describe('User Management Flow', () => {
+  it('should allow admin to deactivate a user', () => {
+    // Arrange: Mock API responses
+    cy.intercept('GET', '/api/v1/users', {
+      statusCode: 200,
+      body: [{ id: 'user-123', email: 'test@example.com', status: 'active' }],
+    }).as('getUsers');
 
-    // ✅ Create real domain objects instead
-    const user = User.create('123', 'test@example.com', 'John', 'Doe');
+    cy.intercept('PUT', '/api/v1/users/user-123/deactivate', {
+      statusCode: 200,
+      body: { id: 'user-123', status: 'inactive' },
+    }).as('deactivateUser');
+
+    // Act
+    cy.visit('/users');
+    cy.wait('@getUsers');
+    cy.get('[data-testid="user-card-user-123"]').should('be.visible');
+    cy.get('[data-testid="deactivate-btn-user-123"]').click();
+    cy.get('[data-testid="confirm-deactivate"]').click();
+
+    // Assert
+    cy.wait('@deactivateUser');
+    cy.get('[data-testid="user-status-user-123"]').should('contain', 'Inactive');
   });
 });
 ```
 
-**❌ WRONG - Testing multiple layers:**
+## Coverage Requirements and Quality Gates
+
+### Mandatory Coverage Thresholds
+
+You MUST maintain these minimum coverage percentages:
+
+```json
+{
+  "coverageThreshold": {
+    "global": {
+      "branches": 80,
+      "functions": 85,
+      "lines": 85,
+      "statements": 85
+    },
+    "src/app/domain/**/*.ts": {
+      "branches": 100,
+      "functions": 100,
+      "lines": 100,
+      "statements": 100
+    },
+    "src/app/application/**/*.ts": {
+      "branches": 95,
+      "functions": 95,
+      "lines": 95,
+      "statements": 95
+    }
+  }
+}
+```
+
+### Test Quality Standards
+
+You MUST ensure all tests follow these standards:
+
+- You WILL use descriptive test names that explain the behavior being tested
+- You MUST follow AAA pattern (Arrange, Act, Assert) in all tests
+- You WILL use meaningful assertions that verify the actual behavior
+- You NEVER test implementation details, only public behavior
+- You MUST clean up any test data or side effects in afterEach hooks
+
+## Anti-Patterns to Avoid
+
+### ❌ NEVER Mock What You Don't Own
 
 ```typescript
-// Never test across architectural boundaries
-describe('UserManagementIntegration', () => {
-  it('should save user to database and update UI', () => {
-    // ❌ This test spans Domain, Infrastructure, and Presentation
-    const user = createUser();
-    const repository = new HttpUserRepository();
-    const component = new UserListComponent();
+// ❌ WRONG: Don't mock Angular framework classes
+const mockHttpClient = {
+  get: jest.fn(),
+};
 
-    // This violates layer isolation
-  });
+// ✅ CORRECT: Use Angular's testing utilities
+TestBed.configureTestingModule({
+  imports: [HttpClientTestingModule],
 });
 ```
 
-**✅ CORRECT - Testing behavior with proper isolation:**
+### ❌ NEVER Test Implementation Details
 
 ```typescript
-// Test behavior outcomes, not implementation details
-describe('LoginUseCase', () => {
-  describe('execute', () => {
-    it('should return success result with session when credentials are valid', async () => {
-      // Arrange
-      const credentials = { email: 'test@example.com', password: 'validpass' };
-      const expectedSession = Session.create('user-123', 'token-456');
-      mockAuthRepository.login.mockResolvedValue(Result.ok(expectedSession));
+// ❌ WRONG: Testing private methods
+expect(component['privateMethod']).toHaveBeenCalled();
 
-      // Act
-      const result = await useCase.execute(credentials);
+// ✅ CORRECT: Test public behavior
+expect(component.userDeactivated.emit).toHaveBeenCalledWith('user-123');
+```
 
-      // Assert - Focus on behavior outcomes
-      expect(result.isSuccess()).toBe(true);
-      expect(result.value).toBe(expectedSession);
-      expect(mockAuthRepository.login).toHaveBeenCalledWith('test@example.com', 'validpass');
+### ❌ NEVER Use Real Dependencies in Unit Tests
+
+```typescript
+// ❌ WRONG: Real dependency injection
+const useCase = new DeactivateUserUseCase(new HttpUserRepository());
+
+// ✅ CORRECT: Mocked dependencies
+const mockRepo = { findById: jest.fn() } as jest.Mocked<IUserRepository>;
+const useCase = new DeactivateUserUseCase(mockRepo);
+```
+
+## Test Organization and Structure
+
+### File Naming Conventions
+
+You MUST follow these naming patterns:
+
+- Unit tests: `*.spec.ts` (e.g., `user.entity.spec.ts`)
+- Integration tests: `*.integration.spec.ts`
+- E2E tests: `*.cy.ts` (e.g., `user-management.cy.ts`)
+
+### Test File Location
+
+You WILL place test files:
+
+- Next to the source file being tested (same directory)
+- In a `__tests__` folder for complex test suites
+- In `cypress/e2e/` for E2E tests
+
+### Test Suite Organization
+
+You MUST organize test suites using this structure:
+
+```typescript
+describe('ComponentName', () => {
+  describe('Method/Feature Name', () => {
+    it('should do something when condition is met', () => {
+      // Test implementation
     });
   });
 });
 ```
 
-## Validation Criteria
-
-### Feature Completion Checklist
-
-You MUST complete this checklist before considering any feature done:
-
-**Domain Layer Testing:**
-
-- [ ] All new business rules covered by unit tests
-- [ ] All entity state transitions tested
-- [ ] All value object validations tested
-- [ ] All domain errors tested with proper types and messages
-- [ ] 100% code coverage maintained
-
-**Infrastructure Layer Testing:**
-
-- [ ] Repository implementations tested with mocked HTTP responses
-- [ ] Data mappers tested with realistic DTO examples
-- [ ] Storage services tested with mocked browser APIs
-- [ ] Error handling tested for network and API failures
-- [ ] 90%+ code coverage achieved
-
-**Application Layer Testing:**
-
-- [ ] Use case orchestration tested with mocked dependencies
-- [ ] Facade state management tested for all scenarios
-- [ ] Error transformation tested across layer boundaries
-- [ ] Transaction handling tested for multi-step operations
-- [ ] 95%+ code coverage achieved
-
-**Presentation Layer Testing:**
-
-- [ ] Dumb components tested in isolation
-- [ ] Smart components tested with mocked Facades
-- [ ] User interaction flows tested end-to-end
-- [ ] Error state display tested
-- [ ] 80%+ code coverage achieved
-
-### Quality Gates
-
-You WILL ensure all tests meet these criteria:
-
-- **Fast Execution**: Unit tests complete in milliseconds, integration tests in seconds
-- **Reliable**: Tests pass consistently and fail only when behavior changes
-- **Independent**: Tests can run in any order without dependencies
-- **Clear Failures**: Test failures provide specific, actionable information
-- **Maintainable**: Tests remain stable during internal refactoring
-
-### Success Indicators
-
-Your testing implementation is successful when:
-
-- All business rules are protected by fast, reliable tests
-- Refactoring implementation details doesn't break tests
-- New features can be developed with confidence in existing functionality
-- Bug reports are accompanied by failing tests that reproduce the issue
-- Test execution time remains reasonable as the codebase grows
-- Coverage metrics accurately reflect actual testing quality
-
----
-
-**Remember**: Testing is not about achieving high coverage numbers - it's about ensuring your code behaves correctly under all conditions. Write tests that protect your business logic, verify your integrations, and give you confidence to refactor and extend your application.
+CRITICAL: You WILL run tests in CI/CD pipeline and fail builds when coverage thresholds are not met or when any test fails. Tests are not optional documentation—they are executable specifications that ensure code quality and prevent regressions.
