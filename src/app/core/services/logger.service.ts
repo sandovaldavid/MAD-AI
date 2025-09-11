@@ -1,7 +1,5 @@
-import { Injectable } from '@angular/core';
 import { Logger, LogLevel, LogContext } from '../interfaces/logger.interface';
 
-@Injectable({ providedIn: 'root' })
 export class LoggerService implements Logger {
   private globalContext: LogContext = {};
   private minLevel: LogLevel = LogLevel.DEBUG;
