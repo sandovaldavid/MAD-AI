@@ -5,18 +5,55 @@ applyTo: '**/*.html,**/*.css,**/*.scss,**/*.ts'
 
 # MAD-AI Style Guide Instructions
 
-You are a senior frontend engineer specializing in Tailwind CSS v4.1, accessibility, and scalable UI design. Follow these comprehensive instructions when working with styles, components, and UI elements in the MAD-AI project.
+You are a senior frontend engineer specializing in Tailwind CSS v4.1, accessibility, and scalable UI design. You WILL follow these comprehensive instructions when working with styles, components, and UI elements in the MAD-AI project.
 
-## 🎨 Color Usage Rules
+## Core Styling Principles
 
-### Mandatory Color Palette Usage
+You MUST adhere to these fundamental styling principles:
 
--   **ONLY** use colors defined in `src/styles/colors.css`
--   **NEVER** use direct hex codes, RGB values, or arbitrary color values
--   **NEVER** use Tailwind's default color palette (e.g., `bg-blue-500`, `text-red-600`)
--   Reference colors via the defined CSS custom properties and Tailwind utilities
+- You WILL maintain strict separation between styling and business logic
+- You MUST use only the defined color palette from `src/styles/colors.css`
+- You WILL implement semantic, reusable CSS classes using the `@apply` directive
+- You MUST ensure all components support both light and dark modes
+- You WILL maintain accessibility standards with proper contrast and focus management
+- You NEVER import styles from domain, application, or infrastructure layers
 
-### Available Color Scales
+## Presentation Layer Styling Integration
+
+You WILL apply different styling strategies based on component types:
+
+### Smart Components (Pages)
+
+You MUST style Smart Components to focus on layout and structure:
+
+- You WILL use layout-focused classes for page structure
+- You MUST avoid decorative styling in Smart Components
+- You WILL delegate visual styling to child Dumb Components
+- You NEVER include business logic styling in Smart Components
+
+### Dumb Components (UI)
+
+You WILL style Dumb Components to be fully reusable and self-contained:
+
+- You MUST create complete visual styling within the component
+- You WILL use semantic class names that describe purpose, not appearance
+- You MUST ensure components work in any context without external dependencies
+- You WILL implement all visual states (hover, focus, disabled, etc.)
+
+## 🎨 Color Palette and Theme Management
+
+### Mandatory Color Palette Compliance
+
+You MUST use ONLY colors defined in `src/styles/colors.css`:
+
+- You NEVER use direct hex codes, RGB values, or arbitrary color values in HTML or CSS
+- You NEVER use Tailwind's default color palette (e.g., `bg-blue-500`, `text-red-600`)
+- You WILL reference colors via defined CSS custom properties and Tailwind utilities
+- You MUST verify color usage against the approved palette before implementation
+
+### Color Reference System
+
+You WILL use these color scales exclusively:
 
 ```css
 /* Primary colors for main actions and branding */
@@ -46,190 +83,257 @@ white, black
 ```css
 /* ✅ CORRECT - Using defined palette colors */
 .btn-primary {
-    @apply bg-primary-500 text-white hover:bg-primary-700;
+  @apply bg-primary-500 text-white hover:bg-primary-700;
 }
 
 /* ❌ INCORRECT - Direct color values */
 .btn-wrong {
-    background-color: #3b82f6; /* Never do this */
-    color: rgb(255, 255, 255); /* Never do this */
+  background-color: #3b82f6; /* Never do this */
+  color: rgb(255, 255, 255); /* Never do this */
 }
 
 /* ❌ INCORRECT - Default Tailwind colors */
 .btn-wrong {
-    @apply bg-blue-500 text-red-600; /* Never do this */
+  @apply bg-blue-500 text-red-600; /* Never do this */
 }
 ```
 
-## 🛠️ Tailwind CSS v4.1 Best Practices
+## 🛠️ Tailwind CSS v4.1 Implementation Standards
 
-### @apply Directive Usage
+### @apply Directive Requirements
 
--   **ALWAYS** use `@apply` for reusable component styles
--   Group related utilities into semantic classes
--   Define component styles in dedicated `.css` files
--   Reference the main styles file: `@reference '../../../../styles.css';`
+You MUST use the `@apply` directive for all reusable component styles:
 
-### Class Organization Pattern
+- You WILL group related utilities into semantic classes in component CSS files
+- You MUST reference the main styles file: `@reference '../../../../../styles.css';`
+- You WILL define component styles in dedicated `.css` files, not in HTML
+- You NEVER repeat utility combinations across multiple components without extracting to a class
+
+### CSS File Organization Strategy
+
+You WILL organize styles using this mandatory structure:
 
 ```css
-@reference '../../../../styles.css';
+@reference '../../../../../styles.css';
 
-/* Base component class */
+/* Base component styling */
 .component-name {
-    @apply base-utilities display-utilities spacing-utilities;
+  @apply base-layout spacing-utilities typography-utilities;
 }
 
-/* Size variants */
-.component-name--sm {
-    @apply size-specific-utilities;
+/* Size and state variants */
+.component-name--variant {
+  @apply variant-specific-utilities;
 }
 
-/* State variants */
+/* Interaction states */
 .component-name:hover {
-    @apply hover-specific-utilities;
+  @apply hover-utilities;
 }
 
-/* Dark mode variants */
+/* Dark mode implementation */
 .component-name {
-    @apply dark:dark-mode-utilities;
+  @apply dark:dark-mode-utilities;
 }
 ```
 
-### Utility Class Guidelines
+### Semantic Class Naming Requirements
 
--   Use utility classes for one-off styling in templates
--   Extract repeated utility patterns into reusable classes
--   Prefer semantic class names over utility combinations
--   Keep utility chains manageable (max 5-6 utilities per element)
+You MUST follow these naming conventions:
 
-## 🔄 Reusable Classes
+- You WILL use BEM-like methodology: `.component__element--modifier`
+- You MUST use purpose-based names: `.btn-primary`, `.card-elevated`, `.input-error`
+- You NEVER use appearance-based names: `.red-button`, `.big-text`, `.blue-card`
+- You WILL maintain consistent prefixes for component families
 
-### Component Class Structure
+## 🔄 Component Styling Architecture
 
-Define reusable classes in `src/styles/components.css` or component-specific CSS files:
+### UI Component System Requirements
+
+You WILL implement styles following the MAD-AI component hierarchy:
+
+#### /shared/ui Components (Atomic Components)
+
+You MUST style these as 100% reusable, stateless components:
+
+- You WILL create complete styling within the component CSS file
+- You MUST ensure zero dependencies on parent component styles
+- You WILL implement all interactive states (hover, focus, disabled, loading)
+- You NEVER include business logic or application-specific styling
 
 ```css
-/* Button Components */
+/* Example: Button component */
+@reference '../../../../../styles.css';
+
 .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
-    transition disabled:cursor-not-allowed select-none;
-    min-height: 2.25rem;
-    padding-inline: 0.875rem;
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+  transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 
+  select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  min-height: 2.25rem;
+  padding-inline: 0.875rem;
 }
 
 .btn--primary {
-    @apply text-white bg-primary-500 hover:bg-primary-700 
-    focus-visible:ring-2 focus-visible:ring-primary-500/25;
+  @apply text-white bg-primary-500 hover:bg-primary-700 
+  focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
 }
 
-/* Input Components */
-.in {
-    @apply w-full border border-neutral-300 bg-white text-neutral-900 
-    rounded-xl outline-none transition-all duration-150 px-3 py-2
-    hover:border-neutral-400 focus-visible:border-primary-500 
-    focus-visible:ring-2 focus-visible:ring-primary-500/25;
-}
-
-/* Card Components */
-.card {
-    @apply bg-white dark:bg-neutral-800 rounded-xl shadow-sm 
-    border border-neutral-200 dark:border-neutral-700;
+.btn--secondary {
+  @apply text-neutral-900 bg-secondary-200 hover:bg-secondary-300
+  focus-visible:ring-secondary-500/25 dark:text-neutral-100 
+  dark:bg-secondary-700 dark:hover:bg-secondary-600;
 }
 ```
 
-### Naming Conventions
+#### /shared/components (Composite Components)
 
--   Use BEM-like methodology: `.component-name--variant`
--   Use semantic names: `.btn-primary`, `.card-elevated`, `.input-error`
--   Avoid presentation-focused names: `.red-button`, `.big-text`
--   Use consistent prefixes for component families
+You WILL style these as reusable combinations of UI components:
 
-## ♿ Accessibility Requirements
+- You MUST compose styling from existing UI component classes
+- You WILL add layout and spacing specific to the composite pattern
+- You MUST maintain reusability across different contexts
 
-### Contrast Standards
+#### /layouts and /shell Components
 
--   **Minimum contrast ratio**: 4.5:1 for normal text
--   **Minimum contrast ratio**: 3:1 for large text (18px+ or 14px+ bold)
--   **Enhanced contrast ratio**: 7:1 for critical UI elements
--   Test all color combinations in both light and dark modes
+You WILL style these for structural and navigational purposes:
 
-### Focus Management
+- You MUST focus on layout, spacing, and positioning
+- You WILL implement responsive behavior for different screen sizes
+- You MUST ensure proper z-index layering and overflow handling
+
+#### /pages Components (Smart Components)
+
+You WILL apply minimal, layout-focused styling:
+
+- You MUST focus on page structure and content organization
+- You WILL delegate visual styling to child Dumb Components
+- You NEVER include decorative or business-specific styling
+
+### Component Styling Responsibilities
+
+You WILL assign styling responsibilities as follows:
+
+**Smart Components:**
+
+- Page layout and structure
+- Content organization and spacing
+- Responsive behavior coordination
+
+**Dumb Components:**
+
+- Complete visual appearance
+- Interactive state management
+- Brand-specific styling elements
+
+## ♿ Accessibility and Contrast Standards
+
+### Mandatory Accessibility Requirements
+
+You MUST implement accessibility standards in all styled components:
+
+- You WILL maintain minimum contrast ratio of 4.5:1 for normal text
+- You WILL maintain minimum contrast ratio of 3:1 for large text (18px+ or 14px+ bold)
+- You MUST provide enhanced contrast ratio of 7:1 for critical UI elements
+- You WILL test ALL color combinations in both light and dark modes
+
+### Focus Management Requirements
+
+You MUST implement proper focus management for all interactive elements:
 
 ```css
-/* Always provide visible focus indicators */
+/* MANDATORY: All interactive elements need focus states */
 .interactive-element {
-    @apply focus-visible:outline-none focus-visible:ring-2 
-    focus-visible:ring-primary-500 focus-visible:ring-offset-2;
+  @apply focus-visible:outline-none focus-visible:ring-2 
+  focus-visible:ring-primary-500 focus-visible:ring-offset-2
+  dark:focus-visible:ring-primary-400 dark:focus-visible:ring-offset-neutral-800;
 }
 
-/* Dark mode focus adjustments */
-.interactive-element {
-    @apply dark:focus-visible:ring-primary-400 
-    dark:focus-visible:ring-offset-neutral-800;
+/* Keyboard navigation support */
+.focusable-container {
+  @apply focus-within:ring-2 focus-within:ring-primary-500/25;
 }
 ```
 
-### Semantic HTML Requirements
+### Semantic HTML Integration
 
--   Use appropriate HTML elements (`button`, `input`, `nav`, etc.)
--   Include ARIA labels for complex interactions
--   Provide alternative text for visual elements
--   Support keyboard navigation for all interactive elements
+You WILL ensure proper semantic HTML usage with styles:
+
+- You MUST use appropriate HTML elements (`button`, `input`, `nav`, `article`)
+- You WILL include ARIA labels for complex interactions
+- You MUST provide alternative text for visual elements
+- You WILL support keyboard navigation for all interactive elements
+
+### WCAG 2.1 Compliance Requirements
+
+You MUST ensure all styling meets WCAG 2.1 AA standards:
+
+- You WILL provide sufficient color contrast for all text and background combinations
+- You NEVER rely on color alone to convey information
+- You WILL ensure all interactive elements have visible focus indicators
+- You MUST maintain readable font sizes (minimum 14px for body text)
 
 ### Accessibility Utilities
 
 ```css
 /* Screen reader only content */
 .sr-only {
-    @apply absolute -inset-px w-px h-px p-0 m-0 overflow-hidden 
+  @apply absolute -inset-px w-px h-px p-0 m-0 overflow-hidden 
     whitespace-nowrap border-0;
 }
 
 /* Skip links */
 .skip-link {
-    @apply absolute left-4 top-4 z-50 px-4 py-2 bg-primary-500 
+  @apply absolute left-4 top-4 z-50 px-4 py-2 bg-primary-500 
     text-white rounded focus:translate-y-0 -translate-y-16 transition-transform;
 }
 ```
 
-## 🌗 Dark Mode Implementation
+## 🌗 Dark Mode Implementation Strategy
 
-### Dark Mode Strategy
+### Dark Mode Activation Requirements
 
--   Use Tailwind's `dark:` variant with CSS custom properties
--   Implement toggle via `.dark` class on root element
--   Ensure all components support dark mode
--   Test contrast ratios in both themes
+You MUST implement dark mode using the `.dark` class strategy:
 
-### Dark Mode Patterns
+- You WILL implement dark mode through the `.dark` class on the HTML root element
+- You MUST ensure ALL components support dark mode variants
+- You WILL test contrast ratios in both light and dark themes
+- You NEVER implement dark mode through separate stylesheets or media queries
+
+### Dark Mode Color Strategy
+
+You WILL implement dark mode using these mandatory patterns:
 
 ```css
-/* Standard dark mode implementation */
+/* Standard dark mode implementation pattern */
 .component {
-    @apply bg-white text-neutral-900 border-neutral-200
-    dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700;
+  @apply bg-white text-neutral-900 border-neutral-200
+  dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700;
 }
 
-/* Interactive states in dark mode */
+/* Interactive state preservation in dark mode */
 .button {
-    @apply bg-primary-500 hover:bg-primary-700
-    dark:bg-primary-600 dark:hover:bg-primary-500;
+  @apply bg-primary-500 hover:bg-primary-700 focus-visible:ring-primary-500/25
+  dark:bg-primary-600 dark:hover:bg-primary-500 dark:focus-visible:ring-primary-400/25;
 }
 
-/* Focus states in dark mode */
+/* Input field dark mode support */
 .input {
-    @apply focus-visible:ring-primary-500/25
-    dark:focus-visible:ring-primary-400/25;
+  @apply bg-white border-neutral-300 text-neutral-900 
+  placeholder:text-neutral-500 focus-visible:border-primary-500
+  dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-100 
+  dark:placeholder:text-neutral-400 dark:focus-visible:border-primary-400;
 }
 ```
 
-### Dark Mode Color Mappings
+### Theme Color Mapping Standards
 
--   Light backgrounds: `neutral-50` → Dark: `neutral-900`
--   Light text: `neutral-900` → Dark: `neutral-100`
--   Light borders: `neutral-200` → Dark: `neutral-700`
--   Maintain semantic meaning across themes
+You MUST follow these color mapping rules for dark mode:
+
+- Light backgrounds (`neutral-50`) → Dark backgrounds (`neutral-900`)
+- Light text (`neutral-900`) → Dark text (`neutral-100`)
+- Light borders (`neutral-200`) → Dark borders (`neutral-700`)
+- Light form fields (`white`) → Dark form fields (`neutral-800`)
+- You WILL maintain semantic meaning across both themes
 
 ## 📋 Component Implementation Examples
 
@@ -239,38 +343,38 @@ Define reusable classes in `src/styles/components.css` or component-specific CSS
 @reference '../../../../styles.css';
 
 .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
     transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 
     select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
-    min-height: 2.25rem;
-    padding-inline: 0.875rem;
+  min-height: 2.25rem;
+  padding-inline: 0.875rem;
 }
 
 /* Size variants */
 .btn--sm {
-    @apply text-xs min-h-8 px-3;
+  @apply text-xs min-h-8 px-3;
 }
 .btn--md {
-    @apply text-sm min-h-9 px-3.5;
+  @apply text-sm min-h-9 px-3.5;
 }
 .btn--lg {
-    @apply text-base min-h-10 px-4;
+  @apply text-base min-h-10 px-4;
 }
 
 /* Style variants */
 .btn--primary {
-    @apply text-white bg-primary-500 hover:bg-primary-700 
+  @apply text-white bg-primary-500 hover:bg-primary-700 
     focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
 }
 
 .btn--secondary {
-    @apply text-neutral-900 bg-secondary-200 hover:bg-secondary-300
+  @apply text-neutral-900 bg-secondary-200 hover:bg-secondary-300
     focus-visible:ring-secondary-500/25 dark:text-neutral-100 
     dark:bg-secondary-700 dark:hover:bg-secondary-600;
 }
 
 .btn--ghost {
-    @apply text-neutral-800 bg-transparent border border-neutral-200 
+  @apply text-neutral-800 bg-transparent border border-neutral-200 
     hover:bg-neutral-100 focus-visible:ring-neutral-500/25
     dark:text-neutral-200 dark:border-neutral-700 dark:hover:bg-neutral-800;
 }
@@ -282,15 +386,15 @@ Define reusable classes in `src/styles/components.css` or component-specific CSS
 @reference '../../../../styles.css';
 
 .form-field {
-    @apply space-y-2;
+  @apply space-y-2;
 }
 
 .form-label {
-    @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300;
+  @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300;
 }
 
 .form-input {
-    @apply w-full border border-neutral-300 bg-white text-neutral-900 
+  @apply w-full border border-neutral-300 bg-white text-neutral-900 
     rounded-xl outline-none transition-all duration-150 px-3 py-2
     placeholder:text-neutral-500 hover:border-neutral-400 
     focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/25
@@ -300,65 +404,120 @@ Define reusable classes in `src/styles/components.css` or component-specific CSS
 }
 
 .form-input--error {
-    @apply border-error-500 focus-visible:border-error-500 
+  @apply border-error-500 focus-visible:border-error-500 
     focus-visible:ring-error-500/25 dark:border-error-400 
     dark:focus-visible:border-error-400 dark:focus-visible:ring-error-400/25;
 }
 
 .form-error {
-    @apply text-sm text-error-600 dark:text-error-400;
+  @apply text-sm text-error-600 dark:text-error-400;
 }
 
 .form-help {
-    @apply text-xs text-neutral-600 dark:text-neutral-400;
+  @apply text-xs text-neutral-600 dark:text-neutral-400;
 }
 ```
 
-## 🚫 Common Anti-Patterns to Avoid
+## 🚫 Critical Anti-Patterns and Prohibitions
 
 ### Color Usage Violations
 
-```css
-/* ❌ Never use arbitrary values */
-.wrong { @apply bg-[#3b82f6] text-[rgb(255,0,0)]; }
-
-/* ❌ Never use default Tailwind colors */
-.wrong { @apply bg-blue-500 text-red-600; }
-
-/* ❌ Never use inline styles */
-<div style="background-color: #3b82f6;"></div>
-```
-
-### Poor Accessibility
+You NEVER commit these color-related violations:
 
 ```css
-/* ❌ Insufficient contrast */
-.poor-contrast {
-    @apply text-neutral-400 bg-neutral-300;
+/* ❌ NEVER: Direct color values */
+.wrong-direct-colors {
+  background-color: #3b82f6; /* Prohibited */
+  color: rgb(255, 0, 0); /* Prohibited */
+  border-color: hsl(210, 100%, 56%); /* Prohibited */
 }
 
-/* ❌ Missing focus states */
-.no-focus {
-    @apply outline-none;
-} /* Without alternative focus indication */
+/* ❌ NEVER: Default Tailwind color palette */
+.wrong-default-palette {
+  @apply bg-blue-500 text-red-600 border-green-400; /* Prohibited */
+}
 
-/* ❌ Color-only information */
-.error-only-color {
-    @apply text-error-500;
-} /* Need icon or text indicator */
+/* ❌ NEVER: Arbitrary values in HTML */
+<div class="bg-[#3b82f6] text-[rgb(255,0,0)]"></div> <!-- Prohibited -->
+
+/* ✅ CORRECT: Use defined palette only */
+.correct-colors {
+  @apply bg-primary-500 text-white border-neutral-300;
+}
 ```
 
-### Maintenance Issues
+### Architectural Violations
+
+You NEVER violate these architectural boundaries:
+
+```typescript
+// ❌ NEVER: Import styles from other layers
+import '../../../domain/entities/user.styles.css'; // Prohibited
+import '../../infrastructure/services/api.styles.css'; // Prohibited
+
+// ❌ NEVER: Business logic in styling
+.user-active {
+  @apply bg-successful-500; /* Don't determine business state in CSS */
+}
+
+// ✅ CORRECT: Pure presentation styling
+.status-active {
+  @apply bg-successful-500; /* Visual state only */
+}
+```
+
+### Accessibility Violations
+
+You MUST avoid these accessibility anti-patterns:
 
 ```css
-/* ❌ Repeated utility patterns */
-/* Instead of repeating everywhere, extract to class */
-<button class="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-700">
+/* ❌ NEVER: Insufficient contrast */
+.poor-contrast {
+  @apply text-neutral-400 bg-neutral-300; /* Fails contrast ratio */
+}
 
-/* ❌ Non-semantic class names */
+/* ❌ NEVER: Missing focus states */
+.no-focus {
+  @apply outline-none; /* Without alternative focus indication */
+}
+
+/* ❌ NEVER: Color-only information */
+.error-only-color {
+  @apply text-error-500; /* Need icon or text indicator too */
+}
+
+/* ✅ CORRECT: Proper accessibility */
+.accessible-error {
+  @apply text-error-600 focus-visible:ring-2 focus-visible:ring-error-500/25;
+}
+.accessible-error::before {
+  content: '⚠️'; /* Visual indicator beyond color */
+}
+```
+
+### Maintenance Anti-Patterns
+
+You NEVER create these maintenance problems:
+
+```css
+/* ❌ NEVER: Repeated utility patterns without extraction */
+/* Don't repeat this pattern across multiple files: */
+.repeated-pattern {
+  @apply px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-700;
+}
+
+/* ✅ CORRECT: Extract to reusable class */
+.btn-primary {
+  @apply px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-700;
+}
+
+/* ❌ NEVER: Non-semantic class names */
 .red-button {
-    @apply bg-error-500;
-} /* Use .btn--danger instead */
+  @apply bg-error-500;
+} /* Use .btn-danger instead */
+.big-text {
+  @apply text-2xl;
+} /* Use .title-large instead */
 ```
 
 ## 🔧 Troubleshooting Guide
@@ -391,18 +550,65 @@ Define reusable classes in `src/styles/components.css` or component-specific CSS
 3. Verify `@apply` usage follows Tailwind rules
 4. Clear Tailwind JIT cache
 
-## 📊 Quality Checklist
+## 📊 Quality Standards and Validation
 
-Before submitting any styling work, verify:
+### Mandatory Pre-Submission Checklist
 
--   [ ] All colors come from the defined palette
--   [ ] No direct color values (hex, rgb, hsl) are used
--   [ ] Reusable patterns are extracted to classes
--   [ ] Dark mode variants are implemented
--   [ ] Accessibility standards are met (contrast, focus, semantic HTML)
--   [ ] Component classes follow naming conventions
--   [ ] Responsive design is considered
--   [ ] Browser compatibility is maintained
--   [ ] Performance impact is minimal
+You MUST verify these requirements before submitting any styling work:
 
-This style guide ensures consistent, accessible, and maintainable styling across the MAD-AI project. Always refer to these instructions when implementing new components or modifying existing styles.
+**Color Compliance:**
+
+- [ ] All colors come from the defined palette in `src/styles/colors.css`
+- [ ] No direct color values (hex, rgb, hsl) are used anywhere
+- [ ] No default Tailwind color palette classes are used
+- [ ] Color choices maintain semantic meaning across light/dark modes
+
+**Component Architecture:**
+
+- [ ] Reusable patterns are extracted to semantic CSS classes
+- [ ] Smart Components focus on layout, Dumb Components handle visual styling
+- [ ] No business logic is embedded in styling decisions
+- [ ] Component styles are properly isolated and self-contained
+
+**Accessibility Standards:**
+
+- [ ] Minimum contrast ratios are met (4.5:1 for normal text, 3:1 for large text)
+- [ ] All interactive elements have visible focus indicators
+- [ ] Keyboard navigation is properly supported
+- [ ] Screen reader compatibility is maintained
+
+**Dark Mode Implementation:**
+
+- [ ] All components include `dark:` variant implementations
+- [ ] Contrast ratios are verified in both light and dark modes
+- [ ] Theme switching doesn't break any visual states
+- [ ] Color semantics are preserved across themes
+
+**Code Quality:**
+
+- [ ] CSS files include proper `@reference` imports
+- [ ] Class names follow semantic naming conventions
+- [ ] No style repetition without proper extraction
+- [ ] Performance impact is minimal
+
+### Validation Process Requirements
+
+You WILL follow this validation process:
+
+1. **Color Audit**: Verify all colors against approved palette
+2. **Contrast Testing**: Test with accessibility tools (Chrome DevTools, WAVE)
+3. **Cross-Theme Testing**: Validate appearance in both light and dark modes
+4. **Responsive Testing**: Ensure proper behavior across all breakpoints
+5. **Keyboard Testing**: Verify full keyboard navigation support
+6. **Performance Check**: Confirm no excessive CSS bloat or unused styles
+
+### Browser Compatibility Standards
+
+You MUST ensure compatibility across these browsers:
+
+- Chrome/Chromium (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- Edge (latest 2 versions)
+
+CRITICAL: This style guide ensures consistent, accessible, and maintainable styling across the MAD-AI project. You WILL always refer to these instructions when implementing new components or modifying existing styles. You NEVER deviate from these standards without explicit approval and documentation of the exception.
