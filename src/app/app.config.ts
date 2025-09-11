@@ -12,7 +12,6 @@ import { provideUsers } from './di/provide-users';
 import { authInterceptor } from './infrastructure/http/interceptors/auth.interceptor';
 import { provideIcons } from './di/provide-icons';
 import { provideExportServices } from './di/provide-export';
-import { provideDomainEventBus, provideDomainEventBusService } from './di/provide-domain-event-bus';
 import { provideLogger } from './di/provide-logger';
 
 export const appConfig: ApplicationConfig = {
@@ -32,8 +31,6 @@ export const appConfig: ApplicationConfig = {
     provideUsers(),
     ...provideRoles(),
     provideExportServices(),
-    provideDomainEventBus(),
-    provideDomainEventBusService,
     provideLogger,
     ...provideIcons({
       missingStrategy: 'warn',
