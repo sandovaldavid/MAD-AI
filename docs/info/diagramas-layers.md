@@ -1,187 +1,121 @@
-# Diagrama de Flujo de Capas
+# 🗺️ Diagramas de Arquitectura del Proyecto MAD-AI
+
+**Última actualización:** 10 de septiembre de 2025
+
+Este documento proporciona una representación visual de la arquitectura de 5 capas del proyecto, siguiendo los principios de Clean Architecture y Domain-Driven Design.
+
+## 1. Diagrama de Arquitectura de Alto Nivel
+
+Este diagrama muestra la estructura general de las 5 capas y la **regla de dependencia**: las flechas apuntan desde la capa que depende hacia su dependencia. Las capas externas dependen de las internas, pero nunca al revés.
 
 ```mermaid
-flowchart TD
-    User[👤 Usuario] --> UI[Presentation Layer]
+graph TD
+    subgraph " "
+        direction TB
+        P[<b style='font-size:1.1em'>🎨 Presentation</b><br>Angular Components, Layouts, UI Services<br><i>Responsable de la UI/UX</i>]
+        A[<b style='font-size:1.1em'>🚀 Application</b><br>Use Cases & Facades<br><i>Orquesta los casos de uso</i>]
+        D[<b style='font-size:1.1em'>🧠 Domain</b><br>Entities, VOs, Repositories, Errors<br><i>Contiene la lógica de negocio pura</i>]
+        I[<b style='font-size:1.1em'>🔌 Infrastructure</b><br>API Clients, LocalStorage<br><i>Implementa la tecnología externa</i>]
+        C[<b style='font-size:1.1em'>🛠️ Core</b><br>Logger, DateTime Service<br><i>Utilidades agnósticas y transversales</i>]
+    end
 
-    UI --> App[Application Layer]
-    UI -.->|Solo facades| App
+    %% --- Flujo de Dependencias Principal ---
+    P --> A
+    A --> D
+    I -- implementa --> D
+    A --> C
+    I --> C
 
-    App --> Domain[Domain Layer]
-    App --> Core[Core Layer]
+    %% --- Estilos de las Capas ---
+    classDef presentation fill:#e1f5fe,stroke:#333
+    classDef application fill:#f3e5f5,stroke:#333
+    classDef domain fill:#e8f5e8,stroke:#333
+    classDef core fill:#fff3e0,stroke:#333
+    classDef infrastructure fill:#fce4ec,stroke:#333
 
-    Domain -.->|Define contratos| Infra[Infrastructure Layer]
-    App -.->|Usa servicios| Core
-    Infra -.->|Implementa| Domain
-    Infra --> Core
-
-    Core -.->|Servicios transversales| App
-    Core -.->|Servicios transversales| Infra
-
-    External[(APIs Externas)] --> Infra
-    Database[(Base de Datos)] --> Infra
-
-    %% Estilos
-    classDef presentation fill:#e1f5fe
-    classDef application fill:#f3e5f5
-    classDef domain fill:#e8f5e8
-    classDef core fill:#fff3e0
-    classDef infrastructure fill:#fce4ec
-
-    class UI presentation
-    class App application
-    class Domain domain
-    class Core core
-    class Infra infrastructure
+    class P presentation
+    class A application
+    class D domain
+    class C core
+    class I infrastructure
 ```
 
-# Diagrama Detallado de Carpetas por Capa
+## 2. Diagrama Detallado de Componentes y Dependencias
+
+Este diagrama desglosa cada capa en sus carpetas y componentes principales, mostrando las interacciones clave y las reglas de dependencia de forma más granular. Las líneas continuas (`-->`) representan una dependencia directa, mientras que las punteadas (`-.->`) indican la implementación de una interfaz.
 
 ```mermaid
-flowchart TB
-    subgraph "👤 User Interface"
-        User[Usuario]
+graph LR
+    subgraph "🎨 Presentation"
+        direction TB
+        P_Pages["Pages / Components"]
+        P_Layouts["Layouts / Shell"]
+        P_Shared["Shared UI\n(Botones, Inputs)"]
+        P_Services["UI Services\n(Theme, Layout)"]
     end
 
-    subgraph "🎨 Presentation Layer"
-        Pages[pages/]
-        Shared[shared/]
-        Layouts[layouts/]
-        PresentationGuards[guards/]
-        PresentationServices[services/]
-        PresentationMappers[mappers/]
-        Pipes[pipes/]
+    subgraph "🚀 Application"
+        direction TB
+        A_Facades["Facades\n(Punto de entrada para la UI)"]
+        A_UseCases["Use Cases\n(Orquestadores de lógica)"]
+        A_Errors["Application Errors"]
+        A_Facades --> A_UseCases
     end
 
-    subgraph "🚀 Application Layer"
-        Facades[facades/]
-        UseCases[use-cases/]
-        AppTypes[types/]
-        AppMappers[mappers/]
-        AppErrors[errors/]
+    subgraph "🧠 Domain"
+        direction TB
+        D_Entities["Entities"]
+        D_VOs["Value Objects"]
+        D_Repos["Repository Interfaces"]
+        D_Errors["Domain Errors"]
+        D_Enums["Enums"]
+        D_Entities --> D_VOs
     end
 
-    subgraph "🧠 Domain Layer"
-        Entities[entities/]
-        ValueObjects[value-objects/]
-        DomainRepos[repositories/]
-        DomainServices[services/]
-        Specifications[specifications/]
-        Events[events/]
-        DomainErrors[errors/]
+    subgraph "🔌 Infrastructure"
+        direction TB
+        I_Repos["Repository Impls"]
+        I_Mappers["Mappers\n(DTO ↔ Entity)"]
+        I_Http["HTTP Clients / DTOs"]
+        I_Services["Tech Services\n(LocalStorage, Clock)"]
+        I_Repos --> I_Mappers
+        I_Repos --> I_Http
     end
 
-    subgraph "⚙️ Core Layer"
-        CoreServices[services/]
-        Decorators[decorators/]
-        Interfaces[interfaces/]
+    subgraph "🛠️ Core"
+        direction TB
+        C_Services["Core Services\n(Logger)"]
+        C_Interfaces["Core Interfaces\n(ILogger)"]
+        C_Services -.->|implementa| C_Interfaces
     end
 
-    subgraph "🔧 Infrastructure Layer"
-        InfraRepos[repositories/]
-        HTTP[http/]
-        InfraMappers[mappers/]
-        DTOs[dtos/]
-        InfraGuards[guards/]
-        InfraServices[services/]
-        InfraErrors[errors/]
-    end
+    %% --- DEPENDENCIAS PERMITIDAS ENTRE CAPAS ---
+    P_Pages --> A_Facades
+    A_UseCases --> D_Repos
+    A_UseCases --> D_Entities
+    A_UseCases --> C_Interfaces
 
-    subgraph "🌐 External"
-        APIs[APIs Externas]
-        DB[Base de Datos]
-        FileSystem[Sistema de Archivos]
-    end
+    I_Repos -.->|implementa| D_Repos
+    I_Services --> C_Interfaces
 
-    %% Flujo principal
-    User --> Pages
-    User --> Layouts
+    %% --- ESTILOS ---
+    classDef presentation fill:#e1f5fe,stroke:#333
+    classDef application fill:#f3e5f5,stroke:#333
+    classDef domain fill:#e8f5e8,stroke:#333
+    classDef core fill:#fff3e0,stroke:#333
+    classDef infrastructure fill:#fce4ec,stroke:#333
 
-    %% Presentation interno
-    Pages --> Shared
-    Pages --> PresentationServices
-    Pages --> PresentationMappers
-    Shared --> Pipes
+    class P_Pages,P_Layouts,P_Shared,P_Services presentation
+    class A_Facades,A_UseCases,A_Errors application
+    class D_Entities,D_VOs,D_Repos,D_Errors,D_Enums domain
+    class C_Services,C_Interfaces core
+    class I_Repos,I_Mappers,I_Http,I_Services infrastructure
 
-    %% Presentation -> Application
-    Pages --> Facades
-    PresentationGuards --> Facades
-    PresentationMappers --> AppTypes
-
-    %% Application interno
-    Facades --> UseCases
-    UseCases --> AppMappers
-    UseCases --> AppErrors
-    AppMappers --> AppTypes
-
-    %% Application -> Domain
-    UseCases --> Entities
-    UseCases --> DomainRepos
-    UseCases --> DomainServices
-    AppMappers --> ValueObjects
-    AppErrors --> DomainErrors
-
-    %% Application -> Core
-    UseCases --> CoreServices
-    Decorators --> UseCases
-
-    %% Domain interno
-    Entities --> ValueObjects
-    Entities --> Events
-    DomainServices --> Entities
-    DomainServices --> Specifications
-    DomainRepos --> Entities
-
-    %% Infrastructure -> Domain
-    InfraRepos -.->|implementa| DomainRepos
-    InfraMappers --> Entities
-    InfraMappers --> ValueObjects
-
-    %% Infrastructure interno
-    InfraRepos --> HTTP
-    InfraRepos --> InfraMappers
-    InfraRepos --> DTOs
-    HTTP --> DTOs
-    InfraGuards --> InfraServices
-
-    %% Infrastructure -> Core
-    InfraRepos --> CoreServices
-    InfraServices --> CoreServices
-
-    %% Infrastructure -> External
-    HTTP --> APIs
-    InfraRepos --> DB
-    InfraServices --> FileSystem
-
-    %% Core interno
-    CoreServices --> Interfaces
-
-    %% Estilos
-    classDef presentation fill:#e1f5fe,color:#000
-    classDef application fill:#f3e5f5,color:#000
-    classDef domain fill:#e8f5e8,color:#000
-    classDef core fill:#fff3e0,color:#000
-    classDef infrastructure fill:#fce4ec,color:#000
-    classDef external fill:#f5f5f5,color:#000
-
-    class Pages,Shared,Layouts,PresentationGuards,PresentationServices,PresentationMappers,Pipes presentation
-    class Facades,UseCases,AppTypes,AppMappers,AppErrors application
-    class Entities,ValueObjects,DomainRepos,DomainServices,Specifications,Events,DomainErrors domain
-    class CoreServices,Decorators,Interfaces core
-    class InfraRepos,HTTP,InfraMappers,DTOs,InfraGuards,InfraServices,InfraErrors infrastructure
-    class APIs,DB,FileSystem external
 ```
 
-# Leyenda de Conexiones
+### Reglas Clave Visualizadas:
 
-**Líneas sólidas (→):** Dependencias directas permitidas
-**Líneas punteadas (-.->):** Implementación de contratos o uso indirecto
-**Colores:** Cada capa tiene su color distintivo para facilitar la identificación
-
-**Reglas clave visualizadas:**
-
-- Presentation solo habla con Application (facades)
-- Application orquesta Domain y usa Core
-- Infrastructure implementa contratos de Domain
-- Core es utilizado por múltiples capas
-- Domain no depende de otras capas internas
+- **Aislamiento del Dominio:** La capa `Domain` no tiene flechas que salgan de ella, confirmando que no depende de ninguna otra capa.
+- **Punto de Entrada Único:** `Presentation` solo se comunica con la capa `Application` a través de los `Facades`.
+- **Inversión de Dependencia:** `Infrastructure` implementa (`-.->`) las interfaces definidas en `Domain`, pero `Domain` no sabe nada de `Infrastructure`.
+- **Utilidades Compartidas:** Tanto `Application` como `Infrastructure` pueden depender de las interfaces de `Core` para servicios transversales como el logging.
