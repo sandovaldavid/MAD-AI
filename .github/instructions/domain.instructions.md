@@ -1,141 +1,328 @@
 ---
-description: "Guía Arquitectónica para la Domain Layer en MAD-AI, definiendo qué pertenece y qué no en esta capa crítica."
+description: 'Domain Layer implementation guidelines following Clean Architecture principles'
 applyTo: '**/domain/**/*.ts'
 ---
 
-# Guía Arquitectónica para Domain Layer
+# Domain Layer Implementation Instructions
 
-## QUÉ ES Domain
+## Core Principles
 
-Domain contiene la **lógica de negocio pura** de tu aplicación. Representa conceptos que existen independientemente de la tecnología.
+You WILL implement Domain Layer components following these fundamental rules:
 
-## REGLA DE ORO
+**CRITICAL**: The Domain Layer MUST contain only pure business logic and rules, completely independent of any external technology or framework.
 
-**Pregunta decisiva:** "Si esta lógica fuera explicada a un experto del negocio (sin conocimiento técnico), ¿la entendería y validaría como correcta?"
+You MUST follow this **Golden Rule**: If you can explain a piece of code to a business expert who doesn't know programming, and they understand it, that logic belongs in the Domain.
 
-- Si SÍ → Puede ir en Domain
-- Si NO → Va en otra capa
+You WILL ensure the Domain Layer is:
 
-## ESTRUCTURA OBLIGATORIA
+- The heart of the software containing business logic and rules
+- Completely independent of frameworks, databases, and UI technologies
+- Stable and focused on business concepts rather than technical implementations
+- The center of your Clean Architecture with no dependencies on other layers
 
-### `/entities` - Objetos con identidad
+## Structural Requirements
 
-**QUÉ VA:**
+### `/entities` - Business Objects with Identity and Lifecycle
 
-- Agregados principales del negocio (User, Role, Project)
-- Lógica que modifica el estado de la entidad
-- Métodos que expresan comportamientos del negocio
+You WILL create entities that:
 
-**QUÉ NO VA:**
+- Represent core business concepts with unique identity and lifecycle (e.g., `User`, `Role`, `Session`)
+- Encapsulate business rules and state transitions through methods (`user.deactivate()`, `role.changeName()`)
+- Protect invariants (rules that must always be true) through their methods
+- Maintain their own state consistency and integrity
 
-- Entidades que solo son DTOs sin comportamiento
-- Entidades con lógica de presentación
-- Entidades que dependen de frameworks
+You MUST ensure entities:
 
-**Ejemplo correcto:** `User.changeRole()`, `User.canLeadProjects()`
-**Ejemplo incorrecto:** `User.formatDisplayName()`, `User.toJSON()`
+- Operate only on their own data
+- Never expose internal state directly - use methods instead
+- Validate all state changes through business rules
 
-### `/value-objects` - Objetos inmutables sin identidad
+### `/value-objects` - Immutable Domain Attributes
 
-**QUÉ VA:**
+You WILL implement value objects that:
 
-- Conceptos del dominio que se validan (Email, Username)
-- Objetos que encapsulan validaciones técnicas básicas
-- Tipos que el negocio trata como unidades
+- Describe characteristics without having identity (e.g., `Email`, `Username`, `ISODateTime`, `LocalTokens`)
+- Are completely **immutable** - once created, they cannot be modified
+- Self-validate during creation - invalid value objects MUST throw `ValidationError`
+- Compare by value using `equals()` method, never by reference
 
-**QUÉ NO VA:**
+You MUST ensure value objects:
 
-- Value Objects que solo formatean
-- Objetos que dependen de configuración externa
-- Wrappers innecesarios de tipos primitivos
+- Create new instances for any changes rather than modifying existing ones
+- Fail fast with clear validation errors if constructed with invalid data
+- Have no setter methods or mutable properties
 
-**Ejemplo correcto:** `Email.create()`, `Money.add()`
-**Ejemplo incorrecto:** `FormattedDate.toDisplay()`, `ColorTheme.getCssClass()`
+### `/repositories` - Persistence Contracts (Interfaces Only)
 
-### `/repositories` - Contratos de persistencia
+You WILL define repository interfaces that:
 
-**QUÉ VA:**
+- Specify persistence operations from the domain perspective
+- Use domain language in method names (`findUserByEmail`, `getActiveRoles`)
+- Are completely technology-agnostic (no HTTP, SQL, or database references)
+- Define contracts that Infrastructure Layer will implement
 
-- Interfaces que expresan necesidades del dominio
-- Métodos que reflejan operaciones de negocio
-- Contratos independientes de la tecnología de storage
+You MUST ensure repository interfaces:
 
-**QUÉ NO VA:**
+- Contain NO implementations - only interface definitions
+- Use domain entities and value objects as parameters and return types
+- Express operations in business terms, not technical terms
 
-- Implementaciones concretas
-- Métodos específicos de SQL o NoSQL
-- Contratos que filtran por criterios de UI
+**Example:**
 
-**Ejemplo correcto:** `findActiveUsersByRole()`, `getUsersWithExpiredSessions()`
-**Ejemplo incorrecto:** `findUsersForDropdown()`, `getUsersByPaginationAndSort()`
+```typescript
+// ✅ CORRECT
+interface IUserRepository {
+  findUserByEmail(email: Email): Promise<User | null>;
+  saveUser(user: User): Promise<void>;
+  getActiveUsers(): Promise<User[]>;
+}
 
-### `/services` - Lógica que no pertenece a una entidad
+// ❌ WRONG
+interface IUserRepository {
+  getUsersFromEndpointX(): Promise<any>;
+  saveUserToHttp(user: User): Promise<Response>;
+}
+```
 
-**QUÉ VA MÁXIMO 3-5 SERVICIOS:**
+### `/enums` - Fixed Business Classifications
 
-- Lógica que coordina múltiples entidades
-- Algoritmos complejos del dominio
-- Reglas que no pueden vivir en una entidad específica
+You WILL create enums for:
 
-**QUÉ NO VA:**
+- Fixed, known sets of values representing business classifications
+- Constants that prevent magic strings or numbers in code
+- Values that are stable and defined by business rules
 
-- Servicios de formateo o transformación
-- Servicios con más de una responsabilidad
-- Servicios que llaman a APIs externas
+You MUST ensure enums:
 
-**Ejemplo correcto:** `UserRoleAssignmentService.canAssignRole(user, role)`
-**Ejemplo incorrecto:** `UserFormattingService.formatName()`, `EmailSenderService.send()`
+- Represent truly fixed classifications that won't change dynamically
+- Are used for business concepts, not technical configurations
+- Contain no complex logic - only classification values
 
-### `/specifications` - Reglas de negocio complejas
+### `/errors` - Domain-Specific Exceptions
 
-**QUÉ VA:**
+You WILL define domain errors for:
 
-- Reglas que determinan si algo cumple criterios del negocio
-- Lógica condicional compleja y reutilizable
-- Especificaciones que pueden combinarse
+- `ValidationError`: When value object creation fails due to invalid format
+- `BusinessRuleError`: When entity operations violate business rules
+- Domain-specific failures that represent business problems
 
-**QUÉ NO VA:**
+You MUST ensure domain errors:
 
-- Validaciones técnicas simples
-- Lógica específica de una sola entidad
-- Reglas de presentación
+- Represent business problems, not technical failures
+- Provide clear, business-meaningful error messages
+- Are thrown from appropriate domain objects (entities, value objects)
 
-**Ejemplo correcto:** `CanApproveAbsenceSpec`, `IsEligibleForPromotionSpec`
-**Ejemplo incorrecto:** `ValidEmailFormatSpec`, `ButtonShouldBeDisabledSpec`
+### `/services` - Cross-Entity Domain Logic (Use Sparingly)
 
-### `/events` - Hechos que ocurrieron en el negocio
+You WILL create domain services ONLY when:
 
-**QUÉ VA:**
+- Logic coordinates multiple entities or aggregates
+- The operation doesn't naturally fit within any single entity
+- The service remains stateless and focused on domain concerns
 
-- Eventos que representan cambios importantes
-- Eventos que otros bounded contexts necesitan conocer
-- Eventos que disparan procesos de negocio
+You MUST ensure domain services:
 
-**QUÉ NO VA:**
+- Are stateless and contain no instance variables
+- Operate only on domain objects passed as parameters
+- Don't orchestrate repositories - that's Application Layer responsibility
 
-- Eventos técnicos (clicks, navegación)
-- Eventos de logging
-- Eventos específicos de UI
+## Implementation Standards
 
-### `/errors` - Errores del dominio
+### Dependency Rules (MANDATORY)
 
-**QUÉ VA:**
+You WILL ensure the Domain Layer:
 
-- ValidationError (formato, requeridos)
-- BusinessRuleError (reglas de negocio violadas)
-- Errores que el experto de negocio reconocería
+- Has ZERO dependencies on other layers (Application, Infrastructure, Presentation)
+- Never imports anything from `@angular/*`
+- Never uses `HttpClient` or makes API calls
+- Never accesses browser APIs (`localStorage`, `sessionStorage`, etc.)
+- Never defines UI presentation logic
 
-**QUÉ NO VA:**
+### Type Safety and Validation
 
-- Errores HTTP o de red
-- Errores de frameworks
-- Errores de presentación
+You MUST implement:
 
-## PROHIBICIONES ABSOLUTAS EN DOMAIN
+- Strong TypeScript typing for all domain objects
+- Validation in value object constructors that throws meaningful errors
+- Business rule enforcement in entity methods
+- Proper error handling that uses domain-specific error types
 
-- Importar librerías externas (excepto tipos básicos)
-- Conocer Angular/React/Vue
-- Hacer llamadas HTTP
-- Acceder a localStorage/sessionStorage
-- Formatear para mostrar en UI
-- Loggear (puede generar eventos para que otros loggeen)
+**Example:**
+
+```typescript
+// ✅ CORRECT Entity Implementation
+export class User {
+  private constructor(
+    private readonly id: UserId,
+    private readonly email: Email,
+    private status: UserStatus
+  ) {}
+
+  static create(id: string, email: string): User {
+    return new User(
+      UserId.create(id),
+      Email.create(email), // Validates email format
+      UserStatus.ACTIVE
+    );
+  }
+
+  deactivate(): void {
+    if (this.status === UserStatus.DEACTIVATED) {
+      throw new BusinessRuleError('User is already deactivated');
+    }
+    this.status = UserStatus.DEACTIVATED;
+  }
+}
+
+// ✅ CORRECT Value Object Implementation
+export class Email {
+  private constructor(private readonly value: string) {}
+
+  static create(email: string): Email {
+    if (!this.isValidEmail(email)) {
+      throw new ValidationError('Invalid email format');
+    }
+    return new Email(email);
+  }
+
+  equals(other: Email): boolean {
+    return this.value === other.value;
+  }
+
+  toString(): string {
+    return this.value;
+  }
+
+  private static isValidEmail(email: string): boolean {
+    // Email validation logic
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+}
+```
+
+## Integration Guidelines
+
+### Communication with Other Layers
+
+You WILL ensure:
+
+- Domain objects can be used by Application Layer through dependency injection
+- Repository interfaces are implemented by Infrastructure Layer
+- Domain errors are caught and handled by Application Layer
+- No direct communication with Presentation or Infrastructure layers
+
+### Testing Strategy
+
+You MUST implement:
+
+- Unit tests for all entities, value objects, and domain services
+- Tests that verify business rules and invariants
+- Tests that ensure proper error throwing for invalid operations
+- Tests that validate value object immutability and equality
+
+## Anti-Pattern Prevention
+
+### ABSOLUTE PROHIBITIONS
+
+You NEVER:
+
+- Import anything from `@angular/*` in domain files
+- Use `HttpClient` or make HTTP requests
+- Access browser APIs or global objects
+- Include UI formatting logic (`getFullName()` for display)
+- Depend on external frameworks or libraries (except for utilities like date libraries)
+- Create mutable value objects or entities with public setters
+- Put orchestration logic in domain services (that belongs in Application Layer)
+- Include infrastructure concerns in domain code
+
+### Common Mistakes to Avoid
+
+You WILL NOT:
+
+- Create "anemic" domain objects (objects with only getters/setters and no behavior)
+- Put repository implementations in the domain layer
+- Include technical error types (`HttpError`, `DatabaseError`) in domain
+- Create value objects with identity or mutable state
+- Use primitive types when value objects would be more expressive
+
+**❌ WRONG - Anemic Entity:**
+
+```typescript
+export class User {
+  public id: string;
+  public email: string;
+  public status: string;
+
+  // Only getters and setters - no business logic
+  getId(): string {
+    return this.id;
+  }
+  setStatus(status: string): void {
+    this.status = status;
+  }
+}
+```
+
+**✅ CORRECT - Rich Domain Entity:**
+
+```typescript
+export class User {
+  private constructor(
+    private readonly id: UserId,
+    private readonly email: Email,
+    private status: UserStatus
+  ) {}
+
+  deactivate(): void {
+    if (this.status === UserStatus.DEACTIVATED) {
+      throw new BusinessRuleError('Cannot deactivate an already deactivated user');
+    }
+    this.status = UserStatus.DEACTIVATED;
+  }
+
+  isActive(): boolean {
+    return this.status === UserStatus.ACTIVE;
+  }
+}
+```
+
+## Validation Criteria
+
+### Code Review Checklist
+
+You MUST verify that domain code:
+
+- [ ] Contains zero imports from Angular or other frameworks
+- [ ] Uses only domain-specific types and interfaces
+- [ ] Implements proper validation in value objects
+- [ ] Enforces business rules in entity methods
+- [ ] Throws appropriate domain errors for rule violations
+- [ ] Has comprehensive unit tests covering business logic
+- [ ] Uses immutable value objects with proper equality comparison
+- [ ] Keeps entities focused on their own state and behavior
+- [ ] Defines repository interfaces without implementations
+- [ ] Uses meaningful business language in all method names
+
+### Quality Gates
+
+You WILL ensure:
+
+- All domain objects are independently testable without mocks
+- Business experts can understand the code structure and logic
+- Domain logic can be extracted and used in different contexts
+- No technical dependencies leak into business logic
+- Error messages are business-meaningful, not technical
+
+### Success Indicators
+
+Your domain implementation is successful when:
+
+- Business rules are clearly expressed in code
+- Domain objects protect their invariants effectively
+- The code reads like business documentation
+- Changes to infrastructure don't affect domain logic
+- Domain tests don't require complex setup or external dependencies
+
+---
+
+**Remember**: The Domain Layer is the crown jewel of your architecture. Keep it pure, focused, and independent. If you're unsure whether something belongs in the domain, ask: "Is this a business concept or a technical implementation detail?" Business concepts belong here; technical details belong elsewhere.
