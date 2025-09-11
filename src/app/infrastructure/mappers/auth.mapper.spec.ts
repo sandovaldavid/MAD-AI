@@ -34,7 +34,7 @@ describe('AuthMapper', () => {
         system_notifications_enabled: false,
         task_notifications_enabled: true,
         role_id: 2,
-        role_name: 'Manager',
+        role_name: 'admin',
         is_active: true,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-02T00:00:00Z',
@@ -48,7 +48,7 @@ describe('AuthMapper', () => {
       expect(result).toBeDefined();
       expect(result.id).toBe(1);
       expect(result.role.id).toBe(2);
-      expect(result.role.name).toBe('Manager');
+      expect(result.role.name).toBe('admin');
     });
   });
 
@@ -69,7 +69,7 @@ describe('AuthMapper', () => {
         system_notifications_enabled: true,
         task_notifications_enabled: false,
         role_id: 1,
-        role_name: 'BasicUser',
+        role_name: 'user',
         is_active: true,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
@@ -83,7 +83,7 @@ describe('AuthMapper', () => {
       expect(result).toBeDefined();
       expect(result.id).toBe(3);
       expect(result.role.id).toBe(1);
-      expect(result.role.name).toBe('BasicUser');
+      expect(result.role.name).toBe('user');
     });
   });
 
@@ -98,7 +98,7 @@ describe('AuthMapper', () => {
         last_name: 'User',
         role: {
           id: 2,
-          name: 'Manager',
+          name: 'admin',
           access_level: 5,
           is_active: true,
         },
@@ -116,7 +116,7 @@ describe('AuthMapper', () => {
       expect(result).toBeDefined();
       expect(result.id).toBe(1);
       expect(result.role.id).toBe(2);
-      expect(result.role.name).toBe('Manager');
+      expect(result.role.name).toBe('admin');
     });
   });
 
@@ -142,7 +142,7 @@ describe('AuthMapper', () => {
           system_notifications_enabled: true,
           task_notifications_enabled: true,
           role_id: 1,
-          role_name: 'BasicUser',
+          role_name: 'user',
           is_active: true,
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-01T00:00:00Z',
@@ -208,7 +208,7 @@ describe('AuthMapper', () => {
           system_notifications_enabled: false,
           task_notifications_enabled: true,
           role_id: 1,
-          role_name: 'BasicUser',
+          role_name: 'user',
           is_active: true,
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-01T00:00:00Z',
@@ -249,7 +249,7 @@ describe('AuthMapper', () => {
           system_notifications_enabled: false,
           task_notifications_enabled: true,
           role_id: 1,
-          role_name: 'BasicUser',
+          role_name: 'user',
           is_active: true,
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-01T00:00:00Z',
@@ -287,7 +287,7 @@ describe('AuthMapper', () => {
         system_notifications_enabled: false,
         task_notifications_enabled: true,
         role_id: 2,
-        role_name: 'Manager',
+        role_name: 'admin',
         is_active: true,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-02T00:00:00Z',
@@ -329,7 +329,7 @@ describe('AuthMapper', () => {
         system_notifications_enabled: false,
         task_notifications_enabled: true,
         role_id: 2,
-        role_name: 'Manager',
+        role_name: 'admin',
         is_active: true,
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-02T00:00:00Z',
@@ -371,7 +371,7 @@ describe('AuthMapper', () => {
           system_notifications_enabled: false,
           task_notifications_enabled: true,
           role_id: 2,
-          role_name: 'Manager',
+          role_name: 'admin',
           is_active: true,
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-02T00:00:00Z',
@@ -403,7 +403,7 @@ describe('AuthMapper', () => {
           system_notifications_enabled: false,
           task_notifications_enabled: false,
           role_id: 1,
-          role_name: 'BasicUser',
+          role_name: 'user',
           is_active: false,
           created_at: '2024-01-01T00:00:00Z',
           updated_at: '2024-01-02T00:00:00Z',
@@ -431,7 +431,7 @@ describe('AuthMapper', () => {
           last_name: 'User',
           role: {
             id: 1,
-            name: 'BasicRole',
+            name: 'basic-role',
             access_level: undefined as any, // Edge case: undefined access_level
             is_active: false,
           },
@@ -464,7 +464,7 @@ describe('AuthMapper', () => {
           last_name: 'Admin',
           role: {
             id: 1,
-            name: 'SuperManager',
+            name: 'super-admin',
             access_level: 10, // Maximum access level
             is_active: true,
           },
@@ -507,7 +507,7 @@ describe('AuthMapper', () => {
             system_notifications_enabled: true,
             task_notifications_enabled: true,
             role_id: 1,
-            role_name: 'BasicUser',
+            role_name: 'user',
             is_active: true,
             created_at: '2024-01-01T00:00:00Z',
             updated_at: '2024-01-01T00:00:00Z',
@@ -569,7 +569,7 @@ describe('AuthMapper', () => {
             system_notifications_enabled: true,
             task_notifications_enabled: true,
             role_id: 1,
-            role_name: 'BasicUser',
+            role_name: 'user',
             is_active: true,
             created_at: '2024-01-01T00:00:00Z',
             updated_at: '2024-01-01T00:00:00Z',
@@ -613,7 +613,7 @@ describe('AuthMapper', () => {
             system_notifications_enabled: true,
             task_notifications_enabled: true,
             role_id: 5,
-            role_name: 'Tester',
+            role_name: 'tester',
             is_active: true,
             created_at: '2024-01-01T00:00:00Z',
             updated_at: '2024-01-01T00:00:00Z',
