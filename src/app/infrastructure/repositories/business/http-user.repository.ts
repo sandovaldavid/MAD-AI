@@ -380,7 +380,7 @@ export class HttpUserRepository implements UserRepository {
         first_name: patch.firstName ?? currentUser.firstName.value,
         last_name: patch.lastName ?? currentUser.lastName.value,
         email: patch.email ?? currentUser.email.value,
-        role_id: patch.roleId ?? currentUser.getRole.id,
+        role_id: patch.roleId ?? currentUser.role.id,
         status: patch.isActive !== undefined ? (patch.isActive ? 'active' : 'inactive') : 'active',
         email_notifications_enabled: true, // Default values for now
         system_notifications_enabled: true,
