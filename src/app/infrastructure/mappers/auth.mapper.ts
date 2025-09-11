@@ -14,7 +14,6 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class AuthMapper {
-
   async loginUserToEntity(dto: LoginResponseDTO['user']): Promise<User> {
     // Create basic Role entity with available information from login response
     // Note: We don't make HTTP calls in mappers - that's Infrastructure responsibility
@@ -36,6 +35,11 @@ export class AuthMapper {
       createdAt: dto.created_at,
       updatedAt: dto.updated_at,
       lastActivityAt: dto.last_activity_at,
+      notificationPreferences: {
+        email: dto.email_notifications_enabled ?? true,
+        system: dto.system_notifications_enabled ?? false,
+        task: dto.task_notifications_enabled ?? false,
+      },
     });
   }
 
@@ -56,6 +60,11 @@ export class AuthMapper {
       createdAt: dto.created_at,
       updatedAt: dto.updated_at,
       lastActivityAt: dto.last_activity_at,
+      notificationPreferences: {
+        email: dto.email_notifications_enabled ?? true,
+        system: dto.system_notifications_enabled ?? false,
+        task: dto.task_notifications_enabled ?? false,
+      },
     });
   }
 
@@ -90,9 +99,14 @@ export class AuthMapper {
     accessExpEpochSeconds: number;
     user: User;
   }): Session {
-    const access = AccessToken.create(params.accessToken, params.accessExpEpochSeconds);
-    const refresh = RefreshToken.create(params.refreshToken);
-    return Session.create({ user: params.user, access, refresh });
+    const accessToken = AccessToken.create(params.accessToken, params.accessExpEpochSeconds);
+    const refreshToken = RefreshToken.create(params.refreshToken);
+    return Session.create({
+      id: crypto.randomUUID(),
+      user: params.user,
+      accessToken,
+      refreshToken,
+    });
   }
 
   tokensFromLogin(dto: LoginResponseDTO, nowEpoch: number) {
