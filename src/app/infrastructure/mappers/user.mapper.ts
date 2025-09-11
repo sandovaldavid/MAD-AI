@@ -82,6 +82,11 @@ export class UserMapper {
       updatedAt: dto.updated_at,
       lastActivityAt: dto.last_activity_at,
       isEmailConfirmed: dto.is_email_confirmed,
+      notificationPreferences: {
+        email: true,
+        system: false,
+        task: false,
+      },
     });
   }
 
@@ -94,7 +99,7 @@ export class UserMapper {
     // This DTO only has role_name, not role_id
     // Role entity will be created with minimal data
     const role = Role.create({
-      id: 0, // Unknown ID - should be resolved separately
+      id: 1, // Default ID - should be resolved separately
       name: dto.role_name,
     });
 
@@ -107,6 +112,11 @@ export class UserMapper {
       isActive: dto.is_active,
       role: role,
       createdAt: dto.created_at,
+      notificationPreferences: {
+        email: true,
+        system: false,
+        task: false,
+      },
     });
   }
 
@@ -121,7 +131,7 @@ export class UserMapper {
       first_name: entity.firstName.value,
       last_name: entity.lastName.value,
       is_active: entity.active,
-      role_name: entity.getRole.name,
+      role_name: entity.role.name,
       created_at: entity.createdAt?.value ?? new Date().toISOString(),
     };
   }
@@ -192,6 +202,11 @@ export class UserMapper {
       updatedAt: dto.updated_at,
       lastActivityAt: dto.last_activity_at || undefined, // Handle null case
       isEmailConfirmed: dto.is_email_confirmed,
+      notificationPreferences: {
+        email: true,
+        system: false,
+        task: false,
+      },
     });
   }
 
@@ -217,6 +232,11 @@ export class UserMapper {
       updatedAt: dto.updated_at,
       lastActivityAt: dto.last_activity_at,
       isEmailConfirmed: dto.is_email_confirmed,
+      notificationPreferences: {
+        email: true,
+        system: false,
+        task: false,
+      },
     });
   }
 }
