@@ -37,7 +37,7 @@ export class RoleMapper {
     return {
       id: entity.id,
       name: entity.name,
-      access_level: entity.getAccessLevel().getValue(),
+      access_level: entity.accessLevel,
       is_active: entity.isActive,
       description: entity.description,
       user_count: entity.userCount,
