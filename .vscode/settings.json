@@ -1,15 +1,14 @@
 {
-    "files.associations": {
-        "*.css": "tailwindcss"
-    },
-    "typescript.tsdk": "node_modules/typescript/lib",
-    "github.copilot.chat.commitMessageGeneration.instructions": [
-	
-		{
-			"file": ".github/instructions/conventional-commit.prompt.md",
-		}
-	],
-    "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
-    	{ "text": "Always include a list of key changes." }
-    ],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": ".github/instructions/conventional-commit.prompt.md"
+    }
+  ],
+  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+    { "text": "Always include a list of key changes." }
+  ]
 }
