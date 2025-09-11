@@ -10,6 +10,7 @@
     "serve:ssr": "node dist/MAD-AI-NEW/server/server.mjs",
     "test": "ng test",
     "test:domain": "ng test --include=\"src/app/domain/**/*.spec.ts\" --watch=false",
+    "test:infrastructure": "ng test --include=\"src/app/infrastructure/**/*.spec.ts\" --watch=false",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
     "lint": "eslint . --ext .ts,.js,.html",
     "lint:fix": "npm run lint -- --fix",
