@@ -2,5 +2,11 @@
     "files.associations": {
         "*.css": "tailwindcss"
     },
-    "typescript.tsdk": "node_modules/typescript/lib"
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+	
+		{
+			"file": ".github/instructions/conventional-commit.prompt.md",
+		}
+	],
 }
