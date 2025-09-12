@@ -237,11 +237,11 @@ describe('Notification Entity', () => {
       notification.markAsRead();
       const firstReadAt = notification.readAt;
 
-      // Wait a bit to ensure different timestamps
-      setTimeout(() => {
-        notification.markAsRead();
-        expect(notification.readAt).toBe(firstReadAt);
-      }, 1);
+      // Mark as read again - should not change readAt
+      notification.markAsRead();
+
+      expect(notification.readAt).toBe(firstReadAt);
+      expect(notification.isRead).toBe(true);
     });
 
     it('should maintain read state after multiple calls', () => {
