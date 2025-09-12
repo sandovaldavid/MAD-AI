@@ -88,7 +88,7 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       // When - Test constructor and initialization
       expect(client).toBeInstanceOf(AuthApiClient);
       expect((client as any).http).toBeTruthy();
-      
+
       // Test that constructor properly initializes private properties
       expect(typeof (client as any).http.request).toBe('function');
     });
@@ -97,11 +97,11 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       // Given
       const context1 = TestBed.inject(AuthApiClient);
       const context2 = TestBed.inject(AuthApiClient);
-      
+
       // When - Test object identity
       const areSameInstance = context1 === context2;
       const areSameType = context1.constructor === context2.constructor;
-      
+
       // Then
       expect(areSameInstance).toBe(true);
       expect(areSameType).toBe(true);
@@ -1150,27 +1150,37 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       // Given - Simulate resource exhaustion scenarios
       const resourceErrors = [
         { status: 507, statusText: 'Insufficient Storage', body: { error: 'Server storage full' } },
-        { status: 413, statusText: 'Payload Too Large', body: { error: 'Request entity too large' } },
+        {
+          status: 413,
+          statusText: 'Payload Too Large',
+          body: { error: 'Request entity too large' },
+        },
         { status: 414, statusText: 'URI Too Long', body: { error: 'Request-URI too large' } },
-        { status: 431, statusText: 'Request Header Fields Too Large', body: { error: 'Headers too large' } },
+        {
+          status: 431,
+          statusText: 'Request Header Fields Too Large',
+          body: { error: 'Headers too large' },
+        },
       ];
 
       resourceErrors.forEach((errorCase) => {
-        client.register({
-          username: 'test',
-          email: 'test@test.com',
-          password: 'test',
-          password_confirm: 'test',
-          first_name: 'Test',
-          last_name: 'User',
-          role_id: 1,
-        }).subscribe({
-          next: () => fail(`Should have failed with ${errorCase.statusText}`),
-          error: (error) => {
-            expect(error.status).toBe(errorCase.status);
-            expect(error.error).toEqual(errorCase.body);
-          },
-        });
+        client
+          .register({
+            username: 'test',
+            email: 'test@test.com',
+            password: 'test',
+            password_confirm: 'test',
+            first_name: 'Test',
+            last_name: 'User',
+            role_id: 1,
+          })
+          .subscribe({
+            next: () => fail(`Should have failed with ${errorCase.statusText}`),
+            error: (error) => {
+              expect(error.status).toBe(errorCase.status);
+              expect(error.error).toEqual(errorCase.body);
+            },
+          });
 
         const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.REGISTER);
         req.flush(errorCase.body, { status: errorCase.status, statusText: errorCase.statusText });
@@ -1182,8 +1192,16 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       const securityErrors = [
         { status: 0, statusText: '', description: 'CORS preflight failed' },
         { status: 403, statusText: 'Forbidden', body: { error: 'CORS origin not allowed' } },
-        { status: 418, statusText: 'I\'m a teapot', body: { error: 'Server refuses to brew coffee' } },
-        { status: 451, statusText: 'Unavailable For Legal Reasons', body: { error: 'Blocked by government' } },
+        {
+          status: 418,
+          statusText: "I'm a teapot",
+          body: { error: 'Server refuses to brew coffee' },
+        },
+        {
+          status: 451,
+          statusText: 'Unavailable For Legal Reasons',
+          body: { error: 'Blocked by government' },
+        },
       ];
 
       securityErrors.forEach((errorCase) => {
@@ -1198,7 +1216,10 @@ describe('AuthApiClient - Infrastructure Tests', () => {
         });
 
         const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.ME);
-        req.flush(errorCase.body || '', { status: errorCase.status, statusText: errorCase.statusText });
+        req.flush(errorCase.body || '', {
+          status: errorCase.status,
+          statusText: errorCase.statusText,
+        });
       });
     });
 
@@ -1236,9 +1257,15 @@ describe('AuthApiClient - Infrastructure Tests', () => {
 
       // When - Create subscription
       const subscription = client.me().subscribe({
-        next: () => { responseReceived = true; },
-        error: () => { errorReceived = true; },
-        complete: () => { completeCalled = true; },
+        next: () => {
+          responseReceived = true;
+        },
+        error: () => {
+          errorReceived = true;
+        },
+        complete: () => {
+          completeCalled = true;
+        },
       });
 
       // Then - Subscription should be active
@@ -1272,23 +1299,27 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       let responseReceived = false;
 
       // When - Create subscription and immediately unsubscribe
-      const subscription = client.login({ 
-        identifier: { username: 'test' }, 
-        password: 'test' 
-      }).subscribe({
-        next: () => { responseReceived = true; },
-      });
-      
+      const subscription = client
+        .login({
+          identifier: { username: 'test' },
+          password: 'test',
+        })
+        .subscribe({
+          next: () => {
+            responseReceived = true;
+          },
+        });
+
       // Get request but don't flush yet
       const req = httpMock.expectOne(API_ENDPOINTS_V1.AUTH.LOGIN);
-      
+
       // Then - Subscription should be active initially
       expect(subscription.closed).toBe(false);
-      
+
       // When - Unsubscribe before response
       subscription.unsubscribe();
       expect(subscription.closed).toBe(true);
-      
+
       // Then - No response should be processed (can't flush cancelled request)
       expect(responseReceived).toBe(false);
     });
@@ -1301,8 +1332,12 @@ describe('AuthApiClient - Infrastructure Tests', () => {
       // When - Create subscription that will error
       client.refresh({ refresh_token: 'invalid' }).subscribe({
         next: () => fail('Should not succeed'),
-        error: () => { errorReceived = true; },
-        complete: () => { completeCalled = true; },
+        error: () => {
+          errorReceived = true;
+        },
+        complete: () => {
+          completeCalled = true;
+        },
       });
 
       // Then - Trigger error
@@ -1484,25 +1519,27 @@ describe('AuthApiClient - Infrastructure Tests', () => {
         error: (error: any) => errors.push({ index: 3, error }),
       });
 
-      client.register({ 
-        username: 'newuser', 
-        email: 'new@test.com', 
-        password: 'pass', 
-        password_confirm: 'pass',
-        first_name: 'New',
-        last_name: 'User',
-        role_id: 1 
-      }).subscribe({
-        next: (response: any) => responses.push({ index: 4, response }),
-        error: (error: any) => errors.push({ index: 4, error }),
-      });
+      client
+        .register({
+          username: 'newuser',
+          email: 'new@test.com',
+          password: 'pass',
+          password_confirm: 'pass',
+          first_name: 'New',
+          last_name: 'User',
+          role_id: 1,
+        })
+        .subscribe({
+          next: (response: any) => responses.push({ index: 4, response }),
+          error: (error: any) => errors.push({ index: 4, error }),
+        });
 
       // Then - All requests should be made
       const allRequests = httpMock.match(() => true);
       expect(allRequests.length).toBe(5);
 
       // Flush all responses
-      allRequests.forEach(req => req.flush({}));
+      allRequests.forEach((req) => req.flush({}));
 
       // Verify all responses received
       expect(responses.length).toBe(5);
