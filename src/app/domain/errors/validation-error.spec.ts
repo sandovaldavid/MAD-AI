@@ -168,6 +168,61 @@ describe('ValidationError - Domain Tests', () => {
           ValidationError.createFromFields([]);
         }).toThrowError('ValidationError requires at least one field error');
       });
+
+      it('should handle field errors with undefined codes', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'testField',
+            value: 'testValue',
+            message: 'Test error without code',
+            // No code property - should be undefined
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.code).toBe(ValidationErrorCode.VALIDATION_ERROR); // Default fallback
+        expect(error.errors[0].code).toBeUndefined();
+      });
+
+      it('should handle primary code selection with generic validation error', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'email',
+            value: 'invalid',
+            message: 'Invalid email',
+            code: ValidationErrorCode.VALIDATION_ERROR, // Generic code
+          },
+        ];
+
+        const error = ValidationError.createFromFields(
+          fieldErrors,
+          ValidationErrorCode.EMAIL_INVALID // More specific code
+        );
+
+        expect(error.code).toBe(ValidationErrorCode.EMAIL_INVALID);
+      });
+
+      it('should use first error code when no primary code and first error has undefined code', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'field1',
+            value: 'value1',
+            message: 'Error without code',
+            // No code - undefined
+          },
+          {
+            field: 'field2',
+            value: 'value2',
+            message: 'Error with code',
+            code: ValidationErrorCode.EMAIL_INVALID,
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.code).toBe(ValidationErrorCode.VALIDATION_ERROR); // Fallback when first code is undefined
+      });
     });
 
     describe('fromMessage', () => {
@@ -214,6 +269,43 @@ describe('ValidationError - Domain Tests', () => {
         const error = ValidationError.forUniqueConstraint('username', 'testuser');
 
         expect(error.context).toEqual({ conflictingValue: 'testuser' });
+      });
+
+      it('should handle various value types in unique constraints', () => {
+        const numericValue = 12345;
+        const error = ValidationError.forUniqueConstraint('userId', numericValue, 'User');
+
+        expect(error.errors[0].value).toBe(numericValue);
+        expect(error.message).toBe("userId: userId '12345' already exists");
+        expect(error.context).toEqual({
+          entityType: 'User',
+          conflictingValue: numericValue,
+        });
+      });
+
+      it('should handle null values in unique constraints', () => {
+        const nullValue = null;
+        const error = ValidationError.forUniqueConstraint('optionalField', nullValue);
+
+        expect(error.errors[0].value).toBe(nullValue);
+        expect(error.message).toBe("optionalField: optionalField 'null' already exists");
+        expect(error.context).toEqual({ conflictingValue: nullValue });
+      });
+
+      it('should create proper field error structure for unique constraints', () => {
+        const error = ValidationError.forUniqueConstraint('email', 'test@example.com', 'User');
+
+        expect(error.errors[0]).toEqual({
+          field: 'email',
+          value: 'test@example.com',
+          message: "email 'test@example.com' already exists",
+          code: ValidationErrorCode.FIELD_NOT_UNIQUE,
+          severity: 'error',
+          context: {
+            entityType: 'User',
+            conflictingValue: 'test@example.com',
+          },
+        });
       });
     });
 
@@ -332,6 +424,91 @@ describe('ValidationError - Domain Tests', () => {
 
         expect(error.hasFormatErrors()).toBe(false);
       });
+
+      it('should return true for EMAIL_INVALID format errors', () => {
+        const error = ValidationError.create({
+          field: 'email',
+          value: 'invalid-email',
+          message: 'Invalid email format',
+          code: ValidationErrorCode.EMAIL_INVALID,
+        });
+
+        expect(error.hasFormatErrors()).toBe(true);
+      });
+
+      it('should handle mixed error types with some format errors', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'name',
+            value: '',
+            message: 'Name required',
+            code: ValidationErrorCode.REQUIRED_FIELD_MISSING, // Not a format error
+          },
+          {
+            field: 'email',
+            value: 'invalid',
+            message: 'Invalid email',
+            code: ValidationErrorCode.EMAIL_INVALID, // Format error
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.hasFormatErrors()).toBe(true);
+      });
+
+      it('should return false when all errors are non-format errors', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'name',
+            value: '',
+            message: 'Name required',
+            code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+          },
+          {
+            field: 'password',
+            value: 'short',
+            message: 'Password too short',
+            code: ValidationErrorCode.MIN_LENGTH_NOT_REACHED,
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.hasFormatErrors()).toBe(false);
+      });
+
+      it('should handle errors with undefined codes gracefully', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'field1',
+            value: 'value1',
+            message: 'Error without code',
+            // No code property - undefined
+          },
+          {
+            field: 'field2',
+            value: 'value2',
+            message: 'Another error without code',
+            // No code property - undefined
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.hasFormatErrors()).toBe(false); // Undefined codes are not format errors
+      });
+
+      it('should return false for errors with explicitly undefined codes', () => {
+        const error = ValidationError.create({
+          field: 'test',
+          value: 'value',
+          message: 'Error with undefined code',
+          code: undefined,
+        });
+
+        expect(error.hasFormatErrors()).toBe(false);
+      });
     });
 
     describe('getMaxSeverity', () => {
@@ -357,7 +534,7 @@ describe('ValidationError - Domain Tests', () => {
         expect(error.getMaxSeverity()).toBe('warning');
       });
 
-      it('should default to error when no severity specified', () => {
+      it('should default to info when no severity specified', () => {
         const error = ValidationError.create({
           field: 'test',
           value: 'value',
@@ -365,6 +542,64 @@ describe('ValidationError - Domain Tests', () => {
         });
 
         expect(error.getMaxSeverity()).toBe('info');
+      });
+
+      it('should return error for mixed severities with error present', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'f1', value: 'v1', message: 'm1', severity: 'info' },
+          { field: 'f2', value: 'v2', message: 'm2', severity: 'warning' },
+          { field: 'f3', value: 'v3', message: 'm3', severity: 'error' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.getMaxSeverity()).toBe('error');
+      });
+
+      it('should return info for all info severity errors', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'f1', value: 'v1', message: 'm1', severity: 'info' },
+          { field: 'f2', value: 'v2', message: 'm2', severity: 'info' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.getMaxSeverity()).toBe('info');
+      });
+
+      it('should handle undefined severity as default info', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'f1', value: 'v1', message: 'm1' }, // No severity - undefined
+          { field: 'f2', value: 'v2', message: 'm2', severity: 'info' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.getMaxSeverity()).toBe('info');
+      });
+
+      it('should prioritize error over warning and info', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'f1', value: 'v1', message: 'm1', severity: 'warning' },
+          { field: 'f2', value: 'v2', message: 'm2' }, // undefined severity
+          { field: 'f3', value: 'v3', message: 'm3', severity: 'error' },
+          { field: 'f4', value: 'v4', message: 'm4', severity: 'info' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+
+        expect(error.getMaxSeverity()).toBe('error');
+      });
+
+      it('should handle edge case with single undefined severity', () => {
+        const error = ValidationError.create({
+          field: 'test',
+          value: 'value',
+          message: 'Message without severity',
+          // severity is undefined
+        });
+
+        expect(error.getMaxSeverity()).toBe('info'); // Default fallback
       });
     });
 
@@ -397,6 +632,77 @@ describe('ValidationError - Domain Tests', () => {
         expect(grouped.get(ValidationErrorCode.EMAIL_INVALID)?.length).toBe(2);
         expect(grouped.get(ValidationErrorCode.MIN_LENGTH_NOT_REACHED)?.length).toBe(1);
       });
+
+      it('should handle field errors with undefined codes using fallback', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'field1',
+            value: 'value1',
+            message: 'Error without code',
+            // No code property - undefined
+          },
+          {
+            field: 'field2',
+            value: 'value2',
+            message: 'Another error without code',
+            // No code property - undefined
+          },
+          {
+            field: 'field3',
+            value: 'value3',
+            message: 'Error with code',
+            code: ValidationErrorCode.EMAIL_INVALID,
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const grouped = error.groupByErrorCode();
+
+        // Undefined codes should be grouped under VALIDATION_ERROR fallback
+        expect(grouped.get(ValidationErrorCode.VALIDATION_ERROR)?.length).toBe(2);
+        expect(grouped.get(ValidationErrorCode.EMAIL_INVALID)?.length).toBe(1);
+      });
+
+      it('should handle mixed defined and undefined error codes', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'email',
+            value: 'invalid',
+            message: 'Invalid email',
+            code: ValidationErrorCode.EMAIL_INVALID,
+          },
+          {
+            field: 'undefinedField',
+            value: 'value',
+            message: 'Error without code',
+            // No code - will be undefined
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const grouped = error.groupByErrorCode();
+
+        expect(grouped.size).toBe(2); // Two different groups
+        expect(grouped.get(ValidationErrorCode.EMAIL_INVALID)?.length).toBe(1);
+        expect(grouped.get(ValidationErrorCode.VALIDATION_ERROR)?.length).toBe(1);
+      });
+
+      it('should handle empty error list gracefully', () => {
+        const fieldErrors: FieldError[] = [
+          {
+            field: 'single',
+            value: 'value',
+            message: 'Single error',
+            code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+          },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const grouped = error.groupByErrorCode();
+
+        expect(grouped.size).toBe(1);
+        expect(grouped.get(ValidationErrorCode.REQUIRED_FIELD_MISSING)?.length).toBe(1);
+      });
     });
   });
 
@@ -424,9 +730,9 @@ describe('ValidationError - Domain Tests', () => {
         expect(combined.errors[1].field).toBe('password');
       });
 
-      it('should preserve context from first error', () => {
-        const context1 = { source: 'validation1' };
-        const context2 = { source: 'validation2' };
+      it('should preserve context from both errors', () => {
+        const context1 = { source: 'validation1', field1: 'value1' };
+        const context2 = { source: 'validation2', field2: 'value2' };
 
         const error1 = ValidationError.create(
           {
@@ -448,7 +754,112 @@ describe('ValidationError - Domain Tests', () => {
 
         const combined = error1.combine(error2);
 
-        expect(combined.context).toEqual({ source: 'validation2' });
+        expect(combined.context).toEqual({
+          source: 'validation2', // Second overwrites first for same keys
+          field1: 'value1',
+          field2: 'value2',
+        });
+      });
+
+      it('should use more specific error code when first is generic', () => {
+        const genericError = ValidationError.create({
+          field: 'field1',
+          value: 'value1',
+          message: 'Generic error',
+          code: ValidationErrorCode.VALIDATION_ERROR, // Generic code
+        });
+
+        const specificError = ValidationError.create({
+          field: 'field2',
+          value: 'value2',
+          message: 'Specific error',
+          code: ValidationErrorCode.EMAIL_INVALID, // Specific code
+        });
+
+        const combined = genericError.combine(specificError);
+
+        expect(combined.code).toBe(ValidationErrorCode.EMAIL_INVALID); // More specific code
+      });
+
+      it('should preserve first error code when it is not generic', () => {
+        const specificError1 = ValidationError.create({
+          field: 'email',
+          value: 'invalid',
+          message: 'Invalid email',
+          code: ValidationErrorCode.EMAIL_INVALID, // Specific code
+        });
+
+        const specificError2 = ValidationError.create({
+          field: 'password',
+          value: 'short',
+          message: 'Short password',
+          code: ValidationErrorCode.MIN_LENGTH_NOT_REACHED, // Different specific code
+        });
+
+        const combined = specificError1.combine(specificError2);
+
+        expect(combined.code).toBe(ValidationErrorCode.EMAIL_INVALID); // First code preserved
+      });
+
+      it('should handle combining errors with undefined contexts', () => {
+        const error1 = ValidationError.create({
+          field: 'field1',
+          value: 'value1',
+          message: 'Error 1',
+        }); // No context
+
+        const error2 = ValidationError.create(
+          {
+            field: 'field2',
+            value: 'value2',
+            message: 'Error 2',
+          },
+          { context: 'value' }
+        ); // With context
+
+        const combined = error1.combine(error2);
+
+        expect(combined.context).toEqual({ context: 'value' });
+      });
+
+      it('should combine errors from multiple fields correctly', () => {
+        const multiFieldError1 = ValidationError.createFromFields([
+          {
+            field: 'email',
+            value: 'invalid1',
+            message: 'Invalid email 1',
+            code: ValidationErrorCode.EMAIL_INVALID,
+          },
+          {
+            field: 'name',
+            value: 'short',
+            message: 'Name too short',
+            code: ValidationErrorCode.MIN_LENGTH_NOT_REACHED,
+          },
+        ]);
+
+        const multiFieldError2 = ValidationError.createFromFields([
+          {
+            field: 'email',
+            value: 'invalid2',
+            message: 'Invalid email 2',
+            code: ValidationErrorCode.EMAIL_INVALID,
+          },
+          {
+            field: 'password',
+            value: 'weak',
+            message: 'Weak password',
+            code: ValidationErrorCode.INVALID_FORMAT,
+          },
+        ]);
+
+        const combined = multiFieldError1.combine(multiFieldError2);
+
+        expect(combined.errors.length).toBe(4);
+        expect(combined.hasFieldError('email')).toBe(true);
+        expect(combined.hasFieldError('name')).toBe(true);
+        expect(combined.hasFieldError('password')).toBe(true);
+        expect(combined.getFieldErrors('email').length).toBe(2);
       });
     });
 
@@ -554,6 +965,103 @@ describe('ValidationError - Domain Tests', () => {
 
         expect(friendlyMessage).toBe('name: Name is required');
       });
+
+      it('should handle errors with empty field names as General', () => {
+        const fieldErrors: FieldError[] = [
+          { field: '', value: 'value1', message: 'Error with empty field' },
+          { field: 'email', value: 'invalid', message: 'Invalid email' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        // Empty field names are treated as 'General' and General errors don't have field prefixes
+        expect(friendlyMessage).toContain('Error with empty field');
+        expect(friendlyMessage).toContain('email: Invalid email');
+      });
+
+      it('should handle errors with undefined/null field names as General', () => {
+        const fieldErrors: FieldError[] = [
+          { field: undefined as any, value: 'value1', message: 'Error without field' },
+          { field: null as any, value: 'value2', message: 'Error with null field' },
+          { field: 'name', value: '', message: 'Name required' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        // Undefined/null fields become 'General' and General errors don't have field prefixes
+        expect(friendlyMessage).toContain('Error without field, Error with null field');
+        expect(friendlyMessage).toContain('name: Name required');
+      });
+
+      it('should group multiple errors for same field', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'password', value: 'weak', message: 'Password too weak' },
+          { field: 'password', value: 'weak', message: 'Password too short' },
+          { field: 'email', value: 'invalid', message: 'Invalid email format' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        expect(friendlyMessage).toContain('password: Password too weak, Password too short');
+        expect(friendlyMessage).toContain('email: Invalid email format');
+      });
+
+      it('should handle mixed General and specific field errors', () => {
+        const fieldErrors: FieldError[] = [
+          { field: '', value: 'value', message: 'General error 1' },
+          { field: 'email', value: 'invalid', message: 'Invalid email' },
+          { field: '', value: 'value2', message: 'General error 2' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        expect(friendlyMessage).toContain('General error 1, General error 2'); // No field prefix for General
+        expect(friendlyMessage).toContain('email: Invalid email');
+      });
+
+      it('should handle only General errors without field prefixes', () => {
+        const fieldErrors: FieldError[] = [
+          { field: '', value: 'value1', message: 'System validation failed' },
+          { field: null as any, value: 'value2', message: 'Business rule violation' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        expect(friendlyMessage).toBe('System validation failed, Business rule violation');
+        expect(friendlyMessage).not.toContain('General:'); // No field prefix for General-only messages
+      });
+
+      it('should preserve message order within fields', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'password', value: 'weak', message: 'First error' },
+          { field: 'email', value: 'invalid', message: 'Email error' },
+          { field: 'password', value: 'weak', message: 'Second error' },
+          { field: 'password', value: 'weak', message: 'Third error' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        expect(friendlyMessage).toContain('password: First error, Second error, Third error');
+      });
+
+      it('should handle special characters in messages', () => {
+        const fieldErrors: FieldError[] = [
+          { field: 'data', value: 'invalid', message: 'Contains invalid characters: @#$%' },
+          { field: 'json', value: '{}', message: 'JSON parsing failed: {"error": "syntax"}' },
+        ];
+
+        const error = ValidationError.createFromFields(fieldErrors);
+        const friendlyMessage = error.toUserFriendlyMessage();
+
+        expect(friendlyMessage).toContain('Contains invalid characters: @#$%');
+        expect(friendlyMessage).toContain('JSON parsing failed: {"error": "syntax"}');
+      });
     });
   });
 
@@ -598,6 +1106,111 @@ describe('ValidationError - Domain Tests', () => {
     });
   });
 
+  describe('Constructor and Message Generation Edge Cases', () => {
+    it('should handle field errors with empty field names', () => {
+      const fieldErrors: FieldError[] = [
+        {
+          field: '',
+          value: 'value1',
+          message: 'Error with empty field',
+        },
+        {
+          field: 'normalField',
+          value: 'value2',
+          message: 'Normal field error',
+        },
+      ];
+
+      const error = ValidationError.createFromFields(fieldErrors);
+
+      expect(error.message).toBe('Error with empty field; normalField: Normal field error');
+    });
+
+    it('should handle field errors with no field property', () => {
+      const fieldErrors: FieldError[] = [
+        {
+          field: undefined as any, // Simulate missing field
+          value: 'value',
+          message: 'Error without field',
+        },
+      ];
+
+      const error = ValidationError.createFromFields(fieldErrors);
+
+      expect(error.message).toBe('Error without field'); // No field prefix when field is falsy
+    });
+
+    it('should generate unique error IDs consistently', () => {
+      const errors = Array.from({ length: 10 }, () =>
+        ValidationError.create({
+          field: 'test',
+          value: 'value',
+          message: 'Test error',
+        })
+      );
+
+      const errorIds = errors.map((e) => e.errorId);
+      const uniqueIds = new Set(errorIds);
+
+      expect(uniqueIds.size).toBe(errorIds.length); // All IDs should be unique
+      errorIds.forEach((id) => {
+        expect(id).toMatch(/^ve_[a-z0-9]+_[a-z0-9]+$/); // Verify format
+      });
+    });
+
+    it('should handle Error.captureStackTrace availability', () => {
+      // This test verifies that the constructor handles cases where Error.captureStackTrace may not exist
+      const originalCaptureStackTrace = Error.captureStackTrace;
+
+      try {
+        // Temporarily remove captureStackTrace to test the conditional
+        (Error as any).captureStackTrace = undefined;
+
+        const error = ValidationError.create({
+          field: 'test',
+          value: 'value',
+          message: 'Test error',
+        });
+
+        expect(error).toBeInstanceOf(ValidationError);
+        expect(error.stack).toBeDefined(); // Stack should still be set by Error constructor
+      } finally {
+        // Restore original function
+        Error.captureStackTrace = originalCaptureStackTrace;
+      }
+    });
+
+    it('should handle context freezing correctly', () => {
+      const mutableContext = {
+        prop1: 'value1',
+        nested: { prop2: 'value2' },
+      };
+
+      const error = ValidationError.create(
+        {
+          field: 'test',
+          value: 'value',
+          message: 'Test error',
+        },
+        mutableContext
+      );
+
+      expect(Object.isFrozen(error.context)).toBe(true);
+      expect(error.context).not.toBe(mutableContext); // Should be a copy
+      expect(error.context).toEqual(mutableContext); // But with same values
+    });
+
+    it('should handle undefined context gracefully', () => {
+      const error = ValidationError.create({
+        field: 'test',
+        value: 'value',
+        message: 'Test error',
+      }); // No context provided
+
+      expect(error.context).toBeUndefined();
+    });
+  });
+
   describe('Edge Cases and Error Conditions', () => {
     it('should handle undefined field values', () => {
       const error = ValidationError.create({
@@ -639,6 +1252,33 @@ describe('ValidationError - Domain Tests', () => {
       });
 
       expect(error.message).toBe('emptyMessage: ');
+    });
+
+    it('should handle whitespace-only messages', () => {
+      const error = ValidationError.create({
+        field: 'whitespaceMessage',
+        value: 'value',
+        message: '   ',
+      });
+
+      expect(error.message).toBe('whitespaceMessage:    ');
+    });
+
+    it('should handle very long field names and messages', () => {
+      const longFieldName = 'a'.repeat(100);
+      const longMessage = 'This is a very long error message that goes on and on and on '.repeat(
+        10
+      );
+
+      const error = ValidationError.create({
+        field: longFieldName,
+        value: 'value',
+        message: longMessage,
+      });
+
+      expect(error.errors[0].field).toBe(longFieldName);
+      expect(error.errors[0].message).toBe(longMessage);
+      expect(error.message).toBe(`${longFieldName}: ${longMessage}`);
     });
   });
 });
