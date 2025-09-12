@@ -1,5 +1,5 @@
 import { makeEnvironmentProviders } from '@angular/core';
-import { UsersFacade } from '@application/facades/users.facade';
+import { UsersFacade } from '@application/facades/users/user.facade';
 import { HttpUserRepository } from '@infrastructure/repositories/business/http-user.repository';
 import { USER_REPOSITORY } from './tokens';
 

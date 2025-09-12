@@ -37,4 +37,3 @@ export { provideIcons } from './provide-icons';
 
 // Logger providers
 export { provideLogger } from './provide-logger';
-
