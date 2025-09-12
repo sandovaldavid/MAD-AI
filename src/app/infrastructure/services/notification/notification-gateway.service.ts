@@ -78,37 +78,12 @@ export class NotificationGatewayService implements NotificationPort {
     // Map domain category to infrastructure configuration
     // Note: Configuration is handled by domain entity, no additional infra config needed
 
-    // Check for duplicates using metadata if available
-    if (n.metadata?.['key']) {
-      const now = this.now();
-      const dup = this.listSig().find(
-        (x) =>
-          x.metadata?.['key'] === n.metadata?.['key'] &&
-          now - x.createdAt.toMilliseconds() < this.cfg.dedupeWindowMs
-      );
-      if (dup) {
-        if (this.cfg.dedupeMode === 'omit') {
-          return dup.id;
-        } else {
-          // dedupeMode === 'update'
-          // Note: We can't update domain entities directly, we'd need to create a new one
-          // For simplicity, just return the existing ID
-          return dup.id;
-        }
-      }
-    }
+    // Duplicate checking removed in simplified notification system
 
     this.listSig.update((list) => [domainNotification, ...list]);
     this.emit();
 
-    // auto-dismiss timer
-    const duration = domainNotification.duration;
-    if (duration && duration > 0) {
-      const timerId = setTimeout(() => {
-        this.dismiss(id);
-      }, duration);
-      this.timers.set(id, timerId);
-    }
+    // Auto-dismiss timer removed in simplified notification system
 
     return id;
   }
@@ -121,22 +96,7 @@ export class NotificationGatewayService implements NotificationPort {
     const existingNotification = this.listSig().find((n) => n.id === id);
     if (!existingNotification) return;
 
-    // Clear existing timer if duration changes
-    if (patch.duration !== undefined) {
-      const timer = this.timers.get(id);
-      if (timer) {
-        clearTimeout(timer);
-        this.timers.delete(id);
-      }
-
-      // Set new timer if duration > 0
-      if (patch.duration && patch.duration > 0) {
-        const timerId = setTimeout(() => {
-          this.dismiss(id);
-        }, patch.duration);
-        this.timers.set(id, timerId);
-      }
-    }
+    // Timer functionality removed in simplified notification system
 
     // For simplicity, we'll just recreate the notification with updated properties
     // In a real implementation, you might want to handle this differently
@@ -147,13 +107,9 @@ export class NotificationGatewayService implements NotificationPort {
         title: patch.title ?? existingNotification.title,
         userId: patch.userId ?? existingNotification.userId,
         channel: patch.channel ?? existingNotification.channel,
-        priority: patch.priority ?? existingNotification.priority,
-        duration: patch.duration ?? existingNotification.duration,
-        actions: patch.actions ?? [...existingNotification.actions],
-        metadata: { ...existingNotification.metadata, ...(patch.metadata ?? {}) },
       };
 
-      const updatedNotification = Notification.create({ ...updatedNotificationData, id });
+      const updatedNotification = Notification.createWithId(updatedNotificationData, id);
 
       this.listSig.update((list) =>
         list.map((notif) => (notif.id === id ? updatedNotification : notif))
