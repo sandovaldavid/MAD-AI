@@ -1,7 +1,7 @@
 import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthUserStoreRepository } from '@domain/repositories/session/auth-user-store.repository';
-import { AuthUserSnapshotContract } from '@/app/domain/repositories/session/auth-user-store.contract';
+import { AuthUserSnapshotContract } from '@domain/repositories/session/auth-user-store.contract';
 
 const KEY = 'mad-ai.auth.user.v1';
 
@@ -19,7 +19,10 @@ export class LocalStorageAuthUserStore implements AuthUserStoreRepository {
       const raw = localStorage.getItem(KEY);
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
-      console.warn(`LocalStorageAuthUserStore: Error reading from localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageAuthUserStore: Error reading from localStorage for key "${KEY}":`,
+        error
+      );
       return null;
     }
   }
@@ -36,7 +39,10 @@ export class LocalStorageAuthUserStore implements AuthUserStoreRepository {
         localStorage.setItem(KEY, JSON.stringify(snapshot));
       }
     } catch (error) {
-      console.warn(`LocalStorageAuthUserStore: Error writing to localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageAuthUserStore: Error writing to localStorage for key "${KEY}":`,
+        error
+      );
     }
   }
 
@@ -48,7 +54,10 @@ export class LocalStorageAuthUserStore implements AuthUserStoreRepository {
     try {
       localStorage.removeItem(KEY);
     } catch (error) {
-      console.warn(`LocalStorageAuthUserStore: Error removing from localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageAuthUserStore: Error removing from localStorage for key "${KEY}":`,
+        error
+      );
     }
   }
 }
