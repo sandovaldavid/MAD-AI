@@ -104,6 +104,19 @@ describe('Session Entity - Domain Tests', () => {
         expect(session.refreshToken).toBe(originalRefreshToken);
         expect(session.createdAt).toBe(originalCreatedAt);
       });
+
+      it('should have accessible createdAt property', () => {
+        // Given
+        const session = Session.create(validSessionData);
+
+        // When
+        const createdAt = session.createdAt;
+
+        // Then
+        expect(createdAt).toBeInstanceOf(ISODateTime);
+        expect(createdAt.value).toBeDefined();
+        expect(typeof createdAt.value).toBe('string');
+      });
     });
 
     describe('validation errors', () => {
@@ -112,6 +125,17 @@ describe('Session Entity - Domain Tests', () => {
         const invalidData = {
           ...validSessionData,
           id: '' as SessionId,
+        };
+
+        // When & Then
+        expect(() => Session.create(invalidData)).toThrow();
+      });
+
+      it('should throw ValidationError for null session ID', () => {
+        // Given
+        const invalidData = {
+          ...validSessionData,
+          id: null as any,
         };
 
         // When & Then
@@ -151,6 +175,17 @@ describe('Session Entity - Domain Tests', () => {
         expect(() => Session.create(invalidData)).toThrow();
       });
 
+      it('should throw ValidationError for null user', () => {
+        // Given
+        const invalidData = {
+          ...validSessionData,
+          user: null as any,
+        };
+
+        // When & Then
+        expect(() => Session.create(invalidData)).toThrow();
+      });
+
       it('should throw ValidationError for missing access token', () => {
         // Given
         const invalidData = {
@@ -162,11 +197,33 @@ describe('Session Entity - Domain Tests', () => {
         expect(() => Session.create(invalidData)).toThrow();
       });
 
+      it('should throw ValidationError for null access token', () => {
+        // Given
+        const invalidData = {
+          ...validSessionData,
+          accessToken: null as any,
+        };
+
+        // When & Then
+        expect(() => Session.create(invalidData)).toThrow();
+      });
+
       it('should throw ValidationError for missing refresh token', () => {
         // Given
         const invalidData = {
           ...validSessionData,
           refreshToken: undefined as any,
+        };
+
+        // When & Then
+        expect(() => Session.create(invalidData)).toThrow();
+      });
+
+      it('should throw ValidationError for null refresh token', () => {
+        // Given
+        const invalidData = {
+          ...validSessionData,
+          refreshToken: null as any,
         };
 
         // When & Then
@@ -268,6 +325,22 @@ describe('Session Entity - Domain Tests', () => {
         expect(isValid).toBe(true);
       });
 
+      it('should handle isValid with undefined expSeconds correctly', () => {
+        // Given
+        const accessToken = AccessToken.create('token-123456789012'); // No expSeconds
+        const session = Session.create({
+          ...validSessionData,
+          accessToken,
+        });
+
+        // When
+        const isValid = session.isValid(Math.floor(Date.now() / 1000));
+
+        // Then
+        expect(isValid).toBe(true);
+        expect(accessToken.expSeconds).toBeUndefined();
+      });
+
       it('should return false when current time equals expiration time', () => {
         // Given
         const expTime = Math.floor(Date.now() / 1000);
@@ -339,6 +412,21 @@ describe('Session Entity - Domain Tests', () => {
         expect(plainObject.accessToken).toBe(originalAccessToken);
         expect(plainObject.refreshToken).toBe(originalRefreshToken);
         expect(plainObject.createdAt).toBe(originalCreatedAt);
+      });
+
+      it('should create immutable plain object', () => {
+        // Given
+        const session = Session.create(validSessionData);
+
+        // When
+        const plainObject1 = session.toPlainObject();
+        const plainObject2 = session.toPlainObject();
+
+        // Then
+        expect(plainObject1).toEqual(plainObject2);
+        expect(plainObject1).not.toBe(plainObject2); // Different object instances
+        expect(plainObject1.id).toBe(plainObject2.id);
+        expect(plainObject1.userId).toBe(plainObject2.userId);
       });
     });
   });
@@ -418,6 +506,18 @@ describe('Session Entity - Domain Tests', () => {
 
         // Then
         expect(areEqual).toBe(true); // Should be equal because ID is the same
+      });
+
+      it('should handle equals with truthy and falsy values correctly', () => {
+        // Given
+        const session = Session.create(validSessionData);
+        const sameSession = Session.create(validSessionData);
+
+        // When & Then
+        expect(session.equals(sameSession)).toBe(true);
+        expect(session.equals(null)).toBe(false);
+        expect(session.equals(undefined)).toBe(false);
+        expect(session.equals({} as any)).toBe(false);
       });
     });
   });
