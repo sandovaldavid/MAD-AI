@@ -231,6 +231,65 @@ describe('ClientExportService', () => {
           1: { cellWidth: 30 },
         });
       });
+
+      it('should handle default PDF options and varied data types', async () => {
+        // Arrange
+        const config: PdfConfig = {
+          title: '', // Use empty string to satisfy type, but test falsy path
+          filename: 'defaults.pdf',
+          columns: [
+            { header: 'ID', dataKey: 'id' },
+            { header: 'Active', dataKey: 'isActive' },
+            { header: 'Extra', dataKey: 'extra' },
+            { header: 'Missing', dataKey: 'missing' },
+            { header: 'Obj', dataKey: 'obj' },
+          ],
+          alternateRowColors: false,
+        };
+        const data = [
+          { id: 1, isActive: true, extra: null, missing: undefined, obj: { key: 'val' } },
+        ];
+        const expectedTableData = [[1, true, null, null, '[object Object]']];
+
+        // Act
+        await service.exportToPdf(data, config);
+
+        // Assert
+        // Check that the title-specific font size was not set
+        expect(mockJsPDFInstance.setFontSize).not.toHaveBeenCalledWith(16);
+
+        const autoTableArgs = mockAutoTable.calls.mostRecent().args;
+        const autoTableOptions = autoTableArgs[1];
+        expect(autoTableOptions.startY).toBe(20);
+        expect(autoTableOptions.headStyles.fillColor).toEqual([71, 85, 105]);
+        expect(autoTableOptions.alternateRowStyles).toBeUndefined();
+        expect(autoTableOptions.body).toEqual(expectedTableData);
+        expect(mockJsPDFInstance.save).toHaveBeenCalledWith('defaults.pdf');
+      });
+
+      it('should not apply body styles to head cells in didParseCell', async () => {
+        // Arrange
+        const config: PdfConfig = { filename: 'test.pdf', title: 'Test', columns: [] };
+
+        // Act
+        await service.exportToPdf([{}], config);
+
+        // Assert
+        const autoTableArgs = mockAutoTable.calls.mostRecent().args;
+        const autoTableOptions = autoTableArgs[1];
+
+        // Arrange for callback
+        const mockCellHookData = {
+          section: 'head',
+          cell: { styles: { textColor: [255, 255, 255] } },
+        } as CellHookData;
+
+        // Act
+        autoTableOptions.didParseCell(mockCellHookData);
+
+        // Assert
+        expect(mockCellHookData.cell.styles.textColor).toEqual([255, 255, 255]);
+      });
     });
   });
 
