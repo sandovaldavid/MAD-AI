@@ -64,6 +64,11 @@ export class DateTimeService {
   }
 
   parseDate(dateString: string, options?: DateTimeOptions): Date | null {
+    // Handle null, undefined, or empty string inputs
+    if (!dateString || dateString.trim() === '') {
+      return null;
+    }
+
     try {
       const date = new Date(dateString);
       return isNaN(date.getTime()) ? null : date;
@@ -200,8 +205,18 @@ export class DateTimeService {
       return false;
     }
 
-    const timeString = this.formatTime(date, 'HH:mm');
-    return timeString >= businessHours.start && timeString <= businessHours.end;
+    // Use direct time extraction instead of formatTime to avoid localization issues
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const timeInMinutes = hours * 60 + minutes;
+
+    // Parse business hours to minutes for comparison
+    const [startHours, startMinutes] = businessHours.start.split(':').map(Number);
+    const [endHours, endMinutes] = businessHours.end.split(':').map(Number);
+    const startTimeInMinutes = startHours * 60 + startMinutes;
+    const endTimeInMinutes = endHours * 60 + endMinutes;
+
+    return timeInMinutes >= startTimeInMinutes && timeInMinutes <= endTimeInMinutes;
   }
 
   getNextBusinessDay(date: Date, businessHours = this.defaultBusinessHours): Date {
