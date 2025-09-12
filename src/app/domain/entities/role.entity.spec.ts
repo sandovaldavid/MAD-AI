@@ -115,6 +115,69 @@ describe('Role Entity - Domain Tests', () => {
           });
         }).toThrow();
       });
+
+      it('should reject non-number id type', () => {
+        expect(() => {
+          Role.create({
+            id: '1' as any,
+            name: 'USER',
+          });
+        }).toThrow();
+      });
+
+      it('should reject null id', () => {
+        expect(() => {
+          Role.create({
+            id: null as any,
+            name: 'USER',
+          });
+        }).toThrow();
+      });
+
+      it('should reject undefined id', () => {
+        expect(() => {
+          Role.create({
+            id: undefined as any,
+            name: 'USER',
+          });
+        }).toThrow();
+      });
+
+      it('should reject NaN id', () => {
+        expect(() => {
+          Role.create({
+            id: NaN,
+            name: 'USER',
+          });
+        }).toThrow();
+      });
+
+      it('should reject Infinity id', () => {
+        expect(() => {
+          Role.create({
+            id: Infinity,
+            name: 'USER',
+          });
+        }).toThrow();
+      });
+
+      it('should accept valid positive integer id', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+          });
+        }).not.toThrow();
+      });
+
+      it('should accept MAX_SAFE_INTEGER id', () => {
+        expect(() => {
+          Role.create({
+            id: Number.MAX_SAFE_INTEGER,
+            name: 'USER',
+          });
+        }).not.toThrow();
+      });
     });
 
     describe('Name Validation', () => {
@@ -178,6 +241,308 @@ describe('Role Entity - Domain Tests', () => {
           expect(validationError.errors[0].field).toBe('name');
         }
       });
+
+      it('should reject null name', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: null as any,
+          });
+        }).toThrow();
+      });
+
+      it('should reject undefined name', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: undefined as any,
+          });
+        }).toThrow();
+      });
+
+      it('should reject non-string name type', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 123 as any,
+          });
+        }).toThrow();
+      });
+
+      it('should reject whitespace-only name', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: '   ',
+          });
+        }).toThrow();
+      });
+
+      it('should reject tab-only name', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: '\t\t\t',
+          });
+        }).toThrow();
+      });
+
+      it('should reject newline-only name', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: '\n\n',
+          });
+        }).toThrow();
+      });
+
+      it('should trim whitespace from valid name', () => {
+        const role = Role.create({
+          id: 1,
+          name: '  TRIMMED  ',
+        });
+
+        expect(role.name).toBe('TRIMMED');
+      });
+
+      it('should accept name at 50 character limit', () => {
+        const maxLengthName = 'A'.repeat(50);
+
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: maxLengthName,
+          });
+        }).not.toThrow();
+
+        const role = Role.create({
+          id: 1,
+          name: maxLengthName,
+        });
+
+        expect(role.name).toBe(maxLengthName);
+      });
+
+      it('should reject name with 51 characters', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'A'.repeat(51),
+          });
+        }).toThrow();
+      });
+
+      it('should handle name with special characters', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER_ROLE-2024!',
+          });
+        }).not.toThrow();
+      });
+
+      it('should handle name with unicode characters', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'РОЛЬ_ПОЛЬЗОВАТЕЛЯ',
+          });
+        }).not.toThrow();
+      });
+    });
+
+    describe('Reserved Name Validation (isReservedName coverage)', () => {
+      describe('Reserved names should be rejected for non-system creation', () => {
+        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
+
+        reservedNames.forEach((reservedName) => {
+          it(`should reject reserved name "${reservedName}" (lowercase)`, () => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: reservedName,
+              });
+            }).toThrow();
+          });
+
+          it(`should reject reserved name "${reservedName.toUpperCase()}" (uppercase)`, () => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: reservedName.toUpperCase(),
+              });
+            }).toThrow();
+          });
+
+          it(`should reject reserved name "${reservedName}" with mixed case`, () => {
+            const mixedCase = reservedName.charAt(0).toUpperCase() + reservedName.slice(1);
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: mixedCase,
+              });
+            }).toThrow();
+          });
+        });
+      });
+
+      describe('Reserved names should be allowed for system creation', () => {
+        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
+
+        reservedNames.forEach((reservedName) => {
+          it(`should allow reserved name "${reservedName}" for system creation`, () => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: reservedName,
+                isSystemCreated: true,
+              });
+            }).not.toThrow();
+
+            const role = Role.create({
+              id: 1,
+              name: reservedName,
+              isSystemCreated: true,
+            });
+
+            expect(role.name).toBe(reservedName);
+          });
+        });
+      });
+
+      describe('Non-reserved names should always be allowed', () => {
+        const nonReservedNames = [
+          'USER',
+          'MANAGER',
+          'DEVELOPER',
+          'TESTER',
+          'ANALYST',
+          'admin_user', // Contains reserved word but not exact match
+          'system_operator', // Contains reserved word but not exact match
+          'user_admin', // Contains reserved word but not exact match
+          'custom_role',
+          'team_lead',
+          'project_manager',
+          'guest_user',
+          'moderator',
+          'editor',
+        ];
+
+        nonReservedNames.forEach((nonReservedName) => {
+          it(`should allow non-reserved name "${nonReservedName}"`, () => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: nonReservedName,
+              });
+            }).not.toThrow();
+
+            const role = Role.create({
+              id: 1,
+              name: nonReservedName,
+            });
+
+            expect(role.name).toBe(nonReservedName);
+          });
+        });
+      });
+
+      describe('Edge cases for reserved name validation', () => {
+        it('should reject reserved names with leading/trailing whitespace after trimming', () => {
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: '  admin  ', // Will be trimmed to 'admin'
+            });
+          }).toThrow();
+        });
+
+        it('should handle reserved names with special characters (should not be reserved)', () => {
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: 'admin!',
+            });
+          }).not.toThrow();
+
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: 'admin-2024',
+            });
+          }).not.toThrow();
+
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: 'admin_role',
+            });
+          }).not.toThrow();
+        });
+
+        it('should handle empty-like names before checking reserved (should fail on empty validation first)', () => {
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: '',
+            });
+          }).toThrow();
+
+          expect(() => {
+            Role.create({
+              id: 1,
+              name: '   ',
+            });
+          }).toThrow();
+        });
+
+        it('should validate reserved names case-insensitively', () => {
+          const variations = [
+            'ADMIN',
+            'Admin',
+            'aDmIn',
+            'SYSTEM',
+            'System',
+            'sYsTeM',
+            'ROOT',
+            'Root',
+            'rOoT',
+          ];
+
+          variations.forEach((variation) => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: variation,
+              });
+            }).toThrow();
+          });
+        });
+
+        it('should allow partial matches of reserved names', () => {
+          const partialMatches = [
+            'admins',
+            'admin123',
+            'my_admin',
+            'systems',
+            'system_config',
+            'roots',
+            'root_user',
+            'superusers',
+            'administrators',
+            'sub_admin',
+          ];
+
+          partialMatches.forEach((partialMatch) => {
+            expect(() => {
+              Role.create({
+                id: 1,
+                name: partialMatch,
+              });
+            }).not.toThrow();
+          });
+        });
+      });
     });
 
     describe('Access Level Validation', () => {
@@ -198,6 +563,132 @@ describe('Role Entity - Domain Tests', () => {
         });
 
         expect(role.accessLevel).toBe(5);
+      });
+
+      it('should reject non-number access level type', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: '5' as any,
+          });
+        }).toThrow();
+      });
+
+      it('should reject non-integer access level', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: 2.5,
+          });
+        }).toThrow();
+      });
+
+      it('should reject access level below 1', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: 0,
+          });
+        }).toThrow();
+      });
+
+      it('should reject negative access level', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: -1,
+          });
+        }).toThrow();
+      });
+
+      it('should reject access level above 10', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: 11,
+          });
+        }).toThrow();
+      });
+
+      it('should reject NaN access level', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: NaN,
+          });
+        }).toThrow();
+      });
+
+      it('should reject Infinity access level', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: Infinity,
+          });
+        }).toThrow();
+      });
+
+      it('should accept access level 1 (minimum)', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: 1,
+          });
+        }).not.toThrow();
+
+        const role = Role.create({
+          id: 1,
+          name: 'USER',
+          accessLevel: 1,
+        });
+
+        expect(role.accessLevel).toBe(1);
+      });
+
+      it('should accept access level 10 (maximum)', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: 'USER',
+            accessLevel: 10,
+          });
+        }).not.toThrow();
+
+        const role = Role.create({
+          id: 1,
+          name: 'USER',
+          accessLevel: 10,
+        });
+
+        expect(role.accessLevel).toBe(10);
+      });
+
+      it('should handle undefined access level with default', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'USER',
+          accessLevel: undefined,
+        });
+
+        expect(role.accessLevel).toBe(5);
+      });
+
+      it('should use provided access level when valid', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'USER',
+          accessLevel: 3,
+        });
+
+        expect(role.accessLevel).toBe(3);
       });
     });
 
@@ -324,6 +815,149 @@ describe('Role Entity - Domain Tests', () => {
       expect(adminRole.isUniqueForTeam()).toBe(true);
       expect(userRole.isUniqueForTeam()).toBe(false);
     });
+
+    it('should check user deletion permission based on access level', () => {
+      const adminRole = Role.create({
+        id: 1,
+        name: 'ADMIN',
+        accessLevel: 1,
+        isSystemCreated: true,
+      });
+      const managerRole = Role.create({ id: 2, name: 'MANAGER', accessLevel: 2 });
+      const moderatorRole = Role.create({ id: 3, name: 'MODERATOR', accessLevel: 3 });
+      const userRole = Role.create({ id: 4, name: 'USER', accessLevel: 5 });
+
+      expect(adminRole.canDeleteUsers()).toBe(true);
+      expect(managerRole.canDeleteUsers()).toBe(true);
+      expect(moderatorRole.canDeleteUsers()).toBe(false);
+      expect(userRole.canDeleteUsers()).toBe(false);
+    });
+
+    it('should check canDeleteUsers permission boundary at level 2', () => {
+      const level2Role = Role.create({ id: 1, name: 'LEVEL2', accessLevel: 2 });
+      const level3Role = Role.create({ id: 2, name: 'LEVEL3', accessLevel: 3 });
+
+      expect(level2Role.canDeleteUsers()).toBe(true);
+      expect(level3Role.canDeleteUsers()).toBe(false);
+    });
+
+    describe('getPermissions() comprehensive coverage', () => {
+      it('should return correct permissions for access level 1', () => {
+        const level1Role = Role.create({
+          id: 1,
+          name: 'SUPER_ADMIN',
+          accessLevel: 1,
+          isSystemCreated: true,
+        });
+
+        const permissions = level1Role.getPermissions();
+
+        expect(permissions).toEqual([
+          'SYSTEM_ADMIN',
+          'USER_MANAGEMENT',
+          'PROJECT_MANAGEMENT',
+          'READ_ALL',
+        ]);
+        expect(permissions).toContain('SYSTEM_ADMIN');
+        expect(permissions).toContain('USER_MANAGEMENT');
+        expect(permissions).toContain('PROJECT_MANAGEMENT');
+        expect(permissions).toContain('READ_ALL');
+        expect(permissions.length).toBe(4);
+      });
+
+      it('should return correct permissions for access level 2', () => {
+        const level2Role = Role.create({ id: 1, name: 'MANAGER', accessLevel: 2 });
+
+        const permissions = level2Role.getPermissions();
+
+        expect(permissions).toEqual(['USER_MANAGEMENT', 'PROJECT_MANAGEMENT', 'READ_ALL']);
+        expect(permissions).toContain('USER_MANAGEMENT');
+        expect(permissions).toContain('PROJECT_MANAGEMENT');
+        expect(permissions).toContain('READ_ALL');
+        expect(permissions).not.toContain('SYSTEM_ADMIN');
+        expect(permissions.length).toBe(3);
+      });
+
+      it('should return correct permissions for access level 3', () => {
+        const level3Role = Role.create({ id: 1, name: 'MODERATOR', accessLevel: 3 });
+
+        const permissions = level3Role.getPermissions();
+
+        expect(permissions).toEqual(['PROJECT_MANAGEMENT', 'READ_ALL']);
+        expect(permissions).toContain('PROJECT_MANAGEMENT');
+        expect(permissions).toContain('READ_ALL');
+        expect(permissions).not.toContain('SYSTEM_ADMIN');
+        expect(permissions).not.toContain('USER_MANAGEMENT');
+        expect(permissions.length).toBe(2);
+      });
+
+      it('should return correct permissions for access level 4', () => {
+        const level4Role = Role.create({ id: 1, name: 'PROJECT_LEAD', accessLevel: 4 });
+
+        const permissions = level4Role.getPermissions();
+
+        expect(permissions).toEqual(['PROJECT_LEAD', 'READ_ALL']);
+        expect(permissions).toContain('PROJECT_LEAD');
+        expect(permissions).toContain('READ_ALL');
+        expect(permissions).not.toContain('SYSTEM_ADMIN');
+        expect(permissions).not.toContain('USER_MANAGEMENT');
+        expect(permissions).not.toContain('PROJECT_MANAGEMENT');
+        expect(permissions.length).toBe(2);
+      });
+
+      it('should return correct permissions for access level 5', () => {
+        const level5Role = Role.create({ id: 1, name: 'USER', accessLevel: 5 });
+
+        const permissions = level5Role.getPermissions();
+
+        expect(permissions).toEqual(['READ_ALL']);
+        expect(permissions).toContain('READ_ALL');
+        expect(permissions).not.toContain('SYSTEM_ADMIN');
+        expect(permissions).not.toContain('USER_MANAGEMENT');
+        expect(permissions).not.toContain('PROJECT_MANAGEMENT');
+        expect(permissions).not.toContain('PROJECT_LEAD');
+        expect(permissions.length).toBe(1);
+      });
+
+      it('should return correct permissions for access level 6 and above', () => {
+        const level6Role = Role.create({ id: 1, name: 'GUEST', accessLevel: 6 });
+        const level10Role = Role.create({ id: 2, name: 'LIMITED', accessLevel: 10 });
+
+        expect(level6Role.getPermissions()).toEqual(['READ_ALL']);
+        expect(level10Role.getPermissions()).toEqual(['READ_ALL']);
+      });
+
+      it('should return permissions array that is not empty', () => {
+        for (let level = 1; level <= 10; level++) {
+          const role = Role.create({
+            id: level,
+            name: `LEVEL_${level}`,
+            accessLevel: level,
+            isSystemCreated: level === 1,
+          });
+
+          const permissions = role.getPermissions();
+          expect(permissions.length).toBeGreaterThan(0);
+          expect(permissions).toContain('READ_ALL');
+        }
+      });
+
+      it('should ensure permissions array contains unique values', () => {
+        for (let level = 1; level <= 10; level++) {
+          const role = Role.create({
+            id: level,
+            name: `LEVEL_${level}`,
+            accessLevel: level,
+            isSystemCreated: level === 1,
+          });
+
+          const permissions = role.getPermissions();
+          const uniquePermissions = [...new Set(permissions)];
+
+          expect(permissions.length).toBe(uniquePermissions.length);
+        }
+      });
+    });
   });
 
   describe('Entity Properties and Getters', () => {
@@ -347,6 +981,253 @@ describe('Role Entity - Domain Tests', () => {
       });
 
       expect(role.userCount).toBe(0);
+    });
+
+    describe('description getter comprehensive coverage', () => {
+      it('should return provided description when set', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: 'Custom description',
+        });
+
+        expect(role.description).toBe('Custom description');
+      });
+
+      it('should return default description when description is null', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: null,
+        });
+
+        expect(role.description).toBe('No hay descripción para este rol');
+      });
+
+      it('should return default description when description is undefined', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: undefined,
+        });
+
+        expect(role.description).toBe('No hay descripción para este rol');
+      });
+
+      it('should return default description when description is not provided', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+        });
+
+        expect(role.description).toBe('No hay descripción para este rol');
+      });
+
+      it('should handle empty string description', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: '',
+        });
+
+        expect(role.description).toBe('');
+      });
+
+      it('should handle whitespace-only description', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: '   ',
+        });
+
+        expect(role.description).toBe('   ');
+      });
+
+      it('should handle very long description', () => {
+        const longDescription = 'A'.repeat(1000);
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: longDescription,
+        });
+
+        expect(role.description).toBe(longDescription);
+        expect(role.description.length).toBe(1000);
+      });
+
+      it('should handle description with special characters', () => {
+        const specialDescription = 'Role with special chars: !@#$%^&*()[]{}|;:,.<>?/~`\'"\\';
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: specialDescription,
+        });
+
+        expect(role.description).toBe(specialDescription);
+      });
+
+      it('should handle description with unicode characters', () => {
+        const unicodeDescription = 'Роль с описанием на русском 中文 🚀 áéíóú ñ';
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          description: unicodeDescription,
+        });
+
+        expect(role.description).toBe(unicodeDescription);
+      });
+    });
+
+    describe('userCount getter comprehensive coverage', () => {
+      it('should return provided userCount when set', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: 42,
+        });
+
+        expect(role.userCount).toBe(42);
+      });
+
+      it('should return 0 when userCount is undefined', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: undefined,
+        });
+
+        expect(role.userCount).toBe(0);
+      });
+
+      it('should return 0 when userCount is not provided', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+        });
+
+        expect(role.userCount).toBe(0);
+      });
+
+      it('should handle userCount of 0 explicitly set', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: 0,
+        });
+
+        expect(role.userCount).toBe(0);
+      });
+
+      it('should handle large userCount values', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: Number.MAX_SAFE_INTEGER,
+        });
+
+        expect(role.userCount).toBe(Number.MAX_SAFE_INTEGER);
+      });
+
+      it('should handle negative userCount values', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: -5,
+        });
+
+        expect(role.userCount).toBe(-5);
+      });
+
+      it('should handle decimal userCount values', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: 3.14,
+        });
+
+        expect(role.userCount).toBe(3.14);
+      });
+
+      it('should handle NaN userCount', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: NaN,
+        });
+
+        // NaN is coalesced to 0 by the constructor's || 0 logic
+        expect(role.userCount).toBe(0);
+      });
+
+      it('should handle Infinity userCount', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'TEST_ROLE',
+          userCount: Infinity,
+        });
+
+        expect(role.userCount).toBe(Infinity);
+      });
+    });
+
+    describe('All getters immutability', () => {
+      it('should return the same values on multiple accesses', () => {
+        const role = Role.create({
+          id: 123,
+          name: 'IMMUTABLE_ROLE',
+          accessLevel: 4,
+          description: 'Test description',
+          userCount: 10,
+          isActive: true,
+        });
+
+        // Access multiple times
+        expect(role.id).toBe(123);
+        expect(role.id).toBe(123);
+        expect(role.name).toBe('IMMUTABLE_ROLE');
+        expect(role.name).toBe('IMMUTABLE_ROLE');
+        expect(role.accessLevel).toBe(4);
+        expect(role.accessLevel).toBe(4);
+        expect(role.description).toBe('Test description');
+        expect(role.description).toBe('Test description');
+        expect(role.userCount).toBe(10);
+        expect(role.userCount).toBe(10);
+        expect(role.isActive).toBe(true);
+        expect(role.isActive).toBe(true);
+      });
+
+      it('should maintain getter consistency after state changes', () => {
+        const role = Role.create({
+          id: 456,
+          name: 'CHANGEABLE_ROLE',
+          accessLevel: 2,
+          isActive: false,
+        });
+
+        // Initial state
+        expect(role.id).toBe(456);
+        expect(role.name).toBe('CHANGEABLE_ROLE');
+        expect(role.accessLevel).toBe(2);
+        expect(role.isActive).toBe(false);
+
+        // Change state
+        role.activate();
+
+        // Properties should remain consistent except isActive
+        expect(role.id).toBe(456);
+        expect(role.name).toBe('CHANGEABLE_ROLE');
+        expect(role.accessLevel).toBe(2);
+        expect(role.isActive).toBe(true);
+
+        // Change state again
+        role.deactivate();
+
+        // Properties should remain consistent
+        expect(role.id).toBe(456);
+        expect(role.name).toBe('CHANGEABLE_ROLE');
+        expect(role.accessLevel).toBe(2);
+        expect(role.isActive).toBe(false);
+      });
     });
   });
 
@@ -392,6 +1273,330 @@ describe('Role Entity - Domain Tests', () => {
     it('should include inactive status in string representation', () => {
       const str = deactivatedRole.toString();
       expect(str).toContain('active=false');
+    });
+  });
+
+  describe('Complex Validation Scenarios and Integration Tests', () => {
+    describe('Constructor parameter combinations', () => {
+      it('should handle all optional parameters provided', () => {
+        const role = Role.create({
+          id: 999,
+          name: 'FULL_PARAMS_ROLE',
+          accessLevel: 7,
+          isActive: true,
+          description: 'Full parameter test',
+          userCount: 25,
+          isSystemCreated: false,
+        });
+
+        expect(role.id).toBe(999);
+        expect(role.name).toBe('FULL_PARAMS_ROLE');
+        expect(role.accessLevel).toBe(7);
+        expect(role.isActive).toBe(true);
+        expect(role.description).toBe('Full parameter test');
+        expect(role.userCount).toBe(25);
+      });
+
+      it('should handle mix of provided and default parameters', () => {
+        const role = Role.create({
+          id: 888,
+          name: 'MIXED_PARAMS_ROLE',
+          description: 'Only some params provided',
+        });
+
+        expect(role.id).toBe(888);
+        expect(role.name).toBe('MIXED_PARAMS_ROLE');
+        expect(role.accessLevel).toBe(5); // default
+        expect(role.isActive).toBe(false); // default
+        expect(role.description).toBe('Only some params provided');
+        expect(role.userCount).toBe(0); // default
+      });
+
+      it('should handle boolean coercion for isActive', () => {
+        const truthyRole = Role.create({
+          id: 1,
+          name: 'TRUTHY_ROLE',
+          isActive: 1 as any, // Truthy value
+        });
+
+        const falsyRole = Role.create({
+          id: 2,
+          name: 'FALSY_ROLE',
+          isActive: 0 as any, // Falsy value
+        });
+
+        expect(truthyRole.isActive).toBe(true);
+        expect(falsyRole.isActive).toBe(false);
+      });
+    });
+
+    describe('Validation error aggregation', () => {
+      it('should collect all validation errors in single call', () => {
+        try {
+          Role.create({
+            id: 'invalid' as any, // Type error
+            name: '', // Empty name error
+            accessLevel: 'invalid' as any, // Type error
+          });
+          fail('Expected ValidationError to be thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(ValidationError);
+          const validationError = error as ValidationError;
+
+          // Should have multiple errors
+          expect(validationError.errors.length).toBeGreaterThanOrEqual(2);
+
+          // Should have errors for different fields
+          const errorFields = validationError.errors.map((e) => e.field);
+          expect(errorFields).toContain('id');
+          expect(errorFields).toContain('name');
+        }
+      });
+
+      it('should handle complex validation scenario with all invalid fields', () => {
+        try {
+          Role.create({
+            id: NaN, // Invalid ID
+            name: 'admin', // Reserved name
+            accessLevel: 99, // Out of range
+          });
+          fail('Expected ValidationError to be thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(ValidationError);
+          const validationError = error as ValidationError;
+          expect(validationError.errors.length).toBe(3);
+        }
+      });
+
+      it('should prioritize validation order correctly', () => {
+        try {
+          Role.create({
+            id: -1, // Invalid first
+            name: 'admin', // Reserved but validated after type check
+            accessLevel: -5, // Invalid range
+          });
+          fail('Expected ValidationError to be thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(ValidationError);
+          const validationError = error as ValidationError;
+
+          // All errors should be collected
+          expect(validationError.errors.length).toBe(3);
+
+          // Verify error fields
+          const fields = validationError.errors.map((e) => e.field);
+          expect(fields).toContain('id');
+          expect(fields).toContain('name');
+          expect(fields).toContain('accessLevel');
+        }
+      });
+    });
+
+    describe('Property value normalization', () => {
+      it('should normalize name trimming during creation', () => {
+        const role = Role.create({
+          id: 1,
+          name: '   TRIMMED_NAME   ',
+        });
+
+        // Name should be trimmed in the entity
+        expect(role.name).toBe('TRIMMED_NAME');
+        expect(role.name.length).toBe(12);
+      });
+
+      it('should handle name trimming with validation', () => {
+        // Name that becomes valid after trimming
+        const role = Role.create({
+          id: 1,
+          name: '   VALID_ROLE   ',
+        });
+
+        expect(role.name).toBe('VALID_ROLE');
+      });
+
+      it('should handle name trimming that reveals empty string', () => {
+        expect(() => {
+          Role.create({
+            id: 1,
+            name: '     ', // Only whitespace
+          });
+        }).toThrow();
+      });
+
+      it('should handle description vs null coalescing', () => {
+        const nullDescRole = Role.create({
+          id: 1,
+          name: 'NULL_DESC',
+          description: null,
+        });
+
+        const undefinedDescRole = Role.create({
+          id: 2,
+          name: 'UNDEFINED_DESC',
+          description: undefined,
+        });
+
+        const noDescRole = Role.create({
+          id: 3,
+          name: 'NO_DESC',
+        });
+
+        // All should return the same default
+        expect(nullDescRole.description).toBe('No hay descripción para este rol');
+        expect(undefinedDescRole.description).toBe('No hay descripción para este rol');
+        expect(noDescRole.description).toBe('No hay descripción para este rol');
+      });
+
+      it('should handle userCount defaulting logic', () => {
+        const zeroUserRole = Role.create({
+          id: 1,
+          name: 'ZERO_USERS',
+          userCount: 0,
+        });
+
+        const nullUserRole = Role.create({
+          id: 2,
+          name: 'NULL_USERS',
+          userCount: null as any,
+        });
+
+        const undefinedUserRole = Role.create({
+          id: 3,
+          name: 'UNDEFINED_USERS',
+          userCount: undefined,
+        });
+
+        const noUserCountRole = Role.create({
+          id: 4,
+          name: 'NO_USER_COUNT',
+        });
+
+        expect(zeroUserRole.userCount).toBe(0);
+        expect(nullUserRole.userCount).toBe(0); // null coalesced to 0
+        expect(undefinedUserRole.userCount).toBe(0);
+        expect(noUserCountRole.userCount).toBe(0);
+      });
+    });
+
+    describe('Business logic interactions', () => {
+      it('should maintain business logic consistency across permission methods', () => {
+        const adminRole = Role.create({
+          id: 1,
+          name: 'BUSINESS_ADMIN',
+          accessLevel: 1,
+          isSystemCreated: true,
+        });
+
+        // All admin capabilities should be consistent
+        expect(adminRole.canManageUsers()).toBe(true);
+        expect(adminRole.canAccessAdmin()).toBe(true);
+        expect(adminRole.canLeadProjects()).toBe(true);
+        expect(adminRole.canDeleteUsers()).toBe(true);
+        expect(adminRole.isUniqueForTeam()).toBe(true);
+        expect(adminRole.getPermissions()).toContain('SYSTEM_ADMIN');
+      });
+
+      it('should maintain business logic consistency for regular user', () => {
+        const userRole = Role.create({
+          id: 1,
+          name: 'BUSINESS_USER',
+          accessLevel: 8,
+        });
+
+        // Regular user should have limited capabilities
+        expect(userRole.canManageUsers()).toBe(false);
+        expect(userRole.canAccessAdmin()).toBe(false);
+        expect(userRole.canLeadProjects()).toBe(false);
+        expect(userRole.canDeleteUsers()).toBe(false);
+        expect(userRole.isUniqueForTeam()).toBe(false);
+        expect(userRole.getPermissions()).toEqual(['READ_ALL']);
+      });
+
+      it('should handle boundary conditions consistently', () => {
+        // Level 2 is boundary for several permissions
+        const level2Role = Role.create({
+          id: 1,
+          name: 'BOUNDARY_ROLE',
+          accessLevel: 2,
+        });
+
+        expect(level2Role.canManageUsers()).toBe(true);
+        expect(level2Role.canDeleteUsers()).toBe(true);
+        expect(level2Role.isUniqueForTeam()).toBe(true);
+        expect(level2Role.getPermissions()).toContain('USER_MANAGEMENT');
+      });
+
+      it('should maintain state consistency after activation/deactivation cycles', () => {
+        const role = Role.create({
+          id: 1,
+          name: 'CYCLE_TEST',
+          accessLevel: 3,
+          isActive: false,
+        });
+
+        // Initial state
+        expect(role.isActive).toBe(false);
+        expect(role.canAccessAdmin()).toBe(true); // Access level should not change
+
+        // Activation cycle
+        role.activate();
+        expect(role.isActive).toBe(true);
+        expect(role.canAccessAdmin()).toBe(true);
+
+        role.deactivate();
+        expect(role.isActive).toBe(false);
+        expect(role.canAccessAdmin()).toBe(true);
+
+        // Multiple cycles
+        for (let i = 0; i < 5; i++) {
+          role.activate();
+          role.deactivate();
+        }
+
+        expect(role.isActive).toBe(false);
+        expect(role.accessLevel).toBe(3); // Should remain unchanged
+        expect(role.name).toBe('CYCLE_TEST'); // Should remain unchanged
+      });
+    });
+
+    describe('Error handling and edge interactions', () => {
+      it('should handle system creation flag with reserved names correctly', () => {
+        // All reserved names should work with system creation
+        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
+
+        reservedNames.forEach((name) => {
+          const systemRole = Role.create({
+            id: 1,
+            name: name,
+            isSystemCreated: true,
+          });
+
+          expect(systemRole.name).toBe(name);
+        });
+      });
+
+      it('should handle complex error messages correctly', () => {
+        try {
+          Role.create({
+            id: -999,
+            name: 'administrator',
+            accessLevel: 150,
+          });
+          fail('Expected ValidationError to be thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(ValidationError);
+          const validationError = error as ValidationError;
+
+          // Should have specific error messages for each field
+          const idError = validationError.errors.find((e) => e.field === 'id');
+          const nameError = validationError.errors.find((e) => e.field === 'name');
+          const accessLevelError = validationError.errors.find((e) => e.field === 'accessLevel');
+
+          expect(idError?.message).toContain('positive integer');
+          expect(nameError?.message).toContain('reserved');
+          expect(accessLevelError?.message).toContain('between 1 and 10');
+        }
+      });
     });
   });
 
