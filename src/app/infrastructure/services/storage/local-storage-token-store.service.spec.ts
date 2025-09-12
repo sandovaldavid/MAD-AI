@@ -14,7 +14,7 @@ describe('LocalStorageTokenStore', () => {
 
   beforeEach(() => {
     mockLocalStorage = {};
-    
+
     // Setup localStorage spies
     getItemSpy = spyOn(localStorage, 'getItem').and.callFake((key: string) => {
       return mockLocalStorage[key] || null;
@@ -25,12 +25,9 @@ describe('LocalStorageTokenStore', () => {
     removeItemSpy = spyOn(localStorage, 'removeItem').and.callFake((key: string) => {
       delete mockLocalStorage[key];
     });
-    
+
     TestBed.configureTestingModule({
-      providers: [
-        LocalStorageTokenStore,
-        { provide: PLATFORM_ID, useValue: 'browser' }
-      ]
+      providers: [LocalStorageTokenStore, { provide: PLATFORM_ID, useValue: 'browser' }],
     });
 
     service = TestBed.inject(LocalStorageTokenStore);
@@ -39,7 +36,7 @@ describe('LocalStorageTokenStore', () => {
   describe('read', () => {
     it('should return null when no data is stored', async () => {
       const result = await service.read();
-      
+
       expect(result).toBeNull();
       expect(getItemSpy).toHaveBeenCalledWith(STORAGE_KEY);
     });
@@ -48,13 +45,13 @@ describe('LocalStorageTokenStore', () => {
       const tokenData: TokenSnapshotContract = {
         accessToken: 'access-token-123',
         accessExp: 1692180600,
-        refreshToken: 'refresh-token-456'
+        refreshToken: 'refresh-token-456',
       };
-      
+
       mockLocalStorage[STORAGE_KEY] = JSON.stringify(tokenData);
-      
+
       const result = await service.read();
-      
+
       expect(result).toEqual(tokenData);
       expect(getItemSpy).toHaveBeenCalledWith(STORAGE_KEY);
     });
@@ -62,9 +59,9 @@ describe('LocalStorageTokenStore', () => {
     it('should return null and log warning when invalid JSON is stored', async () => {
       mockLocalStorage[STORAGE_KEY] = 'invalid-json';
       spyOn(console, 'warn');
-      
+
       const result = await service.read();
-      
+
       expect(result).toBeNull();
       expect(console.warn).toHaveBeenCalledWith(
         jasmine.stringMatching(/LocalStorageTokenStore: Error reading from localStorage/),
@@ -75,9 +72,9 @@ describe('LocalStorageTokenStore', () => {
     it('should return null when localStorage throws an error', async () => {
       getItemSpy.and.throwError('Storage error');
       spyOn(console, 'warn');
-      
+
       const result = await service.read();
-      
+
       expect(result).toBeNull();
       expect(console.warn).toHaveBeenCalledWith(
         jasmine.stringMatching(/LocalStorageTokenStore: Error reading from localStorage/),
@@ -91,35 +88,32 @@ describe('LocalStorageTokenStore', () => {
       const tokenData: TokenSnapshotContract = {
         accessToken: 'access-token-123',
         accessExp: 1692180600,
-        refreshToken: 'refresh-token-456'
+        refreshToken: 'refresh-token-456',
       };
-      
+
       await service.write(tokenData);
-      
-      expect(setItemSpy).toHaveBeenCalledWith(
-        STORAGE_KEY,
-        JSON.stringify(tokenData)
-      );
+
+      expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEY, JSON.stringify(tokenData));
     });
 
     it('should clear storage when null is passed', async () => {
       await service.write(null);
-      
+
       expect(removeItemSpy).toHaveBeenCalledWith(STORAGE_KEY);
     });
 
     it('should handle localStorage errors gracefully', async () => {
       setItemSpy.and.throwError('Storage full');
       spyOn(console, 'warn');
-      
+
       const tokenData: TokenSnapshotContract = {
         accessToken: 'access-token-123',
         accessExp: 1692180600,
-        refreshToken: null
+        refreshToken: null,
       };
-      
+
       await service.write(tokenData);
-      
+
       expect(console.warn).toHaveBeenCalledWith(
         jasmine.stringMatching(/LocalStorageTokenStore: Error writing to localStorage/),
         jasmine.any(Error)
@@ -130,16 +124,16 @@ describe('LocalStorageTokenStore', () => {
   describe('clear', () => {
     it('should remove token data from localStorage', async () => {
       await service.clear();
-      
+
       expect(removeItemSpy).toHaveBeenCalledWith(STORAGE_KEY);
     });
 
     it('should handle localStorage errors gracefully', async () => {
       removeItemSpy.and.throwError('Storage error');
       spyOn(console, 'warn');
-      
+
       await service.clear();
-      
+
       expect(console.warn).toHaveBeenCalledWith(
         jasmine.stringMatching(/LocalStorageTokenStore: Error removing from localStorage/),
         jasmine.any(Error)
@@ -151,17 +145,14 @@ describe('LocalStorageTokenStore', () => {
     beforeEach(() => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
-        providers: [
-          LocalStorageTokenStore,
-          { provide: PLATFORM_ID, useValue: 'server' }
-        ]
+        providers: [LocalStorageTokenStore, { provide: PLATFORM_ID, useValue: 'server' }],
       });
       service = TestBed.inject(LocalStorageTokenStore);
     });
 
     it('should return null when reading on server', async () => {
       const result = await service.read();
-      
+
       expect(result).toBeNull();
       expect(getItemSpy).not.toHaveBeenCalled();
     });
@@ -170,17 +161,17 @@ describe('LocalStorageTokenStore', () => {
       const tokenData: TokenSnapshotContract = {
         accessToken: 'access-token-123',
         accessExp: 1692180600,
-        refreshToken: 'refresh-token-456'
+        refreshToken: 'refresh-token-456',
       };
-      
+
       await service.write(tokenData);
-      
+
       expect(setItemSpy).not.toHaveBeenCalled();
     });
 
     it('should do nothing when clearing on server', async () => {
       await service.clear();
-      
+
       expect(removeItemSpy).not.toHaveBeenCalled();
     });
   });
