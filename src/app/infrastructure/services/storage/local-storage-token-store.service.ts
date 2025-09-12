@@ -19,7 +19,10 @@ export class LocalStorageTokenStore implements TokenStoreRepository {
       const raw = localStorage.getItem(KEY);
       return raw ? JSON.parse(raw) : null;
     } catch (error) {
-      console.warn(`LocalStorageTokenStore: Error reading from localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageTokenStore: Error reading from localStorage for key "${KEY}":`,
+        error
+      );
       return null;
     }
   }
@@ -36,7 +39,10 @@ export class LocalStorageTokenStore implements TokenStoreRepository {
         this.clear();
       }
     } catch (error) {
-      console.warn(`LocalStorageTokenStore: Error writing to localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageTokenStore: Error writing to localStorage for key "${KEY}":`,
+        error
+      );
     }
   }
 
@@ -48,7 +54,10 @@ export class LocalStorageTokenStore implements TokenStoreRepository {
     try {
       localStorage.removeItem(KEY);
     } catch (error) {
-      console.warn(`LocalStorageTokenStore: Error removing from localStorage for key "${KEY}":`, error);
+      console.warn(
+        `LocalStorageTokenStore: Error removing from localStorage for key "${KEY}":`,
+        error
+      );
     }
   }
 }
