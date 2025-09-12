@@ -1019,8 +1019,8 @@ describe('UserMapper', () => {
         const startTime = performance.now();
 
         // When
-        const entities = users.map(dto => mapper.toEntityFromList(dto));
-        const transformedDtos = entities.map(entity => mapper.toDTO(entity));
+        const entities = users.map((dto) => mapper.toEntityFromList(dto));
+        const transformedDtos = entities.map((entity) => mapper.toDTO(entity));
 
         const endTime = performance.now();
 
