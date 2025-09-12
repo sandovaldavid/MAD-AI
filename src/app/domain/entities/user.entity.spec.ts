@@ -64,6 +64,22 @@ describe('User Entity', () => {
       expect(user.isEmailConfirmed).toBe(true);
     });
 
+    it('should create a user with custom status', () => {
+      const user = User.create({
+        id: 1,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        isActive: true,
+        role: mockRole,
+        notificationPreferences: mockNotificationPreferences,
+        status: 'active',
+      });
+
+      expect(user.userStatus.value).toBe('active');
+    });
+
     it('should throw ValidationError for invalid username', () => {
       expect(() => {
         User.create({
@@ -131,6 +147,114 @@ describe('User Entity', () => {
         expect(error.message).toContain('email');
       }
     });
+
+    it('should throw ValidationError for invalid firstName', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: '', // Invalid - empty
+          lastName: 'Doe',
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: mockNotificationPreferences,
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for invalid lastName', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: '', // Invalid - empty
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: mockNotificationPreferences,
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for missing role', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          isActive: true,
+          role: null as any, // Missing role
+          notificationPreferences: mockNotificationPreferences,
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for missing notificationPreferences', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: null as any, // Missing notificationPreferences
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for invalid createdAt date', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: mockNotificationPreferences,
+          createdAt: 'invalid-date', // Invalid date format
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for invalid updatedAt date', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: mockNotificationPreferences,
+          updatedAt: 'invalid-date', // Invalid date format
+        });
+      }).toThrow();
+    });
+
+    it('should throw ValidationError for invalid lastActivityAt date', () => {
+      expect(() => {
+        User.create({
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          firstName: 'John',
+          lastName: 'Doe',
+          isActive: true,
+          role: mockRole,
+          notificationPreferences: mockNotificationPreferences,
+          lastActivityAt: 'invalid-date', // Invalid date format
+        });
+      }).toThrow();
+    });
   });
 
   describe('Business Logic', () => {
@@ -195,6 +319,42 @@ describe('User Entity', () => {
         expect(user.firstName).toBe(newFirstName);
         expect(user.lastName).toBe(newLastName);
       });
+
+      it('should update notification preferences', () => {
+        const newPreferences: UserNotificationPreferences = {
+          email: false,
+          system: true,
+          task: true,
+        };
+        user.updateNotificationPreferences(newPreferences);
+        expect(user.notificationPreferences?.email).toBe(false);
+        expect(user.notificationPreferences?.system).toBe(true);
+        expect(user.notificationPreferences?.task).toBe(true);
+      });
+
+      it('should throw ValidationError when updating name with null firstName', () => {
+        expect(() => {
+          user.updateName(null as any, LastName.create('Smith'));
+        }).toThrow();
+      });
+
+      it('should throw ValidationError when updating name with null lastName', () => {
+        expect(() => {
+          user.updateName(FirstName.create('Jane'), null as any);
+        }).toThrow();
+      });
+
+      it('should throw ValidationError when changing email to null', () => {
+        expect(() => {
+          user.changeEmail(null as any);
+        }).toThrow();
+      });
+
+      it('should throw ValidationError when changing username to null', () => {
+        expect(() => {
+          user.changeUsername(null as any);
+        }).toThrow();
+      });
     });
 
     describe('Role Management', () => {
@@ -208,6 +368,12 @@ describe('User Entity', () => {
 
         user.changeRole(newRole);
         expect(user.role).toBe(newRole);
+      });
+
+      it('should throw ValidationError when changing role to null', () => {
+        expect(() => {
+          user.changeRole(null as any);
+        }).toThrow();
       });
     });
 
@@ -405,6 +571,26 @@ describe('User Entity', () => {
 
     it('should return correct isEmailConfirmed', () => {
       expect(user.isEmailConfirmed).toBe(true);
+    });
+
+    it('should return correct status', () => {
+      expect(user.status).toBeDefined();
+    });
+
+    it('should return correct userStatus', () => {
+      expect(user.userStatus).toBeDefined();
+    });
+
+    it('should return correct notificationPreferences', () => {
+      expect(user.notificationPreferences).toBeDefined();
+    });
+
+    it('should return correct updatedAt', () => {
+      expect(user.updatedAt).toBeUndefined(); // Not set in this test
+    });
+
+    it('should return correct lastActivityAt', () => {
+      expect(user.lastActivityAt).toBeUndefined(); // Not set in this test
     });
   });
 });
