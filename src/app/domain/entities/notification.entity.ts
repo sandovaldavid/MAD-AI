@@ -62,6 +62,13 @@ export class Notification {
    * Factory method simplificado
    */
   static create(props: NewNotification): Notification {
+    return Notification.createWithId(props);
+  }
+
+  /**
+   * Factory method que permite especificar un ID (para uso interno)
+   */
+  static createWithId(props: NewNotification, customId?: NotificationId): Notification {
     const errors: FieldError[] = [];
 
     // Validaciones básicas únicamente
@@ -87,7 +94,7 @@ export class Notification {
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
 
-    const id = Math.random().toString(36).substring(2);
+    const id = customId ?? Math.random().toString(36).substring(2);
     const createdAt = new Date();
 
     return new Notification(
