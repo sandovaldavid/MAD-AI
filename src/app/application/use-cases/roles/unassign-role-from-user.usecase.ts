@@ -1,17 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  USER_REPOSITORY,
-  ROLE_REPOSITORY,
-  CLOCK_PORT,
-  LOGGER_PORT,
-  DOMAIN_EVENT_BUS_REPO,
-} from '@di/tokens';
+import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 import type { UnassignRoleFromUserRequest } from '@application/types/roles.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Role } from '@domain/entities/role.entity';
@@ -34,13 +27,12 @@ import type { Role } from '@domain/entities/role.entity';
  * @responsibilities
  * - Validate application-level authorization for role unassignments
  * - Ensure both user and role exist and are in valid states
- * - Check business rules preventing role unassignments (system roles, critical permissions)
  * - Transform application DTOs to domain operations
  * - Delegate role unassignment to domain repository with proper context
  * - Publish domain events for role unassignment changes
  * - Handle comprehensive audit logging with correlation tracking
  * - Ensure transactional consistency for user-role relationship changes
- * - Validate unassignment constraints and business rules
+ * - Business rules and constraints are enforced by the domain layer
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
@@ -68,9 +60,8 @@ import type { Role } from '@domain/entities/role.entity';
  * - User must exist and be active in the system
  * - Role must exist and be active in the system
  * - Requester must have unassignment permissions for the specific role
- * - Cannot unassign system administrator role from system user (user ID 1)
  * - User must currently have the role assigned
- * - Business rules may prevent certain role unassignments
+ * - Business rules and constraints are enforced by the domain layer
  *
  * @workflow
  * 1. **Validate Application Rules** - Authorization, existence, and constraint checks
@@ -96,8 +87,7 @@ import type { Role } from '@domain/entities/role.entity';
  * @throws {ApplicationError} When authorization fails or requester lacks permissions
  * @throws {ApplicationError} When user or role does not exist
  * @throws {ApplicationError} When user or role is not active
- * @throws {ApplicationError} When business rules prevent the unassignment
- * @throws {ApplicationError} When attempting to unassign system administrator role from system user
+ * @throws {ApplicationError} When business rules prevent the unassignment (enforced by domain layer)
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -111,7 +101,7 @@ export class UnassignRoleFromUser {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+  // Domain event bus removed as part of refactor
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -159,8 +149,8 @@ export class UnassignRoleFromUser {
       await this.handleSideEffects(user, role, request.requesterId);
     } catch (error: unknown) {
       this.logger.error('Role unassignment failed', {
-        correlationId: `unassign-role-${request.roleId}-user-${request.userId}-${this.clock.nowEpochSeconds()}`,
-        userId: request.requesterId?.toString(),
+        correlationId: `unassign-role-${request?.roleId ?? 'unknown'}-user-${request?.userId ?? 'unknown'}-${this.clock.nowEpochSeconds()}`,
+        userId: request?.requesterId?.toString(),
         operation: 'unassign_role_from_user',
       } as LogContext);
 
@@ -186,31 +176,34 @@ export class UnassignRoleFromUser {
    * - Requester ID is optional but validated if present
    */
   private validateApplicationRules(request: UnassignRoleFromUserRequest): void {
-    if (!request?.userId || request.userId <= 0 || !Number.isInteger(request.userId)) {
+    if (!request) {
       throw this.errorTransformer.transform(new Error('Invalid user ID'));
     }
 
-    if (!request?.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
+    if (!request.userId || request.userId <= 0 || !Number.isInteger(request.userId)) {
+      throw this.errorTransformer.transform(new Error('Invalid user ID'));
+    }
+
+    if (!request.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
       throw this.errorTransformer.transform(new Error('Invalid role ID'));
     }
   }
 
   /**
-   * Validate entities exist and unassignment is valid
+   * Validate entities exist for unassignment
    *
    * @description
-   * Validates that both user and role entities exist in the system and that the unassignment
-   * operation is valid according to business rules. Performs parallel entity fetching for
-   * efficiency and includes specific business rule validation for critical system constraints.
+   * Validates that both user and role entities exist in the system for the unassignment
+   * operation. Performs parallel entity fetching for efficiency. Business rule validation
+   * is delegated to the domain layer (repository implementation).
    *
    * @param request Role unassignment request with user and role IDs
    * @returns Promise resolving to validated user and role entities
-   * @throws ApplicationError when entities don't exist or business rules prevent unassignment
+   * @throws ApplicationError when entities don't exist
    *
-   * @business-rules
+   * @validation-scope
    * - Both user and role must exist in the system
-   * - Cannot unassign administrator role from system user (ID: 1)
-   * - Additional business rules may apply based on organizational policies
+   * - Business rules are validated by the domain layer during unassignment
    */
   private async validateEntitiesForUnassignment(
     request: UnassignRoleFromUserRequest
@@ -227,13 +220,6 @@ export class UnassignRoleFromUser {
 
     if (!role) {
       throw this.errorTransformer.transform(new Error(`Role with ID ${request.roleId} not found`));
-    }
-
-    // Prevent unassignment of critical system roles from system users
-    if (role.name.toLowerCase() === 'administrator' && user.id === 1) {
-      throw this.errorTransformer.transform(
-        new Error('Cannot unassign administrator role from system user')
-      );
     }
 
     return { user, role };
@@ -281,13 +267,7 @@ export class UnassignRoleFromUser {
    * - Records unassignment details for compliance and monitoring
    */
   private async handleSideEffects(user: User, role: Role, requesterId?: number): Promise<void> {
-    // Domain Events
-    const allEvents = user.getDomainEvents().concat(role.getDomainEvents());
-    if (allEvents.length > 0) {
-      await this.eventBus.publishAll(allEvents);
-      user.clearDomainEvents();
-      role.clearDomainEvents();
-    }
+    // Domain events removed as part of refactor
 
     // Audit Logging
     const correlationId = `unassign-role-${role.id}-user-${user.id}-${this.clock.nowEpochSeconds()}`;
