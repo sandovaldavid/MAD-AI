@@ -19,7 +19,7 @@ export class ClientExportService implements ExportRepository {
   private jspdf: any;
   private jspdfAutoTable: any;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
