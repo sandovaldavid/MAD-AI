@@ -1,18 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  ROLE_REPOSITORY,
-  USER_REPOSITORY,
-  CLOCK_PORT,
-  LOGGER_PORT,
-  DOMAIN_EVENT_BUS_REPO,
-} from '@di/tokens';
+import { ROLE_REPOSITORY, USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { AssignRoleToUserRequest } from '@application/types/roles.types';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+// DomainEventBusService import removed as part of refactor
 
 /**
  * Assign Role to User Use Case
@@ -106,7 +100,7 @@ export class AssignRoleToUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+  // Domain event bus removed as part of refactor
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -123,9 +117,9 @@ export class AssignRoleToUser {
    *
    * @workflow
    * 1. **Application Validation** - Check authorization, existence, and constraint validation
-   * 2. **Domain Delegation** - Forward to repository for assignment business logic
-   * 3. **Side Effects** - Publish domain events and log comprehensive audit information
-   * 4. **Return Result** - Confirm successful assignment completion
+   * 2. **Domain Orchestration** - Retrieve entities and delegate to domain business logic
+   * 3. **Persistence** - Save changes through domain repository
+   * 4. **Side Effects** - Log comprehensive audit information
    *
    * @example
    * ```typescript
@@ -139,20 +133,32 @@ export class AssignRoleToUser {
    * ```
    */
   async execute(input: AssignRoleToUserRequest): Promise<void> {
+    const correlationId = `assign-role-${input?.userId || 'unknown'}-${input?.roleId || 'unknown'}-${this.clock.nowEpochSeconds()}`;
+
     try {
       // Step 1: Validate application rules
       this.validateApplicationRules(input);
 
-      // Step 2: Delegate to domain repository for assignment
-      await this.roleRepo.assign(input);
+      // Step 2: Retrieve domain entities
+      const user = await this.userRepo.getById(input.userId);
+      const role = await this.roleRepo.getById(input.roleId);
 
-      // Step 3: Handle side effects
+      // Step 3: Delegate to domain entity for role assignment business logic
+      user.changeRole(role);
+
+      // Step 4: Persist changes through repository
+      await this.userRepo.update(input.userId, {
+        roleId: input.roleId,
+      });
+
+      // Step 5: Handle side effects
       await this.handleRoleAssignmentSideEffects(input);
     } catch (error: unknown) {
       this.logger.error('Role assignment failed', {
-        correlationId: `assign-role-${input.userId}-${input.roleId}-${this.clock.nowEpochSeconds()}`,
-        userId: input.assignedByUserId?.toString(),
+        correlationId,
+        userId: input?.assignedByUserId?.toString() || 'unknown',
         operation: 'assign_role_to_user',
+        error: error instanceof Error ? error.message : 'Unknown error',
       } as LogContext);
 
       // Normalize errors for application layer
@@ -187,14 +193,13 @@ export class AssignRoleToUser {
    * Handle side effects for successful role assignment
    *
    * @description
-   * Manages domain event publishing and comprehensive audit logging after successful role assignment.
-   * Publishes domain events related to the role assignment and logs the operation with correlation
-   * tracking for audit and monitoring purposes. Ensures proper event handling and logging consistency.
+   * Manages comprehensive audit logging after successful role assignment.
+   * Logs the operation with correlation tracking for audit and monitoring purposes.
+   * Ensures proper logging consistency and audit trail maintenance.
    *
    * @param input The role assignment input data
    *
    * @side-effects
-   * - Publishes RoleAssignedToUserEvent domain events
    * - Logs assignment operation with correlation ID
    * - Tracks assignment metadata for audit purposes
    */
@@ -202,23 +207,11 @@ export class AssignRoleToUser {
     const timestamp = this.clock.nowEpochSeconds();
     const correlationId = `role-assign-${input.userId}-${input.roleId}-${timestamp}`;
 
-    // Domain Events - Simulate publishing until real API is connected
-    this.logger.info(
-      `Domain Events simulation: RoleAssignedToUserEvent for user ${input.userId} and role ${input.roleId}`,
-      {
-        correlationId,
-      } as LogContext
-    );
-
-    // TODO: Once Domain Event Bus is connected to real API, replace simulation with:
-    // const events = await this.roleRepo.getDomainEventsForAssignment(input);
-    // if (events.length > 0) {
-    //   await this.eventBus.publishAll(events);
-    // }
-
     this.logger.info('Role assignment completed', {
       correlationId,
       userId: input.userId.toString(),
+      roleId: input.roleId.toString(),
+      assignedBy: input.assignedByUserId.toString(),
       operation: 'assign_role_to_user',
     } as LogContext);
   }
