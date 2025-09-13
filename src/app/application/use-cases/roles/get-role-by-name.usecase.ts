@@ -1,10 +1,11 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 import type { GetRoleByNameRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -61,14 +62,14 @@ import type { Role } from '@domain/entities/role.entity';
  * - System roles may have additional access restrictions
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, name format, and constraint checks
- * 2. **Delegate to Domain** - Repository handles search with filtering and exact matching
- * 3. **Handle Side Effects** - Event publishing and audit logging
- * 4. **Return Result** - Role entity with domain events published
+ * 1. **Validate Application Rules** - Name format and constraint checks
+ * 2. **Validate Authorization** - Check user permissions and authentication
+ * 3. **Delegate to Domain** - Repository handles search with filtering and exact matching
+ * 4. **Handle Side Effects** - Event publishing and audit logging
  *
  * @example
  * ```typescript
- * const useCase = inject(GetRoleByName);
+ * const useCase = inject(GetRoleByNameUseCase);
  * const request: GetRoleByNameRequest = {
  *   name: 'Administrator',
  *   requesterId: 'admin-456'
@@ -91,11 +92,11 @@ import type { Role } from '@domain/entities/role.entity';
  * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
-export class GetRoleByName {
+export class GetRoleByNameUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -111,10 +112,10 @@ export class GetRoleByName {
    * @throws {ApplicationError} When validation fails or role retrieval encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check authorization, name format, and constraints
-   * 2. **Domain Search** - Perform exact case-insensitive name matching via repository
-   * 3. **Side Effects** - Publish domain events and log audit information
-   * 4. **Return Result** - Return retrieved role entity
+   * 1. **Application Validation** - Check name format and constraints
+   * 2. **Authorization Validation** - Verify user permissions and authentication
+   * 3. **Domain Search** - Perform exact case-insensitive name matching via repository
+   * 4. **Side Effects** - Publish domain events and log audit information
    *
    * @example
    * ```typescript
@@ -126,23 +127,18 @@ export class GetRoleByName {
    */
   async execute(request: GetRoleByNameRequest): Promise<Role> {
     try {
-      // Step 1: Validate application rules
+      // Step 1: Validate application rules and authorization
       this.validateApplicationRules(request);
+      await this.validateAuthorization(request.requesterId);
 
       // Step 2: Delegate to domain repository
       const role = await this.findRoleByName(request.name);
 
       // Step 3: Handle side effects
-      await this.handleSideEffects(role, request.requesterId);
+      await this.handleSideEffects(role, request.requesterId!);
 
       return role;
     } catch (error: unknown) {
-      this.logger.error('Role retrieval by name failed', {
-        correlationId: `get-role-name-${request.name}-${this.clock.nowEpochSeconds()}`,
-        userId: request.requesterId?.toString(),
-        operation: 'get_role_by_name',
-      } as LogContext);
-
       throw this.errorTransformer.transform(error);
     }
   }
@@ -160,11 +156,39 @@ export class GetRoleByName {
    */
   private validateApplicationRules(request: GetRoleByNameRequest): void {
     if (!request?.name?.trim()) {
-      throw this.errorTransformer.transform(new Error('Role name is required for search'));
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Role name is required for search',
+        'Role name is required for search'
+      );
     }
 
     if (request.name.length > 100) {
-      throw this.errorTransformer.transform(new Error('Role name too long'));
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Role name too long',
+        'Role name must be 100 characters or less'
+      );
+    }
+  }
+
+  /**
+   * Validate authorization for role access
+   *
+   * @description
+   * Validates that the requester has proper authorization to access role information.
+   * Ensures that the requester ID is provided and has read permissions for roles.
+   *
+   * @param requesterId ID of the user requesting role access
+   * @throws ApplicationError when authorization fails
+   */
+  private async validateAuthorization(requesterId?: number): Promise<void> {
+    if (!requesterId) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+        'Requester ID is required for role access',
+        'You must be authenticated to access role information'
+      );
     }
   }
 
@@ -187,7 +211,11 @@ export class GetRoleByName {
     const exactMatch = roles.find((role) => role.name.toLowerCase() === name.trim().toLowerCase());
 
     if (!exactMatch) {
-      throw this.errorTransformer.transform(new Error(`Role with name '${name.trim()}' not found`));
+      throw new ApplicationError(
+        ApplicationErrorCode.ROLE_NOT_FOUND,
+        `Role with name '${name.trim()}' not found`,
+        `No role found with the name '${name.trim()}'`
+      );
     }
 
     return exactMatch;
@@ -197,20 +225,14 @@ export class GetRoleByName {
    * Handle side effects for successful role retrieval
    *
    * @description
-   * Manages domain event publishing and audit logging after successful role retrieval by name.
-   * Publishes any domain events from the retrieved role entity and logs the search operation
-   * with correlation tracking.
+   * Manages audit logging after successful role retrieval by name.
+   * Logs the search operation with correlation tracking.
    *
    * @param role The retrieved role entity
    * @param requesterId ID of the user requesting the role
    */
   private async handleSideEffects(role: Role, requesterId?: number): Promise<void> {
-    // Domain Events - Publish any events from the role entity
-    const events = role.getDomainEvents();
-    if (events.length > 0) {
-      await this.eventBus.publishAll(events);
-      role.clearDomainEvents();
-    }
+    // Domain events are no longer needed with simplified Role entity
 
     // Audit Logging
     const correlationId = `get-role-name-${role.id}-${this.clock.nowEpochSeconds()}`;
