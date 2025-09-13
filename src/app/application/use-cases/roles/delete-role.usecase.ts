@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, LOGGER_PORT, CLOCK_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, LOGGER_PORT, CLOCK_PORT } from '@di/tokens';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { DeleteRoleRequest } from '@application/types/roles.types';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
-import type { Logger, LogContext } from '@core/interfaces/logger.interface';
+import type { Logger } from '@core/interfaces/logger.interface';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Delete Role Use Case
@@ -63,10 +65,10 @@ import type { DomainEventBusService } from '@core/services/domain-event-bus.serv
  *
  * @example
  * ```typescript
- * const useCase = inject(DeleteRole);
+ * const useCase = inject(DeleteRoleUseCase);
  * const request: DeleteRoleRequest = {
  *   id: 123,
- *   requesterId: 'admin-456'
+ *   requesterId: 456
  * };
  *
  * await useCase.execute(request);
@@ -86,11 +88,11 @@ import type { DomainEventBusService } from '@core/services/domain-event-bus.serv
  * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
-export class DeleteRole {
+export class DeleteRoleUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -115,77 +117,137 @@ export class DeleteRole {
    * ```typescript
    * await deleteRoleUseCase.execute({
    *   id: 123,
-   *   requesterId: 'admin-456'
+   *   requesterId: 456
    * });
    * ```
    */
   async execute(request: DeleteRoleRequest): Promise<void> {
     try {
-      // Step 1: Validate application rules
+      // Step 1: Validate application rules and authorization
       this.validateApplicationRules(request);
+      await this.validateAuthorization(request.requesterId);
 
-      // Step 2: Delegate to domain repository
-      await this.performDeletion(request);
+      // Step 2: Verify role exists and get role entity
+      const role = await this.verifyRoleExists(request.id);
 
-      // Step 3: Handle side effects
-      await this.handleSideEffects(request);
+      // Step 3: Delegate to domain repository for deletion
+      await this.roleRepo.delete(request.id);
 
-      this.logger.info('Role deletion completed successfully', {
-        correlationId: `delete-role-${request.id}`,
-        userId: request.requesterId?.toString(),
-        operation: 'delete_role',
-      } as LogContext);
+      // Step 4: Handle side effects
+      await this.handleSideEffects(role, request.requesterId!);
     } catch (error: unknown) {
-      this.logger.error('Role deletion failed', {
-        correlationId: `delete-role-${request.id}`,
-        userId: request.requesterId?.toString(),
-        operation: 'delete_role',
-      } as LogContext);
-
       throw this.errorTransformer.transform(error);
     }
   }
 
   /**
    * Validate application-level rules for role deletion
+   *
+   * Performs validation that cannot be done at the domain level,
+   * such as basic input validation and structure verification.
+   * Domain-level validations (business rules) are handled by the repository.
    */
   private validateApplicationRules(request: DeleteRoleRequest): void {
-    if (!request?.id || typeof request.id !== 'number' || request.id <= 0) {
-      throw this.errorTransformer.transform(new Error('Valid role ID is required'));
+    // Application-level validation: Check if request exists
+    if (!request) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Request is null or undefined',
+        'Request data is required for role deletion'
+      );
     }
 
-    if (!request.requesterId || typeof request.requesterId !== 'number') {
-      throw this.errorTransformer.transform(new Error('Valid requester ID is required'));
+    // Application-level validation: Role ID presence and basic format
+    if (!request.id || typeof request.id !== 'number' || request.id <= 0) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Role ID is required and must be a positive number',
+        'Valid role ID must be provided'
+      );
     }
+
+    // Note: Business logic validations (system role protection, referential integrity)
+    // are handled by the domain layer through repository operations
   }
 
   /**
-   * Perform role deletion operation
+   * Validate authorization for role deletion
+   *
+   * Ensures the requester has proper permissions to delete roles.
+   * This is an application-level concern for access control.
    */
-  private async performDeletion(request: DeleteRoleRequest): Promise<void> {
-    await this.roleRepo.delete(request.id);
+  private async validateAuthorization(requesterId?: number): Promise<void> {
+    // Check if requester is authenticated
+    if (!requesterId) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+        'Requester ID is required for role deletion',
+        'You must be authenticated to delete roles'
+      );
+    }
+
+    // Note: In a full implementation, you would:
+    // 1. Fetch the requester user from UserRepository
+    // 2. Check their role and permissions using business logic
+    // 3. Validate they have role management permissions
+    //
+    // For now, we're accepting any authenticated user
+    // This should be expanded based on business requirements
+
+    this.logger.info('Authorization validated for role deletion', {
+      userId: requesterId.toString(),
+      operation: 'delete_role_authorization',
+    });
+  }
+
+  /**
+   * Verify role exists before deletion
+   *
+   * Ensures the role exists in the system before attempting deletion.
+   * Returns the role entity for use in side effects.
+   */
+  private async verifyRoleExists(roleId: number): Promise<Role> {
+    const role = await this.roleRepo.getById(roleId);
+
+    if (!role) {
+      throw new ApplicationError(
+        ApplicationErrorCode.ROLE_NOT_FOUND,
+        'Role not found for deletion',
+        `Role with ID ${roleId} does not exist`
+      );
+    }
+
+    return role;
   }
 
   /**
    * Handle side effects for successful role deletion
+   *
+   * Manages audit logging and any other side effects that should occur
+   * after a successful role deletion operation.
+   *
+   * Domain Events Strategy:
+   * Currently using structured logging as a temporary domain event mechanism.
+   * In a future iteration, this should be replaced with proper domain event
+   * publishing through a DomainEventBus service for system integration.
    */
-  private async handleSideEffects(request: DeleteRoleRequest): Promise<void> {
-    const correlationId = `delete-role-${request.id}-${this.clock.nowEpochSeconds()}`;
+  private async handleSideEffects(role: Role, requesterId: number): Promise<void> {
+    const correlationId = `role-delete-${role.id}-${this.clock.nowEpochSeconds()}`;
 
-    // Domain Events - Simular publicación para role deletion
-    this.logger.info(`Domain Events simulation: RoleDeletedEvent for role ${request.id}`, {
+    // Audit logging for compliance and monitoring
+    this.logger.info('Role deleted successfully', {
+      operation: 'delete_role',
+      userId: requesterId.toString(),
       correlationId,
     });
 
-    // TODO: Una vez que el Domain Event Bus esté conectado a la API real,
-    // implementar publicación de eventos de role deletion
-    // await this.eventBus.publish(new RoleDeletedEvent(request.id, request.requesterId));
-
-    // Audit Logging
-    this.logger.info('Role deletion side effects handled', {
-      correlationId,
-      userId: request.requesterId?.toString(),
-      operation: 'delete_role',
-    } as LogContext);
+    // TODO: Replace with proper domain event publishing
+    // Example future implementation:
+    // await this.domainEventBus.publish(new RoleDeletedEvent({
+    //   roleId: role.id,
+    //   roleName: role.name,
+    //   deletedBy: requesterId,
+    //   timestamp: this.clock.now()
+    // }));
   }
 }
