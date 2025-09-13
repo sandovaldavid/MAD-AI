@@ -3,9 +3,9 @@ import { ROLE_REPOSITORY } from './tokens';
 import { HttpRoleRepository } from '@infrastructure/repositories/business/http-role.repository';
 import { ListRoles } from '@application/use-cases/roles/list-roles.usecase';
 import { GetRoleById } from '@application/use-cases/roles/get-role-by-id.usecase';
-import { CreateRole } from '@application/use-cases/roles/create-role.usecase';
+import { CreateRoleUseCase } from '@application/use-cases/roles/create-role.usecase';
 import { UpdateRoleUseCase } from '@application/use-cases/roles/update-role.usecase';
-import { DeleteRole } from '@application/use-cases/roles/delete-role.usecase';
+import { DeleteRoleUseCase } from '@application/use-cases/roles/delete-role.usecase';
 
 export function provideRoles(): Provider[] {
   return [
@@ -15,8 +15,8 @@ export function provideRoles(): Provider[] {
     // Use cases
     ListRoles,
     GetRoleById,
-    CreateRole,
+    CreateRoleUseCase,
     UpdateRoleUseCase,
-    DeleteRole,
+    DeleteRoleUseCase,
   ];
 }
