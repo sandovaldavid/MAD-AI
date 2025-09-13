@@ -1,10 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 import type { ListRolesRequest, RoleFilters } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -99,7 +98,7 @@ export class ListRoles {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -188,12 +187,7 @@ export class ListRoles {
    * @param requesterId ID of the user requesting the role listing
    */
   private async handleSideEffects(roles: Role[], requesterId?: number): Promise<void> {
-    // Domain Events - Publish events from all retrieved roles
-    const allEvents = roles.flatMap((role) => role.getDomainEvents());
-    if (allEvents.length > 0) {
-      await this.eventBus.publishAll(allEvents);
-      roles.forEach((role) => role.clearDomainEvents());
-    }
+    // Domain Events - No longer needed with simplified Role entity
 
     // Audit Logging
     const correlationId = `list-roles-${this.clock.nowEpochSeconds()}`;
@@ -216,7 +210,7 @@ export class ListRoles {
    * @returns Domain repository filter contract or undefined if no filters provided
    */
   private mapToDomainFilters(filters?: RoleFilters) {
-    if (!filters) return undefined;
+    if (!filters || Object.keys(filters).length === 0) return undefined;
 
     return {
       search: filters.accessLevel ? `level:${filters.accessLevel}` : undefined,
