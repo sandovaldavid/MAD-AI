@@ -1,17 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  USER_REPOSITORY,
-  ROLE_REPOSITORY,
-  CLOCK_PORT,
-  LOGGER_PORT,
-  DOMAIN_EVENT_BUS_REPO,
-} from '@di/tokens';
+import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 import type { GetUsersByRoleRequest } from '@application/types/roles.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Role } from '@domain/entities/role.entity';
@@ -112,7 +105,7 @@ export class GetUsersByRole {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -124,7 +117,7 @@ export class GetUsersByRole {
    * queries and comprehensive audit trails for user retrieval operations.
    *
    * @param request - User retrieval request with application-level types and pagination
-   * @returns Promise resolving to array of users assigned to the specified role
+   * @returns Promise resolving to array of User entities assigned to the specified role
    * @throws {ApplicationError} When validation fails or retrieval encounters errors
    *
    * @workflow
@@ -143,6 +136,7 @@ export class GetUsersByRole {
    * };
    *
    * const users = await getUsersByRoleUseCase.execute(request);
+   * console.log(`Found ${users.length} users with role ID 123`);
    * ```
    */
   async execute(request: GetUsersByRoleRequest): Promise<User[]> {
@@ -189,12 +183,22 @@ export class GetUsersByRole {
    * - Pagination parameters must be valid if provided
    */
   private validateApplicationRules(request: GetUsersByRoleRequest): void {
-    if (!request?.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
-      throw this.errorTransformer.transform(new Error('Invalid role ID'));
+    if (!request) {
+      throw this.errorTransformer.transform(new Error('Request is required'));
+    }
+
+    if (!request.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
+      throw this.errorTransformer.transform(
+        new Error('Invalid role ID: must be a positive integer')
+      );
     }
 
     if (request.pagination?.pageSize && request.pagination.pageSize > 1000) {
-      throw this.errorTransformer.transform(new Error('Page size too high'));
+      throw this.errorTransformer.transform(new Error('Page size exceeds maximum allowed: 1000'));
+    }
+
+    if (request.pagination?.page && request.pagination.page < 1) {
+      throw this.errorTransformer.transform(new Error('Page number must be greater than 0'));
     }
   }
 
@@ -258,28 +262,20 @@ export class GetUsersByRole {
    * Handle side effects for successful user retrieval
    *
    * @description
-   * Manages domain event publishing and comprehensive audit logging after successful user retrieval by role.
-   * Publishes any domain events from retrieved user entities and logs the operation with correlation
-   * tracking for audit and monitoring purposes. Ensures proper event handling and logging consistency.
+   * Manages comprehensive audit logging after successful user retrieval by role.
+   * Logs the operation with correlation tracking for audit and monitoring purposes.
+   * Ensures proper logging consistency.
    *
    * @param users Array of retrieved user entities
    * @param role The validated role entity used for filtering
    * @param requesterId ID of user who performed the retrieval operation
    *
    * @side-effects
-   * - Publishes UserRetrievedEvent domain events from user entities
    * - Logs retrieval operation with correlation ID and metrics
    * - Tracks operation metadata for audit purposes
    * - Records query performance and result statistics
    */
   private async handleSideEffects(users: User[], role: Role, requesterId?: number): Promise<void> {
-    // Domain Events (if any users have events)
-    const allEvents = users.flatMap((user) => user.getDomainEvents());
-    if (allEvents.length > 0) {
-      await this.eventBus.publishAll(allEvents);
-      users.forEach((user) => user.clearDomainEvents());
-    }
-
     // Audit Logging
     const correlationId = `get-users-role-${role.id}-${this.clock.nowEpochSeconds()}`;
     this.logger.info('Users by role retrieval completed', {
