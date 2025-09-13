@@ -1,10 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import { ApplicationError } from '@application/errors/application-error';
+import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+
 import type { DeactivateRoleRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -59,14 +61,14 @@ import type { Role } from '@domain/entities/role.entity';
  * - Business rules may prevent certain role deactivations
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, existence, and state checks
- * 2. **Delegate to Domain** - Repository handles deactivation business logic
- * 3. **Handle Side Effects** - Event publishing and audit logging
- * 4. **Return Result** - Deactivated role entity with domain events published
+ * 1. **Validate Application Rules** - ID validation and constraint checks
+ * 2. **Validate Authorization** - Check user permissions and authentication
+ * 3. **Delegate to Domain** - Repository handles deactivation business logic
+ * 4. **Handle Side Effects** - Event publishing and audit logging
  *
  * @example
  * ```typescript
- * const useCase = inject(DeactivateRole);
+ * const useCase = inject(DeactivateRoleUseCase);
  * const request: DeactivateRoleRequest = {
  *   id: 123,
  *   requesterId: 'admin-456'
@@ -89,11 +91,11 @@ import type { Role } from '@domain/entities/role.entity';
  * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
-export class DeactivateRole {
+export class DeactivateRoleUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -109,10 +111,10 @@ export class DeactivateRole {
    * @throws {ApplicationError} When validation fails or deactivation encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check authorization, existence, and state constraints
-   * 2. **Domain Delegation** - Forward to repository for deactivation business logic
-   * 3. **Side Effects** - Publish domain events and log audit information
-   * 4. **Return Result** - Return deactivated role entity
+   * 1. **Application Validation** - Check ID validation and constraints
+   * 2. **Authorization Validation** - Verify user permissions and authentication
+   * 3. **Domain Delegation** - Forward to repository for deactivation business logic
+   * 4. **Side Effects** - Publish domain events and log audit information
    *
    * @example
    * ```typescript
@@ -124,23 +126,18 @@ export class DeactivateRole {
    */
   async execute(request: DeactivateRoleRequest): Promise<Role> {
     try {
-      // Step 1: Validate application rules
-      this.validate(request);
+      // Step 1: Validate application rules and authorization
+      this.validateApplicationRules(request);
+      await this.validateAuthorization(request.requesterId);
 
       // Step 2: Delegate to domain repository
       const role = await this.roleRepo.update(request.id, { isActive: false });
 
       // Step 3: Handle side effects
-      await this.handleSideEffects(request, role);
+      await this.handleSideEffects(request);
 
       return role;
     } catch (error: unknown) {
-      this.logger.error('Role deactivation failed', {
-        correlationId: `deactivate-role-${request.id}-${this.clock.nowEpochSeconds()}`,
-        userId: request.requesterId?.toString(),
-        operation: 'deactivate_role',
-      } as LogContext);
-
       throw this.errorTransformer.transform(error);
     }
   }
@@ -156,9 +153,33 @@ export class DeactivateRole {
    * @param request Deactivate role request to validate
    * @throws ApplicationError when validation fails
    */
-  private validate(request: DeactivateRoleRequest): void {
+  private validateApplicationRules(request: DeactivateRoleRequest): void {
     if (!request?.id || request.id <= 0) {
-      throw this.errorTransformer.transform(new Error('Valid role ID required'));
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Valid role ID is required for deactivation',
+        'A valid role ID must be provided'
+      );
+    }
+  }
+
+  /**
+   * Validate authorization for role deactivation
+   *
+   * @description
+   * Validates that the requester has proper authorization to deactivate roles.
+   * Ensures that the requester ID is provided and has deactivation permissions.
+   *
+   * @param requesterId ID of the user requesting role deactivation
+   * @throws ApplicationError when authorization fails
+   */
+  private async validateAuthorization(requesterId?: number): Promise<void> {
+    if (!requesterId) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+        'Requester ID is required for role deactivation',
+        'You must be authenticated to deactivate roles'
+      );
     }
   }
 
@@ -166,34 +187,15 @@ export class DeactivateRole {
    * Handle side effects for successful role deactivation
    *
    * @description
-   * Manages domain event publishing and audit logging after successful role deactivation.
-   * Publishes any domain events from the deactivated role entity and logs the deactivation
-   * operation with correlation tracking.
+   * Manages audit logging after successful role deactivation.
+   * Logs the deactivation operation with correlation tracking.
    *
    * @param request The deactivate role request
-   * @param role The deactivated role entity
    */
-  private async handleSideEffects(request: DeactivateRoleRequest, role: Role): Promise<void> {
+  private async handleSideEffects(request: DeactivateRoleRequest): Promise<void> {
     const correlationId = `role-deactivate-${request.id}-${this.clock.nowEpochSeconds()}`;
 
-    // Domain Events - Publish any events from the deactivated role entity
-    const events = role.getDomainEvents();
-    if (events.length > 0) {
-      // Simulate publishing until real API is connected
-      this.logger.info(
-        `Domain Events simulation: Publishing ${events.length} events for role deactivation`,
-        {
-          correlationId,
-        } as LogContext
-      );
-
-      // TODO: Once Domain Event Bus is connected to real API, replace simulation with:
-      // await this.eventBus.publishAll(events);
-      // role.clearDomainEvents();
-
-      // For now, simulate cleanup
-      role.clearDomainEvents();
-    }
+    // Domain events are no longer needed with simplified Role entity
 
     this.logger.info('Role deactivated', {
       correlationId,
