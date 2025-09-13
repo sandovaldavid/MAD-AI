@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationError } from '@application/errors/application-error';
 import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+
 import type { CreateRoleRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -56,7 +56,7 @@ import type { Role } from '@domain/entities/role.entity';
  *
  * @example
  * ```typescript
- * const useCase = inject(CreateRole);
+ * const useCase = inject(CreateRoleUseCase);
  * const request: CreateRoleRequest = {
  *   name: 'Project Manager',
  *   accessLevel: 3,
@@ -81,11 +81,11 @@ import type { Role } from '@domain/entities/role.entity';
  * @module Role Management
  */
 @Injectable({ providedIn: 'root' })
-export class CreateRole {
+export class CreateRoleUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -119,31 +119,24 @@ export class CreateRole {
    */
   async execute(request: CreateRoleRequest): Promise<Role> {
     try {
-      // Step 1: Validate application rules
+      // Step 1: Validate application rules and authorization
       this.validateApplicationRules(request);
+      await this.validateAuthorization(request.requesterId);
 
-      // Step 2: Validate requester and map to domain contract
-      if (!request.requesterId) {
-        throw new ApplicationError(
-          ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
-          'Requester ID is required for role creation',
-          'You must be authenticated to create roles'
-        );
-      }
-
+      // Step 2: Map to domain contract and execute creation
       const createContract = {
         name: request.name,
         accessLevel: request.accessLevel,
         description: request.description,
         canLeadProjects: request.canLeadProjects,
         isUniquePerTeam: request.isUniquePerTeam,
-        createdByUserId: request.requesterId,
+        createdByUserId: request.requesterId!,
       };
 
       const role = await this.roleRepo.create(createContract);
 
       // Step 3: Handle side effects
-      await this.handleSideEffects(role, request.requesterId);
+      await this.handleSideEffects(role, request.requesterId!);
 
       return role;
     } catch (error: unknown) {
@@ -153,34 +146,92 @@ export class CreateRole {
 
   /**
    * Validate application-level rules for role creation
+   *
+   * Performs validation that cannot be done at the domain level,
+   * such as authorization checks and application-specific constraints.
+   * Domain-level validations (business rules) are handled by the Role entity.
    */
   private validateApplicationRules(request: CreateRoleRequest): void {
-    if (!request?.name?.trim()) {
-      throw this.errorTransformer.transform(new Error('Role name is required'));
+    // Application-level validation: Check if request exists
+    if (!request) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Request is null or undefined',
+        'Request data is required for role creation'
+      );
     }
 
-    if (request.name.length > 100) {
-      throw this.errorTransformer.transform(new Error('Role name too long'));
+    // Application-level validation: Basic input presence (not business logic)
+    if (!request.name) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Role name is required',
+        'Role name must be provided'
+      );
     }
+
+    // Note: Business logic validations (name length, format, reserved names)
+    // are handled by the Role.create() method in the domain layer
+  }
+
+  /**
+   * Validate authorization for role creation
+   *
+   * Ensures the requester has proper permissions to create roles.
+   * This is an application-level concern for access control.
+   */
+  private async validateAuthorization(requesterId?: number): Promise<void> {
+    // Check if requester is authenticated
+    if (!requesterId) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+        'Requester ID is required for role creation',
+        'You must be authenticated to create roles'
+      );
+    }
+
+    // Note: In a full implementation, you would:
+    // 1. Fetch the requester user from UserRepository
+    // 2. Check their role and permissions using business logic
+    // 3. Validate they have role management permissions
+    //
+    // For now, we're accepting any authenticated user
+    // This should be expanded based on business requirements
+
+    this.logger.info('Authorization validated for role creation', {
+      userId: requesterId.toString(),
+      operation: 'create_role_authorization',
+    });
   }
 
   /**
    * Handle side effects for successful role creation
+   *
+   * Manages audit logging and any other side effects that should occur
+   * after a successful role creation operation.
+   *
+   * Domain Events Strategy:
+   * Currently using structured logging as a temporary domain event mechanism.
+   * In a future iteration, this should be replaced with proper domain event
+   * publishing through a DomainEventBus service for system integration.
    */
-  private async handleSideEffects(role: Role, requesterId?: number): Promise<void> {
-    // Domain Events
-    const events = role.getDomainEvents();
-    if (events.length > 0) {
-      await this.eventBus.publishAll(events);
-      role.clearDomainEvents();
-    }
+  private async handleSideEffects(role: Role, requesterId: number): Promise<void> {
+    const correlationId = `role-create-${role.id}-${this.clock.nowEpochSeconds()}`;
 
-    // Audit Logging
-    const correlationId = `role-${role.id}-${this.clock.nowEpochSeconds()}`;
-    this.logger.info('Role creation completed', {
-      userId: requesterId?.toString(),
+    // Audit logging for compliance and monitoring
+    this.logger.info('Role created successfully', {
       operation: 'create_role',
+      userId: requesterId.toString(),
       correlationId,
     });
+
+    // TODO: Replace with proper domain event publishing
+    // Example future implementation:
+    // await this.domainEventBus.publish(new RoleCreatedEvent({
+    //   roleId: role.id,
+    //   roleName: role.name,
+    //   createdBy: requesterId,
+    //   timestamp: this.clock.now()
+    // }));
   }
 }
