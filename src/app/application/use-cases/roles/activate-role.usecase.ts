@@ -1,10 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, LOGGER_PORT, CLOCK_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
 import type { ActivateRoleRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -19,50 +18,52 @@ import type { Role } from '@domain/entities/role.entity';
  * @description
  * Orchestrates the activation of roles in the system by coordinating domain entities,
  * repositories, and cross-cutting concerns. Ensures data integrity, authorization, and
- * proper event publishing for role state management operations. Handles domain events
- * and provides comprehensive audit trails for role activation operations.
+ * comprehensive audit trails for role activation operations. Uses the Role entity's
+ * activate() domain method to ensure proper business logic execution and state transition.
+ *
+ * This use case follows a **Domain-Centric** pattern where the role activation
+ * business logic is executed through the Role entity's activate() method, ensuring
+ * proper encapsulation of domain rules and state management.
  *
  * @responsibilities
  * - Validate application-level authorization and activation permissions
  * - Verify role exists and is in a valid state for activation
- * - Check for business rules preventing role activation
  * - Transform application DTOs to domain operations
- * - Delegate role activation to domain repository
- * - Publish domain events from activated role entity
+ * - Invoke Role entity's activate() domain method for business logic
+ * - Persist activation state through domain repository
  * - Handle audit logging and error normalization
  * - Ensure transactional consistency for state changes
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
  * - **Pattern**: Use Case orchestrator with 4-step pattern
- * - **Dependencies**: Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock)
  * - **Injection**: Token-based dependency injection
  * - **Error Handling**: ApplicationError transformation
- * - **Events**: Domain event publishing for state changes
  * - **Constraints**: Authorization checks and state validation
  *
  * @dependencies
  * - {@link RoleRepository} - Domain repository for role activation
  * - {@link ClockPort} - System clock for timestamps
  * - {@link Logger} - Structured logging service
- * - {@link DomainEventBusService} - Domain event publishing
  * - {@link ApplicationErrorTransformer} - Error normalization
  *
  * @domain-events
- * - RoleActivatedEvent (published from role entity domain events)
+ * Domain events are not currently implemented in this version of the system.
+ * The Role entity's activate() method handles state transitions directly.
  *
  * @constraints
  * - Role must exist in the system
- * - Role must not already be active
+ * - Role must not already be active (checked by domain method)
  * - Requester must have activation permissions
- * - System roles may have additional activation restrictions
- * - Business rules may prevent certain role activations
+ * - Business rules for activation are enforced by Role.activate() method
  *
  * @workflow
  * 1. **Validate Application Rules** - Authorization, existence, and state checks
- * 2. **Delegate to Domain** - Repository handles activation business logic
- * 3. **Handle Side Effects** - Event publishing and audit logging
- * 4. **Return Result** - Activated role entity with domain events published
+ * 2. **Entity Retrieval** - Get role entity from domain repository
+ * 3. **Domain Operation** - Invoke role.activate() domain method
+ * 4. **Persistence** - Save activation state through repository
+ * 5. **Side Effects** - Audit logging and correlation tracking
  *
  * @example
  * ```typescript
@@ -93,7 +94,7 @@ export class ActivateRole {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -110,9 +111,10 @@ export class ActivateRole {
    *
    * @workflow
    * 1. **Application Validation** - Check authorization, existence, and state constraints
-   * 2. **Domain Delegation** - Forward to repository for activation business logic
-   * 3. **Side Effects** - Publish domain events and log audit information
-   * 4. **Return Result** - Return activated role entity
+   * 2. **Entity Retrieval** - Get role entity from domain repository
+   * 3. **Domain Operation** - Invoke role.activate() domain method
+   * 4. **Persistence** - Save activation state through repository
+   * 5. **Side Effects** - Audit logging and correlation tracking
    *
    * @example
    * ```typescript
@@ -127,13 +129,22 @@ export class ActivateRole {
       // Step 1: Validate application rules
       this.validate(request);
 
-      // Step 2: Delegate to domain repository
-      const role = await this.roleRepo.update(request.id, { isActive: true });
+      // Step 2: Get role entity from repository
+      const role = await this.roleRepo.getById(request.id);
+      if (!role) {
+        throw this.errorTransformer.transform(new Error(`Role with ID ${request.id} not found`));
+      }
 
-      // Step 3: Handle side effects
-      await this.handleSideEffects(request, role);
+      // Step 3: Invoke domain method for activation
+      role.activate();
 
-      return role;
+      // Step 4: Save the updated entity through repository update
+      const updatedRole = await this.roleRepo.update(request.id, { isActive: true });
+
+      // Step 5: Handle side effects
+      await this.handleSideEffects(request);
+
+      return updatedRole;
     } catch (error: unknown) {
       this.logger.error('Role activation failed', {
         correlationId: `activate-role-${request.id}-${this.clock.nowEpochSeconds()}`,
@@ -166,34 +177,15 @@ export class ActivateRole {
    * Handle side effects for successful role activation
    *
    * @description
-   * Manages domain event publishing and audit logging after successful role activation.
-   * Publishes any domain events from the activated role entity and logs the activation
-   * operation with correlation tracking.
+   * Manages audit logging after successful role activation.
+   * Logs the activation operation with correlation tracking.
    *
    * @param request The activate role request
-   * @param role The activated role entity
    */
-  private async handleSideEffects(request: ActivateRoleRequest, role: Role): Promise<void> {
+  private async handleSideEffects(request: ActivateRoleRequest): Promise<void> {
     const correlationId = `role-activate-${request.id}-${this.clock.nowEpochSeconds()}`;
 
-    // Domain Events - Publish any events from the activated role entity
-    const events = role.getDomainEvents();
-    if (events.length > 0) {
-      // Simulate publishing until real API is connected
-      this.logger.info(
-        `Domain Events simulation: Publishing ${events.length} events for role activation`,
-        {
-          correlationId,
-        } as LogContext
-      );
-
-      // TODO: Once Domain Event Bus is connected to real API, replace simulation with:
-      // await this.eventBus.publishAll(events);
-      // role.clearDomainEvents();
-
-      // For now, simulate cleanup
-      role.clearDomainEvents();
-    }
+    // Domain events are no longer needed with simplified Role entity
 
     this.logger.info('Role activated', {
       correlationId,
