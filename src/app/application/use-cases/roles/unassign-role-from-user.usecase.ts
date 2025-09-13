@@ -24,12 +24,17 @@ import type { Role } from '@domain/entities/role.entity';
  * business rules around user-role relationship removal and maintains consistency
  * across the system.
  *
+ * This use case follows a **Repository-Centric** pattern where role assignment/unassignment
+ * operations are handled primarily through repository methods rather than domain entity
+ * methods. This design is intentional and consistent with the current domain model where
+ * Role and User entities focus on their individual properties and behaviors, while
+ * relationship management is delegated to specialized repository operations.
+ *
  * @responsibilities
  * - Validate application-level authorization for role unassignments
  * - Ensure both user and role exist and are in valid states
  * - Transform application DTOs to domain operations
  * - Delegate role unassignment to domain repository with proper context
- * - Publish domain events for role unassignment changes
  * - Handle comprehensive audit logging with correlation tracking
  * - Ensure transactional consistency for user-role relationship changes
  * - Business rules and constraints are enforced by the domain layer
@@ -37,10 +42,9 @@ import type { Role } from '@domain/entities/role.entity';
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
  * - **Pattern**: Use Case orchestrator with 4-step pattern
- * - **Dependencies**: User & Role Domain Repositories, Core Services (Logger, Clock, Event Bus)
+ * - **Dependencies**: User & Role Domain Repositories, Core Services (Logger, Clock)
  * - **Injection**: Token-based dependency injection
  * - **Error Handling**: ApplicationError transformation with detailed context
- * - **Events**: Domain event publishing for user-role relationship changes
  * - **Constraints**: Authorization, existence validation, and business rule enforcement
  *
  * @dependencies
@@ -48,13 +52,12 @@ import type { Role } from '@domain/entities/role.entity';
  * - {@link RoleRepository} - Domain repository for role unassignment operations
  * - {@link ClockPort} - System clock for timestamps and correlation IDs
  * - {@link Logger} - Structured logging service with LogContext
- * - {@link DomainEventBusService} - Domain event publishing service
  * - {@link ApplicationErrorTransformer} - Error normalization and transformation
  *
  * @domain-events
- * - RoleUnassignedFromUserEvent (published from role unassignment domain logic)
- * - UserRoleUpdatedEvent (published from user entity domain events)
- * - RoleUnassignmentCompletedEvent (published for successful unassignments)
+ * Domain events are currently not implemented in this version of the system.
+ * Future versions may include events like RoleUnassignedFromUserEvent for
+ * decoupled notification and audit trail management.
  *
  * @constraints
  * - User must exist and be active in the system
@@ -67,7 +70,7 @@ import type { Role } from '@domain/entities/role.entity';
  * 1. **Validate Application Rules** - Authorization, existence, and constraint checks
  * 2. **Validate Domain Entities** - Ensure user and role exist with proper validation
  * 3. **Delegate to Domain** - Repository handles unassignment with business logic
- * 4. **Handle Side Effects** - Event publishing and comprehensive audit logging
+ * 4. **Handle Side Effects** - Comprehensive audit logging
  * 5. **Return Result** - Confirmation of successful unassignment
  *
  * @example
@@ -101,7 +104,6 @@ export class UnassignRoleFromUser {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  // Domain event bus removed as part of refactor
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -120,7 +122,7 @@ export class UnassignRoleFromUser {
    * 1. **Application Validation** - Check authorization, parameters, and basic constraints
    * 2. **Domain Validation** - Verify user and role exist with business rule validation
    * 3. **Domain Delegation** - Forward to repository for unassignment business logic
-   * 4. **Side Effects** - Publish domain events and log comprehensive audit information
+   * 4. **Side Effects** - Comprehensive audit information logging
    * 5. **Return Result** - Confirm successful unassignment completion
    *
    * @example
@@ -177,7 +179,7 @@ export class UnassignRoleFromUser {
    */
   private validateApplicationRules(request: UnassignRoleFromUserRequest): void {
     if (!request) {
-      throw this.errorTransformer.transform(new Error('Invalid user ID'));
+      throw this.errorTransformer.transform(new Error('Request is required'));
     }
 
     if (!request.userId || request.userId <= 0 || !Number.isInteger(request.userId)) {
@@ -252,16 +254,15 @@ export class UnassignRoleFromUser {
    * Handle side effects for successful role unassignment
    *
    * @description
-   * Manages domain event publishing and comprehensive audit logging after successful role unassignment.
-   * Publishes domain events from both user and role entities and logs the operation with correlation
-   * tracking for audit and monitoring purposes. Ensures proper event handling and logging consistency.
+   * Manages comprehensive audit logging after successful role unassignment.
+   * Logs the operation with correlation tracking for audit and monitoring purposes.
+   * Ensures proper logging consistency and maintains audit trail requirements.
    *
    * @param user The user entity from which role was unassigned
    * @param role The role entity that was unassigned
    * @param requesterId ID of user who performed the unassignment operation
    *
    * @side-effects
-   * - Publishes RoleUnassignedFromUserEvent domain events
    * - Logs unassignment operation with correlation ID and context
    * - Tracks operation metadata for audit purposes
    * - Records unassignment details for compliance and monitoring
