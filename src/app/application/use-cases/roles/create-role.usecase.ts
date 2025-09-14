@@ -140,6 +140,11 @@ export class CreateRoleUseCase {
 
       return role;
     } catch (error: unknown) {
+      // Don't transform ApplicationErrors (already in correct format)
+      if (error instanceof ApplicationError) {
+        throw error;
+      }
+      // Transform external errors (repository, system errors)
       throw this.errorTransformer.transform(error);
     }
   }
@@ -170,7 +175,7 @@ export class CreateRoleUseCase {
       );
     }
 
-    // Note: Business logic validations (name length, format, reserved names)
+    // Note: Business logic validations (name length, format)
     // are handled by the Role.create() method in the domain layer
   }
 
