@@ -153,9 +153,9 @@ export interface ListUsersResult {
 }
 
 /**
- * User detail result - returns domain entity directly
+ * User detail result - returns domain entity directly or null if not found
  */
-export type GetUserResult = User;
+export type GetUserResult = User | null;
 
 /**
  * User deletion result - simple confirmation
