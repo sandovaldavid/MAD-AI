@@ -27,7 +27,7 @@ import type {
   CreateUserContract,
   UpdateUserPatchContract,
   UserListFilterContract,
-} from '@/app/domain/repositories/business/user.contract';
+} from '@domain/repositories/business/user.contract';
 
 // ============================================================================
 // Simple Request Interfaces (Application Layer Coordination)
@@ -48,6 +48,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   userId: number;
   updateData: UpdateUserPatchContract;
+  requesterId: number;
   notifyUser?: boolean;
 }
 
@@ -56,6 +57,7 @@ export interface UpdateUserRequest {
  */
 export interface ListUsersRequest {
   filter?: UserListFilterContract;
+  requesterId: number;
 }
 
 /**
@@ -77,6 +79,7 @@ export interface GetUserByEmailRequest {
  */
 export interface GetUserByUsernameRequest {
   username: string;
+  requesterId: number;
 }
 
 /**
@@ -235,7 +238,16 @@ export type UserEvent =
   | { type: 'user-deleted'; userId: number }
   | { type: 'user-activated'; user: User }
   | { type: 'user-deactivated'; user: User }
-  | { type: 'bulk-operation-completed'; operation: string; results: Record<string, unknown> | ListUsersResult | BulkCreateUsersResult | BulkUpdateUsersResult | BulkDeleteUsersResult };
+  | {
+      type: 'bulk-operation-completed';
+      operation: string;
+      results:
+        | Record<string, unknown>
+        | ListUsersResult
+        | BulkCreateUsersResult
+        | BulkUpdateUsersResult
+        | BulkDeleteUsersResult;
+    };
 
 /**
  * User statistics for analytics
