@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Role } from '@domain/entities/role.entity';
-import type { AccessLevelPermissions } from '@domain/value-objects/accesslevel.vo';
 
 /**
  * Role Application Mapper
@@ -23,7 +22,7 @@ export class RoleApplicationMapper {
     return {
       id: role.id,
       name: role.name,
-      accessLevel: role.getAccessLevel().getValue(),
+      accessLevel: role.accessLevel,
       description: role.description,
       canLeadProjects: role.canLeadProjects(),
       isUniquePerTeam: role.isUniqueForTeam(),
@@ -71,7 +70,7 @@ export interface RoleSummary {
 }
 
 export interface RoleDetail extends RoleSummary {
-  readonly permissions: AccessLevelPermissions;
+  readonly permissions: string[];
   readonly metadata: {
     readonly totalUsers: number;
     readonly canManageUsers: boolean;
