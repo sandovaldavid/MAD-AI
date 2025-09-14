@@ -299,6 +299,7 @@ export interface NotificationPort {
    * @throws {ValidationError} When update data is invalid
    * @throws {ImmutableFieldError} When attempting to update immutable fields
    *
+   * @deprecated Use findById() + entity methods + save() pattern instead
    * @businessRules
    * - Must validate notification exists before updating
    * - Should preserve immutable fields (id, createdAt)
@@ -356,6 +357,129 @@ export interface NotificationPort {
    * ```
    */
   update(id: NotificationId, patch: Partial<Notification>): void;
+
+  /**
+   * Finds a notification by its unique identifier.
+   *
+   * @description Retrieves a specific notification entity by ID.
+   * This method supports the entity-first pattern where business operations
+   * are performed on domain entities rather than through repository patches.
+   *
+   * @param id - Unique identifier of the notification to find
+   * @returns Promise resolving to notification entity or null if not found
+   *
+   * @throws {ValidationError} When ID format is invalid
+   *
+   * @businessRules
+   * - Must return null for non-existent notifications (not throw error)
+   * - Should return a complete entity with all properties populated
+   * - Must preserve entity identity and immutable properties
+   * - Should work consistently with snapshot() data
+   *
+   * @example Basic Entity Retrieval
+   * ```typescript
+   * // Retrieve notification for business operations
+   * const notification = await notificationRepository.findById(notificationId);
+   *
+   * if (notification) {
+   *   // Perform business operations on the entity
+   *   notification.markAsRead();
+   *   notification.updateMessage('Updated message');
+   *
+   *   // Save the updated entity
+   *   await notificationRepository.save(notification);
+   * } else {
+   *   console.log('Notification not found');
+   * }
+   * ```
+   *
+   * @example Entity-First Update Pattern
+   * ```typescript
+   * // Entity-first pattern for complex updates
+   * async function updateNotificationSafely(id: string, updates: NotificationUpdates) {
+   *   const notification = await notificationRepository.findById(id);
+   *
+   *   if (!notification) {
+   *     throw new NotificationNotFoundError(`Notification ${id} not found`);
+   *   }
+   *
+   *   // Use domain methods for business logic
+   *   if (updates.message) notification.updateMessage(updates.message);
+   *   if (updates.type) notification.updateType(updates.type);
+   *   if (updates.shouldMarkRead) notification.markAsRead();
+   *
+   *   // Single save operation
+   *   await notificationRepository.save(notification);
+   * }
+   * ```
+   */
+  findById(id: NotificationId): Promise<Notification | null>;
+
+  /**
+   * Saves an updated notification entity.
+   *
+   * @description Persists changes made to a notification entity through its
+   * domain methods. This method completes the entity-first pattern by
+   * handling the persistence of domain-validated changes.
+   *
+   * @param notification - The notification entity to save
+   * @returns Promise resolving when save operation is complete
+   *
+   * @throws {ValidationError} When notification entity is invalid
+   * @throws {NotificationNotFoundError} When trying to save non-existent notification
+   * @throws {ConcurrencyError} When entity was modified by another process
+   *
+   * @businessRules
+   * - Must validate entity state before persistence
+   * - Should update timestamps appropriately (updatedAt)
+   * - Must trigger subscription callbacks after successful save
+   * - Should handle optimistic locking if implemented
+   * - Must preserve entity identity (ID cannot change)
+   *
+   * @example Entity-First Update
+   * ```typescript
+   * // Complete entity-first update flow
+   * async function markNotificationAsRead(notificationId: string): Promise<void> {
+   *   // 1. Retrieve entity
+   *   const notification = await notificationRepository.findById(notificationId);
+   *
+   *   if (!notification) {
+   *     throw new Error('Notification not found');
+   *   }
+   *
+   *   // 2. Execute business logic through entity
+   *   notification.markAsRead();
+   *
+   *   // 3. Persist changes
+   *   await notificationRepository.save(notification);
+   * }
+   * ```
+   *
+   * @example Batch Entity Updates
+   * ```typescript
+   * // Efficient batch updates using entity pattern
+   * async function markMultipleAsRead(notificationIds: string[]): Promise<void> {
+   *   const notifications = await Promise.all(
+   *     notificationIds.map(id => notificationRepository.findById(id))
+   *   );
+   *
+   *   const validNotifications = notifications.filter(n => n !== null);
+   *
+   *   // Apply business logic to each entity
+   *   validNotifications.forEach(notification => {
+   *     notification.markAsRead();
+   *   });
+   *
+   *   // Batch save all updated entities
+   *   await Promise.all(
+   *     validNotifications.map(notification =>
+   *       notificationRepository.save(notification)
+   *     )
+   *   );
+   * }
+   * ```
+   */
+  save(notification: Notification): Promise<void>;
 
   /**
    * Dismisses and removes a specific notification.
