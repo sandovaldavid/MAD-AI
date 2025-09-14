@@ -18,21 +18,19 @@ import type { Role } from '@domain/entities/role.entity';
  * with proper authorization and search constraints.
  *
  * @description
- * Orchestrates the retrieval of roles by their exact name from the system by coordinating domain
- * entities, repositories, and cross-cutting concerns. Performs case-insensitive exact matching
- * with comprehensive validation and audit trails. Ensures data integrity, authorization, and
- * proper event publishing for role search operations. Handles domain events and provides
- * detailed audit logging for role access patterns.
+ * Orchestrates role search operations by coordinating between the presentation layer and
+ * domain repositories. This use case follows Clean Architecture principles by maintaining
+ * pure orchestration responsibilities without implementing business logic. All search
+ * criteria, matching logic, and validation rules are delegated to the Domain layer.
+ * Focuses on request coordination, error transformation, and audit logging.
  *
  * @responsibilities
- * - Validate application-level authorization and search permissions
- * - Verify role name format, length, and search constraints
- * - Perform exact case-insensitive name matching
- * - Transform application DTOs to domain operations
- * - Delegate role search to domain repository with filtering
- * - Publish domain events from retrieved role entity
- * - Handle audit logging and error normalization
- * - Ensure transactional consistency for search operations
+ * - Validate application-level presence and nullability checks
+ * - Handle basic authentication requirements
+ * - Orchestrate role search by delegating to domain repository
+ * - Transform domain errors to application errors
+ * - Handle audit logging for successful operations
+ * - Coordinate between domain services and presentation layer
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
@@ -54,18 +52,16 @@ import type { Role } from '@domain/entities/role.entity';
  * - RoleRetrievedEvent (published from role entity domain events)
  *
  * @constraints
- * - Role name must be provided and non-empty
- * - Role name length limited to 100 characters
- * - Exact case-insensitive name matching required
- * - Role must exist in the system
- * - Requester must have read permissions for the role
- * - System roles may have additional access restrictions
+ * - Application layer only handles presence and nullability checks
+ * - Domain layer enforces all business rules and validation constraints
+ * - Repository handles search logic and matching criteria
+ * - Requester authorization is validated at application level
  *
  * @workflow
- * 1. **Validate Application Rules** - Name format and constraint checks
- * 2. **Validate Authorization** - Check user permissions and authentication
- * 3. **Delegate to Domain** - Repository handles search with filtering and exact matching
- * 4. **Handle Side Effects** - Event publishing and audit logging
+ * 1. **Validate Application Rules** - Presence and nullability checks only
+ * 2. **Validate Authorization** - Check basic authentication requirements
+ * 3. **Delegate to Domain** - Repository handles all search logic and business rules
+ * 4. **Handle Side Effects** - Audit logging only
  *
  * @example
  * ```typescript
@@ -79,11 +75,10 @@ import type { Role } from '@domain/entities/role.entity';
  * console.log('Role found:', role.name, role.description);
  * ```
  *
- * @throws {ApplicationError} When validation fails or role name is invalid
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
- * @throws {ApplicationError} When role with exact name does not exist
- * @throws {ApplicationError} When role name exceeds length constraints
- * @throws {ApplicationError} When system constraints prevent role access
+ * @throws {ApplicationError} When role name is not provided or empty
+ * @throws {ApplicationError} When authorization fails or requester lacks authentication
+ * @throws {ApplicationError} When no roles found matching search criteria
+ * @throws {ApplicationError} When domain repository operations fail
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -112,10 +107,10 @@ export class GetRoleByNameUseCase {
    * @throws {ApplicationError} When validation fails or role retrieval encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check name format and constraints
-   * 2. **Authorization Validation** - Verify user permissions and authentication
-   * 3. **Domain Search** - Perform exact case-insensitive name matching via repository
-   * 4. **Side Effects** - Publish domain events and log audit information
+   * 1. **Application Validation** - Check presence and nullability only
+   * 2. **Authorization Validation** - Verify basic authentication requirements
+   * 3. **Domain Delegation** - Repository handles all search logic and business rules
+   * 4. **Side Effects** - Audit logging only
    *
    * @example
    * ```typescript
@@ -147,9 +142,8 @@ export class GetRoleByNameUseCase {
    * Validate application-level rules for role name search
    *
    * @description
-   * Validates request parameters including role name format, length constraints,
-   * and basic business rules specific to the application layer. Domain validation
-   * is handled by the repository layer.
+   * Application layer only handles presence and nullability checks.
+   * All business rules and constraints are delegated to the Domain layer.
    *
    * @param request Get role by name request to validate
    * @throws ApplicationError when validation fails
@@ -160,14 +154,6 @@ export class GetRoleByNameUseCase {
         ApplicationErrorCode.INVALID_INPUT,
         'Invalid input provided: Role name is required for search',
         'Role name is required for search'
-      );
-    }
-
-    if (request.name.length > 50) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Invalid input provided: Role name too long',
-        'Role name must be 50 characters or less'
       );
     }
   }
@@ -193,32 +179,30 @@ export class GetRoleByNameUseCase {
   }
 
   /**
-   * Find role by exact name match
+   * Find role by delegating search to Domain repository
    *
    * @description
-   * Performs exact case-insensitive name matching by searching the repository
-   * and finding the role with the exact name match. Throws error if no exact
-   * match is found.
+   * Delegates role search to Domain repository. The Domain layer handles
+   * all search logic, matching criteria, and business rules. Application
+   * layer only orchestrates the call and transforms any repository errors.
    *
-   * @param name The role name to search for (exact match, case-insensitive)
+   * @param name The role name to search for
    * @returns Promise resolving to the matching Role entity
-   * @throws ApplicationError when no exact match is found
+   * @throws ApplicationError when role retrieval fails
    */
   private async findRoleByName(name: string): Promise<Role> {
     const roles = await this.roleRepo.list({ search: name.trim() });
 
-    // Find exact match (case-insensitive)
-    const exactMatch = roles.find((role) => role.name.toLowerCase() === name.trim().toLowerCase());
-
-    if (!exactMatch) {
+    if (roles.length === 0) {
       throw new ApplicationError(
         ApplicationErrorCode.ROLE_NOT_FOUND,
-        `Role with name '${name.trim()}' not found`,
-        `No role found with the name '${name.trim()}'`
+        `No roles found matching search term '${name.trim()}'`,
+        `No roles found matching '${name.trim()}'`
       );
     }
 
-    return exactMatch;
+    // Return first result - Domain repository handles search logic
+    return roles[0];
   }
 
   /**
