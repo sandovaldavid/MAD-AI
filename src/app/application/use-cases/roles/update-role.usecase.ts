@@ -128,21 +128,21 @@ export class UpdateRoleUseCase {
    */
   async execute(input: UpdateRoleInput): Promise<Role> {
     try {
-      // Step 1: Validate application rules
+      // Step 1: Validate application rules (authorization and null checks only)
       this.validateApplicationRules(input);
 
-      // Step 2: Get existing role and prepare update data
+      // Step 2: Get existing role for existence check
       const existingRole = await this.roleRepo.getById(input.id);
       if (!existingRole) {
         throw new Error(`Role with id ${input.id} not found`);
       }
 
+      // Step 3: Build update contract and delegate to repository
+      // Repository will handle all business logic validation and persistence
       const updateData: UpdateRolePatchContract = this.buildUpdateData(input);
-
-      // Step 3: Execute domain operation
       const updatedRole = await this.roleRepo.update(input.id, updateData);
 
-      // Step 4: Handle side effects
+      // Step 4: Handle side effects (audit logging)
       await this.handleSideEffects(updatedRole, input.id);
 
       return updatedRole;
@@ -160,35 +160,30 @@ export class UpdateRoleUseCase {
    * Performs validation that cannot be done at the domain level,
    * such as authorization checks and application-specific constraints.
    *
+   * ✅ CORRECT: Only validates application concerns:
+   * - Input nullability (application layer responsibility)
+   * - Basic type safety (application layer responsibility)
+   * - Authorization (application layer responsibility)
+   *
+   * ❌ NEVER validates business rules:
+   * - Name length limits (domain responsibility)
+   * - Access level ranges (domain responsibility)
+   * - Business constraints (domain responsibility)
+   *
    * @param input - Role update input to validate
-   * @throws {ApplicationError} When validation fails
+   * @throws {ApplicationError} When application-level validation fails
    */
   private validateApplicationRules(input: UpdateRoleInput): void {
-    // Check if input exists
+    // Application-level validation: Check if input exists
     if (!input) {
       throw this.errorTransformer.transform(
         new Error('Invalid input provided: Input is null or undefined')
       );
     }
 
+    // Application-level validation: Check ID presence and basic type
     if (!input.id || input.id <= 0) {
       throw this.errorTransformer.transform(new Error('Invalid input provided: Invalid role ID'));
-    }
-
-    if (input.name !== undefined && (!input.name?.trim() || input.name.length > 100)) {
-      throw this.errorTransformer.transform(new Error('Invalid input provided: Invalid role name'));
-    }
-
-    if (
-      input.accessLevel !== undefined &&
-      (typeof input.accessLevel !== 'number' ||
-        !Number.isInteger(input.accessLevel) ||
-        input.accessLevel < 0 ||
-        input.accessLevel > 10)
-    ) {
-      throw this.errorTransformer.transform(
-        new Error('Invalid input provided: Invalid access level')
-      );
     }
   }
 
