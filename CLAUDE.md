@@ -17,7 +17,13 @@ npm run serve:ssr           # Serve SSR build locally
 npm test                    # Run all tests with watch mode
 npm run test:ci             # Run all tests once (for CI)
 npm run test:domain         # Run domain layer tests only
+npm run test:core           # Run core layer tests only
+npm run test:application    # Run application layer tests only
 npm run test:infrastructure # Run infrastructure layer tests only
+npm run test:presentation   # Run presentation layer tests only
+
+# Run specific test file
+npm test -- --include="**/filename.spec.ts" --watch=false
 ```
 
 ### Code Quality
@@ -28,6 +34,13 @@ npm run format              # Format code with Prettier
 npm run format:check        # Check formatting without changes
 npm run quality             # Run full quality suite (lint + format + icons + test)
 npm run quality:fix         # Fix all quality issues automatically
+
+# Lint specific files or directories
+npx eslint [path-from-src]  # Lint specific file or directory
+# Examples:
+npx eslint src/app/domain/entities/user.entity.ts    # Lint specific file
+npx eslint src/app/domain/entities/                  # Lint entire directory
+npx eslint src/app/application/                      # Lint application layer
 ```
 
 ### Icon Management
@@ -121,33 +134,55 @@ src/app/
 
 #### Domain Layer Tests
 - **Type**: Pure unit tests (no mocks, no frameworks)
-- **Coverage Target**: 90-100%
+- **Coverage Target**: 100% (mandatory for business logic)
 - **Focus**: Business rules, entity behavior, value object validation
+- **Framework**: Karma + Jasmine (no external dependencies)
 
 #### Application Layer Tests  
-- **Type**: Unit tests with mocks
-- **Coverage Target**: 80-95%
+- **Type**: Unit tests with spies and mocks
+- **Coverage Target**: 95% (use case orchestration)
 - **Focus**: Use case workflows, service orchestration, error handling
+- **Framework**: Karma + Jasmine with extensive mocking
 
 #### Infrastructure Layer Tests
 - **Type**: Integration tests with HTTP mocking
-- **Coverage Target**: 70-85%
+- **Coverage Target**: 85% (API integration and mappers)
 - **Focus**: API integration, data transformation, error handling
+- **Framework**: Karma + Jasmine + HttpClientTestingModule
 
 #### Presentation Layer Tests
-- **Type**: Component tests with TestBed
-- **Coverage Target**: 60-80%
+- **Type**: Component tests with Karma + Jasmine + TestBed
+- **Coverage Target**: 80% (updated from project requirements)
 - **Focus**: User interactions, rendering, navigation
+
+### Testing Framework Configuration
+- **Unit/Integration Tests**: Karma + Jasmine (configured in angular.json)
+- **E2E Tests**: Cypress
+- **Test Runner**: `npm test` (uses Karma)
+- **CI Tests**: `npm run test:ci` (single run mode)
+
+### Coverage Requirements by Layer
+- **Domain Layer**: 100% (mandatory - pure business logic)
+- **Application Layer**: 95% (use cases and facades orchestration)
+- **Infrastructure Layer**: 85% (API integration and data transformation)
+- **Presentation Layer**: 80% (component behavior and user interactions)
 
 ### Running Specific Test Suites
 ```bash
 # Test specific architectural layers
-npm run test:domain
-npm run test:infrastructure
+npm run test:domain         # Domain layer tests (100% coverage target)
+npm run test:core           # Core layer tests 
+npm run test:application    # Application layer tests (95% coverage target)
+npm run test:infrastructure # Infrastructure layer tests (85% coverage target)  
+npm run test:presentation   # Presentation layer tests (80% coverage target)
 
-# Test specific patterns
-ng test --include="**/*.spec.ts" --grep="UserEntity"
-ng test --include="src/app/application/**/*.spec.ts"
+# Test specific files
+npm test -- --include="**/user.entity.spec.ts" --watch=false
+npm test -- --include="**/auth.facade.spec.ts" --watch=false
+
+# Test specific patterns or directories
+npm test -- --include="src/app/application/**/*.spec.ts" --watch=false
+npm test -- --include="src/app/domain/entities/**/*.spec.ts" --watch=false
 ```
 
 ## 📁 Directory Patterns and Conventions
@@ -198,6 +233,12 @@ presentation/
 - **No `any` types**: Use proper typing throughout
 - **Accessibility**: Follow WCAG guidelines, test contrast ratios
 
+### Development Best Practices
+- **Lint after editing**: Always run `npx eslint [file-path]` after modifying files
+- **Quality gates**: Code must pass `npm run quality` before committing
+- **Test coverage**: Maintain layer-specific coverage requirements
+- **Architectural compliance**: Use `clean-architecture-guardian` for validation
+
 ### Naming Conventions
 - **Components**: PascalCase (`UserListComponent`)
 - **Files**: kebab-case (`user-list.component.ts`)
@@ -229,9 +270,17 @@ presentation/
 - **[guide-infrastructure.md](docs/info/guide-infrastructure.md)**: Repositories, HTTP clients, mappers, external integrations
 - **[guide-presentation.md](docs/info/guide-presentation.md)**: Angular components, Smart/Dumb patterns, UI services
 - **[guide-core.md](docs/info/guide-core.md)**: Framework-agnostic utilities and cross-cutting concerns
-- **[guide-test-implementation.md](docs/info/guide-test-implementation.md)**: Comprehensive testing strategies by architectural layer
+- **[guide-test-implementation.md](docs/info/guide-test-implementation.md)**: Karma/Jasmine testing strategies by architectural layer
 - **[guide-styles.md](docs/info/guide-styles.md)**: Tailwind CSS implementation and design system
 - **[guide-implementation.md](docs/info/guide-implementation.md)**: General implementation patterns and best practices
+
+### Architectural Implementation Rules (`.github/instructions/`)
+- **[domain.instructions.md](.github/instructions/domain.instructions.md)**: Strict domain layer implementation rules
+- **[application.instructions.md](.github/instructions/application.instructions.md)**: Application orchestration patterns
+- **[infrastructure.instructions.md](.github/instructions/infrastructure.instructions.md)**: Infrastructure integration guidelines
+- **[presentation.instructions.md](.github/instructions/presentation.instructions.md)**: Smart/Dumb component patterns and UI guidelines
+- **[test.instructions.md](.github/instructions/test.instructions.md)**: Comprehensive testing requirements by layer
+- **[style-guide.instructions.md](.github/instructions/style-guide.instructions.md)**: MAD-AI design system rules
 - **[diagramas-layers.md](docs/info/diagramas-layers.md)**: Architecture diagrams and layer visualization
 
 ### API Documentation (`docs/api/`)
