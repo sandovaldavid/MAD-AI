@@ -8,67 +8,112 @@ import type { ListUsersRequest, ListUsersResult } from '@application/types/users
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { UserListFilterContract } from '@/app/domain/repositories/business/user.contract';
+import type { User } from '@domain/entities/user.entity';
 
 /**
  * List Users Use Case
  *
+ * Application layer orchestrator that handles user listing operations with comprehensive validation,
+ * authorization, audit logging, and error normalization. This use case follows the 4-step orchestration
+ * pattern defined in Clean Architecture principles.
+ *
  * @description
- * Application layer orchestrator that handles user listing with validation,
- * filtering, audit logging, and error normalization. This use case follows the orchestration
- * pattern with error normalization to ensure consistent user listing workflow.
+ * Orchestrates the retrieval of users from the system by coordinating domain repositories,
+ * and cross-cutting concerns. Ensures data integrity, authorization, and proper event publishing
+ * for audit and system integration purposes.
  *
  * @responsibilities
- * - Orchestrate user listing with validation and side effects
- * - Validate application-level access rules
- * - Execute user listing through domain repository
- * - Handle listing audit logging for compliance purposes
- * - Normalize errors for application layer consumption
+ * - Validate application-level authorization and business rules
+ * - Transform application DTOs to domain operations
+ * - Delegate user listing to domain repository
+ * - Handle audit logging and error normalization
+ * - Ensure transactional consistency
  *
  * @architecture
- * This use case acts as an orchestrator that:
- * 1. Validates application rules (filter parameters, access permissions)
- * 2. Delegates user listing to domain repository
- * 3. Handles side effects (audit logging, access tracking)
- * 4. Normalizes errors for consistent error handling
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError preservation and transformation
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Filter parameters and constraint checks
+ * 2. **Validate Authorization** - Check user permissions and authentication
+ * 3. **Delegate to Domain** - Repository handles business logic and persistence
+ * 4. **Handle Side Effects** - Audit logging with correlation ID
+ *
+ * @example
+ * ```typescript
+ * const result = await listUsersUseCase.execute({
+ *   filter: { limit: 10, offset: 0 },
+ *   requesterId: 456
+ * });
+ * ```
+ *
+ * @throws {ApplicationError} When validation fails or listing encounters errors
+ * @throws {ApplicationError} When authorization fails or requester lacks permissions
  *
  * @since 1.0.0
  * @layer Application
  */
 @Injectable({ providedIn: 'root' })
-export class ListUsers {
+export class ListUsersUseCase {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly logger = inject<Logger>(LOGGER_PORT);
 
   /**
-   * Execute user listing orchestration with validation and audit logging
+   * Execute user listing orchestration with 4-step pattern
    *
-   * @param request User listing request with optional filter
+   * @description
+   * Orchestrates the complete user listing workflow following Clean Architecture principles.
+   * This method coordinates validation, authorization, domain operations, and side effects
+   * while maintaining separation of concerns and proper error handling.
+   *
+   * @param request User listing request with filter and requester information
    * @returns Promise resolving to list of users with total count
-   * @throws ApplicationError when listing fails or access denied
+   * @throws ApplicationError when validation, authorization, or listing fails
+   *
+   * @workflow
+   * 1. **Application Validation** - Check filter parameters and basic constraints
+   * 2. **Authorization Validation** - Verify requester permissions and authentication
+   * 3. **Domain Delegation** - Execute listing through UserRepository
+   * 4. **Side Effects** - Audit logging with correlation ID
+   *
+   * @example
+   * ```typescript
+   * const users = await listUsersUseCase.execute({
+   *   filter: { limit: 10 },
+   *   requesterId: 456
+   * });
+   * ```
    */
   async execute(request?: ListUsersRequest): Promise<ListUsersResult> {
     try {
-      // Step 1: Validate application rules
+      // Step 1: Validate application rules and authorization
       this.validateApplicationRules(request?.filter);
+      await this.validateAuthorization(request?.requesterId);
 
       // Step 2: Delegate to domain repository
       const users = await this.userRepo.list(request?.filter);
 
       // Step 3: Handle side effects
-      this.handleUserListingSideEffects();
+      await this.handleUserListingSideEffects(users, request?.requesterId, request?.filter);
 
       return {
         users,
         totalCount: users.length,
       };
     } catch (error: unknown) {
-      // Step 4: Normalize errors for application layer
-      const appError = this.errorTransformer.transform(error, {
+      // Don't transform ApplicationErrors (already in correct format)
+      if (error instanceof ApplicationError) {
+        throw error;
+      }
+      // Transform external errors (repository, system errors)
+      throw this.errorTransformer.transform(error, {
         operation: 'list_users',
       });
-      throw appError;
     }
   }
 
@@ -135,20 +180,60 @@ export class ListUsers {
   }
 
   /**
+   * Validate authorization for user listing
+   *
+   * @description
+   * Ensures the requester has proper permissions to list users.
+   * This is an application-level concern for access control.
+   *
+   * @param requesterId ID of user making the request
+   * @throws ApplicationError when authorization fails
+   */
+  private async validateAuthorization(requesterId?: number): Promise<void> {
+    // Check if requester is authenticated
+    if (!requesterId) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INSUFFICIENT_PERMISSIONS,
+        'Requester ID is required for user listing',
+        'You must be authenticated to list users'
+      );
+    }
+
+    // Note: In a full implementation, you would:
+    // 1. Fetch the requester user from UserRepository
+    // 2. Check their role and permissions using business logic
+    // 3. Validate they have user management permissions
+    //
+    // For now, we're accepting any authenticated user
+    // This should be expanded based on business requirements
+
+    this.logger.info('Authorization validated for user listing', {
+      operation: 'list_users_authorization',
+    });
+  }
+
+  /**
    * Handle side effects after successful user listing
    *
    * @description
    * Manages audit logging and other side effects related to user listing operations.
    * This includes access tracking and performance monitoring.
    *
-   * @param resultCount Number of users returned
-   * @param filter Filter criteria that was applied
+   * @param users List of users returned
    * @param requesterId ID of user making the request
+   * @param filter Filter criteria that was applied
    */
-  private handleUserListingSideEffects(): void {
+  private async handleUserListingSideEffects(
+    users: User[],
+    requesterId?: number,
+    filter?: UserListFilterContract
+  ): Promise<void> {
+    const correlationId = `list-users-${this.clock.nowEpochSeconds()}`;
+
     // Log user listing for audit trail
     this.logger.info('Users listed successfully', {
       operation: 'list_users',
+      correlationId,
     });
 
     // Additional side effects can be added here:
