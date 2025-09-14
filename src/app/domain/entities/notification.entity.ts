@@ -48,11 +48,11 @@ export interface NewNotification {
 export class Notification {
   private constructor(
     private readonly _id: NotificationId,
-    private readonly _type: NotificationType,
-    private readonly _message: string,
-    private readonly _title: string | undefined,
+    private _type: NotificationType,
+    private _message: string,
+    private _title: string | undefined,
     private readonly _userId: string | undefined,
-    private readonly _channel: NotificationChannel,
+    private _channel: NotificationChannel,
     private readonly _createdAt: Date,
     private _isRead = false,
     private _readAt?: Date
@@ -145,6 +145,102 @@ export class Notification {
       this._isRead = true;
       this._readAt = new Date();
     }
+  }
+
+  /**
+   * Updates the notification message with domain validation
+   * @param newMessage - The new message content
+   * @throws ValidationError when message is invalid
+   */
+  updateMessage(newMessage: string): void {
+    const errors: FieldError[] = [];
+
+    if (!newMessage?.trim()) {
+      errors.push({
+        field: 'message',
+        value: newMessage,
+        message: 'Message is required',
+        code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+      });
+    }
+
+    if (newMessage && newMessage.length > 500) {
+      errors.push({
+        field: 'message',
+        value: newMessage,
+        message: 'Message must be less than 500 characters',
+        code: ValidationErrorCode.FIELD_TOO_LONG,
+      });
+    }
+
+    if (errors.length > 0) {
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
+    this._message = newMessage.trim();
+  }
+
+  /**
+   * Updates the notification type with domain validation
+   * @param newType - The new notification type
+   * @throws ValidationError when type is invalid
+   */
+  updateType(newType: NotificationType): void {
+    if (!newType) {
+      const errors: FieldError[] = [
+        {
+          field: 'type',
+          value: newType,
+          message: 'Notification type is required',
+          code: ValidationErrorCode.REQUIRED_FIELD_MISSING,
+        },
+      ];
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
+    // Validate that the new type is a valid enum value
+    if (!Object.values(NotificationType).includes(newType)) {
+      const errors: FieldError[] = [
+        {
+          field: 'type',
+          value: newType,
+          message: `Invalid notification type. Must be one of: ${Object.values(NotificationType).join(', ')}`,
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        },
+      ];
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
+    this._type = newType;
+  }
+
+  /**
+   * Updates the notification title
+   * @param newTitle - The new title (optional)
+   */
+  updateTitle(newTitle?: string): void {
+    this._title = newTitle?.trim() || undefined;
+  }
+
+  /**
+   * Updates the notification channel
+   * @param newChannel - The new notification channel
+   * @throws ValidationError when channel is invalid
+   */
+  updateChannel(newChannel: NotificationChannel): void {
+    if (!Object.values(NotificationChannel).includes(newChannel)) {
+      const errors: FieldError[] = [
+        {
+          field: 'channel',
+          value: newChannel,
+          message: `Invalid notification channel. Must be one of: ${Object.values(NotificationChannel).join(', ')}`,
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        },
+      ];
+      throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
+    }
+
+    this._channel = newChannel;
   }
 
   /**
