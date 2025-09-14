@@ -6,83 +6,68 @@ import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-
 import type { DeactivateRoleRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
 /**
  * Deactivate Role Use Case
  *
- * Application layer orchestrator that handles role deactivation operations with validation,
- * audit logging, and domain event publishing. This use case follows the 4-step orchestration
- * pattern defined in Clean Architecture principles and ensures safe role deactivation with
- * proper authorization checks and state transition validation.
+ * Application layer orchestrator that handles role deactivation operations following
+ * Clean Architecture principles. Provides pure orchestration between user requests
+ * and domain operations without implementing business logic.
  *
  * @description
- * Orchestrates the deactivation of roles in the system by coordinating domain entities,
- * repositories, and cross-cutting concerns. Ensures data integrity, authorization, and
- * proper event publishing for role state management operations. Handles domain events
- * and provides comprehensive audit trails for role deactivation operations.
+ * Orchestrates role deactivation by coordinating application-level validation,
+ * domain delegation, and cross-cutting concerns. Serves as the entry point for
+ * role deactivation operations while maintaining clean separation between
+ * application orchestration and domain business logic.
  *
  * @responsibilities
- * - Validate application-level authorization and deactivation permissions
- * - Verify role exists and is in a valid state for deactivation
- * - Check business rules preventing role deactivation
- * - Transform application DTOs to domain operations
- * - Delegate role deactivation to domain repository
- * - Publish domain events from deactivated role entity
- * - Handle audit logging and error normalization
- * - Ensure transactional consistency for state changes
+ * - Validate application-level request parameters (presence/nullability)
+ * - Coordinate authentication and authorization checks
+ * - Delegate deactivation operations to domain repository
+ * - Handle cross-cutting concerns (logging, error transformation)
+ * - Orchestrate the complete deactivation workflow
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
  * - **Pattern**: Use Case orchestrator with 4-step pattern
- * - **Dependencies**: Domain Repository, Core Services (Logger, Clock, Event Bus)
+ * - **Dependencies**: Domain Repository, Core Services (Logger, Clock)
  * - **Injection**: Token-based dependency injection
  * - **Error Handling**: ApplicationError transformation
- * - **Events**: Domain event publishing for state changes
- * - **Constraints**: Authorization checks and state validation
+ * - **Business Logic**: Delegated entirely to Domain layer
  *
  * @dependencies
- * - {@link RoleRepository} - Domain repository for role deactivation
+ * - {@link RoleRepository} - Domain repository for role operations
  * - {@link ClockPort} - System clock for timestamps
  * - {@link Logger} - Structured logging service
- * - {@link DomainEventBusService} - Domain event publishing
  * - {@link ApplicationErrorTransformer} - Error normalization
  *
- * @domain-events
- * - RoleDeactivatedEvent (published from role entity domain events)
- *
  * @constraints
- * - Role must exist in the system
- * - Role must not already be inactive
- * - Requester must have deactivation permissions
- * - System roles may have additional deactivation restrictions
- * - Business rules may prevent certain role deactivations
+ * - Request ID must be present (not null/undefined)
+ * - Requester ID must be provided for authorization
+ * - All business rules enforced by Domain layer
  *
  * @workflow
- * 1. **Validate Application Rules** - ID validation and constraint checks
- * 2. **Validate Authorization** - Check user permissions and authentication
+ * 1. **Validate Application Rules** - Parameter presence/nullability checks
+ * 2. **Validate Authorization** - Check authentication requirements
  * 3. **Delegate to Domain** - Repository handles deactivation business logic
- * 4. **Handle Side Effects** - Event publishing and audit logging
+ * 4. **Handle Side Effects** - Logging and audit trail
  *
  * @example
  * ```typescript
  * const useCase = inject(DeactivateRoleUseCase);
  * const request: DeactivateRoleRequest = {
  *   id: 123,
- *   requesterId: 'admin-456'
+ *   requesterId: 456
  * };
  *
  * const deactivatedRole = await useCase.execute(request);
- * console.log('Role deactivated:', deactivatedRole.name);
  * ```
  *
- * @throws {ApplicationError} When validation fails or role ID is invalid
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
- * @throws {ApplicationError} When role does not exist
- * @throws {ApplicationError} When role is already inactive
- * @throws {ApplicationError} When business rules prevent deactivation
+ * @throws {ApplicationError} When request validation fails
+ * @throws {ApplicationError} When authorization requirements not met
+ * @throws {ApplicationError} When domain operation fails (transformed)
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -101,26 +86,26 @@ export class DeactivateRoleUseCase {
   /**
    * Execute role deactivation orchestration
    *
-   * Orchestrates the complete role deactivation workflow following Clean Architecture principles.
-   * This method coordinates validation, domain operations, and side effects while maintaining
-   * separation of concerns and proper error handling. Ensures proper state transitions
-   * and comprehensive audit trails for role deactivation operations.
+   * Orchestrates the complete role deactivation workflow following Clean Architecture
+   * principles. This method provides pure orchestration between application concerns
+   * and domain operations, ensuring proper separation of concerns and comprehensive
+   * error handling.
    *
    * @param request - Role deactivation request with application-level types
    * @returns Promise resolving to the deactivated Role entity
-   * @throws {ApplicationError} When validation fails or deactivation encounters errors
+   * @throws {ApplicationError} When validation or orchestration fails
    *
    * @workflow
-   * 1. **Application Validation** - Check ID validation and constraints
-   * 2. **Authorization Validation** - Verify user permissions and authentication
-   * 3. **Domain Delegation** - Forward to repository for deactivation business logic
-   * 4. **Side Effects** - Publish domain events and log audit information
+   * 1. **Application Validation** - Parameter presence/nullability checks
+   * 2. **Authorization Validation** - Authentication requirements
+   * 3. **Domain Delegation** - Forward to repository for business logic
+   * 4. **Side Effects** - Logging and audit trail management
    *
    * @example
    * ```typescript
    * const deactivatedRole = await deactivateRoleUseCase.execute({
    *   id: 123,
-   *   requesterId: 'admin-456'
+   *   requesterId: 456
    * });
    * ```
    */
@@ -146,18 +131,18 @@ export class DeactivateRoleUseCase {
    * Validate application-level rules for role deactivation
    *
    * @description
-   * Validates request parameters and basic business rules specific to the application layer.
-   * Ensures the role ID is valid and meets application-level requirements before proceeding
-   * with deactivation.
+   * Validates request parameters at the application layer by checking for presence
+   * and nullability only. All business rule validation (ID format, range checks, etc.)
+   * is delegated to the Domain layer.
    *
    * @param request Deactivate role request to validate
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(request: DeactivateRoleRequest): void {
-    if (!request?.id || request.id <= 0) {
+    if (request.id === null || request.id === undefined) {
       throw new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
-        'Invalid input provided: Valid role ID is required for deactivation',
+        'Invalid input provided: Role ID is required for deactivation',
         'A valid role ID must be provided'
       );
     }
@@ -194,8 +179,6 @@ export class DeactivateRoleUseCase {
    */
   private async handleSideEffects(request: DeactivateRoleRequest): Promise<void> {
     const correlationId = `role-deactivate-${request.id}-${this.clock.nowEpochSeconds()}`;
-
-    // Domain events are no longer needed with simplified Role entity
 
     this.logger.info('Role deactivated', {
       correlationId,
