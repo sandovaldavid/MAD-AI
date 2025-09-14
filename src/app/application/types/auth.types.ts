@@ -3,12 +3,13 @@
  *
  * @description
  * Simplified types for authentication operations following Application Layer guidelines.
- * Uses simple interfaces instead of complex classes for better maintainability.
+ * Uses simple interfaces for coordination between Presentation and Domain layers.
  *
  * @architecture
  * - Request types: Input data for use cases
- * - Response types: Output data from use cases
- * - Simple interfaces: No complex inheritance or static methods
+ * - Response types: Return Domain entities directly (no UI-optimized summaries)
+ * - Simple interfaces: No complex inheritance or business logic
+ * - Presentation layer handles UI data transformation
  *
  * @since 1.0.0
  * @layer Application
@@ -117,30 +118,28 @@ export interface EmailConfirmationRequest {
 // ==========================================
 
 /**
- * Login operation result - simplified interface
+ * Login operation result - returns Domain entities directly
  */
 export interface LoginResult {
   session: Session;
-  user: UserSummary;
   expiresAt?: Date;
 }
 
 /**
- * Registration operation result - simplified interface
+ * Registration operation result - returns Domain entities directly
  */
 export interface RegisterResult {
   session: Session | null;
-  user: UserSummary;
   emailConfirmationRequired?: boolean;
 }
 
 /**
- * Profile operation result - simplified interface
+ * Profile operation result - returns Domain entities directly
+ * Note: User entity should be obtained from session or separate query
  */
 export interface ProfileResult {
-  user: UserSummary;
+  session: Session;
   lastLogin?: Date;
-  preferences?: UserPreferences;
 }
 
 /**
@@ -173,43 +172,15 @@ export interface RefreshSessionResult {
 // ==========================================
 
 /**
- * User summary for application layer responses
- */
-export interface UserSummary {
-  id: string;
-  email: string;
-  username: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  permissions: string[];
-  isActive: boolean;
-  emailVerified: boolean;
-}
-
-/**
- * User preferences
- */
-export interface UserPreferences {
-  theme?: 'light' | 'dark';
-  language?: string;
-  notifications?: {
-    email: boolean;
-    push: boolean;
-  };
-}
-
-/**
- * Authentication status
+ * Authentication status - minimal coordination type
  */
 export interface AuthStatus {
   isAuthenticated: boolean;
-  user?: UserSummary;
   sessionExpiresAt?: Date;
 }
 
 /**
- * Password reset status
+ * Password reset status - minimal coordination type
  */
 export interface PasswordResetStatus {
   email: string;
