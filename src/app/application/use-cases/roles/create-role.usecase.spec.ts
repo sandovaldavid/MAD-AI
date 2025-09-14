@@ -153,7 +153,7 @@ describe('CreateRoleUseCase', () => {
         expect(mockRoleRepository.create).toHaveBeenCalledWith(expectedContract);
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '456',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
         expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', {
           operation: 'create_role',
@@ -218,7 +218,7 @@ describe('CreateRoleUseCase', () => {
       it('should execute operations in correct order: validate → authorize → create → side effects', async () => {
         // Arrange
         let operationOrder: string[] = [];
-        
+
         // Mock logger to track call order
         mockLogger.info.and.callFake((message: string) => {
           if (message === 'Authorization validated for role creation') {
@@ -227,7 +227,7 @@ describe('CreateRoleUseCase', () => {
             operationOrder.push('side_effects');
           }
         });
-        
+
         // Mock repository to track call order
         mockRoleRepository.create.and.callFake(async (contract) => {
           operationOrder.push('repository_create');
@@ -336,7 +336,10 @@ describe('CreateRoleUseCase', () => {
 
         // Assert - Validation should pass and repository should be called
         expect(mockRoleRepository.create).toHaveBeenCalled();
-        expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', jasmine.any(Object));
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Authorization validated for role creation',
+          jasmine.any(Object)
+        );
       });
     });
 
@@ -404,7 +407,9 @@ describe('CreateRoleUseCase', () => {
         );
 
         // Act & Assert
-        await expectAsync(useCase.execute(requestWithNullRequester)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(requestWithNullRequester)).toBeRejectedWith(
+          expectedError
+        );
         expect(mockRoleRepository.create).not.toHaveBeenCalled();
       });
 
@@ -422,7 +427,9 @@ describe('CreateRoleUseCase', () => {
         );
 
         // Act & Assert
-        await expectAsync(useCase.execute(requestWithUndefinedRequester)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(requestWithUndefinedRequester)).toBeRejectedWith(
+          expectedError
+        );
         expect(mockRoleRepository.create).not.toHaveBeenCalled();
       });
     });
@@ -443,7 +450,7 @@ describe('CreateRoleUseCase', () => {
         // Assert - Verify authorization logging
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '456',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
         expect(mockRoleRepository.create).toHaveBeenCalled();
       });
@@ -462,12 +469,15 @@ describe('CreateRoleUseCase', () => {
         // Assert - Verify correct user ID is logged
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '789',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', jasmine.objectContaining({
-          operation: 'create_role',
-          userId: '789',
-        }));
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
+          jasmine.objectContaining({
+            operation: 'create_role',
+            userId: '789',
+          })
+        );
       });
 
       it('should proceed with creation after successful authorization', async () => {
@@ -483,7 +493,10 @@ describe('CreateRoleUseCase', () => {
         const result = await useCase.execute(authorizedRequest);
 
         // Assert - Verify full flow completion
-        expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', jasmine.any(Object));
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Authorization validated for role creation',
+          jasmine.any(Object)
+        );
         expect(mockRoleRepository.create).toHaveBeenCalledWith({
           name: 'Executive Role',
           accessLevel: 5,
@@ -500,13 +513,13 @@ describe('CreateRoleUseCase', () => {
       it('should perform authorization before repository operations', async () => {
         // Arrange
         let operationOrder: string[] = [];
-        
+
         mockLogger.info.and.callFake((message: string) => {
           if (message === 'Authorization validated for role creation') {
             operationOrder.push('authorization');
           }
         });
-        
+
         mockRoleRepository.create.and.callFake(async () => {
           operationOrder.push('repository');
           return mockCreatedRole;
@@ -530,7 +543,10 @@ describe('CreateRoleUseCase', () => {
         // Act & Assert
         await expectAsync(useCase.execute(unauthorizedRequest)).toBeRejected();
         expect(mockRoleRepository.create).not.toHaveBeenCalled();
-        expect(mockLogger.info).not.toHaveBeenCalledWith('Authorization validated for role creation', jasmine.any(Object));
+        expect(mockLogger.info).not.toHaveBeenCalledWith(
+          'Authorization validated for role creation',
+          jasmine.any(Object)
+        );
       });
     });
   });
@@ -545,7 +561,7 @@ describe('CreateRoleUseCase', () => {
           'Role creation failed due to business rule violation',
           'Domain validation failed'
         );
-        
+
         mockRoleRepository.create.and.returnValue(Promise.reject(domainError));
         mockErrorTransformer.transform.and.returnValue(transformedError);
 
@@ -562,7 +578,7 @@ describe('CreateRoleUseCase', () => {
           'External service error',
           'Database connection failed'
         );
-        
+
         mockRoleRepository.create.and.returnValue(Promise.reject(connectionError));
         mockErrorTransformer.transform.and.returnValue(transformedError);
 
@@ -579,7 +595,7 @@ describe('CreateRoleUseCase', () => {
           'Internal server error occurred',
           'Unexpected repository failure'
         );
-        
+
         mockRoleRepository.create.and.returnValue(Promise.reject(unexpectedError));
         mockErrorTransformer.transform.and.returnValue(transformedError);
 
@@ -615,7 +631,7 @@ describe('CreateRoleUseCase', () => {
           'Custom transformed error',
           'Custom description'
         );
-        
+
         mockRoleRepository.create.and.returnValue(Promise.reject(originalError));
         mockErrorTransformer.transform.and.returnValue(customTransformedError);
 
@@ -633,18 +649,21 @@ describe('CreateRoleUseCase', () => {
 
         // Act & Assert
         await expectAsync(useCase.execute(invalidRequest)).toBeRejected();
-        
+
         // Verify no external calls were made after validation failure
         expect(mockRoleRepository.create).not.toHaveBeenCalled();
         expect(mockErrorTransformer.transform).not.toHaveBeenCalled(); // Application errors are not transformed
-        expect(mockLogger.info).not.toHaveBeenCalledWith('Role created successfully', jasmine.any(Object));
+        expect(mockLogger.info).not.toHaveBeenCalledWith(
+          'Role created successfully',
+          jasmine.any(Object)
+        );
       });
     });
 
     describe('Error Propagation Chain', () => {
       it('should handle errors at each stage of the orchestration', async () => {
         // Test that errors from different stages are properly handled
-        
+
         // Stage 1: Application validation errors (not transformed)
         const invalidRequestError = useCase.execute({ name: '', accessLevel: 1, requesterId: 123 });
         await expectAsync(invalidRequestError).toBeRejectedWithError(ApplicationError);
@@ -656,7 +675,7 @@ describe('CreateRoleUseCase', () => {
         // Stage 2: Repository errors (transformed)
         const repositoryError = new Error('Repository failed');
         mockRoleRepository.create.and.returnValue(Promise.reject(repositoryError));
-        
+
         const repositoryFailure = useCase.execute(validRequest);
         await expectAsync(repositoryFailure).toBeRejected();
         expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
@@ -710,11 +729,11 @@ describe('CreateRoleUseCase', () => {
         // Arrange
         const firstTimestamp = 1640995200;
         const secondTimestamp = 1640995260;
-        
+
         // First creation
         mockClock.nowEpochSeconds.and.returnValue(firstTimestamp);
         const firstResult = await useCase.execute(validRequest);
-        
+
         // Second creation with different timestamp
         mockClock.nowEpochSeconds.and.returnValue(secondTimestamp);
         const secondResult = await useCase.execute({
@@ -725,11 +744,15 @@ describe('CreateRoleUseCase', () => {
         // Assert - Different correlation IDs
         const firstCorrelationId = `role-create-${firstResult.id}-${firstTimestamp}`;
         const secondCorrelationId = `role-create-${secondResult.id}-${secondTimestamp}`;
-        
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
-          jasmine.objectContaining({ correlationId: firstCorrelationId }));
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
-          jasmine.objectContaining({ correlationId: secondCorrelationId }));
+
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
+          jasmine.objectContaining({ correlationId: firstCorrelationId })
+        );
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
+          jasmine.objectContaining({ correlationId: secondCorrelationId })
+        );
         expect(firstCorrelationId).not.toBe(secondCorrelationId);
       });
 
@@ -745,11 +768,13 @@ describe('CreateRoleUseCase', () => {
         await useCase.execute(managerRequest);
 
         // Assert - Verify user context is correctly logged
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
           jasmine.objectContaining({
             operation: 'create_role',
             userId: '999',
-          }));
+          })
+        );
       });
     });
 
@@ -771,20 +796,22 @@ describe('CreateRoleUseCase', () => {
         // Assert - Complete audit trail
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '555',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
           jasmine.objectContaining({
             operation: 'create_role',
             userId: '555',
-            correlationId: jasmine.stringMatching(/^role-create-\d+-\d+$/)
-          }));
+            correlationId: jasmine.stringMatching(/^role-create-\d+-\d+$/),
+          })
+        );
       });
 
       it('should maintain audit sequence: authorization → creation', async () => {
         // Arrange
         let auditOrder: string[] = [];
-        
+
         mockLogger.info.and.callFake((message: string, context?: any) => {
           if (message === 'Authorization validated for role creation') {
             auditOrder.push('authorization');
@@ -806,10 +833,16 @@ describe('CreateRoleUseCase', () => {
 
         // Act & Assert
         await expectAsync(useCase.execute(validRequest)).toBeRejected();
-        
+
         // Verify authorization was logged but not success
-        expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', jasmine.any(Object));
-        expect(mockLogger.info).not.toHaveBeenCalledWith('Role created successfully', jasmine.any(Object));
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Authorization validated for role creation',
+          jasmine.any(Object)
+        );
+        expect(mockLogger.info).not.toHaveBeenCalledWith(
+          'Role created successfully',
+          jasmine.any(Object)
+        );
       });
     });
 
@@ -824,17 +857,19 @@ describe('CreateRoleUseCase', () => {
 
         // Assert - Clock service was called and timestamp was used
         expect(mockClock.nowEpochSeconds).toHaveBeenCalled();
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
           jasmine.objectContaining({
-            correlationId: `role-create-${result.id}-${customTimestamp}`
-          }));
+            correlationId: `role-create-${result.id}-${customTimestamp}`,
+          })
+        );
       });
 
       it('should handle clock service consistently across multiple calls', async () => {
         // Arrange
         const timestamps = [1640995200, 1640995260, 1640995320];
         let callCount = 0;
-        
+
         mockClock.nowEpochSeconds.and.callFake(() => {
           return timestamps[callCount++] || timestamps[timestamps.length - 1];
         });
@@ -862,12 +897,14 @@ describe('CreateRoleUseCase', () => {
         const result = await useCase.execute(eventRequest);
 
         // Assert - Verify structured logging simulates domain events
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
           jasmine.objectContaining({
             operation: 'create_role', // Event type
-            userId: '777',            // Event context
-            correlationId: jasmine.stringMatching(/^role-create-\d+-\d+$/) // Event correlation
-          }));
+            userId: '777', // Event context
+            correlationId: jasmine.stringMatching(/^role-create-\d+-\d+$/), // Event correlation
+          })
+        );
       });
 
       it('should include relevant role context in event logging', async () => {
@@ -976,7 +1013,7 @@ describe('CreateRoleUseCase', () => {
         const requests = [
           { name: 'Test 1', accessLevel: 1, requesterId: 111 },
           { name: 'Test 2', accessLevel: 2, requesterId: 222 },
-          { name: 'Test 3', accessLevel: 3, requesterId: 333 }
+          { name: 'Test 3', accessLevel: 3, requesterId: 333 },
         ];
 
         // Act & Assert
@@ -1023,7 +1060,7 @@ describe('CreateRoleUseCase', () => {
         // Assert - Complete orchestration flow
         expect(executionOrder).toEqual(['authorization', 'repository_create', 'side_effects']);
         expect(result).toEqual(mockCreatedRole);
-        
+
         // Verify all stages executed with correct data
         expect(mockRoleRepository.create).toHaveBeenCalledWith({
           name: 'E2E Flow Test',
@@ -1050,11 +1087,11 @@ describe('CreateRoleUseCase', () => {
         const result = await useCase.execute(integrityRequest);
 
         // Assert - Verify data consistency across all layers
-        
+
         // 1. Authorization used correct requesterId
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '505',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
 
         // 2. Repository received correctly mapped contract
@@ -1068,11 +1105,13 @@ describe('CreateRoleUseCase', () => {
         });
 
         // 3. Side effects logged with consistent user context
-        expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          'Role created successfully',
           jasmine.objectContaining({
             operation: 'create_role',
             userId: '505',
-          }));
+          })
+        );
 
         // 4. Correct domain entity returned
         expect(result).toEqual(mockCreatedRole);
@@ -1101,7 +1140,7 @@ describe('CreateRoleUseCase', () => {
           isUniquePerTeam: true,
           createdByUserId: 606,
         });
-        
+
         expect(result).toEqual(mockCreatedRole);
       });
     });
@@ -1136,8 +1175,16 @@ describe('CreateRoleUseCase', () => {
 
       it('should use dependencies in correct isolation - no cross-contamination', async () => {
         // Arrange
-        const firstRequest: CreateRoleRequest = { name: 'First Role', accessLevel: 1, requesterId: 801 };
-        const secondRequest: CreateRoleRequest = { name: 'Second Role', accessLevel: 2, requesterId: 802 };
+        const firstRequest: CreateRoleRequest = {
+          name: 'First Role',
+          accessLevel: 1,
+          requesterId: 801,
+        };
+        const secondRequest: CreateRoleRequest = {
+          name: 'Second Role',
+          accessLevel: 2,
+          requesterId: 802,
+        };
 
         // Reset all mocks to ensure clean state
         mockRoleRepository.create.calls.reset();
@@ -1156,11 +1203,11 @@ describe('CreateRoleUseCase', () => {
         // Verify no cross-contamination between calls
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '801',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
         expect(mockLogger.info).toHaveBeenCalledWith('Authorization validated for role creation', {
           userId: '802',
-          operation: 'create_role_authorization'
+          operation: 'create_role_authorization',
         });
       });
     });
