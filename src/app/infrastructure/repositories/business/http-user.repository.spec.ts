@@ -81,7 +81,6 @@ describe('HttpUserRepository', () => {
     accessLevel: 2,
     isActive: true,
     description: 'Editor role',
-    isSystemCreated: true, // Allow reserved names from system responses
   });
 
   const mockUser = User.create({

@@ -86,7 +86,6 @@ describe('HttpAuthRepository - Infrastructure Tests', () => {
     mockRole = Role.create({
       id: 1,
       name: 'USER',
-      isSystemCreated: true, // Allow reserved names from system responses
     });
     mockUser = User.create({
       id: 1,

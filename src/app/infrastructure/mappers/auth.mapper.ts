@@ -22,7 +22,6 @@ export class AuthMapper {
       id: dto.role_id,
       name: dto.role_name,
       isActive: true, // Assume active since user is logging in
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
@@ -48,7 +47,6 @@ export class AuthMapper {
     const role = Role.create({
       id: dto.role_id,
       name: dto.role_name,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
@@ -77,7 +75,6 @@ export class AuthMapper {
       name: roleDto.name,
       accessLevel: roleDto.access_level,
       isActive: roleDto.is_active,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({

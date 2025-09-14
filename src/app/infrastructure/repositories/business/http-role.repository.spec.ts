@@ -44,7 +44,6 @@ describe('HttpRoleRepository - Infrastructure Tests', () => {
     description: 'Administrator role',
     isActive: true,
     userCount: 1,
-    isSystemCreated: true, // Allow reserved names from system responses
   });
 
   beforeEach(() => {
@@ -138,7 +137,6 @@ describe('HttpRoleRepository - Infrastructure Tests', () => {
           isActive: dto.is_active,
           description: dto.description,
           userCount: dto.user_count,
-          isSystemCreated: true, // Allow reserved names from system responses
         })
       );
 
@@ -1125,7 +1123,6 @@ describe('HttpRoleRepository - Infrastructure Tests', () => {
         isActive: true,
         description: 'Test description',
         userCount: 5,
-        isSystemCreated: true,
       });
 
       // When

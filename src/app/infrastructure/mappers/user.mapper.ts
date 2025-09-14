@@ -68,7 +68,6 @@ export class UserMapper {
     const role = Role.create({
       id: dto.role_id,
       name: dto.role_name,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
@@ -102,7 +101,6 @@ export class UserMapper {
     const role = Role.create({
       id: 1, // Default ID - should be resolved separately
       name: dto.role_name,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
@@ -190,7 +188,6 @@ export class UserMapper {
     const role = Role.create({
       id: dto.role_id,
       name: dto.role_name,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
@@ -221,7 +218,6 @@ export class UserMapper {
     const role = Role.create({
       id: dto.role_id,
       name: dto.role_name,
-      isSystemCreated: true, // Allow reserved names from system responses
     });
 
     return User.create({
