@@ -4,7 +4,6 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-
 import type { GetRoleByIdRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -16,19 +15,18 @@ import type { Role } from '@domain/entities/role.entity';
  * defined in Clean Architecture principles and ensures safe role access with proper authorization checks.
  *
  * @description
- * Orchestrates the retrieval of roles by their unique identifier from the system by coordinating
- * domain entities, repositories, and cross-cutting concerns. Ensures data integrity, authorization,
- * and proper event publishing for audit and system integration purposes. Handles domain events
- * and provides comprehensive audit trails for role access operations.
+ * Orchestrates role retrieval operations by coordinating between the presentation layer and
+ * domain repositories. This use case follows Clean Architecture principles by maintaining
+ * pure orchestration responsibilities without implementing business logic. All validation
+ * rules, constraint checking, and business logic are delegated to the Domain layer.
+ * Focuses on request coordination, error transformation, and audit logging.
  *
  * @responsibilities
- * - Validate application-level authorization and access permissions
- * - Verify role ID format and constraints
- * - Transform application DTOs to domain operations
- * - Delegate role retrieval to domain repository
- * - Publish domain events from retrieved role entity
- * - Handle audit logging and error normalization
- * - Ensure transactional consistency for read operations
+ * - Validate application-level presence and nullability checks
+ * - Orchestrate role retrieval by delegating to domain repository
+ * - Transform domain errors to application errors
+ * - Handle audit logging for successful operations
+ * - Coordinate between domain services and presentation layer
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
@@ -50,16 +48,16 @@ import type { Role } from '@domain/entities/role.entity';
  * - RoleRetrievedEvent (published from role entity domain events)
  *
  * @constraints
- * - Role must exist in the system
- * - Requester must have read permissions for the role
- * - Role ID must be a valid positive integer
- * - System roles may have additional access restrictions
+ * - Application layer only handles presence and nullability checks
+ * - Domain layer enforces all business rules and validation constraints
+ * - Repository handles entity retrieval and business logic
+ * - Requester information is used for audit logging only
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, ID format, and constraint checks
- * 2. **Delegate to Domain** - Repository handles business logic and persistence
- * 3. **Handle Side Effects** - Event publishing and audit logging
- * 4. **Return Result** - Role entity with domain events published
+ * 1. **Validate Application Rules** - Presence and nullability checks only
+ * 2. **Delegate to Domain** - Repository handles all business logic and validation
+ * 3. **Handle Side Effects** - Audit logging only
+ * 4. **Return Result** - Role entity retrieved by Domain repository
  *
  * @example
  * ```typescript
@@ -73,10 +71,10 @@ import type { Role } from '@domain/entities/role.entity';
  * console.log('Role retrieved:', role.name);
  * ```
  *
- * @throws {ApplicationError} When validation fails or role ID is invalid
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
- * @throws {ApplicationError} When role does not exist
- * @throws {ApplicationError} When system constraints prevent role access
+ * @throws {ApplicationError} When request is not provided or ID is null/undefined
+ * @throws {ApplicationError} When domain repository operations fail
+ * @throws {ApplicationError} When role does not exist (delegated from Domain layer)
+ * @throws {ApplicationError} When ID format validation fails (delegated from Domain layer)
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -97,18 +95,18 @@ export class GetRoleById {
    *
    * Orchestrates the complete role retrieval workflow following Clean Architecture principles.
    * This method coordinates validation, domain operations, and side effects while maintaining
-   * separation of concerns and proper error handling. Ensures referential integrity and
-   * proper authorization before allowing role access.
+   * separation of concerns and proper error handling. All business validation and constraint
+   * checking is delegated to the Domain layer through the repository.
    *
    * @param request - Role retrieval request with application-level types
    * @returns Promise resolving to the Role entity
    * @throws {ApplicationError} When validation fails or role retrieval encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check authorization, ID format, and constraints
-   * 2. **Domain Delegation** - Forward to repository for business logic execution
-   * 3. **Side Effects** - Publish domain events and log audit information
-   * 4. **Return Result** - Return retrieved role entity
+   * 1. **Application Validation** - Check presence and nullability only
+   * 2. **Domain Delegation** - Repository handles all business logic and validation
+   * 3. **Side Effects** - Audit logging only
+   * 4. **Return Result** - Return role entity from Domain repository
    *
    * @example
    * ```typescript
@@ -149,8 +147,8 @@ export class GetRoleById {
    * Validate application-level rules for role retrieval
    *
    * @description
-   * Validates request parameters and basic business rules specific to the application layer.
-   * Domain validation is handled by the repository layer.
+   * Application layer only handles presence and nullability checks.
+   * All business rules including ID format validation are delegated to the Domain layer.
    *
    * @param request Get role by ID request to validate
    * @throws ApplicationError when validation fails
@@ -160,8 +158,8 @@ export class GetRoleById {
       throw this.errorTransformer.transform(new Error('Request is required for role retrieval'));
     }
 
-    if (!request.id || request.id <= 0 || !Number.isInteger(request.id)) {
-      throw this.errorTransformer.transform(new Error('Role ID must be a positive integer'));
+    if (request.id === null || request.id === undefined) {
+      throw this.errorTransformer.transform(new Error('Role ID is required'));
     }
   }
 
