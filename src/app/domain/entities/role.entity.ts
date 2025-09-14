@@ -45,7 +45,6 @@ export class Role {
     isActive?: boolean;
     description?: string | null;
     userCount?: number;
-    isSystemCreated?: boolean;
   }): Role {
     const errors: FieldError[] = [];
 
@@ -79,13 +78,6 @@ export class Role {
         message: 'Role name cannot exceed 50 characters',
         code: ValidationErrorCode.FIELD_TOO_LONG,
       });
-    } else if (!props.isSystemCreated && Role.isReservedName(props.name.trim())) {
-      errors.push({
-        field: 'name',
-        value: props.name,
-        message: 'Role name is reserved',
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-      });
     }
 
     // Validate access level
@@ -116,14 +108,6 @@ export class Role {
       props.description ?? undefined,
       props.userCount
     );
-  }
-
-  /**
-   * Simple validation for reserved role names.
-   */
-  private static isReservedName(name: string): boolean {
-    const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
-    return reservedNames.includes(name.toLowerCase());
   }
 
   // ---------- Getters ----------
