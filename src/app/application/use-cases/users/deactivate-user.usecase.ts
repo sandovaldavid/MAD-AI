@@ -1,12 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
-import { ApplicationError } from '@application/errors/application-error';
-import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventBusService } from '@core/services/domain-event-bus.service';
-import { DomainEvent } from '@domain/events/domain-event.entity';
-import { DomainEventType } from '@domain/events/domain-event.enum';
-import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
 import type { DeactivateUserRequest, GetUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
@@ -43,114 +37,65 @@ export class DeactivateUser {
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventBus = inject(DomainEventBusService);
 
   /**
-   * Execute user deactivation orchestration with validation and audit logging
+   * Execute user deactivation orchestration
+   *
+   * Orchestrates the complete user deactivation workflow following Clean Architecture principles.
+   * This method coordinates domain operations and side effects while maintaining separation of concerns.
    *
    * @param request User deactivation request with ID
    * @returns Promise resolving to deactivated user
-   * @throws ApplicationError when user not found or deactivation fails
+   * @throws ApplicationError when deactivation fails or user not found
    */
   async execute(request: DeactivateUserRequest): Promise<GetUserResult> {
     try {
-      // Step 1: Validate application rules
-      this.validateApplicationRules(request.userId, undefined);
-
-      // Step 2: Delegate to domain repository
+      // Step 1: Delegate deactivation to domain repository
       await this.userRepo.deactivate(request.userId);
 
-      // Step 3: Get the deactivated user for event processing
+      // Step 2: Get the deactivated user for result and side effects
       const deactivatedUser = await this.userRepo.getById(request.userId);
 
-      // Step 4: Handle side effects
-      await this.handleUserDeactivationSideEffects(deactivatedUser, undefined, undefined);
+      // Step 3: Handle side effects
+      await this.handleUserDeactivationSideEffects(deactivatedUser);
 
       return deactivatedUser;
     } catch (error: unknown) {
-      // Step 4: Normalize errors for application layer
-      const appError = this.errorTransformer.transform(error, {
+      // Log error for monitoring and transform to application error
+      this.logger.error('User deactivation failed', {
+        correlationId: `deactivate-user-${request.userId}-${this.clock.nowEpochSeconds()}`,
+        userId: request.userId.toString(),
         operation: 'deactivate_user',
       });
-      throw appError;
-    }
-  }
 
-  /**
-   * Validate application-level rules for user deactivation
-   *
-   * @description
-   * Validates request parameters and business rules specific to the application layer.
-   * Includes enhanced validation for self-deactivation prevention.
-   * Domain validation is handled by the repository layer.
-   *
-   * @param userId User ID to validate
-   * @param requesterId ID of user making the request
-   * @throws ApplicationError when validation fails
-   */
-  private validateApplicationRules(userId: number, requesterId?: number): void {
-    if (userId === undefined || userId === null) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'User ID is required for deactivation',
-        'User ID is required for deactivation',
-        { userId }
-      );
-    }
-
-    if (typeof userId !== 'number' || userId <= 0) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'User ID must be a positive number',
-        'User ID must be a positive number',
-        { userId }
-      );
-    }
-
-    // Enhanced self-deactivation prevention
-    if (requesterId && requesterId === userId) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Users cannot deactivate their own account for security reasons',
-        'Users cannot deactivate their own account for security reasons',
-        { userId, requesterId }
-      );
+      throw this.errorTransformer.transform(error);
     }
   }
 
   /**
    * Handle side effects for successful user deactivation
    *
+   * Manages audit logging and any other side effects that should occur
+   * after a successful user deactivation operation.
+   *
    * @param deactivatedUser The deactivated user entity
-   * @param requesterId ID of user who performed the deactivation
-   * @param reason Optional reason for the deactivation
    */
-  private async handleUserDeactivationSideEffects(
-    deactivatedUser: User,
-    requesterId?: number,
-    reason?: string
-  ): Promise<void> {
-    // Create and publish UserAccountDeactivated domain event
-    const userDeactivatedEvent = DomainEvent.create({
-      id: `user-deactivated-${deactivatedUser.id}-${Date.now()}`,
-      eventType: DomainEventType.USER_ACCOUNT_DEACTIVATED,
-      aggregateId: deactivatedUser.id.toString(),
-      aggregateType: 'User',
-      eventData: {
-        userId: deactivatedUser.id.toString(),
-        requesterId: requesterId?.toString(),
-        reason: reason,
-        deactivatedAt: ISODateTime.fromDate(new Date()).toString(),
-      },
-      causedByUserId: requesterId?.toString(),
-      occurredAt: ISODateTime.fromDate(new Date()),
+  private async handleUserDeactivationSideEffects(deactivatedUser: User): Promise<void> {
+    const correlationId = `user-deactivate-${deactivatedUser.id}-${this.clock.nowEpochSeconds()}`;
+
+    // Log user deactivation for audit trail
+    this.logger.info('User deactivated successfully', {
+      correlationId,
+      userId: deactivatedUser.id.toString(),
+      operation: 'deactivate_user',
     });
 
-    await this.eventBus.publish(userDeactivatedEvent);
-
-    // Enhanced audit logging for user deactivation
-    this.logger.info(
-      `User deactivation completed: user ${deactivatedUser.id} deactivated by ${requesterId || 'system'}`
-    );
+    // Additional side effects can be added here:
+    // - Send notification to user about deactivation
+    // - Update user metrics and analytics
+    // - Trigger security cleanup workflows
+    // - Log to external audit systems
+    // - Clear user-related cache entries
+    // - Send notifications to administrators
   }
 }
