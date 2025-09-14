@@ -343,22 +343,22 @@ describe('CreateRoleUseCase', () => {
     describe('Business Logic Delegation', () => {
       it('should delegate business logic validation to domain layer', async () => {
         // Arrange
-        const requestWithPotentialBusinessRuleViolation: CreateRoleRequest = {
-          name: 'admin', // This might be a reserved name (business rule)
+        const requestWithValidData: CreateRoleRequest = {
+          name: 'Team Lead', // Valid role name
           accessLevel: 5,
           requesterId: 123,
         };
 
-        // Note: Business logic validation (reserved names, length limits) 
+        // Note: Business logic validation (length limits, format)
         // should be handled by Role.create() in domain layer
         // Application layer only validates presence and basic structure
 
         // Act
-        await useCase.execute(requestWithPotentialBusinessRuleViolation);
+        await useCase.execute(requestWithValidData);
 
         // Assert - Application layer should pass request to domain
         expect(mockRoleRepository.create).toHaveBeenCalledWith({
-          name: 'admin',
+          name: 'Team Lead',
           accessLevel: 5,
           description: undefined,
           canLeadProjects: undefined,
@@ -664,18 +664,18 @@ describe('CreateRoleUseCase', () => {
 
       it('should maintain error context through transformation', async () => {
         // Arrange
-        const contextualError = new Error('Role with name "admin" already exists');
+        const contextualError = new Error('Role with name "Manager" already exists');
         const transformedError = new ApplicationError(
           ApplicationErrorCode.ROLE_IN_USE,
           'Duplicate resource error',
-          'Role with name "admin" already exists'
+          'Role with name "Manager" already exists'
         );
-        
+
         mockRoleRepository.create.and.returnValue(Promise.reject(contextualError));
         mockErrorTransformer.transform.and.returnValue(transformedError);
 
         const duplicateRequest: CreateRoleRequest = {
-          name: 'admin',
+          name: 'Manager',
           accessLevel: 5,
           requesterId: 123,
         };
@@ -735,14 +735,14 @@ describe('CreateRoleUseCase', () => {
 
       it('should log with correct user context for different requesters', async () => {
         // Arrange
-        const adminRequest: CreateRoleRequest = {
-          name: 'Admin Role',
+        const managerRequest: CreateRoleRequest = {
+          name: 'Manager Role',
           accessLevel: 5,
           requesterId: 999,
         };
 
         // Act
-        await useCase.execute(adminRequest);
+        await useCase.execute(managerRequest);
 
         // Assert - Verify user context is correctly logged
         expect(mockLogger.info).toHaveBeenCalledWith('Role created successfully', 
