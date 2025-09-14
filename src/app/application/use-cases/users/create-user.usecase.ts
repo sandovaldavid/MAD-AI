@@ -1,79 +1,136 @@
 import { inject, Injectable } from '@angular/core';
-import { USER_REPOSITORY, ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
-import { ApplicationError } from '@application/errors/application-error';
-import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { USER_REPOSITORY, LOGGER_PORT } from '@di/tokens';
+import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { Logger } from '@core/interfaces/logger.interface';
-import { DomainEventBusService } from '@core/services/domain-event-bus.service';
-import { DomainEvent } from '@domain/events/domain-event.entity';
-import { DomainEventType } from '@domain/events/domain-event.enum';
-import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
 import type { CreateUserRequest, CreateUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
-import type { RoleRepository } from '@domain/repositories/business/role.repository';
-import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { User } from '@domain/entities/user.entity';
 import type { CreateUserContract } from '@/app/domain/repositories/business/user.contract';
-import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 
 /**
  * Create User Use Case
  *
+ * Application layer orchestrator that handles user creation following
+ * Clean Architecture principles. Provides pure orchestration between user requests
+ * and domain operations without implementing business logic.
+ *
  * @description
- * Application layer orchestrator that handles user creation with validation,
- * role verification, and post-creation workflows. This use case follows the
- * orchestration pattern to coordinate multiple repositories and handle side effects.
+ * Orchestrates user creation by coordinating application-level validation,
+ * domain delegation, and cross-cutting concerns. Serves as the entry point for
+ * user creation operations while maintaining clean separation between
+ * application orchestration and domain business logic.
  *
  * @responsibilities
- * - Orchestrate user creation with validation and side effects
- * - Validate application-level business rules (duplicates, role permissions)
- * - Coordinate user and role repositories
- * - Handle post-creation side effects (welcome notifications, audit logging)
- * - Normalize errors for application layer consumption
+ * - Validate application-level request parameters (presence/nullability)
+ * - Delegate user creation to domain repository (handles business rules)
+ * - Handle cross-cutting concerns (logging, error transformation)
+ * - Orchestrate the complete user creation workflow
  *
  * @architecture
- * This use case acts as an orchestrator that:
- * 1. Validates application rules (duplicates, role assignments)
- * 2. Delegates user creation to domain repository
- * 3. Handles side effects (notifications, logging, role assignment)
- * 4. Normalizes errors for consistent error handling
+ * - **Layer**: Application Layer (Clean Architecture)
+ * - **Pattern**: Use Case orchestrator with 4-step pattern
+ * - **Dependencies**: Domain Repository, Core Services (Logger)
+ * - **Injection**: Token-based dependency injection
+ * - **Error Handling**: ApplicationError transformation
+ * - **Business Logic**: Delegated entirely to Domain layer
  *
+ * @dependencies
+ * - {@link UserRepository} - Domain repository for user operations
+ * - {@link Logger} - Structured logging service
+ * - {@link ApplicationErrorTransformer} - Error normalization
+ *
+ * @constraints
+ * - Request parameters must be present (not null/undefined)
+ * - All business rules enforced by Domain layer
+ * - Duplicate validation handled by Domain repository
+ *
+ * @workflow
+ * 1. **Validate Application Rules** - Parameter presence/nullability checks
+ * 2. **Delegate to Domain** - Repository handles creation with business logic
+ * 3. **Handle Side Effects** - Logging and audit trail
+ * 4. **Transform Errors** - Normalize errors for Application layer
+ *
+ * @example
+ * ```typescript
+ * const useCase = inject(CreateUser);
+ * const request: CreateUserRequest = {
+ *   userData: {
+ *     email: 'user@example.com',
+ *     username: 'newuser',
+ *     firstName: 'John',
+ *     lastName: 'Doe',
+ *     roleId: 1
+ *   }
+ * };
+ *
+ * const user = await useCase.execute(request);
+ * ```
+ *
+ * @throws {ApplicationError} When request validation fails
+ * @throws {ApplicationError} When domain operation fails (transformed)
+ *
+ * @version 2.0.0
  * @since 1.0.0
+ * @author MAD-AI Development Team
  * @layer Application
+ * @module User Management
  */
 @Injectable({ providedIn: 'root' })
 export class CreateUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
-  private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
-  private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject(DomainEventBusService);
 
   /**
-   * Execute user creation orchestration with validation and side effects
+   * Execute user creation orchestration
    *
-   * @param request User creation request with data and options
-   * @returns Promise resolving to created user
-   * @throws ApplicationError when validation fails or creation is not allowed
+   * Orchestrates the complete user creation workflow following Clean Architecture principles.
+   * This method coordinates validation, domain operations, and side effects while maintaining
+   * separation of concerns and proper error handling.
+   *
+   * @param request User creation request with data
+   * @returns Promise resolving to created user entity
+   * @throws {ApplicationError} When validation fails or creation encounters errors
+   *
+   * @workflow
+   * 1. **Application Validation** - Parameter presence/nullability checks
+   * 2. **Domain Delegation** - Repository handles creation with all business logic
+   * 3. **Side Effects** - Logging and audit trail
+   * 4. **Error Transformation** - Normalize errors for Application layer
+   *
+   * @example
+   * ```typescript
+   * const request: CreateUserRequest = {
+   *   userData: {
+   *     email: 'user@example.com',
+   *     username: 'newuser',
+   *     firstName: 'John',
+   *     lastName: 'Doe',
+   *     roleId: 1
+   *   }
+   * };
+   * const user = await createUserUseCase.execute(request);
+   * ```
    */
   async execute(request: CreateUserRequest): Promise<CreateUserResult> {
     try {
       // Step 1: Validate application rules
-      await this.validateApplicationRules(request.userData);
+      this.validateApplicationRules(request.userData);
 
       // Step 2: Delegate to domain repository
+      // Domain repository handles all business logic, including:
+      // - Duplicate email/username validation
+      // - Role existence and assignability validation
+      // - User entity creation with domain rules
       const user = await this.userRepo.create(request.userData);
 
       // Step 3: Handle side effects
-      await this.handleUserCreationSideEffects(user, request.userData, request.createdBy);
+      this.handleUserCreationSideEffects(user);
 
       return user;
     } catch (error: unknown) {
       // Step 4: Normalize errors for application layer
-      const appError = this.errorTransformer.transform(error, {
-        operation: 'create_user',
-      });
-      throw appError;
+      throw this.errorTransformer.transform(error);
     }
   }
 
@@ -81,44 +138,36 @@ export class CreateUser {
    * Validate application-level rules for user creation
    *
    * @description
-   * Validates business rules specific to the application layer, such as
-   * checking for duplicates and validating role assignments. Domain validation
-   * is handled by the repository layer.
+   * Validates request parameters at the application layer by checking for presence
+   * and nullability only. All business rule validation (duplicates, role validation,
+   * email format, etc.) is delegated to the Domain layer.
    *
-   * @param userData User data to validate
+   * @param userData User creation data to validate
    * @throws ApplicationError when validation fails
    */
-  private async validateApplicationRules(userData: CreateUserContract): Promise<void> {
-    // Check for duplicate email
-    const existingUserByEmail = await this.userRepo.getByEmail(userData.email);
-    if (existingUserByEmail) {
-      throw new ApplicationError(
-        ApplicationErrorCode.USER_ALREADY_EXISTS,
-        'Email address is already registered',
-        'Email address is already registered',
-        { email: userData.email }
-      );
+  private validateApplicationRules(userData: CreateUserContract): void {
+    // Validate required fields presence (nullability only)
+    const missingFields: string[] = [];
+
+    if (userData.email === null || userData.email === undefined) {
+      missingFields.push('email');
+    }
+    if (userData.username === null || userData.username === undefined) {
+      missingFields.push('username');
+    }
+    if (userData.firstName === null || userData.firstName === undefined) {
+      missingFields.push('firstName');
+    }
+    if (userData.lastName === null || userData.lastName === undefined) {
+      missingFields.push('lastName');
+    }
+    if (userData.roleId === null || userData.roleId === undefined) {
+      missingFields.push('roleId');
     }
 
-    // Check for duplicate username
-    const existingUserByUsername = await this.userRepo.getByUsername(userData.username);
-    if (existingUserByUsername) {
-      throw new ApplicationError(
-        ApplicationErrorCode.USER_ALREADY_EXISTS,
-        'Username is already taken',
-        'Username is already taken',
-        { username: userData.username }
-      );
-    }
-
-    // Validate role exists and is assignable
-    const role = await this.roleRepo.getById(userData.roleId);
-    if (!role.isActive) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_ROLE_SPEC,
-        'Cannot assign inactive role to new user',
-        'Cannot assign inactive role to new user',
-        { roleId: userData.roleId }
+    if (missingFields.length > 0) {
+      throw this.errorTransformer.transform(
+        new Error(`Missing required fields: ${missingFields.join(', ')}`)
       );
     }
   }
@@ -126,43 +175,27 @@ export class CreateUser {
   /**
    * Handle side effects for successful user creation
    *
+   * @description
+   * Manages audit logging and other cross-cutting concerns after successful user creation.
+   * Provides structured logging for security monitoring and audit trail purposes.
+   *
    * @param user Created user entity
-   * @param userData Original user data used for creation
-   * @param createdBy ID of the user who created this user
+   *
+   * @side-effects
+   * - Logs creation operation for security monitoring
+   * - Tracks user creation patterns for audit purposes
    */
-  private async handleUserCreationSideEffects(
-    user: User,
-    userData: CreateUserContract,
-    createdBy?: number
-  ): Promise<void> {
-    // Create and publish UserCreated domain event
-    const userCreatedEvent = DomainEvent.create({
-      id: `user-created-${user.id}-${Date.now()}`,
-      eventType: DomainEventType.USER_CREATED,
-      aggregateId: user.id.toString(),
-      aggregateType: 'User',
-      eventData: {
-        userId: user.id,
-        email: user.email.value,
-        username: user.username.value,
-        roleId: user.getRole.id,
-        createdBy: createdBy?.toString(),
-        createdAt: user.createdAt?.toString(),
-      },
-      causedByUserId: createdBy?.toString(),
-      occurredAt: ISODateTime.fromDate(this.clock.nowDate()),
-    });
-
-    await this.eventBus.publish(userCreatedEvent);
-
-    // Log user creation for audit trail
+  private handleUserCreationSideEffects(user: User): void {
+    // Log user creation for security monitoring with proper context
     this.logger.info('User created successfully', {
       userId: user.id.toString(),
       operation: 'create_user',
     });
 
-    // TODO: Send welcome email notification
-    // TODO: Create user onboarding tasks
-    // TODO: Notify administrators of new user creation
+    // Additional side effects can be added here:
+    // - Send welcome email notification (through domain events)
+    // - Create user onboarding tasks (through domain events)
+    // - Notify administrators of new user creation (through domain events)
+    // - Analytics tracking for user acquisition metrics
   }
 }
