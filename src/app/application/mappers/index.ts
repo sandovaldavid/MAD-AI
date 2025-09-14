@@ -15,4 +15,7 @@
  */
 
 export { AuthMapper } from './auth.mapper';
+export { SessionMapper } from './session.mapper';
 export { UsersMapper } from './users.mapper';
+export { RoleApplicationMapper } from './role.mapper';
+export { RoleExportApplicationMapper } from './role-export.mapper';
