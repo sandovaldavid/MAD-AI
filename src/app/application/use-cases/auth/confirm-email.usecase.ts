@@ -1,144 +1,48 @@
 import { inject, Injectable } from '@angular/core';
-import { AUTH_REPOSITORY, CLOCK_PORT } from '../../../di/tokens';
-import type { AuthRepository } from '@domain/repositories/business/auth.repository';
-import type { ClockPort } from '@domain/repositories/system/clock.repository';
-import type { EmailConfirmationRequest } from '@application/types/auth.types';
-import { ApplicationError } from '@application/errors/application-error';
-import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
+import { AUTH_REPOSITORY, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { AuthRepository } from '@domain/repositories/business/auth.repository';
+import type { Logger } from '@core/interfaces/logger.interface';
+import type { EmailConfirmationRequest } from '@application/types/auth.types';
 
 /**
- * Confirm Email Use Case
- *
- * @description
- * Application layer orchestrator that handles email confirmation with comprehensive validation,
- * token verification, and security considerations. This use case follows the orchestration
- * pattern with error normalization to ensure consistent email confirmation workflow.
- *
- * @responsibilities
- * - Orchestrate email confirmation with validation and side effects
- * - Validate application-level confirmation rules
- * - Execute email confirmation through domain repository
- * - Handle confirmation side effects (logging, notifications)
- * - Normalize errors for application layer consumption
- *
- * @architecture
- * This use case acts as an orchestrator that:
- * 1. Validates confirmation preconditions (application rules)
- * 2. Delegates email confirmation to domain repository
- * 3. Handles side effects (security logging, audit trails)
- * 4. Normalizes errors for consistent error handling
- *
- * @since 1.0.0
- * @layer Application
+ * Orchestrates the email confirmation process.
+ * Validates the confirmation token through the domain layer.
  */
-@Injectable({ providedIn: 'root' })
-export class ConfirmEmail {
-  private readonly authRepo = inject<AuthRepository>(AUTH_REPOSITORY);
-  private readonly clock = inject<ClockPort>(CLOCK_PORT);
+@Injectable()
+export class ConfirmEmailUseCase {
+  private readonly authRepository = inject<AuthRepository>(AUTH_REPOSITORY);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
-   * Orchestrates email confirmation with validation, delegation, and side effects
-   *
-   * @param request - Email confirmation request containing the token
-   * @returns Promise<string> - Confirmation message
-   *
-   * @throws ApplicationError when confirmation fails with normalized error message
-   *
-   * @example Basic email confirmation
-   * ```typescript
-   * const message = await confirmEmailUC.execute({
-   *   token: 'email-confirmation-token-here'
-   * });
-   * console.log(message); // "Email confirmed successfully"
-   * ```
+   * Executes email confirmation through domain repository.
+   * @param request Email confirmation request containing the token
+   * @returns Promise<string> Confirmation message
    */
   async execute(request: EmailConfirmationRequest): Promise<string> {
     try {
-      // 1. Validate application rules for email confirmation
-      await this.validateApplicationRules(request);
+      // 1. Log confirmation attempt
+      this.logger.info('Email confirmation attempt initiated', {
+        operation: 'confirm_email',
+      });
 
-      // 2. Execute email confirmation through domain repository
-      const confirmationResult = await this.authRepo.confirmEmail(request.token);
+      // 2. Execute confirmation through domain repository
+      const result = await this.authRepository.confirmEmail(request.token);
 
-      // 3. Handle side effects - logging and audit trail
-      await this.handleConfirmationSideEffects(request, confirmationResult);
+      // 3. Log successful confirmation
+      this.logger.info('Email confirmation completed successfully', {
+        operation: 'confirm_email',
+      });
 
-      return confirmationResult.message;
+      return result.message;
     } catch (error) {
-      // 4. Normalize and re-throw error
+      this.logger.warn('Email confirmation failed', {
+        operation: 'confirm_email',
+      });
       throw this.errorTransformer.transform(error, {
         operation: 'confirm_email',
-        correlationId: `confirm-${Date.now()}`,
       });
     }
-  }
-
-  /**
-   * Validates application-specific rules for email confirmation
-   */
-  private async validateApplicationRules(request: EmailConfirmationRequest): Promise<void> {
-    // Application-level validation: check if system is in maintenance mode
-    const maintenanceMode = await this.checkMaintenanceMode();
-
-    if (maintenanceMode) {
-      throw new ApplicationError(
-        ApplicationErrorCode.SYSTEM_MAINTENANCE,
-        'Email confirmation is temporarily unavailable due to system maintenance',
-        'The email confirmation service is currently unavailable. Please try again later.',
-        undefined,
-        'Please try again in a few minutes'
-      );
-    }
-
-    // Application-level validation: basic token format validation
-    if (!request.token || request.token.trim().length === 0) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Email confirmation token is required',
-        'Please provide a valid confirmation token',
-        { tokenProvided: !!request.token },
-        'Check that you have the complete confirmation link'
-      );
-    }
-
-    // Application-level validation: rate limiting could be implemented here
-    // This would prevent abuse of the confirmation endpoint
-    console.log(
-      `Email confirmation attempt at ${new Date(this.clock.nowEpochSeconds() * 1000).toISOString()}`
-    );
-  }
-
-  /**
-   * Handles email confirmation side effects
-   */
-  private async handleConfirmationSideEffects(
-    request: EmailConfirmationRequest,
-    result: { message: string }
-  ): Promise<void> {
-    // Log successful confirmation for audit purposes
-    const confirmationTime = new Date(this.clock.nowEpochSeconds() * 1000);
-    console.log(
-      `Email confirmed successfully at ${confirmationTime.toISOString()}: ${request.token.substring(
-        0,
-        8
-      )}... - ${result.message}`
-    );
-
-    // Additional side effects could include:
-    // - Sending welcome notifications
-    // - Updating user analytics
-    // - Triggering post-confirmation workflows
-    // - Security event logging
-  }
-
-  /**
-   * Checks if system is in maintenance mode
-   */
-  private async checkMaintenanceMode(): Promise<boolean> {
-    // This would typically check system configuration or feature flags
-    // For now, returning false (no maintenance mode)
-    return false;
   }
 }
