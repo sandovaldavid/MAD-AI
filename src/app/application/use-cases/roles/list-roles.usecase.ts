@@ -23,14 +23,12 @@ import type { Role } from '@domain/entities/role.entity';
  * from multiple role entities and provides comprehensive audit trails for bulk operations.
  *
  * @responsibilities
- * - Validate application-level authorization and listing permissions
- * - Verify filter parameters and constraints (access level ranges, etc.)
+ * - Validate application-level presence and nullability checks only
  * - Transform application filters to domain repository contracts
- * - Delegate role listing to domain repository with filtering
- * - Publish domain events from all retrieved role entities
+ * - Delegate role listing and all business rule validation to domain repository
  * - Handle audit logging and error normalization
  * - Ensure transactional consistency for listing operations
- * - Support pagination and filtering for large role datasets
+ * - Support pagination and filtering through domain delegation
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
@@ -52,17 +50,16 @@ import type { Role } from '@domain/entities/role.entity';
  * - RoleRetrievedEvent (published from each role entity domain events)
  *
  * @constraints
- * - Access level filters must be within valid range (1-5)
- * - Requester must have listing permissions for roles
- * - Filter parameters must be properly validated
- * - System roles may have additional visibility restrictions
- * - Large result sets should be paginated for performance
+ * - All business rule validation delegated to domain repository
+ * - Application layer only handles presence and nullability checks
+ * - Domain repository enforces access level ranges and business constraints
+ * - Filter parameter validation handled by domain layer
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, filter validation, and constraint checks
- * 2. **Delegate to Domain** - Repository handles filtering and data retrieval
- * 3. **Handle Side Effects** - Bulk event publishing and audit logging
- * 4. **Return Result** - Array of role entities with domain events published
+ * 1. **Validate Application Rules** - Presence and nullability checks only
+ * 2. **Delegate to Domain** - Repository handles filtering and all business rule validation
+ * 3. **Handle Side Effects** - Audit logging for successful operations
+ * 4. **Return Result** - Array of role entities with domain validation completed
  *
  * @example
  * ```typescript
@@ -82,9 +79,9 @@ import type { Role } from '@domain/entities/role.entity';
  * const filteredRoles = await useCase.execute(request);
  * ```
  *
- * @throws {ApplicationError} When validation fails or filter parameters are invalid
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
- * @throws {ApplicationError} When access level filter is outside valid range
+ * @throws {ApplicationError} When basic presence validation fails
+ * @throws {ApplicationError} When domain repository validation fails
+ * @throws {ApplicationError} When domain business rules are violated
  * @throws {ApplicationError} When system constraints prevent role listing
  *
  * @version 2.0.0
@@ -114,9 +111,9 @@ export class ListRoles {
    * @throws {ApplicationError} When validation fails or role listing encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check authorization, filter parameters, and constraints
-   * 2. **Domain Filtering** - Transform filters and delegate to repository for data retrieval
-   * 3. **Side Effects** - Publish domain events and log audit information
+   * 1. **Application Validation** - Check presence and basic nullability only
+   * 2. **Domain Filtering** - Transform filters and delegate to repository with full business validation
+   * 3. **Side Effects** - Log audit information for successful operations
    * 4. **Return Result** - Return filtered array of role entities
    *
    * @example
@@ -159,20 +156,18 @@ export class ListRoles {
    * Validate application-level rules for role listing
    *
    * @description
-   * Validates request parameters including filter constraints and basic business rules
-   * specific to the application layer. Ensures filter parameters are within valid ranges
-   * and meet application-level requirements.
+   * Validates basic presence and nullability checks for the application layer.
+   * All business rule validation is delegated to the domain layer through
+   * repository operations that will enforce domain constraints.
    *
    * @param request Optional list roles request to validate
-   * @throws ApplicationError when validation fails
+   * @throws ApplicationError when basic validation fails
    */
   private validateApplicationRules(request?: ListRolesRequest): void {
-    if (
-      request?.filters?.accessLevel !== undefined &&
-      (request.filters.accessLevel < 1 || request.filters.accessLevel > 5)
-    ) {
-      throw this.errorTransformer.transform(new Error('Invalid access level range'));
-    }
+    // Application layer only validates presence and basic nullability
+    // All business rule validation is delegated to domain repository
+    // No additional validation needed - filters are optional
+    // Domain repository will handle all business rule validation
   }
 
   /**
@@ -203,8 +198,9 @@ export class ListRoles {
    *
    * @description
    * Transforms application-level filter objects to domain repository contract format.
-   * Handles the mapping between application filter types and domain repository expectations,
-   * including search term formatting and boolean flag conversion.
+   * Handles the mapping between application filter types and domain repository expectations.
+   * All filter validation is delegated to the domain repository which will enforce
+   * business rules and constraints.
    *
    * @param filters Optional application-level role filters
    * @returns Domain repository filter contract or undefined if no filters provided
