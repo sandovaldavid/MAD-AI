@@ -142,7 +142,7 @@ export class UnassignRoleFromUser {
       this.validateApplicationRules(request);
 
       // Step 2: Validate entities exist
-      const { user, role } = await this.validateEntitiesForUnassignment(request);
+      const { user, role } = await this.validateEntitiesExist(request);
 
       // Step 3: Delegate to domain repository
       await this.performRoleUnassignment(request);
@@ -164,30 +164,43 @@ export class UnassignRoleFromUser {
    * Validate application-level rules for role unassignment
    *
    * @description
-   * Validates request parameters and basic business rules specific to role unassignment operations
-   * at the application layer. Ensures all required data is present and meets application-level
-   * requirements before proceeding with unassignment. Performs initial validation before domain-level checks.
+   * Validates request parameters at the application layer. Only handles application-level
+   * concerns such as input presence and basic structure validation. Business rules about
+   * valid ID ranges, formats, and constraints are delegated to the domain layer through
+   * repository operations.
+   *
+   * ✅ CORRECT: Only validates application concerns:
+   * - Input nullability (application layer responsibility)
+   * - Basic presence of required fields (application layer responsibility)
+   * - Request structure validity (application layer responsibility)
+   *
+   * ❌ NEVER validates business rules:
+   * - ID ranges or formats (domain repository responsibility)
+   * - Business constraints (domain repository responsibility)
+   * - Entity relationships (domain repository responsibility)
    *
    * @param request Role unassignment request to validate
-   * @throws ApplicationError when validation fails or required data is missing
+   * @throws ApplicationError when application-level validation fails
    *
    * @validation-rules
    * - Request object must be provided
-   * - userId must be present, positive, and integer
-   * - roleId must be present, positive, and integer
-   * - Requester ID is optional but validated if present
+   * - userId must be present (business validation delegated to domain)
+   * - roleId must be present (business validation delegated to domain)
+   * - Requester ID is optional but checked if present
    */
   private validateApplicationRules(request: UnassignRoleFromUserRequest): void {
+    // Application-level validation: Check if request exists
     if (!request) {
       throw this.errorTransformer.transform(new Error('Request is required'));
     }
 
-    if (!request.userId || request.userId <= 0 || !Number.isInteger(request.userId)) {
-      throw this.errorTransformer.transform(new Error('Invalid user ID'));
+    // Application-level validation: Check required field presence (not business constraints)
+    if (!request.userId) {
+      throw this.errorTransformer.transform(new Error('User ID is required'));
     }
 
-    if (!request.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
-      throw this.errorTransformer.transform(new Error('Invalid role ID'));
+    if (!request.roleId) {
+      throw this.errorTransformer.transform(new Error('Role ID is required'));
     }
   }
 
@@ -195,19 +208,21 @@ export class UnassignRoleFromUser {
    * Validate entities exist for unassignment
    *
    * @description
-   * Validates that both user and role entities exist in the system for the unassignment
-   * operation. Performs parallel entity fetching for efficiency. Business rule validation
-   * is delegated to the domain layer (repository implementation).
+   * Validates that both user and role entities exist in the system and can be retrieved
+   * for the unassignment operation. Performs parallel entity fetching for efficiency.
+   * This is purely an existence check - all business rule validation about the
+   * unassignment operation itself is delegated to the domain repository.
    *
    * @param request Role unassignment request with user and role IDs
    * @returns Promise resolving to validated user and role entities
    * @throws ApplicationError when entities don't exist
    *
    * @validation-scope
-   * - Both user and role must exist in the system
-   * - Business rules are validated by the domain layer during unassignment
+   * - Verifies user entity exists (NOT business validation of user state)
+   * - Verifies role entity exists (NOT business validation of role state)
+   * - Business rules about unassignment eligibility are handled by repository
    */
-  private async validateEntitiesForUnassignment(
+  private async validateEntitiesExist(
     request: UnassignRoleFromUserRequest
   ): Promise<{ user: User; role: Role }> {
     // Fetch both entities in parallel for efficiency
