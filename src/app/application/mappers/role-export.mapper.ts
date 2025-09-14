@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Role } from '@domain/entities/role.entity';
+import { ExportFormat } from '@domain/value-objects';
 
 /**
  * Role Export Application Mapper
@@ -22,7 +23,7 @@ export class RoleExportApplicationMapper {
     return {
       id: role.id,
       name: role.name,
-      accessLevel: role.getAccessLevel().getValue(),
+      accessLevel: role.accessLevel,
       description: role.description,
       canLeadProjects: role.canLeadProjects(),
       isUniquePerTeam: role.isUniqueForTeam(),
@@ -39,11 +40,17 @@ export class RoleExportApplicationMapper {
   }
 
   /**
-   * Creates export options with defaults
+   * Creates export options with defaults using Domain validation
    */
   static createExportOptions(options?: Partial<RoleExportOptions>): RoleExportOptions {
+    // Use Domain value object for format validation and defaults
+    const defaultFormat = ExportFormat.default();
+    const format = options?.format
+      ? ExportFormat.create(options.format).value
+      : defaultFormat.value;
+
     return {
-      format: options?.format || 'csv',
+      format: format as 'csv' | 'pdf' | 'json',
       includeUsers: options?.includeUsers ?? false,
       includePermissions: options?.includePermissions ?? true,
       dateRange: options?.dateRange,
@@ -51,11 +58,11 @@ export class RoleExportApplicationMapper {
   }
 
   /**
-   * Validates export options
+   * Validates export options using Domain business rules
    */
   static validateExportOptions(options: RoleExportOptions): boolean {
-    const validFormats = ['csv', 'pdf', 'json'];
-    return validFormats.includes(options.format);
+    // Delegate validation to Domain value object
+    return ExportFormat.isSupported(options.format);
   }
 }
 
