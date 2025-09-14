@@ -108,10 +108,19 @@ describe('ActivateRole Use Case', () => {
 
     it('should reject undefined request', async () => {
       // Arrange
-      // Note: This tests the actual behavior where accessing request.id in catch block throws TypeError
+      const validationError = new ApplicationError(
+        ApplicationErrorCode.INVALID_ROLE_ID,
+        'Valid role ID required',
+        'Please provide a valid role ID',
+        { request: undefined },
+        'Provide a valid role ID',
+        false
+      );
 
-      // Act & Assert - Expect TypeError due to implementation bug in error logging
-      await expectAsync(useCase.execute(undefined as any)).toBeRejectedWith(jasmine.any(TypeError));
+      mockErrorTransformer.transform.and.returnValue(validationError);
+
+      // Act & Assert
+      await expectAsync(useCase.execute(undefined as any)).toBeRejectedWith(validationError);
     });
 
     it('should accept valid positive role ID', async () => {
@@ -419,10 +428,19 @@ describe('ActivateRole Use Case', () => {
   describe('Edge Cases', () => {
     it('should handle null request gracefully', async () => {
       // Arrange
-      // Note: This tests the actual behavior where accessing request.id in catch block throws TypeError
+      const validationError = new ApplicationError(
+        ApplicationErrorCode.INVALID_ROLE_ID,
+        'Valid role ID required',
+        'Please provide a valid role ID',
+        { request: null },
+        'Provide a valid role ID',
+        false
+      );
 
-      // Act & Assert - Expect TypeError due to implementation bug in error logging
-      await expectAsync(useCase.execute(null as any)).toBeRejectedWith(jasmine.any(TypeError));
+      mockErrorTransformer.transform.and.returnValue(validationError);
+
+      // Act & Assert
+      await expectAsync(useCase.execute(null as any)).toBeRejectedWith(validationError);
     });
 
     it('should handle empty request object', async () => {
