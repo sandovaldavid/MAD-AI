@@ -10,8 +10,29 @@ import type { Role } from '@domain/entities/role.entity';
 import type { Logger } from '@core/interfaces/logger.interface';
 import { ApplicationError } from '@application/errors/application-error';
 import type { RoleExportData, RoleExportConfig } from '@application/types/role-export.types';
-import { DEFAULT_ROLE_EXPORT_CONFIG } from '@application/types/role-export.types';
 
+/**
+ * Application Layer Service for Role Export Operations
+ *
+ * @description
+ * Coordinates role export operations by orchestrating domain entities
+ * and infrastructure export services. Focuses on technical coordination
+ * without containing business logic or UI presentation concerns.
+ *
+ * @responsibilities
+ * - Coordinate role data extraction and export format generation
+ * - Transform domain entities to export-appropriate data structures
+ * - Delegate to infrastructure layer for actual file generation
+ * - Handle export operation errors and logging
+ *
+ * @architecture
+ * - Uses dependency injection for all external dependencies
+ * - Stateless service focused on single responsibility
+ * - No business logic - delegates to Domain layer
+ * - No UI concerns - technical data transformation only
+ *
+ * @layer Application
+ */
 @Injectable({
   providedIn: 'root',
 })
@@ -26,8 +47,18 @@ export class RoleExportService {
         correlationId: `export-${Date.now()}`,
       });
 
-      // Merge with default configuration
-      const config = { ...DEFAULT_ROLE_EXPORT_CONFIG, ...options };
+      // Apply default configuration for technical concerns only
+      const config: Required<RoleExportConfig> = {
+        includeId: true,
+        includeAccessLevel: true,
+        includeStatus: true,
+        includeDescription: true,
+        includeUserCount: true,
+        customTitle: 'Roles Report',
+        format: 'pdf',
+        ...options,
+      };
+
       const {
         includeId,
         includeAccessLevel,
@@ -38,12 +69,12 @@ export class RoleExportService {
         format,
       } = config;
 
-      // Validar que hay roles para exportar
+      // Validate input
       if (!roles || roles.length === 0) {
         throw ApplicationError.invalidInput('No roles provided for export');
       }
 
-      // Preparar los datos planos para exportación
+      // Transform domain entities to export data structure
       const exportData: RoleExportData[] = roles.map((role) => {
         const data: RoleExportData = {
           name: role.name,
@@ -51,18 +82,14 @@ export class RoleExportService {
 
         if (includeId) data.id = role.id.toString();
         if (includeAccessLevel) {
-          try {
-            const accessLevel = role.getAccessLevel();
-            data.accessLevel = accessLevel.getName();
-          } catch {
-            this.logger.warn('Failed to get access level for role', {
-              operation: 'role_export',
-              correlationId: `export-${Date.now()}`,
-            });
-            data.accessLevel = `Level ${role.getAccessLevel().getValue()}`;
-          }
+          // Application layer should not contain business display logic
+          // This should be handled by Domain entity methods or Presentation layer
+          data.accessLevel = `Level ${role.accessLevel}`;
         }
-        if (includeStatus) data.status = role.isActive ? 'Activo' : 'Inactivo';
+        if (includeStatus) {
+          // Simple technical status representation - no business rules
+          data.status = role.isActive ? 'Active' : 'Inactive';
+        }
         if (includeDescription) data.description = role.description || 'N/A';
         if (includeUserCount) data.userCount = role.userCount;
 
