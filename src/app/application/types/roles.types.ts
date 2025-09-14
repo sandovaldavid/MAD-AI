@@ -75,7 +75,7 @@ export interface AssignRoleToUserRequest {
 export interface UnassignRoleFromUserRequest {
   readonly userId: number;
   readonly roleId: number;
-  readonly unassignedByUserId: number;
+  readonly requesterId?: number;
 }
 
 // Query Types
