@@ -163,11 +163,11 @@ export class GetRoleByNameUseCase {
       );
     }
 
-    if (request.name.length > 100) {
+    if (request.name.length > 50) {
       throw new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
         'Invalid input provided: Role name too long',
-        'Role name must be 100 characters or less'
+        'Role name must be 50 characters or less'
       );
     }
   }
