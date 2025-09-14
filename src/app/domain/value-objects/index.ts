@@ -65,3 +65,5 @@ export * from './local-tokens.vo';
 export * from './user-status.vo';
 export * from './user-notification-preferences.vo';
 export * from './iso-datetime.vo';
+export * from './activity-period.vo';
+export * from './export-format.vo';
