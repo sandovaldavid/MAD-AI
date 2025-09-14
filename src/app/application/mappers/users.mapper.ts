@@ -26,6 +26,7 @@
 import { Injectable } from '@angular/core';
 import type { User } from '@domain/entities/user.entity';
 import type { UserStatistics } from '../types/users.types';
+import { ActivityPeriod } from '@domain/value-objects';
 
 /**
  * Users Application Mapper
@@ -49,30 +50,26 @@ export class UsersMapper {
     // Calculate users by role
     const usersByRole: Record<string, number> = {};
     users.forEach((user) => {
-      const roleName = user.getRole.name;
+      const roleName = user.role.name;
       usersByRole[roleName] = (usersByRole[roleName] || 0) + 1;
     });
 
-    // Calculate recent activity (users active in last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Calculate recent activity using domain business rules
+    const recentActivityPeriod = ActivityPeriod.recentActivity();
 
     const recentlyActiveUsers = users.filter((user) => {
       if (!user.lastActivityAt) return false;
-      const lastActivity = new Date(user.lastActivityAt.value);
-      return lastActivity >= thirtyDaysAgo;
+      return recentActivityPeriod.isWithinPeriod(user.lastActivityAt.value);
     });
 
     const recentActivity = {
       recentlyCreated: users.filter((user) => {
         if (!user.createdAt) return false;
-        const createdAt = new Date(user.createdAt.value);
-        return createdAt >= thirtyDaysAgo;
+        return recentActivityPeriod.isWithinPeriod(user.createdAt.value);
       }).length,
       recentlyUpdated: users.filter((user) => {
         if (!user.updatedAt) return false;
-        const updatedAt = new Date(user.updatedAt.value);
-        return updatedAt >= thirtyDaysAgo;
+        return recentActivityPeriod.isWithinPeriod(user.updatedAt.value);
       }).length,
       recentlyLoggedIn: recentlyActiveUsers.length,
     };
@@ -100,7 +97,7 @@ export class UsersMapper {
       firstName: user.firstName.value,
       lastName: user.lastName.value,
       active: user.active,
-      roleName: user.getRole.name,
+      roleName: user.role.name,
       createdAt: user.createdAt?.value,
       lastActivityAt: user.lastActivityAt?.value,
     };
