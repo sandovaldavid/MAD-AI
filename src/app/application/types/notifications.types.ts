@@ -58,7 +58,11 @@ export interface ClearNotificationsRequest {
  */
 export interface UpdateNotificationRequest {
   notificationId: NotificationId;
-  patch: Partial<Notification>;
+  updateData: {
+    message?: string;
+    description?: string;
+    isRead?: boolean;
+  };
   requesterId?: number;
 }
 
