@@ -6,67 +6,50 @@ import type { RoleRepository } from '@domain/repositories/business/role.reposito
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-// DomainEventBusService import removed as part of refactor
 
 /**
  * Assign Role to User Use Case
  *
- * Application layer orchestrator that handles role assignment operations with comprehensive
- * validation, authorization checks, and audit logging. This use case coordinates between
- * user and role domains to ensure secure and consistent role assignments following
- * Clean Architecture principles and domain-driven design patterns.
+ * Application layer orchestrator that handles role assignment operations following
+ * Clean Architecture principles. Provides pure orchestration between user requests
+ * and domain operations without implementing business logic.
  *
  * @description
- * Orchestrates the assignment of roles to users by coordinating domain entities, repositories,
- * and cross-cutting concerns. Ensures data integrity, proper authorization, and comprehensive
- * audit trails for role assignment operations. Handles complex business rules around user-role
- * relationships and maintains consistency across the system.
+ * Orchestrates role assignment by coordinating application-level validation,
+ * domain delegation, and cross-cutting concerns. Serves as the entry point for
+ * role assignment operations while maintaining clean separation between
+ * application orchestration and domain business logic.
  *
  * @responsibilities
- * - Validate application-level authorization for role assignments
- * - Ensure both user and role exist and are in valid states
- * - Check business rules preventing role assignments (conflicts, permissions)
- * - Transform application DTOs to domain operations
- * - Delegate role assignment to domain repository with proper context
- * - Publish domain events for role assignment changes
- * - Handle comprehensive audit logging with correlation tracking
- * - Ensure transactional consistency for user-role relationship changes
- * - Validate role assignment constraints and business rules
+ * - Validate application-level request parameters (presence/nullability)
+ * - Coordinate authentication and authorization requirements
+ * - Delegate role assignment operations to domain repository
+ * - Handle cross-cutting concerns (logging, error transformation)
+ * - Orchestrate the complete assignment workflow
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
  * - **Pattern**: Use Case orchestrator with 4-step pattern
- * - **Dependencies**: Role & User Domain Repositories, Core Services (Logger, Clock, Event Bus)
+ * - **Dependencies**: Domain Repositories, Core Services (Logger, Clock)
  * - **Injection**: Token-based dependency injection
- * - **Error Handling**: ApplicationError transformation with detailed context
- * - **Events**: Domain event publishing for user-role relationship changes
- * - **Constraints**: Authorization, existence validation, and business rule enforcement
+ * - **Error Handling**: ApplicationError transformation
+ * - **Business Logic**: Delegated entirely to Domain layer
  *
  * @dependencies
  * - {@link RoleRepository} - Domain repository for role assignment operations
- * - {@link UserRepository} - Domain repository for user validation
+ * - {@link UserRepository} - Domain repository for user operations
  * - {@link ClockPort} - System clock for timestamps and correlation IDs
- * - {@link Logger} - Structured logging service with LogContext
- * - {@link DomainEventBusService} - Domain event publishing service
- * - {@link ApplicationErrorTransformer} - Error normalization and transformation
- *
- * @domain-events
- * - RoleAssignedToUserEvent (published from role assignment domain logic)
- * - UserRoleUpdatedEvent (published from user entity domain events)
+ * - {@link Logger} - Structured logging service
+ * - {@link ApplicationErrorTransformer} - Error normalization
  *
  * @constraints
- * - User must exist and be active in the system
- * - Role must exist and be active in the system
- * - Requester must have assignment permissions for the specific role
- * - User cannot have conflicting roles based on business rules
- * - Role assignment must comply with organizational policies
- * - System roles may have additional assignment restrictions
+ * - Request parameters must be present (not null/undefined)
+ * - All business rules enforced by Domain layer
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, existence, and constraint checks
- * 2. **Delegate to Domain** - Repository handles assignment with business logic
- * 3. **Handle Side Effects** - Event publishing and comprehensive audit logging
- * 4. **Return Result** - Confirmation of successful assignment
+ * 1. **Validate Application Rules** - Parameter presence/nullability checks
+ * 2. **Delegate to Domain** - Repository handles assignment business logic
+ * 3. **Handle Side Effects** - Logging and audit trail
  *
  * @example
  * ```typescript
@@ -74,19 +57,14 @@ import type { Logger, LogContext } from '@core/interfaces/logger.interface';
  * const request: AssignRoleToUserRequest = {
  *   userId: 456,
  *   roleId: 123,
- *   assignedByUserId: 'admin-789'
+ *   assignedByUserId: 789
  * };
  *
  * await useCase.execute(request);
- * console.log('Role assigned successfully');
  * ```
  *
- * @throws {ApplicationError} When validation fails or required data is missing
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
- * @throws {ApplicationError} When user or role does not exist
- * @throws {ApplicationError} When user or role is not active
- * @throws {ApplicationError} When business rules prevent the assignment
- * @throws {ApplicationError} When role conflicts exist for the user
+ * @throws {ApplicationError} When request validation fails
+ * @throws {ApplicationError} When domain operation fails (transformed)
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -139,19 +117,14 @@ export class AssignRoleToUser {
       // Step 1: Validate application rules
       this.validateApplicationRules(input);
 
-      // Step 2: Retrieve domain entities
-      const user = await this.userRepo.getById(input.userId);
-      const role = await this.roleRepo.getById(input.roleId);
-
-      // Step 3: Delegate to domain entity for role assignment business logic
-      user.changeRole(role);
-
-      // Step 4: Persist changes through repository
-      await this.userRepo.update(input.userId, {
+      // Step 2: Delegate to domain repository for role assignment
+      await this.roleRepo.assign({
+        userId: input.userId,
         roleId: input.roleId,
+        assignedByUserId: input.assignedByUserId,
       });
 
-      // Step 5: Handle side effects
+      // Step 3: Handle side effects
       await this.handleRoleAssignmentSideEffects(input);
     } catch (error: unknown) {
       this.logger.error('Role assignment failed', {
@@ -170,22 +143,36 @@ export class AssignRoleToUser {
    * Validate application-level rules for role assignment
    *
    * @description
-   * Validates request parameters and basic business rules specific to the application layer.
-   * Ensures all required data is present and meets application-level requirements before
-   * proceeding with role assignment. Performs initial validation before domain-level checks.
+   * Validates request parameters at the application layer by checking for presence
+   * and nullability only. All business rule validation (ID format, range checks, etc.)
+   * is delegated to the Domain layer.
    *
    * @param input Role assignment request to validate
    * @throws ApplicationError when validation fails or required data is missing
    *
    * @validation-rules
    * - Request object must be provided
-   * - userId must be present and valid
-   * - roleId must be present and valid
-   * - assignedByUserId must be present for audit tracking
+   * - userId must be present (not null/undefined)
+   * - roleId must be present (not null/undefined)
+   * - assignedByUserId must be present (not null/undefined) for audit tracking
    */
   private validateApplicationRules(input: AssignRoleToUserRequest): void {
-    if (!input || !input.userId || !input.roleId || !input.assignedByUserId) {
-      throw this.errorTransformer.transform(new Error('Role assignment data is required'));
+    if (!input) {
+      throw this.errorTransformer.transform(new Error('Role assignment request is required'));
+    }
+
+    if (input.userId === null || input.userId === undefined) {
+      throw this.errorTransformer.transform(new Error('User ID is required for role assignment'));
+    }
+
+    if (input.roleId === null || input.roleId === undefined) {
+      throw this.errorTransformer.transform(new Error('Role ID is required for role assignment'));
+    }
+
+    if (input.assignedByUserId === null || input.assignedByUserId === undefined) {
+      throw this.errorTransformer.transform(
+        new Error('Assigned by user ID is required for audit tracking')
+      );
     }
   }
 
