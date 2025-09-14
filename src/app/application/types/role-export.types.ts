@@ -4,10 +4,14 @@
  * @description Type definitions for role export functionality in the Application Layer.
  * These types define the contracts between Application services and external consumers.
  *
+ * @note Default configurations and business rules should be defined in the Domain layer.
+ * Application layer only provides technical coordination types.
+ *
  * @architecture
  * - Defines data structures for role export operations
  * - Provides configuration options for export customization
  * - Ensures type safety across export workflows
+ * - Delegates business decisions to Domain layer
  *
  * @since 1.0.0
  * @layer Application
@@ -34,7 +38,7 @@ export interface RoleExportData {
 
 /**
  * Configuration options for role export operations.
- * Allows customization of export content and format.
+ * Technical configuration only - business rules should be in Domain layer.
  */
 export interface RoleExportConfig {
   /** Whether to include role IDs in export */
@@ -54,21 +58,8 @@ export interface RoleExportConfig {
 }
 
 /**
- * Default configuration values for role exports.
- * Provides sensible defaults when no configuration is specified.
- */
-export const DEFAULT_ROLE_EXPORT_CONFIG: Required<RoleExportConfig> = {
-  includeId: true,
-  includeAccessLevel: true,
-  includeStatus: true,
-  includeDescription: true,
-  includeUserCount: true,
-  customTitle: 'Roles Report',
-  format: 'pdf',
-} as const;
-
-/**
  * Supported export formats with their file extensions.
+ * Technical constants only.
  */
 export const EXPORT_FORMATS = {
   pdf: 'pdf',
