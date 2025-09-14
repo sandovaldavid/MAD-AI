@@ -1,10 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT, DOMAIN_EVENT_BUS_REPO } from '@di/tokens';
+import { ROLE_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { DomainEventBusService } from '@core/services/domain-event-bus.service';
+
 import type { GetRoleByIdRequest } from '@application/types/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
@@ -89,7 +89,7 @@ export class GetRoleById {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-  private readonly eventBus = inject<DomainEventBusService>(DOMAIN_EVENT_BUS_REPO);
+
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -131,9 +131,13 @@ export class GetRoleById {
 
       return role;
     } catch (error: unknown) {
+      // Safe access for logging in case request is null/undefined
+      const safeId = request?.id ?? 'unknown';
+      const safeRequesterId = request?.requesterId;
+
       this.logger.error('Role retrieval failed', {
-        correlationId: `get-role-${request.id}-${this.clock.nowEpochSeconds()}`,
-        userId: request.requesterId?.toString(),
+        correlationId: `get-role-${safeId}-${this.clock.nowEpochSeconds()}`,
+        userId: safeRequesterId?.toString(),
         operation: 'get_role_by_id',
       } as LogContext);
 
@@ -152,8 +156,12 @@ export class GetRoleById {
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(request: GetRoleByIdRequest): void {
-    if (!request?.id || request.id <= 0 || !Number.isInteger(request.id)) {
-      throw this.errorTransformer.transform(new Error('Invalid role ID'));
+    if (!request) {
+      throw this.errorTransformer.transform(new Error('Request is required for role retrieval'));
+    }
+
+    if (!request.id || request.id <= 0 || !Number.isInteger(request.id)) {
+      throw this.errorTransformer.transform(new Error('Role ID must be a positive integer'));
     }
   }
 
@@ -161,19 +169,14 @@ export class GetRoleById {
    * Handle side effects for successful role retrieval
    *
    * @description
-   * Manages domain event publishing and audit logging after successful role retrieval.
-   * Publishes any domain events from the retrieved role entity and logs the operation.
+   * Manages audit logging after successful role retrieval.
+   * Logs the operation with correlation tracking.
    *
    * @param role The retrieved role entity
    * @param requesterId ID of the user requesting the role
    */
   private async handleSideEffects(role: Role, requesterId?: number): Promise<void> {
-    // Domain Events - Publish any events from the role entity
-    const events = role.getDomainEvents();
-    if (events.length > 0) {
-      await this.eventBus.publishAll(events);
-      role.clearDomainEvents();
-    }
+    // Domain events are no longer needed with simplified Role entity
 
     // Audit Logging
     const correlationId = `get-role-${role.id}-${this.clock.nowEpochSeconds()}`;
