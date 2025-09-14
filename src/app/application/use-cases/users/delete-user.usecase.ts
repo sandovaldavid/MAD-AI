@@ -1,12 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
-import { ApplicationError } from '@application/errors/application-error';
-import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { DomainEventBusService } from '@core/services/domain-event-bus.service';
-import { DomainEvent } from '@domain/events/domain-event.entity';
-import { DomainEventType } from '@domain/events/domain-event.enum';
-import { ISODateTime } from '@domain/value-objects/iso-datetime.vo';
 import type { DeleteUserRequest, DeleteUserResult } from '@application/types/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
@@ -43,125 +37,58 @@ export class DeleteUser {
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly eventBus = inject(DomainEventBusService);
 
   /**
-   * Execute user deletion orchestration with validation and audit logging
+   * Execute user deletion orchestration
+   *
+   * Orchestrates the complete user deletion workflow following Clean Architecture principles.
+   * This method coordinates domain operations and side effects while maintaining separation of concerns.
    *
    * @param request User deletion request with ID
    * @returns Promise resolving to deletion result
-   * @throws ApplicationError when user not found or deletion fails
+   * @throws ApplicationError when deletion fails or user not found
    */
   async execute(request: DeleteUserRequest): Promise<DeleteUserResult> {
     try {
-      this.logger.info('Delete Use Case - Starting execution');
-      // Step 1: Validate application rules
-      this.validateApplicationRules(request.userId, undefined);
-      this.logger.info('Application use case - Validation complete');
-      this.logger.info('Delete Use Case');
-
-      // Step 2: Delegate to domain repository
+      // Step 1: Delegate to domain repository
       await this.userRepo.delete(request.userId);
 
-      // Step 3: Handle side effects
-      this.handleUserDeletionSideEffects(request.userId, undefined);
+      // Step 2: Handle side effects
+      await this.handleUserDeletionSideEffects(request.userId);
 
       return {
         success: true,
         userId: request.userId,
       };
     } catch (error: unknown) {
-      // Step 4: Normalize errors for application layer
-      const appError = this.errorTransformer.transform(error, {
+      // Log error for monitoring and transform to application error
+      this.logger.error('User deletion failed', {
+        correlationId: `delete-user-${request.userId}-${this.clock.nowEpochSeconds()}`,
+        userId: request.userId.toString(),
         operation: 'delete_user',
       });
-      throw appError;
+
+      throw this.errorTransformer.transform(error);
     }
   }
 
   /**
-   * Validate application-level rules for user deletion
+   * Handle side effects for successful user deletion
    *
-   * @description
-   * Validates request parameters and business rules specific to the application layer.
-   * Domain validation is handled by the repository layer.
-   *
-   * @param userId User ID to validate
-   * @param requesterId ID of user making the request
-   * @throws ApplicationError when validation fails
-   */
-  private validateApplicationRules(userId: number, requesterId?: number): void {
-    this.logger.info('Delete Use Case - Validating application rules');
-    this.logger.info(`userId: ${userId} - requesterId: ${requesterId}`);
-    if (userId === undefined || userId === null) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'User ID is required and must be a valid number',
-        'User ID is required and must be a valid number',
-        { providedUserId: userId }
-      );
-    }
-
-    if (typeof userId !== 'number' || userId <= 0) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'User ID must be a positive number',
-        'User ID must be a positive number',
-        { providedUserId: userId }
-      );
-    }
-
-    // Prevent self-deletion (basic application-level rule)
-    if (requesterId && userId === requesterId) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Users cannot delete their own account through this operation',
-        'Users cannot delete their own account through this operation',
-        {
-          userId,
-          requesterId,
-          suggestion: 'Use account deactivation instead',
-        }
-      );
-    }
-  }
-
-  /**
-   * Handle side effects after successful user deletion
-   *
-   * @description
-   * Manages audit logging and other side effects related to user deletion operations.
-   * This includes compliance logging and cleanup notifications.
+   * Manages audit logging and any other side effects that should occur
+   * after a successful user deletion operation.
    *
    * @param deletedUserId ID of the deleted user
-   * @param requesterId ID of user making the request
    */
-  private async handleUserDeletionSideEffects(
-    deletedUserId: number,
-    requesterId?: number
-  ): Promise<void> {
-    const timestamp = new Date(this.clock.nowEpochSeconds() * 1000);
-
-    // Create and publish UserAccountDeactivated domain event (deletion is a form of deactivation)
-    const userDeletedEvent = DomainEvent.create({
-      id: `user-deleted-${deletedUserId}-${Date.now()}`,
-      eventType: DomainEventType.USER_ACCOUNT_DEACTIVATED,
-      aggregateId: deletedUserId.toString(),
-      aggregateType: 'User',
-      eventData: {
-        userId: deletedUserId.toString(),
-        requesterId: requesterId?.toString(),
-        deletedAt: ISODateTime.fromDate(timestamp).toString(),
-        deletionType: 'permanent',
-      },
-      causedByUserId: requesterId?.toString(),
-      occurredAt: ISODateTime.fromDate(timestamp),
-    });
-
-    await this.eventBus.publish(userDeletedEvent);
+  private async handleUserDeletionSideEffects(deletedUserId: number): Promise<void> {
+    const correlationId = `user-delete-${deletedUserId}-${this.clock.nowEpochSeconds()}`;
 
     // Log user deletion for audit trail
-    this.logger.info(`User successfully deleted: ${deletedUserId} by ${requesterId || 'system'}`);
+    this.logger.info('User deleted successfully', {
+      correlationId,
+      userId: deletedUserId.toString(),
+      operation: 'delete_user',
+    });
 
     // Additional side effects can be added here:
     // - Send notification to administrators
