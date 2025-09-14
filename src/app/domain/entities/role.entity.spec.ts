@@ -181,35 +181,6 @@ describe('Role Entity - Domain Tests', () => {
     });
 
     describe('Name Validation', () => {
-      it('should reject reserved role names', () => {
-        expect(() => {
-          Role.create({
-            id: 1,
-            name: 'admin',
-          });
-        }).toThrow();
-      });
-
-      it('should allow system to create roles with reserved names', () => {
-        expect(() => {
-          Role.create({
-            id: 1,
-            name: 'admin',
-            isSystemCreated: true,
-          });
-        }).not.toThrow();
-
-        const adminRole = Role.create({
-          id: 1,
-          name: 'ADMIN',
-          accessLevel: 1,
-          isSystemCreated: true,
-        });
-
-        expect(adminRole.name).toBe('ADMIN');
-        expect(adminRole.id).toBe(1);
-      });
-
       it('should reject empty role name', () => {
         expect(() => {
           Role.create({
@@ -232,7 +203,7 @@ describe('Role Entity - Domain Tests', () => {
         try {
           Role.create({
             id: 1,
-            name: 'admin', // Reserved name
+            name: '', // Empty name
           });
           fail('Expected ValidationError to be thrown');
         } catch (error) {
@@ -348,200 +319,6 @@ describe('Role Entity - Domain Tests', () => {
             name: 'РОЛЬ_ПОЛЬЗОВАТЕЛЯ',
           });
         }).not.toThrow();
-      });
-    });
-
-    describe('Reserved Name Validation (isReservedName coverage)', () => {
-      describe('Reserved names should be rejected for non-system creation', () => {
-        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
-
-        reservedNames.forEach((reservedName) => {
-          it(`should reject reserved name "${reservedName}" (lowercase)`, () => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: reservedName,
-              });
-            }).toThrow();
-          });
-
-          it(`should reject reserved name "${reservedName.toUpperCase()}" (uppercase)`, () => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: reservedName.toUpperCase(),
-              });
-            }).toThrow();
-          });
-
-          it(`should reject reserved name "${reservedName}" with mixed case`, () => {
-            const mixedCase = reservedName.charAt(0).toUpperCase() + reservedName.slice(1);
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: mixedCase,
-              });
-            }).toThrow();
-          });
-        });
-      });
-
-      describe('Reserved names should be allowed for system creation', () => {
-        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
-
-        reservedNames.forEach((reservedName) => {
-          it(`should allow reserved name "${reservedName}" for system creation`, () => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: reservedName,
-                isSystemCreated: true,
-              });
-            }).not.toThrow();
-
-            const role = Role.create({
-              id: 1,
-              name: reservedName,
-              isSystemCreated: true,
-            });
-
-            expect(role.name).toBe(reservedName);
-          });
-        });
-      });
-
-      describe('Non-reserved names should always be allowed', () => {
-        const nonReservedNames = [
-          'USER',
-          'MANAGER',
-          'DEVELOPER',
-          'TESTER',
-          'ANALYST',
-          'admin_user', // Contains reserved word but not exact match
-          'system_operator', // Contains reserved word but not exact match
-          'user_admin', // Contains reserved word but not exact match
-          'custom_role',
-          'team_lead',
-          'project_manager',
-          'guest_user',
-          'moderator',
-          'editor',
-        ];
-
-        nonReservedNames.forEach((nonReservedName) => {
-          it(`should allow non-reserved name "${nonReservedName}"`, () => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: nonReservedName,
-              });
-            }).not.toThrow();
-
-            const role = Role.create({
-              id: 1,
-              name: nonReservedName,
-            });
-
-            expect(role.name).toBe(nonReservedName);
-          });
-        });
-      });
-
-      describe('Edge cases for reserved name validation', () => {
-        it('should reject reserved names with leading/trailing whitespace after trimming', () => {
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: '  admin  ', // Will be trimmed to 'admin'
-            });
-          }).toThrow();
-        });
-
-        it('should handle reserved names with special characters (should not be reserved)', () => {
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: 'admin!',
-            });
-          }).not.toThrow();
-
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: 'admin-2024',
-            });
-          }).not.toThrow();
-
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: 'admin_role',
-            });
-          }).not.toThrow();
-        });
-
-        it('should handle empty-like names before checking reserved (should fail on empty validation first)', () => {
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: '',
-            });
-          }).toThrow();
-
-          expect(() => {
-            Role.create({
-              id: 1,
-              name: '   ',
-            });
-          }).toThrow();
-        });
-
-        it('should validate reserved names case-insensitively', () => {
-          const variations = [
-            'ADMIN',
-            'Admin',
-            'aDmIn',
-            'SYSTEM',
-            'System',
-            'sYsTeM',
-            'ROOT',
-            'Root',
-            'rOoT',
-          ];
-
-          variations.forEach((variation) => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: variation,
-              });
-            }).toThrow();
-          });
-        });
-
-        it('should allow partial matches of reserved names', () => {
-          const partialMatches = [
-            'admins',
-            'admin123',
-            'my_admin',
-            'systems',
-            'system_config',
-            'roots',
-            'root_user',
-            'superusers',
-            'administrators',
-            'sub_admin',
-          ];
-
-          partialMatches.forEach((partialMatch) => {
-            expect(() => {
-              Role.create({
-                id: 1,
-                name: partialMatch,
-              });
-            }).not.toThrow();
-          });
-        });
       });
     });
 
@@ -697,7 +474,7 @@ describe('Role Entity - Domain Tests', () => {
         try {
           Role.create({
             id: -1, // Invalid ID
-            name: 'admin', // Reserved name
+            name: '', // Empty name
             accessLevel: 999, // Invalid access level
           });
           fail('Expected ValidationError to be thrown');
@@ -752,7 +529,6 @@ describe('Role Entity - Domain Tests', () => {
         id: 1,
         name: 'ADMIN',
         accessLevel: 1,
-        isSystemCreated: true,
       });
       const managerRole = Role.create({ id: 2, name: 'MANAGER', accessLevel: 2 });
       const userRole = Role.create({ id: 3, name: 'USER', accessLevel: 5 });
@@ -767,7 +543,6 @@ describe('Role Entity - Domain Tests', () => {
         id: 1,
         name: 'ADMIN',
         accessLevel: 1,
-        isSystemCreated: true,
       });
       const moderatorRole = Role.create({ id: 2, name: 'MODERATOR', accessLevel: 3 });
       const userRole = Role.create({ id: 3, name: 'USER', accessLevel: 5 });
@@ -790,7 +565,6 @@ describe('Role Entity - Domain Tests', () => {
         id: 1,
         name: 'ADMIN',
         accessLevel: 1,
-        isSystemCreated: true,
       });
       const userRole = Role.create({ id: 2, name: 'USER', accessLevel: 5 });
 
@@ -808,7 +582,6 @@ describe('Role Entity - Domain Tests', () => {
         id: 1,
         name: 'ADMIN',
         accessLevel: 1,
-        isSystemCreated: true,
       });
       const userRole = Role.create({ id: 2, name: 'USER', accessLevel: 5 });
 
@@ -821,7 +594,6 @@ describe('Role Entity - Domain Tests', () => {
         id: 1,
         name: 'ADMIN',
         accessLevel: 1,
-        isSystemCreated: true,
       });
       const managerRole = Role.create({ id: 2, name: 'MANAGER', accessLevel: 2 });
       const moderatorRole = Role.create({ id: 3, name: 'MODERATOR', accessLevel: 3 });
@@ -847,7 +619,6 @@ describe('Role Entity - Domain Tests', () => {
           id: 1,
           name: 'SUPER_ADMIN',
           accessLevel: 1,
-          isSystemCreated: true,
         });
 
         const permissions = level1Role.getPermissions();
@@ -933,7 +704,6 @@ describe('Role Entity - Domain Tests', () => {
             id: level,
             name: `LEVEL_${level}`,
             accessLevel: level,
-            isSystemCreated: level === 1,
           });
 
           const permissions = role.getPermissions();
@@ -948,7 +718,6 @@ describe('Role Entity - Domain Tests', () => {
             id: level,
             name: `LEVEL_${level}`,
             accessLevel: level,
-            isSystemCreated: level === 1,
           });
 
           const permissions = role.getPermissions();
@@ -1286,7 +1055,6 @@ describe('Role Entity - Domain Tests', () => {
           isActive: true,
           description: 'Full parameter test',
           userCount: 25,
-          isSystemCreated: false,
         });
 
         expect(role.id).toBe(999);
@@ -1357,7 +1125,7 @@ describe('Role Entity - Domain Tests', () => {
         try {
           Role.create({
             id: NaN, // Invalid ID
-            name: 'admin', // Reserved name
+            name: '', // Empty name
             accessLevel: 99, // Out of range
           });
           fail('Expected ValidationError to be thrown');
@@ -1372,7 +1140,7 @@ describe('Role Entity - Domain Tests', () => {
         try {
           Role.create({
             id: -1, // Invalid first
-            name: 'admin', // Reserved but validated after type check
+            name: '', // Empty name
             accessLevel: -5, // Invalid range
           });
           fail('Expected ValidationError to be thrown');
@@ -1484,7 +1252,6 @@ describe('Role Entity - Domain Tests', () => {
           id: 1,
           name: 'BUSINESS_ADMIN',
           accessLevel: 1,
-          isSystemCreated: true,
         });
 
         // All admin capabilities should be consistent
@@ -1560,26 +1327,11 @@ describe('Role Entity - Domain Tests', () => {
     });
 
     describe('Error handling and edge interactions', () => {
-      it('should handle system creation flag with reserved names correctly', () => {
-        // All reserved names should work with system creation
-        const reservedNames = ['admin', 'system', 'root', 'superuser', 'administrator'];
-
-        reservedNames.forEach((name) => {
-          const systemRole = Role.create({
-            id: 1,
-            name: name,
-            isSystemCreated: true,
-          });
-
-          expect(systemRole.name).toBe(name);
-        });
-      });
-
       it('should handle complex error messages correctly', () => {
         try {
           Role.create({
             id: -999,
-            name: 'administrator',
+            name: '',
             accessLevel: 150,
           });
           fail('Expected ValidationError to be thrown');
@@ -1593,7 +1345,7 @@ describe('Role Entity - Domain Tests', () => {
           const accessLevelError = validationError.errors.find((e) => e.field === 'accessLevel');
 
           expect(idError?.message).toContain('positive integer');
-          expect(nameError?.message).toContain('reserved');
+          expect(nameError?.message).toContain('required');
           expect(accessLevelError?.message).toContain('between 1 and 10');
         }
       });
