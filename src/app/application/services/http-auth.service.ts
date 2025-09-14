@@ -10,7 +10,32 @@ import type { TokenStoreRepository } from '@domain/repositories/session/token-st
 import type { TokenSnapshotContract } from '@domain/repositories/session/token-store.contract';
 import type { Session } from '@domain/entities/session.entity';
 
+/**
+ * Application Layer Service for HTTP Authentication Orchestration
+ *
+ * @description
+ * Orchestrates authentication concerns for HTTP requests by coordinating
+ * token management, refresh operations, and request header construction.
+ * This service handles complex cross-cutting authentication concerns.
+ *
+ * @responsibilities
+ * - Coordinate token refresh operations across multiple repositories
+ * - Manage authentication headers for HTTP requests
+ * - Handle token expiration and refresh logic
+ * - Transform between domain entities and infrastructure contracts
+ *
+ * @architecture
+ * - Stateless service with focused responsibility
+ * - Coordinates multiple domain repositories
+ * - Uses dependency injection for all dependencies
+ * - Handles complex async orchestration with RxJS
+ *
+ * @layer Application
+ */
+
 type AuthHeader = { Authorization?: string } | null;
+
+// Configuration constants - could be moved to configuration service
 const SKEW_SECONDS = 60;
 
 @Injectable({ providedIn: 'root' })
@@ -34,13 +59,16 @@ export class AuthHttpOrchestrator {
   private refreshInFlight?: Promise<Session>;
 
   /**
-   * Transforms a Session entity to TokenSnapshotContract for storage compatibility
+   * Transforms a Session domain entity to TokenSnapshotContract for infrastructure storage.
+   *
+   * @note This transformation is appropriate for Application layer as it coordinates
+   * between Domain entities and Infrastructure contracts without containing business logic.
    */
   private sessionToTokenSnapshot(session: Session): TokenSnapshotContract {
     return {
-      accessToken: session.access.getValue(),
-      accessExp: session.access.expSeconds,
-      refreshToken: session.refresh.getValue(),
+      accessToken: session.accessToken.getValue(),
+      accessExp: session.accessToken.expSeconds,
+      refreshToken: session.refreshToken.getValue(),
     };
   }
 
