@@ -93,16 +93,16 @@ describe('GetRoleByNameUseCase', () => {
       }),
       Role.create({
         id: 2,
-        name: 'Admin Assistant',
+        name: 'Team Lead',
         accessLevel: 3,
-        description: 'Administrative assistant role',
+        description: 'Team leadership role',
         isActive: true,
       }),
       Role.create({
         id: 3,
-        name: 'User',
+        name: 'Developer',
         accessLevel: 1,
-        description: 'Basic user role',
+        description: 'Software developer role',
         isActive: true,
       }),
     ];
@@ -244,7 +244,7 @@ describe('GetRoleByNameUseCase', () => {
 
       it('should pass correct search parameters through all operations', async () => {
         // Arrange
-        const testRoleName = 'Test Role Name';
+        const testRoleName = 'Developer'; // Use existing mock data
         const request: GetRoleByNameRequest = {
           name: testRoleName,
           requesterId: 12345,
@@ -436,9 +436,9 @@ describe('GetRoleByNameUseCase', () => {
         expect(mockRoleRepository.list).not.toHaveBeenCalled();
       });
 
-      it('should throw ApplicationError when role name exceeds 100 characters', async () => {
+      it('should throw ApplicationError when role name exceeds 50 characters', async () => {
         // Arrange
-        const longName = 'A'.repeat(101); // 101 characters
+        const longName = 'A'.repeat(51); // 51 characters (exceeds domain limit)
         const requestWithLongName: GetRoleByNameRequest = {
           name: longName,
           requesterId: 123,
@@ -446,7 +446,7 @@ describe('GetRoleByNameUseCase', () => {
         const expectedError = new ApplicationError(
           ApplicationErrorCode.INVALID_INPUT,
           'Invalid input provided: Role name too long',
-          'Role name must be 100 characters or less'
+          'Role name must be 50 characters or less'
         );
 
         // Act & Assert
@@ -454,9 +454,9 @@ describe('GetRoleByNameUseCase', () => {
         expect(mockRoleRepository.list).not.toHaveBeenCalled();
       });
 
-      it('should accept valid role name with exactly 100 characters', async () => {
+      it('should accept valid role name with exactly 50 characters', async () => {
         // Arrange
-        const exactLengthName = 'A'.repeat(100); // Exactly 100 characters
+        const exactLengthName = 'A'.repeat(50); // Exactly 50 characters (domain limit)
         const requestWithExactLength: GetRoleByNameRequest = {
           name: exactLengthName,
           requesterId: 123,
@@ -474,7 +474,7 @@ describe('GetRoleByNameUseCase', () => {
         // Act
         const result = await useCase.execute(requestWithExactLength);
 
-        // Assert - Should succeed with 100 character name
+        // Assert - Should succeed with 50 character name
         expect(result).toBe(longNameRole);
         expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: exactLengthName });
       });
@@ -482,7 +482,7 @@ describe('GetRoleByNameUseCase', () => {
       it('should accept valid role name with standard length', async () => {
         // Arrange
         const validRequest: GetRoleByNameRequest = {
-          name: 'Valid Role Name',
+          name: 'Administrator', // Use system-created role from mock data
           requesterId: 123,
         };
 
@@ -490,7 +490,7 @@ describe('GetRoleByNameUseCase', () => {
         await useCase.execute(validRequest);
 
         // Assert - Validation should pass and repository should be called
-        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'Valid Role Name' });
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'Administrator' });
         expect(mockLogger.info).toHaveBeenCalledWith(
           'Role retrieval by name completed',
           jasmine.any(Object)
@@ -516,25 +516,25 @@ describe('GetRoleByNameUseCase', () => {
 
       it('should not perform domain-level business rule validations in application layer', async () => {
         // Arrange
-        const systemRoleRequest: GetRoleByNameRequest = {
-          name: 'System Administrator', // Could be any system role
+        const businessRoleRequest: GetRoleByNameRequest = {
+          name: 'Business Analyst', // Non-reserved role name
           requesterId: 123,
         };
 
-        const systemRole = Role.create({
+        const businessRole = Role.create({
           id: 1,
-          name: 'System Administrator',
+          name: 'Business Analyst',
           accessLevel: 5,
           isActive: true,
         });
-        mockRoleRepository.list.and.returnValue(Promise.resolve([systemRole]));
+        mockRoleRepository.list.and.returnValue(Promise.resolve([businessRole]));
 
         // Act
-        await useCase.execute(systemRoleRequest);
+        await useCase.execute(businessRoleRequest);
 
-        // Assert - Application layer doesn't check for system role constraints
+        // Assert - Application layer doesn't check for business role constraints
         // That's a domain responsibility
-        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'System Administrator' });
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'Business Analyst' });
       });
     });
   });
@@ -646,7 +646,7 @@ describe('GetRoleByNameUseCase', () => {
       it('should proceed with role search after successful authorization', async () => {
         // Arrange
         const authorizedRequest: GetRoleByNameRequest = {
-          name: 'User',
+          name: 'Team Lead', // Use existing mock data
           requesterId: 555,
         };
 
@@ -654,7 +654,7 @@ describe('GetRoleByNameUseCase', () => {
         await useCase.execute(authorizedRequest);
 
         // Assert - Verify full flow completion
-        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'User' });
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({ search: 'Team Lead' });
         expect(mockLogger.info).toHaveBeenCalledWith(
           'Role retrieval by name completed',
           jasmine.objectContaining({
@@ -790,7 +790,7 @@ describe('GetRoleByNameUseCase', () => {
           }),
           Role.create({
             id: 3,
-            name: 'Administrator Pro',
+            name: 'Super Administrator',
             accessLevel: 5,
             isActive: true,
           }),
@@ -846,14 +846,14 @@ describe('GetRoleByNameUseCase', () => {
         // Arrange
         const specialRole = Role.create({
           id: 1,
-          name: 'Admin-User_2024',
+          name: 'System-Admin_2024',
           accessLevel: 2,
           isActive: true,
         });
         mockRoleRepository.list.and.returnValue(Promise.resolve([specialRole]));
 
         const request: GetRoleByNameRequest = {
-          name: 'Admin-User_2024',
+          name: 'System-Admin_2024',
           requesterId: 456,
         };
 
@@ -862,7 +862,7 @@ describe('GetRoleByNameUseCase', () => {
 
         // Assert - Should handle special characters correctly
         expect(result).toBe(specialRole);
-        expect(result.name).toBe('Admin-User_2024');
+        expect(result.name).toBe('System-Admin_2024');
       });
 
       it('should find exact match when multiple roles have overlapping substrings', async () => {
@@ -870,19 +870,19 @@ describe('GetRoleByNameUseCase', () => {
         const overlappingRoles = [
           Role.create({
             id: 1,
-            name: 'User',
+            name: 'Admin',
             accessLevel: 1,
             isActive: true,
           }),
           Role.create({
             id: 2,
-            name: 'User Admin',
+            name: 'Admin User',
             accessLevel: 3,
             isActive: true,
           }),
           Role.create({
             id: 3,
-            name: 'Super User',
+            name: 'Super Admin',
             accessLevel: 2,
             isActive: true,
           }),
@@ -890,16 +890,16 @@ describe('GetRoleByNameUseCase', () => {
         mockRoleRepository.list.and.returnValue(Promise.resolve(overlappingRoles));
 
         const request: GetRoleByNameRequest = {
-          name: 'User', // Should match exact "User", not others containing "User"
+          name: 'Admin', // Should match exact "Admin", not others containing "Admin"
           requesterId: 456,
         };
 
         // Act
         const result = await useCase.execute(request);
 
-        // Assert - Should return exact "User" match
+        // Assert - Should return exact "Admin" match
         expect(result).toBe(overlappingRoles[0]);
-        expect(result.name).toBe('User');
+        expect(result.name).toBe('Admin');
         expect(result.id).toBe(1);
       });
     });
@@ -907,7 +907,7 @@ describe('GetRoleByNameUseCase', () => {
     describe('Repository Integration', () => {
       it('should pass search parameter correctly to repository', async () => {
         // Arrange
-        const searchTerm = 'Test Role Name';
+        const searchTerm = 'Team Lead'; // Use existing mock data
         const request: GetRoleByNameRequest = {
           name: searchTerm,
           requesterId: 456,
