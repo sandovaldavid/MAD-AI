@@ -94,7 +94,6 @@ export class ActivateRole {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -147,8 +146,8 @@ export class ActivateRole {
       return updatedRole;
     } catch (error: unknown) {
       this.logger.error('Role activation failed', {
-        correlationId: `activate-role-${request.id}-${this.clock.nowEpochSeconds()}`,
-        userId: request.requesterId?.toString(),
+        correlationId: `activate-role-${request?.id || 'unknown'}-${this.clock.nowEpochSeconds()}`,
+        userId: request?.requesterId?.toString(),
         operation: 'activate_role',
       } as LogContext);
 
@@ -184,8 +183,6 @@ export class ActivateRole {
    */
   private async handleSideEffects(request: ActivateRoleRequest): Promise<void> {
     const correlationId = `role-activate-${request.id}-${this.clock.nowEpochSeconds()}`;
-
-    // Domain events are no longer needed with simplified Role entity
 
     this.logger.info('Role activated', {
       correlationId,
