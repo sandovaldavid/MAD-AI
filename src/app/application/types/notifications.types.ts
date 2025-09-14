@@ -21,7 +21,11 @@
  * @layer Application
  */
 
-import type { Notification, NotificationId } from '@domain/entities/notification.entity';
+import type {
+  Notification,
+  NotificationId,
+  NotificationChannel,
+} from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification-type.enum';
 
 // ============================================================================
@@ -54,14 +58,16 @@ export interface ClearNotificationsRequest {
 }
 
 /**
- * Simple request to update a notification
+ * Simple request to update a notification using entity-first pattern
  */
 export interface UpdateNotificationRequest {
   notificationId: NotificationId;
   updateData: {
     message?: string;
-    description?: string;
+    type?: NotificationType;
+    title?: string;
     isRead?: boolean;
+    channel?: NotificationChannel;
   };
   requesterId?: number;
 }
