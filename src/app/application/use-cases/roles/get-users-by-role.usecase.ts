@@ -24,15 +24,12 @@ import type { Role } from '@domain/entities/role.entity';
  * pagination, and sorting requirements while maintaining consistency across the system.
  *
  * @responsibilities
- * - Validate application-level authorization for user retrieval operations
+ * - Validate application-level presence and nullability checks only
  * - Ensure role exists and is accessible before retrieving associated users
- * - Check business rules preventing unauthorized user access
- * - Transform application DTOs to domain operations with proper filtering
- * - Delegate user retrieval to domain repository with role-based constraints
- * - Publish domain events from retrieved user entities
+ * - Transform application pagination to domain repository contracts
+ * - Delegate user retrieval and all business rule validation to domain repository
  * - Handle comprehensive audit logging with correlation tracking
- * - Support pagination, sorting, and filtering for large result sets
- * - Ensure transactional consistency for read operations
+ * - Support pagination through proper domain contract transformation
  *
  * @architecture
  * - **Layer**: Application Layer (Clean Architecture)
@@ -56,18 +53,17 @@ import type { Role } from '@domain/entities/role.entity';
  * - RoleAccessedEvent (published when role is validated for access)
  *
  * @constraints
- * - Role must exist and be accessible in the system
- * - Requester must have permissions to view users in the role
- * - Pagination page size must not exceed maximum allowed (1000)
- * - Role ID must be valid and represent an existing role
- * - Business rules may restrict access to certain user-role combinations
+ * - Application layer only handles presence and nullability checks
+ * - All business rule validation delegated to domain repositories
+ * - Domain repository enforces role existence and pagination limits
+ * - Role ID and pagination parameter validation handled by domain layer
  *
  * @workflow
- * 1. **Validate Application Rules** - Authorization, role existence, and parameter checks
- * 2. **Validate Domain Entities** - Ensure role exists and is accessible
- * 3. **Delegate to Domain** - Repository handles user retrieval with role filtering
- * 4. **Handle Side Effects** - Event publishing and comprehensive audit logging
- * 5. **Return Result** - Filtered user list with pagination metadata
+ * 1. **Validate Application Rules** - Presence and nullability checks only
+ * 2. **Validate Domain Entities** - Ensure role exists through domain repository
+ * 3. **Delegate to Domain** - Repository handles user retrieval and all business validation
+ * 4. **Handle Side Effects** - Audit logging for successful operations
+ * 5. **Return Result** - Filtered user list with domain validation completed
  *
  * @example
  * ```typescript
@@ -87,11 +83,10 @@ import type { Role } from '@domain/entities/role.entity';
  * console.log(`Found ${users.length} users with role 123`);
  * ```
  *
- * @throws {ApplicationError} When validation fails or required data is missing
- * @throws {ApplicationError} When authorization fails or requester lacks permissions
+ * @throws {ApplicationError} When basic presence validation fails
+ * @throws {ApplicationError} When domain repository validation fails
  * @throws {ApplicationError} When role does not exist or is not accessible
- * @throws {ApplicationError} When pagination parameters exceed limits
- * @throws {ApplicationError} When business rules prevent user retrieval
+ * @throws {ApplicationError} When domain business rules prevent user retrieval
  *
  * @version 2.0.0
  * @since 2024-01-01
@@ -105,7 +100,6 @@ export class GetUsersByRole {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
-
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   /**
@@ -121,11 +115,11 @@ export class GetUsersByRole {
    * @throws {ApplicationError} When validation fails or retrieval encounters errors
    *
    * @workflow
-   * 1. **Application Validation** - Check authorization, parameters, and pagination limits
-   * 2. **Domain Validation** - Verify role exists and is accessible
-   * 3. **Domain Delegation** - Forward to repositories for user retrieval with filtering
-   * 4. **Side Effects** - Publish domain events and log comprehensive audit information
-   * 5. **Return Result** - Return filtered user list with proper pagination
+   * 1. **Application Validation** - Check presence and basic nullability only
+   * 2. **Domain Validation** - Verify role exists through domain repository
+   * 3. **Domain Delegation** - Forward to repositories with proper contract transformation
+   * 4. **Side Effects** - Log audit information for successful operations
+   * 5. **Return Result** - Return filtered user list with domain validation completed
    *
    * @example
    * ```typescript
@@ -169,36 +163,20 @@ export class GetUsersByRole {
    * Validate application-level rules for user retrieval by role
    *
    * @description
-   * Validates request parameters and business rules specific to user retrieval operations at the application layer.
-   * Ensures role ID is valid, pagination parameters are within limits, and meets application-level requirements
-   * before proceeding with user retrieval. Performs comprehensive validation to prevent invalid queries.
+   * Validates basic presence and nullability checks for the application layer.
+   * All business rule validation is delegated to the domain layer through
+   * repository operations that will enforce domain constraints.
    *
    * @param request User retrieval request to validate
-   * @throws ApplicationError when validation fails or constraints are violated
+   * @throws ApplicationError when basic presence validation fails
    *
    * @validation-rules
-   * - Role ID must be present, positive, and integer
-   * - Pagination page size must not exceed maximum allowed (1000)
-   * - Request object must be properly structured
-   * - Pagination parameters must be valid if provided
+   * - Request object must be present
+   * - All business rule validation delegated to domain repository
    */
   private validateApplicationRules(request: GetUsersByRoleRequest): void {
     if (!request) {
       throw this.errorTransformer.transform(new Error('Request is required'));
-    }
-
-    if (!request.roleId || request.roleId <= 0 || !Number.isInteger(request.roleId)) {
-      throw this.errorTransformer.transform(
-        new Error('Invalid role ID: must be a positive integer')
-      );
-    }
-
-    if (request.pagination?.pageSize && request.pagination.pageSize > 1000) {
-      throw this.errorTransformer.transform(new Error('Page size exceeds maximum allowed: 1000'));
-    }
-
-    if (request.pagination?.page && request.pagination.page < 1) {
-      throw this.errorTransformer.transform(new Error('Page number must be greater than 0'));
     }
   }
 
@@ -227,27 +205,36 @@ export class GetUsersByRole {
    *
    * @description
    * Executes the user retrieval operation through the domain repository with role-based filtering.
-   * Applies pagination, sorting, and filtering parameters to optimize query performance and result handling.
-   * Maintains proper separation of concerns by delegating to domain layer for data access logic.
+   * Transforms application pagination (page/pageSize) to domain contract (limit/offset) and
+   * delegates all validation and business rules to the domain repository.
    *
    * @param request User retrieval request with filtering and pagination parameters
    * @returns Promise resolving to filtered array of users assigned to the role
    *
    * @query-optimization
    * - Uses role-based filtering for efficient user lookup
-   * - Supports pagination to handle large result sets
-   * - Applies sorting for consistent result ordering
+   * - Transforms pagination parameters to domain contract format
+   * - Delegates all validation to domain repository
    * - Maintains audit trail for query operations
    */
   private async retrieveUsersByRole(request: GetUsersByRoleRequest): Promise<User[]> {
-    const filter = {
+    // Transform application pagination (page/pageSize) to domain contract (limit/offset)
+    const filter: any = {
       roleId: request.roleId,
-      page: request.pagination?.page,
-      pageSize: request.pagination?.pageSize,
-      sortBy: request.pagination?.sortBy,
-      sortOrder: request.pagination?.sortOrder,
     };
 
+    if (request.pagination) {
+      if (request.pagination.pageSize) {
+        filter.limit = request.pagination.pageSize;
+      }
+
+      if (request.pagination.page && request.pagination.pageSize) {
+        // Convert page-based to offset-based pagination
+        filter.offset = (request.pagination.page - 1) * request.pagination.pageSize;
+      }
+    }
+
+    // Delegate to domain repository - all business rule validation happens here
     const users = await this.userRepo.list(filter);
 
     this.logger.debug('Users retrieved by role', {
