@@ -1,12 +1,12 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { LoginWithCredentials } from '../use-cases/auth/login.usecase';
-import { Logout } from '../use-cases/auth/logout.usecase';
-import { GetProfile } from '../use-cases/auth/get-profile.usecase';
-import { Register } from '../use-cases/auth/register.usecase';
-import { RefreshSession } from '../use-cases/auth/refresh-session.usecase';
-import { ConfirmEmail } from '../use-cases/auth/confirm-email.usecase';
-import { RequestPasswordReset } from '../use-cases/auth/request-password-reset.usecase';
-import { ConfirmPasswordReset } from '../use-cases/auth/confirm-password-reset.usecase';
+import { LoginUseCase } from '../use-cases/auth/login.usecase';
+import { LogoutUseCase } from '../use-cases/auth/logout.usecase';
+import { GetProfileUseCase } from '../use-cases/auth/get-profile.usecase';
+import { RegisterUseCase } from '../use-cases/auth/register.usecase';
+import { RefreshSessionUseCase } from '../use-cases/auth/refresh-session.usecase';
+import { ConfirmEmailUseCase } from '../use-cases/auth/confirm-email.usecase';
+import { RequestPasswordResetUseCase } from '../use-cases/auth/request-password-reset.usecase';
+import { ConfirmPasswordResetUseCase } from '../use-cases/auth/confirm-password-reset.usecase';
 import { NotificationsFacade } from './notifications.facade';
 import type {
   LoginRequest,
@@ -55,14 +55,14 @@ export class AuthFacade {
   // Dependencies
   // ============================================================================
 
-  private readonly loginUC = inject(LoginWithCredentials);
-  private readonly logoutUC = inject(Logout);
-  private readonly getProfileUC = inject(GetProfile);
-  private readonly registerUC = inject(Register);
-  private readonly refreshUC = inject(RefreshSession);
-  private readonly confirmEmailUC = inject(ConfirmEmail);
-  private readonly reqResetUC = inject(RequestPasswordReset);
-  private readonly confirmResetUC = inject(ConfirmPasswordReset);
+  private readonly loginUC = inject(LoginUseCase);
+  private readonly logoutUC = inject(LogoutUseCase);
+  private readonly getProfileUC = inject(GetProfileUseCase);
+  private readonly registerUC = inject(RegisterUseCase);
+  private readonly refreshUC = inject(RefreshSessionUseCase);
+  private readonly confirmEmailUC = inject(ConfirmEmailUseCase);
+  private readonly reqResetUC = inject(RequestPasswordResetUseCase);
+  private readonly confirmResetUC = inject(ConfirmPasswordResetUseCase);
 
   private readonly notifications = inject(NotificationsFacade);
   private readonly logger = inject(LoggerService);
@@ -184,7 +184,7 @@ export class AuthFacade {
    */
   readonly isAdmin = computed(() => {
     const user = this._user();
-    return user ? user.getRole.canAccessAdmin() : false;
+    return user ? user.role.canAccessAdmin() : false;
   });
 
   // ============================================================================
@@ -345,7 +345,7 @@ export class AuthFacade {
     this._authError.set(null);
 
     try {
-      await this.logoutUC.execute(request || {});
+      await this.logoutUC.execute();
 
       this._session.set(null);
       this._user.set(null);
@@ -468,7 +468,7 @@ export class AuthFacade {
    */
   getAccessTokenOrNull(): string | null {
     const session = this._session();
-    return session?.access?.value || null;
+    return session?.accessToken?.getValue() || null;
   }
 
   /**
@@ -492,7 +492,7 @@ export class AuthFacade {
    */
   isSessionValid(nowEpochSeconds: number): boolean {
     const session = this._session();
-    return session ? !session.isAccessTokenExpired(nowEpochSeconds) : false;
+    return session ? session.isValid(nowEpochSeconds) : false;
   }
 
   /**
@@ -516,7 +516,11 @@ export class AuthFacade {
    */
   getSessionTimeRemaining(nowEpochSeconds: number): number | null {
     const session = this._session();
-    return session ? session.expiresInSeconds(nowEpochSeconds) : null;
+    if (!session || !session.accessToken.expSeconds) {
+      return null;
+    }
+    const remaining = session.accessToken.expSeconds - nowEpochSeconds;
+    return remaining > 0 ? remaining : 0;
   }
 
   // ============================================================================
