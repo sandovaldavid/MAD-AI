@@ -11,7 +11,6 @@ import { User } from '@domain/entities/user.entity';
 import { Role } from '@domain/entities/role.entity';
 import { ApplicationError } from '@application/errors/application-error';
 import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
-import { Username, Email, FirstName, LastName } from '@domain/value-objects';
 import type { UserNotificationPreferences } from '@domain/value-objects/user-notification-preferences.vo';
 
 /**
@@ -314,15 +313,21 @@ describe('UnassignRoleFromUser', () => {
           roleId: 456,
           requesterId: 789,
         } as UnassignRoleFromUserRequest;
-        const expectedError = new ApplicationError(
+        const repositoryError = new Error('Invalid user ID');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_INPUT,
           'Invalid user ID',
           'Invalid user ID'
         );
-        mockErrorTransformer.transform.and.returnValue(expectedError);
+
+        // Mock repository to reject invalid ID (domain-level validation)
+        mockUserRepository.getById.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockUserRepository.getById).toHaveBeenCalledWith(-1);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
       });
 
       it('should throw error for non-integer user ID', async () => {
@@ -332,15 +337,21 @@ describe('UnassignRoleFromUser', () => {
           roleId: 456,
           requesterId: 789,
         } as UnassignRoleFromUserRequest;
-        const expectedError = new ApplicationError(
+        const repositoryError = new Error('Invalid user ID');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_INPUT,
           'Invalid user ID',
           'Invalid user ID'
         );
-        mockErrorTransformer.transform.and.returnValue(expectedError);
+
+        // Mock repository to reject invalid ID (domain-level validation)
+        mockUserRepository.getById.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockUserRepository.getById).toHaveBeenCalledWith(123.45);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
       });
 
       it('should throw error for missing user ID', async () => {
@@ -390,15 +401,21 @@ describe('UnassignRoleFromUser', () => {
           roleId: -1,
           requesterId: 789,
         } as UnassignRoleFromUserRequest;
-        const expectedError = new ApplicationError(
+        const repositoryError = new Error('Invalid role ID');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_ROLE_ID,
           'Invalid role ID',
           'Invalid role ID'
         );
-        mockErrorTransformer.transform.and.returnValue(expectedError);
+
+        // Mock repository to reject invalid ID (domain-level validation)
+        mockRoleRepository.getById.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockRoleRepository.getById).toHaveBeenCalledWith(-1);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
       });
 
       it('should throw error for non-integer role ID', async () => {
@@ -408,15 +425,21 @@ describe('UnassignRoleFromUser', () => {
           roleId: 456.78,
           requesterId: 789,
         } as UnassignRoleFromUserRequest;
-        const expectedError = new ApplicationError(
+        const repositoryError = new Error('Invalid role ID');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_ROLE_ID,
           'Invalid role ID',
           'Invalid role ID'
         );
-        mockErrorTransformer.transform.and.returnValue(expectedError);
+
+        // Mock repository to reject invalid ID (domain-level validation)
+        mockRoleRepository.getById.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(expectedError);
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockRoleRepository.getById).toHaveBeenCalledWith(456.78);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
       });
 
       it('should throw error for missing role ID', async () => {
@@ -754,18 +777,20 @@ describe('UnassignRoleFromUser', () => {
           roleId: 456,
           requesterId: 789,
         } as UnassignRoleFromUserRequest;
-        const validationError = new ApplicationError(
+        const repositoryError = new Error('Invalid user ID');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_INPUT,
           'Invalid user ID',
           'Invalid user ID'
         );
-        mockErrorTransformer.transform.and.returnValue(validationError);
+
+        // Mock repository to reject invalid ID (domain-level validation)
+        mockUserRepository.getById.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(validationError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          jasmine.objectContaining({ message: 'Invalid user ID' })
-        );
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
       });
 
       it('should handle entity not found errors with proper context', async () => {
