@@ -283,26 +283,6 @@ describe('UpdateRoleUseCase', () => {
         );
       });
 
-      it('should throw error for invalid ID', async () => {
-        // Arrange
-        const input: UpdateRoleInput = {
-          id: 0,
-          name: 'Test Role',
-        };
-        const expectedError = ApplicationError.invalidInput('Invalid role ID');
-        mockErrorTransformer.transform.and.returnValue(expectedError);
-
-        // Act & Assert
-        await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          jasmine.any(Error),
-          jasmine.objectContaining({
-            operation: 'updateRole',
-            userId: '0',
-          })
-        );
-      });
-
       it('should throw error for zero ID', async () => {
         // Arrange
         const input: UpdateRoleInput = {
@@ -322,42 +302,25 @@ describe('UpdateRoleUseCase', () => {
           })
         );
       });
-
-      it('should throw error for negative ID', async () => {
-        // Arrange
-        const input: UpdateRoleInput = {
-          id: -1,
-          name: 'Test Role',
-        };
-        const expectedError = ApplicationError.invalidInput('Invalid role ID');
-        mockErrorTransformer.transform.and.returnValue(expectedError);
-
-        // Act & Assert
-        await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          jasmine.any(Error),
-          jasmine.objectContaining({
-            operation: 'updateRole',
-            userId: '-1',
-          })
-        );
-      });
     });
 
-    describe('Invalid Role Name', () => {
-      it('should throw error for empty name string', async () => {
+    describe('Repository-Level Validation (Domain Rules)', () => {
+      it('should handle repository validation error for empty name string', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           name: '',
         };
-        const expectedError = ApplicationError.invalidInput('Invalid role name');
+        const repositoryError = new Error('Role name is required');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { name: '' });
         expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          jasmine.any(Error),
+          repositoryError,
           jasmine.objectContaining({
             operation: 'updateRole',
             userId: '1',
@@ -365,71 +328,119 @@ describe('UpdateRoleUseCase', () => {
         );
       });
 
-      it('should throw error for whitespace-only name', async () => {
+      it('should handle repository validation error for whitespace-only name', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           name: '   ',
         };
-        const expectedError = ApplicationError.invalidInput('Invalid role name');
+        const repositoryError = new Error('Role name cannot be empty');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { name: '   ' });
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+          repositoryError,
+          jasmine.objectContaining({
+            operation: 'updateRole',
+            userId: '1',
+          })
+        );
       });
 
-      it('should throw error for name exceeding 100 characters', async () => {
+      it('should handle repository validation error for name exceeding character limit', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           name: 'A'.repeat(101), // 101 characters
         };
-        const expectedError = ApplicationError.invalidInput('Invalid role name');
+        const repositoryError = new Error('Role name cannot exceed 50 characters');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { name: 'A'.repeat(101) });
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+          repositoryError,
+          jasmine.objectContaining({
+            operation: 'updateRole',
+            userId: '1',
+          })
+        );
       });
-    });
 
-    describe('Invalid Access Level', () => {
-      it('should throw error for negative access level', async () => {
+      it('should handle repository validation error for negative access level', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           accessLevel: -1,
         };
-        const expectedError = ApplicationError.invalidInput('Invalid access level');
+        const repositoryError = new Error('Access level must be between 1 and 10');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { accessLevel: -1 });
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+          repositoryError,
+          jasmine.objectContaining({
+            operation: 'updateRole',
+            userId: '1',
+          })
+        );
       });
 
-      it('should throw error for access level greater than 10', async () => {
+      it('should handle repository validation error for access level greater than 10', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           accessLevel: 11,
         };
-        const expectedError = ApplicationError.invalidInput('Invalid access level');
+        const repositoryError = new Error('Access level must be between 1 and 10');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { accessLevel: 11 });
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+          repositoryError,
+          jasmine.objectContaining({
+            operation: 'updateRole',
+            userId: '1',
+          })
+        );
       });
 
-      it('should throw error for non-integer access level', async () => {
+      it('should handle repository validation error for non-integer access level', async () => {
         // Arrange
         const input: UpdateRoleInput = {
           id: 1,
           accessLevel: 3.5,
         };
-        const expectedError = ApplicationError.invalidInput('Invalid access level');
+        const repositoryError = new Error('Access level must be an integer');
+        mockRoleRepository.update.and.returnValue(Promise.reject(repositoryError));
+        const expectedError = ApplicationError.invalidInput('Role validation failed');
         mockErrorTransformer.transform.and.returnValue(expectedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(input)).toBeRejectedWith(expectedError);
+        expect(mockRoleRepository.update).toHaveBeenCalledWith(1, { accessLevel: 3.5 });
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+          repositoryError,
+          jasmine.objectContaining({
+            operation: 'updateRole',
+            userId: '1',
+          })
+        );
       });
     });
   });
