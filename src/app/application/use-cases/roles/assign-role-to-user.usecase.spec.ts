@@ -297,6 +297,18 @@ describe('AssignRoleToUser Use Case', () => {
         'The specified role could not be found'
       );
 
+      const mockUser = User.create({
+        id: validRequest.userId,
+        username: 'testuser',
+        email: 'test@example.com',
+        firstName: 'Test',
+        lastName: 'User',
+        isActive: true,
+        role: Role.create({ id: 999, name: 'Old Role', accessLevel: 1 }),
+        notificationPreferences: { email: true, system: true, task: true },
+      });
+      mockUserRepository.getById.and.returnValue(Promise.resolve(mockUser));
+
       mockRoleRepository.getById.and.returnValue(Promise.reject(repositoryError));
       mockErrorTransformer.transform.and.returnValue(transformedError);
 
