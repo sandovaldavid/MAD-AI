@@ -176,7 +176,20 @@ export class GetUsersByRole {
    */
   private validateApplicationRules(request: GetUsersByRoleRequest): void {
     if (!request) {
-      throw this.errorTransformer.transform(new Error('Request is required'));
+      throw new Error('Request is required');
+    }
+
+    if (!request.roleId || !Number.isInteger(request.roleId) || request.roleId <= 0) {
+      throw new Error('Invalid role ID: must be a positive integer');
+    }
+
+    if (request.pagination) {
+      if (request.pagination.pageSize && request.pagination.pageSize > 1000) {
+        throw new Error('Page size exceeds maximum allowed: 1000');
+      }
+      if (request.pagination.page && request.pagination.page < 1) {
+        throw new Error('Page number must be greater than 0');
+      }
     }
   }
 
@@ -231,6 +244,14 @@ export class GetUsersByRole {
       if (request.pagination.page && request.pagination.pageSize) {
         // Convert page-based to offset-based pagination
         filter.offset = (request.pagination.page - 1) * request.pagination.pageSize;
+      }
+
+      if (request.pagination.sortBy) {
+        filter.sortBy = request.pagination.sortBy;
+      }
+
+      if (request.pagination.sortOrder) {
+        filter.sortOrder = request.pagination.sortOrder;
       }
     }
 
