@@ -1,17 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { NotificationGatewayService } from './notification-gateway.service';
-import { NOTIFICATION_CONFIG } from '@di/tokens';
+import { NOTIFICATION_CONFIG, LOGGER_PORT } from '@di/tokens';
+import { Logger } from '@core/interfaces/logger.interface';
 import {
   NewNotification,
   NotificationId,
   NotificationType,
   NotificationChannel,
 } from '@domain/entities/notification.entity';
-import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 
 describe('NotificationGatewayService - Infrastructure Tests', () => {
   let service: NotificationGatewayService;
   let mockConfig: any;
+  let mockLogger: jasmine.SpyObj<Logger>;
 
   const mockNotificationConfig = {
     defaults: {
@@ -20,17 +21,21 @@ describe('NotificationGatewayService - Infrastructure Tests', () => {
       warning: { duration: 5000 },
       error: { duration: 0 }, // Sticky
       position: {
-        desktop: 'top-right' as UINotificationPosition,
-        mobile: 'top' as UINotificationPosition,
+        desktop: 'top-right',
+        mobile: 'top',
       },
     },
   };
 
   beforeEach(() => {
+    // Create spy objects for all dependencies
+    mockLogger = jasmine.createSpyObj('Logger', ['debug', 'info', 'warn', 'error']);
+
     TestBed.configureTestingModule({
       providers: [
         NotificationGatewayService,
         { provide: NOTIFICATION_CONFIG, useValue: mockNotificationConfig },
+        { provide: LOGGER_PORT, useValue: mockLogger },
       ],
     });
 
