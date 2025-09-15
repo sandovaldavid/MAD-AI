@@ -277,13 +277,13 @@ export class NotificationsFacade {
         (n) => n.id === request.notificationId
       );
       this.emitEvent(NotificationEventType.NOTIFICATION_UPDATED, updatedNotification, {
-        updatedFields: Object.keys(request.patch),
+        updatedFields: Object.keys(request.updateData || {}),
       });
 
       return {
         success: true,
         notificationId: request.notificationId,
-        updatedFields: Object.keys(request.patch),
+        updatedFields: Object.keys(request.updateData || {}),
       };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update notification';
@@ -551,7 +551,7 @@ export class NotificationsFacade {
         await this.update(
           {
             notificationId: notification.id,
-            patch: { isRead: true },
+            updateData: { isRead: true },
             requesterId: userId,
           },
           { skipLoading: true }
