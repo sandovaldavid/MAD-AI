@@ -139,12 +139,14 @@ export class DeactivateRoleUseCase {
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(request: DeactivateRoleRequest): void {
-    if (request.id === null || request.id === undefined) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Invalid input provided: Role ID is required for deactivation',
-        'A valid role ID must be provided'
-      );
+    if (
+      !request ||
+      request.id === null ||
+      request.id === undefined ||
+      !Number.isInteger(request.id) ||
+      request.id <= 0
+    ) {
+      throw new Error('Invalid input provided: Valid role ID is required for deactivation');
     }
   }
 
