@@ -30,6 +30,7 @@ export class LogoutUseCase {
   private readonly authRepository = inject<AuthRepository>(AUTH_REPOSITORY);
   private readonly sessionStore = inject<SessionStoreRepository>(SESSION_STORE_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   async execute(): Promise<void> {
     try {
@@ -59,7 +60,7 @@ export class LogoutUseCase {
       this.logger.error('Logout failed', {
         operation: 'logout',
       });
-      throw ApplicationErrorTransformer.prototype.transform(error);
+      throw this.errorTransformer.transform(error);
     }
   }
 }
