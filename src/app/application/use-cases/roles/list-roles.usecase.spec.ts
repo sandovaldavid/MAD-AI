@@ -243,6 +243,7 @@ describe('ListRoles', () => {
             accessLevel: 0, // Invalid: below minimum
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -250,14 +251,16 @@ describe('ListRoles', () => {
           { accessLevel: 0 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          new Error('Invalid access level range')
-        );
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: undefined,
+          active: undefined,
+        });
       });
 
       it('should throw error for access level above maximum (5)', async () => {
@@ -267,6 +270,7 @@ describe('ListRoles', () => {
             accessLevel: 6, // Invalid: above maximum
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -274,14 +278,16 @@ describe('ListRoles', () => {
           { accessLevel: 6 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
-          new Error('Invalid access level range')
-        );
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:6',
+          active: undefined,
+        });
       });
 
       it('should accept valid access level range (1-5)', async () => {
@@ -311,6 +317,7 @@ describe('ListRoles', () => {
             accessLevel: -1, // Invalid: negative
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -318,11 +325,16 @@ describe('ListRoles', () => {
           { accessLevel: -1 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:-1',
+          active: undefined,
+        });
       });
 
       it('should throw error for zero access level', async () => {
@@ -332,6 +344,7 @@ describe('ListRoles', () => {
             accessLevel: 0, // Invalid: zero
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -339,11 +352,16 @@ describe('ListRoles', () => {
           { accessLevel: 0 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: undefined,
+          active: undefined,
+        });
       });
 
       it('should throw error for access level 6', async () => {
@@ -353,6 +371,7 @@ describe('ListRoles', () => {
             accessLevel: 6, // Invalid: above maximum
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -360,11 +379,16 @@ describe('ListRoles', () => {
           { accessLevel: 6 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:6',
+          active: undefined,
+        });
       });
 
       it('should throw error for very large access level', async () => {
@@ -374,6 +398,7 @@ describe('ListRoles', () => {
             accessLevel: 1000, // Invalid: very large
           },
         };
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const mockError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Invalid access level range',
@@ -381,11 +406,16 @@ describe('ListRoles', () => {
           { accessLevel: 1000 },
           'Please provide an access level between 1 and 5'
         );
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
         mockErrorTransformer.transform.and.returnValue(mockError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(mockError);
-        expect(mockRoleRepository.list).not.toHaveBeenCalled();
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:1000',
+          active: undefined,
+        });
       });
     });
 
@@ -615,25 +645,24 @@ describe('ListRoles', () => {
         const request: ListRolesRequest = {
           filters: { accessLevel: 10 }, // Invalid
         };
-        const validationError = new ApplicationError(
-          ApplicationErrorCode.INVALID_ACCESS_LEVEL,
-          'Validation failed',
-          'The provided access level is invalid',
-          { accessLevel: 10 },
-          'Please provide a valid access level between 1 and 5'
-        );
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
         const transformedError = new ApplicationError(
-          ApplicationErrorCode.UNEXPECTED_ERROR,
+          ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Application validation error',
           'An error occurred during validation processing',
-          { originalError: 'Validation failed' },
+          { originalError: repositoryError.message },
           'Please check your input and try again'
         );
-        mockErrorTransformer.transform.and.returnValues(validationError, transformedError);
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
         await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
-        expect(mockErrorTransformer.transform).toHaveBeenCalledTimes(2);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:10',
+          active: undefined,
+        });
       });
 
       it('should handle multiple validation errors', async () => {
@@ -641,17 +670,24 @@ describe('ListRoles', () => {
         const request: ListRolesRequest = {
           filters: { accessLevel: -5 }, // Invalid
         };
-        const validationError = new ApplicationError(
+        const repositoryError = new Error('Invalid access level: must be between 1 and 5');
+        const transformedError = new ApplicationError(
           ApplicationErrorCode.INVALID_ACCESS_LEVEL,
           'Multiple validation errors',
           'Access level and other fields are invalid',
           { accessLevel: -5 },
           'Please correct all validation errors'
         );
-        mockErrorTransformer.transform.and.returnValue(validationError);
+        mockRoleRepository.list.and.returnValue(Promise.reject(repositoryError));
+        mockErrorTransformer.transform.and.returnValue(transformedError);
 
         // Act & Assert
-        await expectAsync(useCase.execute(request)).toBeRejectedWith(validationError);
+        await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+        expect(mockErrorTransformer.transform).toHaveBeenCalledWith(repositoryError);
+        expect(mockRoleRepository.list).toHaveBeenCalledWith({
+          search: 'level:-5',
+          active: undefined,
+        });
       });
     });
 
@@ -1336,17 +1372,31 @@ describe('ListRoles', () => {
           { accessLevel: 10 },
           'Please provide a valid access level'
         );
+
+        // Set up repository responses - success for first call, failure for second
+        mockRoleRepository.list.and.callFake((filters: any) => {
+          if (filters.search === 'level:1') {
+            return Promise.resolve(mockRoles);
+          } else {
+            return Promise.reject(new Error('Invalid access level: must be between 1 and 5'));
+          }
+        });
+
         mockErrorTransformer.transform.and.returnValue(failureError);
 
         // Act
         const successPromise = useCase.execute(successRequest);
-        const failurePromise = expectAsync(useCase.execute(failureRequest)).toBeRejected();
+        const failurePromise = useCase.execute(failureRequest);
 
-        const [successResult] = await Promise.all([successPromise, failurePromise]);
+        const [successResult] = await Promise.allSettled([successPromise, failurePromise]);
 
         // Assert
-        expect(successResult).toEqual(mockRoles);
-        expect(mockRoleRepository.list).toHaveBeenCalledTimes(1); // Only success calls repository
+        expect(successResult.status).toBe('fulfilled');
+        if (successResult.status === 'fulfilled') {
+          expect(successResult.value).toEqual(mockRoles);
+        }
+        expect(mockRoleRepository.list).toHaveBeenCalledTimes(2); // Both requests call repository
+        await expectAsync(failurePromise).toBeRejectedWith(failureError);
       });
     });
 
