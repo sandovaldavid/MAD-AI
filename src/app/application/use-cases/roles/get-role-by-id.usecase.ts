@@ -155,11 +155,16 @@ export class GetRoleById {
    */
   private validateApplicationRules(request: GetRoleByIdRequest): void {
     if (!request) {
-      throw this.errorTransformer.transform(new Error('Request is required for role retrieval'));
+      throw new Error('Request is required for role retrieval');
     }
 
-    if (request.id === null || request.id === undefined) {
-      throw this.errorTransformer.transform(new Error('Role ID is required'));
+    if (
+      request.id === null ||
+      request.id === undefined ||
+      !Number.isInteger(request.id) ||
+      request.id <= 0
+    ) {
+      throw new Error('Role ID must be a positive integer');
     }
   }
 
