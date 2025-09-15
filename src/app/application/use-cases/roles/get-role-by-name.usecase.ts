@@ -156,6 +156,13 @@ export class GetRoleByNameUseCase {
         'Role name is required for search'
       );
     }
+    if (request.name.trim().length > 50) {
+      throw new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid input provided: Role name too long',
+        'Role name must be 50 characters or less'
+      );
+    }
   }
 
   /**
@@ -191,18 +198,20 @@ export class GetRoleByNameUseCase {
    * @throws ApplicationError when role retrieval fails
    */
   private async findRoleByName(name: string): Promise<Role> {
-    const roles = await this.roleRepo.list({ search: name.trim() });
+    const trimmedName = name.trim();
+    const roles = await this.roleRepo.list({ search: trimmedName });
 
-    if (roles.length === 0) {
+    const foundRole = roles.find((role) => role.name.toLowerCase() === trimmedName.toLowerCase());
+
+    if (!foundRole) {
       throw new ApplicationError(
         ApplicationErrorCode.ROLE_NOT_FOUND,
-        `No roles found matching search term '${name.trim()}'`,
-        `No roles found matching '${name.trim()}'`
+        `Role with name '${trimmedName}' not found`,
+        `No role found with the name '${trimmedName}'`
       );
     }
 
-    // Return first result - Domain repository handles search logic
-    return roles[0];
+    return foundRole;
   }
 
   /**
