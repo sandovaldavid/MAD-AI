@@ -83,14 +83,21 @@ export class DeleteRoleUseCase {
       this.validateApplicationRules(request);
       await this.validateAuthorization(request.requesterId);
 
+      this.logger.info('Authorization validated for role deletion', {
+        userId: request.requesterId!.toString(),
+        operation: 'delete_role_authorization',
+      });
+
       // Step 2: Delegate deletion to domain repository
       // Repository handles: existence check, business rule validation, referential integrity
+      await this.roleRepo.getById(request.id);
       await this.roleRepo.delete(request.id);
 
       // Step 3: Handle side effects (audit logging only)
-      this.logger.info('Role deletion completed successfully', {
+      this.logger.info('Role deleted successfully', {
         operation: 'delete_role',
-        correlationId: `delete-role-${request.id}-${this.clock.nowEpochSeconds()}`,
+        userId: request.requesterId!.toString(),
+        correlationId: `role-delete-${request.id}-${this.clock.nowEpochSeconds()}`,
       });
     } catch (error: unknown) {
       throw this.errorTransformer.transform(error);
@@ -108,22 +115,18 @@ export class DeleteRoleUseCase {
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(request: DeleteRoleRequest): void {
-    // Application-level validation: Check if request exists
     if (!request) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Invalid input provided: Request is null or undefined',
-        'Request data is required for role deletion'
-      );
+      throw new Error('Invalid input provided: Request is null or undefined');
     }
 
-    // Application-level validation: Role ID presence only
-    if (request.id === null || request.id === undefined) {
-      throw new ApplicationError(
-        ApplicationErrorCode.INVALID_INPUT,
-        'Invalid input provided: Role ID is required',
-        'Role ID must be provided'
-      );
+    if (
+      request.id === null ||
+      request.id === undefined ||
+      typeof request.id !== 'number' ||
+      !Number.isInteger(request.id) ||
+      request.id <= 0
+    ) {
+      throw new Error('Invalid input provided: Role ID is required and must be a positive number');
     }
   }
 
@@ -146,12 +149,5 @@ export class DeleteRoleUseCase {
         'You must be authenticated to delete roles'
       );
     }
-
-    // Note: Additional authorization business rules (role permissions, admin rights)
-    // are handled by the Domain layer through repository operations
-    this.logger.info('Authorization validated for role deletion', {
-      userId: requesterId.toString(),
-      operation: 'delete_role_authorization',
-    });
   }
 }
