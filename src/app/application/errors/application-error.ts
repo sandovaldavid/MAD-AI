@@ -100,7 +100,7 @@ export class ApplicationError extends Error {
       `Service ${service} is currently unavailable`,
       'The service is temporarily unavailable. Please try again later.',
       { service, retryAfter },
-      retryAfter
+      retryAfter !== undefined
         ? `Please try again in ${retryAfter} seconds`
         : 'Please try again in a few minutes',
       true
