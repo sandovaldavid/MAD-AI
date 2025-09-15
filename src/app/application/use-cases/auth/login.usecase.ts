@@ -34,6 +34,7 @@ export class LoginUseCase {
   private readonly authRepository = inject<AuthRepository>(AUTH_REPOSITORY);
   private readonly sessionStore = inject<SessionStoreRepository>(SESSION_STORE_PORT);
   private readonly logger = inject<Logger>(LOGGER_PORT);
+  private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   async execute(request: LoginRequest): Promise<Session> {
     try {
@@ -81,7 +82,7 @@ export class LoginUseCase {
       this.logger.error('Login failed', {
         operation: 'login',
       });
-      throw ApplicationErrorTransformer.prototype.transform(error);
+      throw this.errorTransformer.transform(error);
     }
   }
 }
