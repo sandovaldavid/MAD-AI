@@ -198,10 +198,6 @@ describe('GetUsersByRole', () => {
 
         const expectedFilter = {
           roleId: 123,
-          page: undefined,
-          pageSize: undefined,
-          sortBy: undefined,
-          sortOrder: undefined,
         };
 
         // Act
@@ -218,8 +214,8 @@ describe('GetUsersByRole', () => {
         // Arrange
         const expectedFilter = {
           roleId: 123,
-          page: 1,
-          pageSize: 20,
+          limit: 20,
+          offset: 0,
           sortBy: 'email',
           sortOrder: 'asc',
         };
@@ -263,8 +259,8 @@ describe('GetUsersByRole', () => {
 
         const expectedFilter = {
           roleId: 123,
-          page: 3,
-          pageSize: 50,
+          limit: 50,
+          offset: 100,
           sortBy: 'firstName',
           sortOrder: 'desc',
         };
