@@ -126,7 +126,7 @@ export class GetUserByEmail {
    * @throws ApplicationError when validation fails
    */
   private validateApplicationRules(email: string): void {
-    if (email === null || email === undefined) {
+    if (email === null || email === undefined || email.trim() === '') {
       throw this.errorTransformer.transform(new Error('Email is required for user lookup'));
     }
   }
