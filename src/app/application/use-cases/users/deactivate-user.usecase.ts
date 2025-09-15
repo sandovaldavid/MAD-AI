@@ -49,6 +49,10 @@ export class DeactivateUser {
    * @throws ApplicationError when deactivation fails or user not found
    */
   async execute(request: DeactivateUserRequest): Promise<GetUserResult> {
+    if (!request || request.userId === null || request.userId === undefined) {
+      throw new Error('User ID is required for deactivation');
+    }
+
     try {
       // Step 1: Delegate deactivation to domain repository
       await this.userRepo.deactivate(request.userId);
@@ -62,9 +66,10 @@ export class DeactivateUser {
       return deactivatedUser;
     } catch (error: unknown) {
       // Log error for monitoring and transform to application error
+      const safeUserId = (request as any)?.userId ?? 'unknown';
       this.logger.error('User deactivation failed', {
-        correlationId: `deactivate-user-${request.userId}-${this.clock.nowEpochSeconds()}`,
-        userId: request.userId.toString(),
+        correlationId: `deactivate-user-${safeUserId}-${this.clock.nowEpochSeconds()}`,
+        userId: safeUserId.toString(),
         operation: 'deactivate_user',
       });
 
