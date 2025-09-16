@@ -265,6 +265,12 @@ export class UserListFacade extends BaseUserFacade {
    * ```
    */
   async clearFilterAndReload(opts?: FacadeOpts): Promise<ListUsersResult> {
-    return this.listUsers(undefined, opts);
+    // Create a request with cleared filter but preserve requester ID
+    const clearRequest: ListUsersRequest = {
+      filter: undefined,
+      requesterId: this.getCurrentUserId(),
+    };
+
+    return this.listUsers(clearRequest, opts);
   }
 }
