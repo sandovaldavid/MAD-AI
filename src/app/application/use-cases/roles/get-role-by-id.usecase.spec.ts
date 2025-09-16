@@ -7,7 +7,7 @@ import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { Role } from '@domain/entities/role.entity';
 import { RoleRepository } from '@domain/repositories/business/role.repository';
 import { ClockPort } from '@domain/repositories/system/clock.repository';
-import { Logger } from '@core/interfaces/logger.interface';
+import { Logger, LogContext } from '@core/interfaces/logger.interface';
 import { GetRoleByIdRequest } from '@application/types/roles.types';
 
 /**
@@ -614,6 +614,62 @@ describe('GetRoleByIdUseCase', () => {
           userId: undefined,
           operation: 'get_role_by_id',
         });
+      });
+
+      it('should handle null requesterId in side effects logging', async () => {
+        // Arrange
+        const requestWithNullRequester: GetRoleByIdRequest = {
+          id: 42,
+          requesterId: null as any,
+        };
+        const expectedRole = Role.create({
+          id: 42,
+          name: 'Test Role',
+          description: 'Test Description',
+          isActive: true,
+          accessLevel: 1,
+        });
+
+        mockRoleRepository.getById.and.returnValue(Promise.resolve(expectedRole));
+        mockClock.nowEpochSeconds.and.returnValue(1640995200);
+
+        // Act
+        await useCase.execute(requestWithNullRequester);
+
+        // Assert - Verify logging handles null requesterId correctly
+        expect(mockLogger.info).toHaveBeenCalledWith('Role retrieval completed', {
+          correlationId: 'get-role-42-1640995200',
+          userId: undefined, // Should be undefined when requesterId is null
+          operation: 'get_role_by_id',
+        } as LogContext);
+      });
+
+      it('should handle undefined requesterId in side effects logging', async () => {
+        // Arrange
+        const requestWithUndefinedRequester: GetRoleByIdRequest = {
+          id: 42,
+          requesterId: undefined,
+        };
+        const expectedRole = Role.create({
+          id: 42,
+          name: 'Test Role',
+          description: 'Test Description',
+          isActive: true,
+          accessLevel: 1,
+        });
+
+        mockRoleRepository.getById.and.returnValue(Promise.resolve(expectedRole));
+        mockClock.nowEpochSeconds.and.returnValue(1640995200);
+
+        // Act
+        await useCase.execute(requestWithUndefinedRequester);
+
+        // Assert - Verify logging handles undefined requesterId correctly
+        expect(mockLogger.info).toHaveBeenCalledWith('Role retrieval completed', {
+          correlationId: 'get-role-42-1640995200',
+          userId: undefined, // Should be undefined when requesterId is undefined
+          operation: 'get_role_by_id',
+        } as LogContext);
       });
     });
 
