@@ -216,12 +216,11 @@ describe('DeactivateUser', () => {
     it('should log error and transform if request is null', async () => {
       const transformedError = new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
-        'Invalid request',
+        'Invalid request: request must be an object',
         'The request is invalid'
       );
       mockErrorTransformer.transform.and.returnValue(transformedError);
 
-      // The use case will fail trying to access 'userId' of null, which is caught
       await expectAsync(useCase.execute(null as any)).toBeRejectedWith(transformedError);
 
       expect(mockLogger.error).toHaveBeenCalledWith('User deactivation failed', {
@@ -229,12 +228,13 @@ describe('DeactivateUser', () => {
         userId: 'unknown',
         operation: 'deactivate_user',
       });
+      expect(mockErrorTransformer.transform).toHaveBeenCalledWith(jasmine.any(Error));
     });
 
     it('should log error and transform if request is undefined', async () => {
       const transformedError = new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
-        'Invalid request',
+        'Invalid request: request must be an object',
         'The request is invalid'
       );
       mockErrorTransformer.transform.and.returnValue(transformedError);
@@ -246,13 +246,14 @@ describe('DeactivateUser', () => {
         userId: 'unknown',
         operation: 'deactivate_user',
       });
+      expect(mockErrorTransformer.transform).toHaveBeenCalledWith(jasmine.any(Error));
     });
 
     it('should log error and transform if userId is missing from request', async () => {
       const request: DeactivateUserRequest = {} as DeactivateUserRequest; // Missing userId
       const transformedError = new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
-        'Invalid request',
+        'User ID is required for deactivation',
         'The request is invalid'
       );
       mockErrorTransformer.transform.and.returnValue(transformedError);
@@ -264,6 +265,7 @@ describe('DeactivateUser', () => {
         userId: 'unknown',
         operation: 'deactivate_user',
       });
+      expect(mockErrorTransformer.transform).toHaveBeenCalledWith(jasmine.any(Error));
     });
   });
 });
