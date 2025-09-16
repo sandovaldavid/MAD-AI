@@ -1,6 +1,6 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
 import { Observable, EMPTY, Subject } from 'rxjs';
-import { catchError, startWith } from 'rxjs/operators';
+import { catchError, startWith, shareReplay, finalize } from 'rxjs/operators';
 
 // Use Cases imports
 import { Notify } from '../use-cases/notifications/notify.usecase';
@@ -26,8 +26,9 @@ import type {
 } from '@application/types/notifications.types';
 
 // Domain entities
-import type { Notification } from '@domain/entities/notification.entity';
+import { Notification } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification-type.enum';
+import { NotificationChannel } from '@domain/enums/notification-channel.enum';
 
 // Shared facade types
 import type { FacadeOpts } from '@application/types/facade-opts';
@@ -102,9 +103,33 @@ export class NotificationsFacade {
   private readonly _unreadCount = signal(0);
   private readonly _totalCount = signal(0);
 
+  // Loading state management for concurrent operations
+  private _loadingCount = 0;
+
+  /**
+   * Start loading state for an operation
+   */
+  private startLoading(): void {
+    this._loadingCount++;
+    this._loading.set(true);
+  }
+
+  /**
+   * End loading state for an operation
+   */
+  private endLoading(): void {
+    this._loadingCount--;
+    if (this._loadingCount <= 0) {
+      this._loadingCount = 0;
+      this._loading.set(false);
+    }
+  }
+
   constructor() {
     // Auto-initialize synchronization with notification service
-    this.initializeNotificationSync();
+    this.initializeNotificationSync().catch((error) => {
+      console.warn('NotificationsFacade: Failed to initialize sync in constructor', error);
+    });
   }
 
   // Public Reactive State (Computed - Read-only)
@@ -158,7 +183,7 @@ export class NotificationsFacade {
    * @returns Promise resolving to the notification creation result
    */
   async notify(request: NotifyRequest, opts?: FacadeOpts): Promise<NotifyResult> {
-    if (!opts?.skipLoading) this._loading.set(true);
+    if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -170,24 +195,24 @@ export class NotificationsFacade {
         userId: request.userId,
       });
 
-      // State is automatically updated via subscription, no manual refresh needed
-      // Find the notification in current state for event emission
-      const notification = this._notifications().find((n) => n.id === notificationId);
+      // Create notification object using the factory method
+      const notification = Notification.createWithId({
+        type: request.type,
+        message: request.message,
+        title: undefined,
+        userId: request.userId?.toString(),
+      }, notificationId);
 
-      if (notification) {
-        // Emit event for real-time coordination
-        this.emitEvent(NotificationEventType.NOTIFICATION_CREATED, notification);
+      // Emit event for real-time coordination
+      this.emitEvent(NotificationEventType.NOTIFICATION_CREATED, notification);
 
-        return notification;
-      } else {
-        throw new Error('Failed to retrieve created notification');
-      }
+      return notification;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create notification';
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!opts?.skipLoading) this._loading.set(false);
+      if (!opts?.skipLoading) this.endLoading();
     }
   }
 
@@ -202,7 +227,7 @@ export class NotificationsFacade {
     request: DismissNotificationRequest,
     opts?: FacadeOpts
   ): Promise<DismissNotificationResult> {
-    if (!opts?.skipLoading) this._loading.set(true);
+    if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -233,7 +258,7 @@ export class NotificationsFacade {
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!opts?.skipLoading) this._loading.set(false);
+      if (!opts?.skipLoading) this.endLoading();
     }
   }
 
@@ -262,7 +287,7 @@ export class NotificationsFacade {
     request: UpdateNotificationRequest,
     opts?: FacadeOpts
   ): Promise<UpdateNotificationResult> {
-    if (!opts?.skipLoading) this._loading.set(true);
+    if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -290,7 +315,7 @@ export class NotificationsFacade {
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!opts?.skipLoading) this._loading.set(false);
+      if (!opts?.skipLoading) this.endLoading();
     }
   }
 
@@ -315,7 +340,7 @@ export class NotificationsFacade {
     request: ClearNotificationsRequest = {},
     opts?: FacadeOpts
   ): Promise<ClearNotificationsResult> {
-    if (!opts?.skipLoading) this._loading.set(true);
+    if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -344,7 +369,7 @@ export class NotificationsFacade {
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!opts?.skipLoading) this._loading.set(false);
+      if (!opts?.skipLoading) this.endLoading();
     }
   }
 
@@ -367,7 +392,7 @@ export class NotificationsFacade {
    * ```
    */
   async refresh(userId?: number, opts?: FacadeOpts): Promise<GetNotificationsResult> {
-    if (!opts?.skipLoading) this._loading.set(true);
+    if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -391,7 +416,7 @@ export class NotificationsFacade {
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!opts?.skipLoading) this._loading.set(false);
+      if (!opts?.skipLoading) this.endLoading();
     }
   }
 
@@ -405,50 +430,60 @@ export class NotificationsFacade {
    * @application NotificationsFacade
    */
   subscribeToUpdates(request: SubscribeToNotificationsRequest): Observable<Notification[]> {
-    return new Observable<Notification[]>((subscriber) => {
-      let unsubscribeFunction: (() => void) | null = null;
+    const subject = new Subject<Notification[]>();
+    let unsubscribeFunction: (() => void) | null = null;
 
-      // Create a callback that emits to the subscriber
-      const notificationCallback = (notifications: Notification[]) => {
-        if (!subscriber.closed) {
-          subscriber.next(notifications);
-        }
-      };
+    // Create a callback that emits to the subject and updates facade state
+    const notificationCallback = (notifications: Notification[]) => {
+      console.log('[FACADE] Callback called with notifications:', notifications.length, 'items');
+      // Update facade's internal state
+      this._notifications.set(notifications);
+      this._totalCount.set(notifications.length);
+      this._unreadCount.set(notifications.filter((n) => !n.isRead).length);
+      // Emit to subject for external subscribers
+      subject.next(notifications);
+      console.log('[FACADE] Subject next called with:', notifications.length, 'items');
+    };
 
-      // Create the subscription request with our callback
-      const subscriptionRequest: SubscribeToNotificationsRequest = {
-        callback: notificationCallback,
-        requesterId: request.requesterId,
-      };
+    // Create the subscription request with our callback
+    const subscriptionRequest: SubscribeToNotificationsRequest = {
+      callback: notificationCallback,
+      requesterId: request.requesterId,
+    };
 
-      // Execute the use case to establish subscription
-      this.subscribeUC
-        .execute(subscriptionRequest)
-        .then((unsubscribe) => {
-          unsubscribeFunction = unsubscribe;
+    // Execute the use case to establish subscription
+    this.subscribeUC
+      .execute(subscriptionRequest)
+      .then((unsubscribe) => {
+        console.log('[FACADE] Use case executed successfully, emitting current notifications');
+        unsubscribeFunction = unsubscribe;
+        // Emit current notifications immediately after subscription is established
+        const currentNotifications = this._notifications();
+        console.log('[FACADE] Current notifications:', currentNotifications.length, 'items');
+        subject.next(currentNotifications);
+      })
+      .catch((error) => {
+        console.log('[FACADE] Use case execution failed:', error);
+        subject.error(error);
+      });
 
-          // Emit current notifications immediately
-          subscriber.next(this._notifications());
-        })
-        .catch((error) => {
-          if (!subscriber.closed) {
-            subscriber.error(error);
-          }
-        });
-
-      // Return cleanup function
-      return () => {
-        if (unsubscribeFunction) {
-          unsubscribeFunction();
-        }
-      };
-    }).pipe(
+    const pipedObservable = subject.pipe(
+      startWith(this._notifications()),
       catchError((error) => {
+        console.log('[FACADE] Pipe error:', error);
         this._notificationError.set(error?.message ?? 'Subscription error');
         return EMPTY;
       }),
-      startWith(this._notifications())
+      finalize(() => {
+        console.log('[FACADE] Finalizing subscription');
+        if (unsubscribeFunction) {
+          unsubscribeFunction();
+        }
+      })
     );
+
+    console.log('[FACADE] Returning piped observable');
+    return pipedObservable;
   }
 
   /**
@@ -539,7 +574,7 @@ export class NotificationsFacade {
    */
   async markAllAsRead(userId?: number, opts?: FacadeOpts): Promise<void> {
     const skipLoading = opts?.skipLoading ?? false;
-    if (!skipLoading) this._loading.set(true);
+    if (!skipLoading) this.startLoading();
     this._notificationError.set(null);
 
     try {
@@ -562,7 +597,7 @@ export class NotificationsFacade {
       this._notificationError.set(errorMessage);
       throw error;
     } finally {
-      if (!skipLoading) this._loading.set(false);
+      if (!skipLoading) this.endLoading();
     }
   }
 
@@ -592,6 +627,7 @@ export class NotificationsFacade {
    */
   reset(): void {
     this._notifications.set([]);
+    this._loadingCount = 0;
     this._loading.set(false);
     this._notificationError.set(null);
     this._unreadCount.set(0);
@@ -625,21 +661,23 @@ export class NotificationsFacade {
    * state synchronized with the domain layer. This ensures that the facade
    * reflects the current state of notifications managed by the service.
    */
-  private initializeNotificationSync(): void {
+  private async initializeNotificationSync(): Promise<void> {
     try {
       // Subscribe to notification changes from the service layer
       const callback = (notifications: Notification[]) => {
+        console.log('[FACADE] Internal callback called with notifications:', notifications.length, 'items');
         // Sync facade state with service state
         this._notifications.set(notifications);
         this._totalCount.set(notifications.length);
         this._unreadCount.set(notifications.filter((n) => !n.isRead).length);
+        console.log('[FACADE] Internal state updated - notifications:', this._notifications().length, 'total:', this._totalCount(), 'unread:', this._unreadCount());
       };
 
       // Use the subscribe use case to establish the connection
       const request: SubscribeToNotificationsRequest = {
         callback,
       };
-      this.subscribeUC.execute(request);
+      await this.subscribeUC.execute(request);
     } catch (error) {
       // Log initialization error but don't fail the facade construction
       console.warn('NotificationsFacade: Failed to initialize sync with service layer', error);
