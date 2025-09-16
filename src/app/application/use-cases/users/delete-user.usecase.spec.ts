@@ -158,7 +158,7 @@ describe('DeleteUser', () => {
     });
 
     it('should log error and transform if userId is missing from request', async () => {
-      const request: DeleteUserRequest = { } as DeleteUserRequest; // Missing userId
+      const request: DeleteUserRequest = {} as DeleteUserRequest; // Missing userId
       const transformedError = new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
         'Invalid request',
