@@ -49,11 +49,16 @@ export class DeactivateUser {
    * @throws ApplicationError when deactivation fails or user not found
    */
   async execute(request: DeactivateUserRequest): Promise<GetUserResult> {
-    if (!request || request.userId === null || request.userId === undefined) {
-      throw new Error('User ID is required for deactivation');
-    }
-
     try {
+      // Step 0: Validate input at application layer
+      if (!request || typeof request !== 'object') {
+        throw new Error('Invalid request: request must be an object');
+      }
+
+      if (request.userId === null || request.userId === undefined) {
+        throw new Error('User ID is required for deactivation');
+      }
+
       // Step 1: Delegate deactivation to domain repository
       await this.userRepo.deactivate(request.userId);
 
