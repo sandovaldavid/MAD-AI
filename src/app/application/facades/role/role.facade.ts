@@ -9,13 +9,11 @@ import type {
   ListRolesParams,
   CreateRoleData,
   UpdateRoleData,
-  BulkUpdateRoleData,
   FacadeOpts,
 } from './role.types';
 import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 import type { User } from '@domain/entities/user.entity';
 import type { RoleExportConfig } from '@application/types/role-export.types';
-import type { BulkCreateRolesResult, BulkUpdateRolesResult } from '@application/types/roles.types';
 
 /**
  * Main Role Facade - Orchestrator
@@ -330,5 +328,116 @@ export class RolesFacade {
     opts?: FacadeOpts
   ): Promise<any[]> {
     return this.roleExport.getExportPreview(roleIds, options, opts);
+  }
+
+  // ========================================
+  // Formatting Operations (Presentation Layer Support)
+  // ========================================
+
+  /**
+   * Format role for display label
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Formatted display label
+   */
+  formatRoleLabel(roleSummary: RoleSummary): string {
+    return `${roleSummary.name} (L${roleSummary.accessLevel})`;
+  }
+
+  /**
+   * Format role for short display
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Short role label
+   */
+  formatRoleShortLabel(roleSummary: RoleSummary): string {
+    return roleSummary.name;
+  }
+
+  /**
+   * Format role for detailed display
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Detailed role label with status and user count
+   */
+  formatRoleDetailedLabel(roleSummary: RoleSummary): string {
+    const status = roleSummary.isActive ? 'Active' : 'Inactive';
+    const userText = roleSummary.userCount === 1 ? 'user' : 'users';
+    return `${this.formatRoleLabel(roleSummary)} - ${status} - ${roleSummary.userCount} ${userText}`;
+  }
+
+  /**
+   * Format role for different display contexts
+   *
+   * @param roleSummary Role summary from Application layer
+   * @param context Display context
+   * @returns Context-appropriate formatted role
+   */
+  formatRoleForContext(
+    roleSummary: RoleSummary,
+    context: 'label' | 'short' | 'detailed' | 'name-only'
+  ): string {
+    switch (context) {
+      case 'label':
+        return this.formatRoleLabel(roleSummary);
+      case 'short':
+        return this.formatRoleShortLabel(roleSummary);
+      case 'detailed':
+        return this.formatRoleDetailedLabel(roleSummary);
+      case 'name-only':
+        return roleSummary.name;
+      default:
+        return this.formatRoleLabel(roleSummary);
+    }
+  }
+
+  /**
+   * Get role display variants
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Object with different display variants
+   */
+  getRoleDisplayVariants(roleSummary: RoleSummary): {
+    name: string;
+    label: string;
+    short: string;
+    detailed: string;
+    badge: string;
+    accessLevel: string;
+  } {
+    return {
+      name: roleSummary.name,
+      label: this.formatRoleLabel(roleSummary),
+      short: this.formatRoleShortLabel(roleSummary),
+      detailed: this.formatRoleDetailedLabel(roleSummary),
+      badge: roleSummary.name,
+      accessLevel: `L${roleSummary.accessLevel}`,
+    };
+  }
+
+  /**
+   * Format role status for display
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Formatted status
+   */
+  formatRoleStatus(roleSummary: RoleSummary): string {
+    return roleSummary.isActive ? 'Active' : 'Inactive';
+  }
+
+  /**
+   * Create role summary text
+   *
+   * @param roleSummary Role summary from Application layer
+   * @returns Role summary description
+   */
+  formatRoleSummary(roleSummary: RoleSummary): string {
+    const statusText = roleSummary.isActive ? 'active' : 'inactive';
+    const userText = roleSummary.userCount === 1 ? 'user' : 'users';
+    const levelValue = roleSummary.accessLevel;
+    const accessLevelText =
+      levelValue === 1 ? 'high-level' : levelValue <= 3 ? 'medium-level' : 'basic';
+
+    return `${roleSummary.name} role with ${accessLevelText} access (L${levelValue}), currently ${statusText} with ${roleSummary.userCount} assigned ${userText}`;
   }
 }
