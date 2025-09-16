@@ -90,7 +90,7 @@ export class RoleExportService {
           // Simple technical status representation - no business rules
           data.status = role.isActive ? 'Active' : 'Inactive';
         }
-        if (includeDescription) data.description = role.description || 'N/A';
+        if (includeDescription) data.description = role.description;
         if (includeUserCount) data.userCount = role.userCount;
 
         return data;
