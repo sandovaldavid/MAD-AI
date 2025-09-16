@@ -140,23 +140,49 @@ describe('ApplicationErrorCode', () => {
         const enumKeys = Object.keys(ApplicationErrorCode);
 
         // Act & Assert - Categories should be grouped together
-        const authKeysStartIndex = enumKeys.findIndex((key) => key.startsWith('AUTH_') || key.includes('USER_NOT_FOUND') || key.includes('EMAIL_') || key.includes('ACCOUNT_') || key.includes('SYSTEM_MAINTENANCE') || key.includes('REGISTRATION_') || key.includes('ALREADY_AUTHENTICATED') || key.includes('INVALID_CREDENTIALS'));
-        const userMgmtKeysStartIndex = enumKeys.findIndex((key) => key.includes('USER_ALREADY_EXISTS') || key.includes('INSUFFICIENT_PERMISSIONS') || key.includes('PROFILE_') || key.includes('INVALID_USER_STATE') || key.includes('USER_RETRIEVAL'));
-        const roleKeysStartIndex = enumKeys.findIndex((key) =>
-          key.startsWith('ROLE_') ||
-          key.includes('INVALID_ROLE') ||
-          key.includes('INVALID_ACCESS_LEVEL') ||
-          key.includes('INVALID_SEARCH') ||
-          key.includes('SEARCH_FILTER') ||
-          key.includes('INVALID_ACTIVE_FILTER') ||
-          key.includes('INVALID_LIMIT_FILTER') ||
-          key.includes('LIMIT_FILTER_TOO_HIGH') ||
-          key.includes('INVALID_FILTER_TYPE') ||
-          key.includes('INVALID_SEARCH_TYPE') ||
-          key.includes('SEARCH_TOO_LONG') ||
-          key.includes('ROLE_LISTING_FAILED')
+        const authKeysStartIndex = enumKeys.findIndex(
+          (key) =>
+            key.startsWith('AUTH_') ||
+            key.includes('USER_NOT_FOUND') ||
+            key.includes('EMAIL_') ||
+            key.includes('ACCOUNT_') ||
+            key.includes('SYSTEM_MAINTENANCE') ||
+            key.includes('REGISTRATION_') ||
+            key.includes('ALREADY_AUTHENTICATED') ||
+            key.includes('INVALID_CREDENTIALS')
         );
-        const systemKeysStartIndex = enumKeys.findIndex((key) => key.includes('SERVICE_') || key.includes('RATE_LIMIT') || key.includes('INVALID_INPUT') || key.includes('OPERATION_') || key.includes('UNEXPECTED_') || key.includes('UNKNOWN_'));
+        const userMgmtKeysStartIndex = enumKeys.findIndex(
+          (key) =>
+            key.includes('USER_ALREADY_EXISTS') ||
+            key.includes('INSUFFICIENT_PERMISSIONS') ||
+            key.includes('PROFILE_') ||
+            key.includes('INVALID_USER_STATE') ||
+            key.includes('USER_RETRIEVAL')
+        );
+        const roleKeysStartIndex = enumKeys.findIndex(
+          (key) =>
+            key.startsWith('ROLE_') ||
+            key.includes('INVALID_ROLE') ||
+            key.includes('INVALID_ACCESS_LEVEL') ||
+            key.includes('INVALID_SEARCH') ||
+            key.includes('SEARCH_FILTER') ||
+            key.includes('INVALID_ACTIVE_FILTER') ||
+            key.includes('INVALID_LIMIT_FILTER') ||
+            key.includes('LIMIT_FILTER_TOO_HIGH') ||
+            key.includes('INVALID_FILTER_TYPE') ||
+            key.includes('INVALID_SEARCH_TYPE') ||
+            key.includes('SEARCH_TOO_LONG') ||
+            key.includes('ROLE_LISTING_FAILED')
+        );
+        const systemKeysStartIndex = enumKeys.findIndex(
+          (key) =>
+            key.includes('SERVICE_') ||
+            key.includes('RATE_LIMIT') ||
+            key.includes('INVALID_INPUT') ||
+            key.includes('OPERATION_') ||
+            key.includes('UNEXPECTED_') ||
+            key.includes('UNKNOWN_')
+        );
 
         // Verify logical ordering (auth -> user mgmt -> role mgmt -> system)
         expect(authKeysStartIndex).toBeLessThan(userMgmtKeysStartIndex);
@@ -167,29 +193,31 @@ describe('ApplicationErrorCode', () => {
       it('should have meaningful error code names that describe the error', () => {
         // Arrange
         const meaningfulPatterns = [
-          /FAILED$/,     // Action that failed
-          /EXPIRED$/,    // Time-based expiration
-          /INVALID_/,    // Validation errors
-          /NOT_FOUND$/,  // Resource not found
-          /ALREADY_/,    // Duplicate/existing state
-          /TOO_/,        // Limit exceeded
-          /UNAVAILABLE$/,// Service availability
-          /EXCEEDED$/,   // Limit exceeded
-          /TIMEOUT$/,    // Time-based failure
-          /ERROR$/,      // General error categories
-          /LOCKED$/,     // Security lockout
-          /INCOMPLETE$/,  // Missing data
-          /CLOSED$/,     // Service state
-          /IN_USE$/,     // Resource busy
-          /NOT_CONFIRMED$/,  // Confirmation state
-          /MAINTENANCE$/,    // System state
-          /INSUFFICIENT_/,   // Inadequate resources/permissions
+          /FAILED$/, // Action that failed
+          /EXPIRED$/, // Time-based expiration
+          /INVALID_/, // Validation errors
+          /NOT_FOUND$/, // Resource not found
+          /ALREADY_/, // Duplicate/existing state
+          /TOO_/, // Limit exceeded
+          /UNAVAILABLE$/, // Service availability
+          /EXCEEDED$/, // Limit exceeded
+          /TIMEOUT$/, // Time-based failure
+          /ERROR$/, // General error categories
+          /LOCKED$/, // Security lockout
+          /INCOMPLETE$/, // Missing data
+          /CLOSED$/, // Service state
+          /IN_USE$/, // Resource busy
+          /NOT_CONFIRMED$/, // Confirmation state
+          /MAINTENANCE$/, // System state
+          /INSUFFICIENT_/, // Inadequate resources/permissions
         ];
 
         // Act & Assert
         Object.values(ApplicationErrorCode).forEach((errorCode) => {
-          const isDescriptive = meaningfulPatterns.some(pattern => pattern.test(errorCode));
-          expect(isDescriptive).withContext(`Error code '${errorCode}' should have a descriptive name`).toBe(true);
+          const isDescriptive = meaningfulPatterns.some((pattern) => pattern.test(errorCode));
+          expect(isDescriptive)
+            .withContext(`Error code '${errorCode}' should have a descriptive name`)
+            .toBe(true);
         });
       });
 
@@ -347,13 +375,7 @@ describe('ApplicationErrorCode', () => {
 
       it('should have role management error codes with role-related naming', () => {
         // Arrange
-        const roleRelatedPatterns = [
-          /ROLE_/,
-          /SEARCH/,
-          /FILTER/,
-          /ACCESS_LEVEL/,
-          /LIMIT/,
-        ];
+        const roleRelatedPatterns = [/ROLE_/, /SEARCH/, /FILTER/, /ACCESS_LEVEL/, /LIMIT/];
 
         const roleMgmtErrorCodes = [
           ApplicationErrorCode.ROLE_NOT_FOUND,
@@ -378,8 +400,12 @@ describe('ApplicationErrorCode', () => {
 
         // Act & Assert
         roleMgmtErrorCodes.forEach((errorCode) => {
-          const isRoleRelated = roleRelatedPatterns.some(pattern => pattern.test(errorCode));
-          expect(isRoleRelated).withContext(`Role management error code '${errorCode}' should contain role-related terms`).toBe(true);
+          const isRoleRelated = roleRelatedPatterns.some((pattern) => pattern.test(errorCode));
+          expect(isRoleRelated)
+            .withContext(
+              `Role management error code '${errorCode}' should contain role-related terms`
+            )
+            .toBe(true);
         });
       });
 
@@ -509,7 +535,9 @@ describe('ApplicationErrorCode', () => {
 
         // Assert
         expect(collectedCodes.length).toBe(Object.values(ApplicationErrorCode).length);
-        expect(collectedCodes).toEqual(jasmine.arrayContaining(Object.values(ApplicationErrorCode)));
+        expect(collectedCodes).toEqual(
+          jasmine.arrayContaining(Object.values(ApplicationErrorCode))
+        );
       });
     });
 
@@ -570,7 +598,7 @@ describe('ApplicationErrorCode', () => {
         expect(authCodes.includes(ApplicationErrorCode.AUTH_FAILED)).toBe(true);
         expect(authCodes.includes(ApplicationErrorCode.USER_ALREADY_EXISTS)).toBe(false);
 
-        const filteredCodes = authCodes.filter(code => code.includes('AUTH'));
+        const filteredCodes = authCodes.filter((code) => code.includes('AUTH'));
         expect(filteredCodes).toContain(ApplicationErrorCode.AUTH_FAILED);
       });
 
@@ -613,13 +641,13 @@ describe('ApplicationErrorCode', () => {
         };
 
         // Act
-        const notFoundCodes = Object.values(ApplicationErrorCode).filter(code =>
+        const notFoundCodes = Object.values(ApplicationErrorCode).filter((code) =>
           consistentPatterns.notFound.test(code)
         );
-        const invalidCodes = Object.values(ApplicationErrorCode).filter(code =>
+        const invalidCodes = Object.values(ApplicationErrorCode).filter((code) =>
           consistentPatterns.invalid.test(code)
         );
-        const failedCodes = Object.values(ApplicationErrorCode).filter(code =>
+        const failedCodes = Object.values(ApplicationErrorCode).filter((code) =>
           consistentPatterns.failed.test(code)
         );
 
@@ -629,10 +657,10 @@ describe('ApplicationErrorCode', () => {
         expect(failedCodes.length).toBeGreaterThan(0);
 
         // Verify consistent naming
-        notFoundCodes.forEach(code => {
+        notFoundCodes.forEach((code) => {
           expect(code).toMatch(/_NOT_FOUND$/);
         });
-        invalidCodes.forEach(code => {
+        invalidCodes.forEach((code) => {
           expect(code).toMatch(/^INVALID_/);
         });
       });
@@ -643,7 +671,7 @@ describe('ApplicationErrorCode', () => {
         const codeFrequency = new Map<string, number>();
 
         // Act
-        allCodes.forEach(code => {
+        allCodes.forEach((code) => {
           codeFrequency.set(code, (codeFrequency.get(code) || 0) + 1);
         });
 
@@ -691,7 +719,9 @@ describe('ApplicationErrorCode', () => {
         const expectedMinimumCodeCount = 38; // We know there are at least 38 error codes
 
         // Act & Assert - Verify enum structure without mutation
-        expect(Object.keys(ApplicationErrorCode).length).toBeGreaterThanOrEqual(expectedMinimumCodeCount);
+        expect(Object.keys(ApplicationErrorCode).length).toBeGreaterThanOrEqual(
+          expectedMinimumCodeCount
+        );
         expect(typeof ApplicationErrorCode).toBe('object');
         expect(ApplicationErrorCode).toBeDefined();
       });
@@ -722,8 +752,8 @@ describe('ApplicationErrorCode', () => {
 
         // Act & Assert - Verify each category has adequate coverage
         Object.entries(majorErrorCategories).forEach(([category, keywords]) => {
-          const categoryMatches = allErrorCodes.filter(code =>
-            keywords.some(keyword => code.includes(keyword))
+          const categoryMatches = allErrorCodes.filter((code) =>
+            keywords.some((keyword) => code.includes(keyword))
           );
 
           expect(categoryMatches.length)
@@ -738,9 +768,9 @@ describe('ApplicationErrorCode', () => {
 
         // Verify comprehensive coverage - most codes should be categorized
         const categorizedCodes = new Set<string>();
-        Object.values(majorErrorCategories).forEach(keywords => {
-          allErrorCodes.forEach(code => {
-            if (keywords.some(keyword => code.includes(keyword))) {
+        Object.values(majorErrorCategories).forEach((keywords) => {
+          allErrorCodes.forEach((code) => {
+            if (keywords.some((keyword) => code.includes(keyword))) {
               categorizedCodes.add(code);
             }
           });
@@ -767,7 +797,7 @@ describe('ApplicationErrorCode', () => {
         ];
 
         // Act & Assert
-        roleOperations.forEach(operation => {
+        roleOperations.forEach((operation) => {
           expect(Object.values(ApplicationErrorCode)).toContain(operation as ApplicationErrorCode);
         });
       });
@@ -786,7 +816,7 @@ describe('ApplicationErrorCode', () => {
         ];
 
         // Act & Assert
-        searchFilterOperations.forEach(operation => {
+        searchFilterOperations.forEach((operation) => {
           expect(Object.values(ApplicationErrorCode)).toContain(operation as ApplicationErrorCode);
         });
       });
