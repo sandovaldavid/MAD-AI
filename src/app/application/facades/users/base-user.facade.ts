@@ -302,12 +302,12 @@ export abstract class BaseUserFacade {
 
   /**
    * Get the current authenticated user's ID
-   * 
+   *
    * Returns the ID of the currently authenticated user from the auth facade.
    * Provides a fallback value (-1) for unauthenticated scenarios to satisfy
    * the requesterId requirement in use case contracts while maintaining
    * type safety.
-   * 
+   *
    * @protected
    * @returns Current user ID or -1 if not authenticated
    * @example
