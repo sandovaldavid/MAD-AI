@@ -19,6 +19,7 @@ import type { Session } from '@domain/entities/session.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import { ApplicationErrorTransformer } from '../errors/application-error.transformer';
 import { LoggerService } from '@core/services/logger.service';
+import type { NavSection } from '@presentation/navigation/types';
 
 /**
  * Authentication Facade - Clean Orchestrator Following MAD-AI Patterns
@@ -747,6 +748,39 @@ export class AuthFacade {
    * authFacade.reset();
    * ```
    */
+  /**
+   * Filter navigation sections based on user roles and permissions
+   * Business logic for role-based access control to navigation items
+   *
+   * @param sections - Raw navigation sections from configuration
+   * @returns Filtered navigation sections accessible to current user
+   */
+  filterNavigationSections(sections: NavSection[]): NavSection[] {
+    const user = this._user();
+
+    if (!user) {
+      // If no user, only show items without role requirements
+      return sections.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => !item.requireRoles || item.requireRoles.length === 0),
+      })).filter((section) => section.items.length > 0);
+    }
+
+    const userRoleName = user.role.name;
+    const isAdmin = user.role.canAccessAdmin();
+
+    return sections.map((section) => ({
+      ...section,
+      items: section.items.filter(
+        (item) =>
+          !item.requireRoles ||
+          item.requireRoles.length === 0 ||
+          isAdmin ||
+          item.requireRoles.some((role) => userRoleName === role)
+      ),
+    })).filter((section) => section.items.length > 0);
+  }
+
   reset(): void {
     this._loading.set(false);
     this._user.set(null);
