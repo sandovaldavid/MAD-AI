@@ -52,7 +52,6 @@ export class ExportFormat {
    */
   private static readonly DEFAULT_FORMAT = 'csv';
 
-
   /**
    * Creates a validated ExportFormat value object.
    *
@@ -72,12 +71,14 @@ export class ExportFormat {
     const normalizedFormat = format.trim().toLowerCase();
 
     if (!this.isSupported(normalizedFormat)) {
-      const errors: FieldError[] = [{
-        field: 'exportFormat',
-        value: format,
-        message: `Invalid export format. Supported formats: ${this.SUPPORTED_FORMATS.join(', ')}`,
-        code: ValidationErrorCode.FIELD_FORMAT_INVALID,
-      }];
+      const errors: FieldError[] = [
+        {
+          field: 'exportFormat',
+          value: format,
+          message: `Invalid export format. Supported formats: ${this.SUPPORTED_FORMATS.join(', ')}`,
+          code: ValidationErrorCode.FIELD_FORMAT_INVALID,
+        },
+      ];
 
       throw ValidationError.createFromFields(errors, ValidationErrorCode.VALIDATION_ERROR);
     }
