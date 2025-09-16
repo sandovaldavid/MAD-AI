@@ -357,4 +357,149 @@ export class UserUtilsFacade extends BaseUserFacade {
   isLoading(): boolean {
     return this._loading();
   }
+
+  // ============================================================================
+  // User Display Formatting Methods
+  // ============================================================================
+
+  /**
+   * Get display name for a user (username or full name)
+   *
+   * @param user User entity
+   * @returns Display name for UI purposes
+   */
+  getDisplayName(user: User): string {
+    return user.username.value || this.getFullName(user.firstName, user.lastName);
+  }
+
+  /**
+   * Get formatted full name from first and last name
+   *
+   * @param firstName User's first name
+   * @param lastName User's last name
+   * @returns Formatted full name
+   */
+  getFullName(firstName: User['firstName'], lastName: User['lastName']): string {
+    return `${firstName.value.trim()} ${lastName.value.trim()}`;
+  }
+
+  /**
+   * Format username for display (convert underscores to spaces and capitalize)
+   *
+   * @param username Username value object
+   * @returns Formatted display name
+   */
+  formatUsernameForDisplay(username: User['username']): string {
+    return username.value
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  /**
+   * Format username for different contexts
+   *
+   * @param username Username value object
+   * @param context Display context
+   * @returns Context-appropriate formatted username
+   */
+  formatUsernameForContext(
+    username: User['username'],
+    context: 'raw' | 'display' | 'mention'
+  ): string {
+    switch (context) {
+      case 'display':
+        return this.formatUsernameForDisplay(username);
+      case 'mention':
+        return `@${username.value}`;
+      case 'raw':
+      default:
+        return username.value;
+    }
+  }
+
+  /**
+   * Format lastname for display
+   *
+   * @param lastName LastName value object
+   * @returns Display formatted lastname
+   */
+  formatLastNameForDisplay(lastName: User['lastName']): string {
+    return lastName?.value || '';
+  }
+
+  /**
+   * Format lastname for formal display
+   *
+   * @param lastName LastName value object
+   * @returns Formal formatted lastname (uppercase)
+   */
+  formatLastNameForFormal(lastName: User['lastName']): string {
+    return lastName?.value?.toUpperCase() || '';
+  }
+
+  /**
+   * Format lastname for initial display
+   *
+   * @param lastName LastName value object
+   * @returns Initial letter of lastname
+   */
+  formatLastNameForInitial(lastName: User['lastName']): string {
+    if (!lastName?.value) return '';
+    const words = lastName.value.split(/\s+/);
+    for (let i = words.length - 1; i >= 0; i--) {
+      if (!['de', 'la', 'del', 'los', 'las', 'y', 'e'].includes(words[i].toLowerCase())) {
+        return words[i].charAt(0).toUpperCase();
+      }
+    }
+    return words[words.length - 1].charAt(0).toUpperCase();
+  }
+
+  /**
+   * Format lastname for different contexts
+   *
+   * @param lastName LastName value object
+   * @param context Display context
+   * @returns Context-appropriate formatted lastname
+   */
+  formatLastNameForContext(
+    lastName: User['lastName'],
+    context: 'formal' | 'abbreviated' | 'initial' | 'display'
+  ): string {
+    switch (context) {
+      case 'formal':
+        return this.formatLastNameForFormal(lastName);
+      case 'abbreviated':
+        return this.abbreviateLastName(lastName, 10);
+      case 'initial':
+        return this.formatLastNameForInitial(lastName);
+      case 'display':
+      default:
+        return this.formatLastNameForDisplay(lastName);
+    }
+  }
+
+  /**
+   * Abbreviate lastname for display
+   *
+   * @param lastName LastName value object
+   * @param maxLength Maximum length for abbreviation
+   * @returns Abbreviated lastname
+   */
+  abbreviateLastName(lastName: User['lastName'], maxLength: number): string {
+    if (!lastName?.value || lastName.value.length <= maxLength) return lastName?.value || '';
+
+    const words = lastName.value.split(/\s+/);
+    const result: string[] = [];
+    let length = 0;
+
+    for (const word of words) {
+      const lw = word.toLowerCase();
+      if (length + lw.length + 1 > maxLength) break;
+      result.push(lw);
+      length += lw.length + 1;
+    }
+
+    return result.join(' ') + (length < lastName.value.length ? '…' : '');
+  }
 }
