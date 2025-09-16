@@ -143,14 +143,14 @@ describe('GetUserByUsernameUseCase', () => {
     });
 
     it('should handle invalid request object gracefully', async () => {
-        const transformedError = new ApplicationError(
-            ApplicationErrorCode.INVALID_INPUT,
-            'Invalid request',
-            'The request is invalid'
-          );
-        mockErrorTransformer.transform.and.returnValue(transformedError);
+      const transformedError = new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'Invalid request',
+        'The request is invalid'
+      );
+      mockErrorTransformer.transform.and.returnValue(transformedError);
 
-        await expectAsync(useCase.execute(null as any)).toBeRejectedWith(transformedError);
+      await expectAsync(useCase.execute(null as any)).toBeRejectedWith(transformedError);
     });
   });
 });
