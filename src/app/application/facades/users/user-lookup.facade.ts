@@ -175,9 +175,9 @@ export class UserLookupFacade extends BaseUserFacade {
     this.setError(null);
 
     try {
-      const user = await this.getUserByUsernameUC.execute({ 
-        username, 
-        requesterId: this.getCurrentUserId() 
+      const user = await this.getUserByUsernameUC.execute({
+        username,
+        requesterId: this.getCurrentUserId(),
       });
       if (!user) {
         throw new Error(`User with username ${username} not found`);
