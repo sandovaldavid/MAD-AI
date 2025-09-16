@@ -49,6 +49,15 @@ export class GetUserById {
    */
   async execute(request: GetUserByIdRequest): Promise<GetUserResult> {
     try {
+      // Step 0: Validate input at application layer
+      if (!request || typeof request !== 'object') {
+        throw new Error('Invalid request: request must be an object');
+      }
+
+      if (request.userId === null || request.userId === undefined) {
+        throw new Error('User ID is required');
+      }
+
       // Step 1: Delegate user retrieval to Domain repository
       // All validation (ID format, business rules) handled by Domain layer
       const user = await this.userRepo.getById(request.userId);
@@ -62,10 +71,17 @@ export class GetUserById {
       // Step 3: Return domain entity
       return user;
     } catch (error: unknown) {
-      // Step 4: Transform errors for Application layer consumption
+      // Step 4: Log error and transform for Application layer consumption
+      const safeUserId = (request as any)?.userId?.toString() ?? 'unknown';
+      this.logger.error('User retrieval failed', {
+        correlationId: `get-user-by-id-${safeUserId}-${Date.now()}`,
+        userId: safeUserId,
+        operation: 'get_user_by_id',
+      });
+
       const appError = this.errorTransformer.transform(error, {
         operation: 'get_user_by_id',
-        userId: request.userId.toString(),
+        userId: safeUserId,
       });
       throw appError;
     }
