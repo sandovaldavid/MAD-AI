@@ -14,9 +14,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
@@ -24,9 +22,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -34,15 +30,38 @@
             },
             "loader": {
               ".svg": "text"
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "core-js",
+              "raf",
+              "rgbcolor",
+              "stackblur-canvas",
+              "jspdf",
+              "papaparse",
+              "@babel/runtime/helpers/asyncToGenerator",
+              "@babel/runtime/helpers/defineProperty",
+              "@babel/runtime/helpers/typeof",
+              "@babel/runtime/helpers/slicedToArray"
+            ],
+            "optimization": {
+              "scripts": true,
+              "styles": true,
+              "fonts": true
+            },
+            "outputHashing": "none",
+            "sourceMap": false,
+            "namedChunks": false,
+            "aot": true,
+            "extractLicenses": true
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1.5MB"
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -69,7 +88,7 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "buildTarget": "MAD-AI:build:development",
-            "host": "0.0.0.0",
+            "host": "localhost",
             "port": 4200
           },
           "configurations": {
@@ -77,7 +96,8 @@
               "buildTarget": "MAD-AI:build:production"
             },
             "development": {
-              "buildTarget": "MAD-AI:build:development"
+              "buildTarget": "MAD-AI:build:development",
+              "hmr": true
             }
           },
           "defaultConfiguration": "development"
@@ -90,35 +110,22 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
+            "polyfills": ["zone.js", "zone.js/testing"],
             "assets": [
               {
                 "glob": "**/*",
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "codeCoverage": true,
-            "codeCoverageExclude": [
-              "**/*.spec.ts",
-              "**/*.d.ts",
-              "**/node_modules/**",
-              "**/dist/**"
-            ]
+            "codeCoverageExclude": ["**/*.spec.ts", "**/*.d.ts", "**/node_modules/**", "**/dist/**"]
           }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         }
       }
@@ -126,8 +133,6 @@
   },
   "cli": {
     "analytics": "7abd11cf-05ce-4e6d-8f13-98623c019d77",
-    "schematicCollections": [
-      "angular-eslint"
-    ]
+    "schematicCollections": ["angular-eslint"]
   }
 }
