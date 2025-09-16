@@ -125,13 +125,50 @@ describe('GetUserById', () => {
     it('should handle invalid request object gracefully', async () => {
       const transformedError = new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
-        'Invalid request',
+        'Request is required for getting user by ID',
         'The request is invalid'
       );
       mockErrorTransformer.transform.and.returnValue(transformedError);
 
-      // The use case will fail trying to access 'userId' of null, which is caught
       await expectAsync(useCase.execute(null as any)).toBeRejectedWith(transformedError);
+
+      expect(mockLogger.error).toHaveBeenCalledWith('User retrieval failed', {
+        correlationId: jasmine.stringMatching(/^get-user-by-id-unknown-\d+$/),
+        userId: 'unknown',
+        operation: 'get_user_by_id',
+      });
+      expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+        jasmine.any(Error),
+        jasmine.objectContaining({
+          operation: 'get_user_by_id',
+          userId: 'unknown',
+        })
+      );
+    });
+
+    it('should log error and transform if userId is missing from request', async () => {
+      const request: GetUserByIdRequest = {} as GetUserByIdRequest; // Missing userId
+      const transformedError = new ApplicationError(
+        ApplicationErrorCode.INVALID_INPUT,
+        'User ID is required for getting user by ID',
+        'The request is invalid'
+      );
+      mockErrorTransformer.transform.and.returnValue(transformedError);
+
+      await expectAsync(useCase.execute(request)).toBeRejectedWith(transformedError);
+
+      expect(mockLogger.error).toHaveBeenCalledWith('User retrieval failed', {
+        correlationId: jasmine.stringMatching(/^get-user-by-id-unknown-\d+$/),
+        userId: 'unknown',
+        operation: 'get_user_by_id',
+      });
+      expect(mockErrorTransformer.transform).toHaveBeenCalledWith(
+        jasmine.any(Error),
+        jasmine.objectContaining({
+          operation: 'get_user_by_id',
+          userId: 'unknown',
+        })
+      );
     });
   });
 });
