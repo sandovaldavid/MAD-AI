@@ -4,12 +4,12 @@ import { ValidationError } from '@domain/errors/validation-error.entity';
 import { BusinessRuleError } from '@domain/errors/business-rule-error.entity';
 import { InfrastructureError } from '@infrastructure/errors/infrastructure-error';
 import { LogContext } from '@core/interfaces/logger.interface';
-import { LoggerService } from '@core/services/logger.service';
+import { LOGGER_PORT } from '../../di/tokens';
 import { ApplicationErrorCode } from './error-codes.enum';
 
 @Injectable({ providedIn: 'root' })
 export class ApplicationErrorTransformer {
-  private logger = inject(LoggerService);
+  private logger = inject(LOGGER_PORT);
 
   transform(error: unknown, context?: LogContext): ApplicationError {
     // Log usando la interface correcta
