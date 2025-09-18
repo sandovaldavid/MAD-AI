@@ -75,6 +75,7 @@ export class RoleCrudFacade {
         description: roleData.description,
         canLeadProjects: roleData.canLeadProjects || false,
         isUniquePerTeam: roleData.isUniquePerTeam || false,
+        requesterId: this.getCurrentUserId(),
       });
 
       // Add to state
