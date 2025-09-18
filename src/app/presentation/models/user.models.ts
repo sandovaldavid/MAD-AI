@@ -103,8 +103,24 @@ export interface TableAction {
 }
 
 // Enums for UI
-export type BadgeColor = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'light' | 'dark';
-export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'light' | 'dark';
+export type BadgeColor =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'light'
+  | 'dark';
+export type ButtonColor =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'light'
+  | 'dark';
 export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
 
 // Form validation types

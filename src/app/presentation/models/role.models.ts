@@ -75,7 +75,12 @@ export interface RoleStatisticsView {
 
 export interface RoleActivityView {
   id: string;
-  action: 'user_assigned' | 'user_removed' | 'permission_granted' | 'permission_revoked' | 'role_updated';
+  action:
+    | 'user_assigned'
+    | 'user_removed'
+    | 'permission_granted'
+    | 'permission_revoked'
+    | 'role_updated';
   description: string;
   timestamp: string;
   performedBy: string;
@@ -126,8 +131,24 @@ export interface TableAction {
 }
 
 // Enums for UI
-export type BadgeColor = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info' | 'light' | 'dark';
-export type ButtonColor = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'light' | 'dark';
+export type BadgeColor =
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | 'light'
+  | 'dark';
+export type ButtonColor =
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'light'
+  | 'dark';
 export type RoleStatus = 'active' | 'inactive' | 'system';
 export type UserStatus = 'active' | 'inactive' | 'pending';
 
@@ -192,7 +213,7 @@ export interface PermissionCategoryView {
 export interface RolePermissionView {
   roleId: string;
   roleName: string;
-  permissions: { [permissionId: string]: boolean };
+  permissions: Record<string, boolean>;
 }
 
 // Modal and dialog types
