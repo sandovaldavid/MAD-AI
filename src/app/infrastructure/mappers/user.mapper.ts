@@ -83,9 +83,9 @@ export class UserMapper {
       lastActivityAt: dto.last_activity_at,
       isEmailConfirmed: dto.is_email_confirmed,
       notificationPreferences: {
-        email: true,
-        system: false,
-        task: false,
+        email: dto.email_notifications_enabled,
+        system: dto.system_notifications_enabled,
+        task: dto.task_notifications_enabled,
       },
     });
   }
@@ -233,9 +233,9 @@ export class UserMapper {
       lastActivityAt: dto.last_activity_at,
       isEmailConfirmed: dto.is_email_confirmed,
       notificationPreferences: {
-        email: true,
-        system: false,
-        task: false,
+        email: dto.email_notifications_enabled,
+        system: dto.system_notifications_enabled,
+        task: dto.task_notifications_enabled,
       },
     });
   }
