@@ -42,7 +42,7 @@ export class ChangePasswordForm {
   /**
    * Emitted when user cancels password change
    */
-  @Output() cancel = new EventEmitter<void>();
+  @Output() passwordCancel = new EventEmitter<void>();
 
   // ============================================================================
   // Component State
@@ -223,6 +223,6 @@ export class ChangePasswordForm {
    */
   onCancel(): void {
     this.passwordForm.reset();
-    this.cancel.emit();
+    this.passwordCancel.emit();
   }
 }
