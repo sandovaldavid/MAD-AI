@@ -74,10 +74,8 @@ export class LoginForm {
       this.auth()!.clearAuthStateCompletely();
 
       const { identity, password, remember } = this.form.value;
-      const identifierValue = identity?.trim() ?? '';
-      const identifier: Identifier = identifierValue.includes('@')
-        ? { type: 'email', value: identifierValue }
-        : { type: 'username', value: identifierValue };
+      // Always send identifier as a string (email or username)
+      const identifier: string = typeof identity === 'string' ? identity.trim() : String(identity);
 
       // Attempt login - facade will handle errors internally via signals
       await this.auth()!.login({
