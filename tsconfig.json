@@ -14,7 +14,7 @@
             "@infrastructure/*": ["src/app/infrastructure/*"],
             "@presentation/*": ["src/app/presentation/*"],
             "@application/*": ["src/app/application/*"],
-            "@shared/*": ["src/app/shared/*"],
+            "@shared/*": ["src/app/presentation/shared/*"],
             "@env/*": ["src/env/*"],
             "@icons/*": ["src/app/presentation/shared/icons/*"],
             "@di/*": ["src/app/di/*"],
