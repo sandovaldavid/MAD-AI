@@ -1,13 +1,12 @@
 import { Routes } from '@angular/router';
 import { rolesRoutes } from './roles/roles.routes';
 import { provideRoles } from '@di/provide-roles';
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 
 export const securedRoutes: Routes = [
   {
     path: 'dashboard',
-    loadComponent: () =>
-      import('@presentation/pages/dashboard/dashboard').then((m) => m.Dashboard),
+    loadComponent: () => import('@presentation/pages/dashboard/dashboard').then((m) => m.Dashboard),
     title: 'Dashboard',
   },
   {
