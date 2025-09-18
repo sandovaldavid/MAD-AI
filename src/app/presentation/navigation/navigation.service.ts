@@ -15,31 +15,9 @@ export class NavigationService {
 
   readonly currentPath = computed(() => this._currentPath());
 
-  // Filter sections based on user roles - simple computed
+  // Filter sections based on user roles using Application layer business logic
   readonly accessibleSections = computed(() => {
-    const user = this.authFacade.user();
-
-    if (!user) {
-      // If no user, only show items without role requirements
-      return NAV_SECTIONS.map((section) => ({
-        ...section,
-        items: section.items.filter((item) => !item.requireRoles || item.requireRoles.length === 0),
-      })).filter((section) => section.items.length > 0);
-    }
-
-    const userRoles = [user.getRole.name];
-    const isAdmin = user.getRole.canAccessAdmin();
-
-    return NAV_SECTIONS.map((section) => ({
-      ...section,
-      items: section.items.filter(
-        (item) =>
-          !item.requireRoles ||
-          item.requireRoles.length === 0 ||
-          isAdmin ||
-          item.requireRoles.some((role) => userRoles.includes(role))
-      ),
-    })).filter((section) => section.items.length > 0);
+    return this.authFacade.filterNavigationSections(NAV_SECTIONS);
   });
 
   constructor() {
