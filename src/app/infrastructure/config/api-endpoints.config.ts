@@ -28,7 +28,7 @@ export const API_ENDPOINTS_V1 = {
     BASE: `${environment.API_URL}/auth/roles`,
     LIST: `${environment.API_URL}/auth/roles/`,
     DETAIL: (id: number) => `${environment.API_URL}/auth/roles/${id}/`,
-    CREATE: `${environment.API_URL}/auth/roles/create`,
+    CREATE: `${environment.API_URL}/auth/roles/create/`,
     UPDATE: (id: number) => `${environment.API_URL}/auth/roles/${id}/update/`,
     DELETE: (id: number) => `${environment.API_URL}/auth/roles/${id}/delete/`,
     ASSIGN: `${environment.API_URL}/auth/roles/assign/`,
