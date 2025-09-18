@@ -169,7 +169,7 @@ export class RoleCrudFacade {
       return await operation();
     } catch (error: unknown) {
       const appError = this.errorTransformer.transform(error);
-      this.roleState.setError(appError.message);
+      this.notifications.notificationError(appError.message, 'Error deleting role');
       throw appError;
     } finally {
       if (!opts?.skipLoading) this.roleState.setLoading(false);
