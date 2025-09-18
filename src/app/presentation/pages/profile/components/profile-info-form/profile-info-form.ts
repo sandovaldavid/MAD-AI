@@ -5,6 +5,7 @@ import {
   signal,
   computed,
   inject,
+  effect,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -13,20 +14,31 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Input } from '@presentation/shared/ui/input/input';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Icon } from '@presentation/shared/ui/icon/icon';
-import { PageHeader, PageHeaderConfig } from '@shared/components/page-header/page-header';
-import { AuthFacade } from '@application/facades/auth.facade';
-
-// ==========================================================================
-// Types & Interfaces
-// ==========================================================================
-
 import {
-  getStatusDisplayText,
-  getStatusCssClass,
-  getStatusIcon,
-} from '../../models/user-profile.viewmodel';
-import { UserDetailsData } from '../../models/user-details-data';
+  PageHeaderConfig,
+  PageHeader,
+} from '@presentation/shared/components/page-header/page-header';
 
+// ==========================================================================
+// Types & Interfaces for Dumb Component
+// ==========================================================================
+
+/**
+ * Interface for user profile data input (simplified for Dumb Component)
+ */
+interface UserProfileData {
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role?: string;
+  status?: string;
+  createdAt?: string;
+}
+
+/**
+ * Interface for form submission data
+ */
 interface UserFormData {
   username: string;
   firstName: string;
@@ -44,16 +56,23 @@ interface UserFormData {
 })
 export class ProfileInfoForm {
   // ==========================================================================
-  // Modern Angular Inputs & Outputs
+  // Modern Angular Inputs & Outputs (Dumb Component Pattern)
   // ==========================================================================
 
-  // User data input using modern input() function
-  userData = input<UserDetailsData | null>(null);
+  /**
+   * User profile data input - pre-processed by Smart Component
+   * Only contains the data needed for form display
+   */
+  userData = input<UserProfileData | null>(null);
 
-  // Loading state using modern input() function
+  /**
+   * Loading state input - controlled by Smart Component
+   */
   loading = input<boolean>(false);
 
-  // Events using modern output() function
+  /**
+   * Events output - emits form changes to Smart Component
+   */
   profileUpdate = output<{
     username?: string;
     firstName: string;
@@ -61,29 +80,22 @@ export class ProfileInfoForm {
     email: string;
   }>();
 
-  cancel = output<void>();
+  /**
+   * Cancel event output - emits cancellation to Smart Component
+   */
+  profileCancel = output<void>();
 
   // ==========================================================================
-  // Dependency Injection with inject()
+  // Dependency Injection (Dumb Component - Only UI dependencies)
   // ==========================================================================
 
   private readonly fb = inject(FormBuilder);
-  private readonly authFacade = inject(AuthFacade);
 
   // ==========================================================================
-  // Component State with Signals
+  // Component State with Signals (Dumb Component - UI state only)
   // ==========================================================================
 
-  private readonly _originalFormData = signal<{
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  } | null>(null);
-
-  private readonly _isSubmitting = signal(false);
-
-  private readonly _userDetails = signal<UserDetailsData | null>(null);
+  private readonly _originalFormData = signal<UserFormData | null>(null);
 
   /**
    * Reactive form for profile information
@@ -121,13 +133,13 @@ export class ProfileInfoForm {
   });
 
   // ==========================================================================
-  // Computed Properties
+  // Computed Properties (Dumb Component - UI state only)
   // ==========================================================================
 
   /**
    * Submission loading state
    */
-  readonly isSubmitting = computed(() => this._isSubmitting() || this.loading());
+  readonly isSubmitting = computed(() => this.loading());
 
   /**
    * Checks if form has unsaved changes
@@ -136,7 +148,7 @@ export class ProfileInfoForm {
     const originalData = this._originalFormData();
     if (!originalData) return false;
 
-    const currentData = this.form.value;
+    const currentData = this.form.value as UserFormData;
     return JSON.stringify(originalData) !== JSON.stringify(currentData);
   });
 
@@ -153,120 +165,51 @@ export class ProfileInfoForm {
   );
 
   /**
-   * Get user role name
+   * User role display name
    */
-  readonly roleName = computed(() => {
-    const userDetails = this._userDetails();
-    return userDetails?.role?.name || 'User';
-  });
+  readonly roleName = computed(() => this.userData()?.role || 'User');
 
   /**
-   * Get user status text
-  /**
-   * Get user status text
+   * Account status display text
    */
-  readonly statusText = computed(() => {
-    const status = this._userDetails()?.status?.toLowerCase();
-    return status ? getStatusDisplayText(status) : 'Unknown';
-  });
+  readonly statusText = computed(() => this.userData()?.status || 'Active');
 
   /**
-   * Get status CSS class
+   * CSS class for status badge
    */
-  readonly statusClass = computed(() => {
-    const status = this._userDetails()?.status?.toLowerCase();
-    return status ? getStatusCssClass(status) : 'status-unknown';
-  });
+  readonly statusClass = computed(
+    () => `status-${this.userData()?.status?.toLowerCase() || 'active'}`
+  );
 
   /**
-   * Get status icon
+   * Icon name for status display
    */
-  readonly statusIcon = computed(() => {
-    const status = this._userDetails()?.status?.toLowerCase();
-    return status ? getStatusIcon(status) : 'help-circle';
-  });
+  readonly statusIcon = computed(() =>
+    this.userData()?.status === 'Active' ? 'check-circle' : 'alert-circle'
+  );
 
   /**
-   * Format created at date
+   * Formatted creation date text
    */
   readonly createdAtText = computed(() => {
-    const createdAt = this._userDetails()?.createdAt;
-    if (!createdAt) return '';
-
-    try {
-      const date = new Date(createdAt);
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch (error) {
-      return '';
-    }
+    const createdAt = this.userData()?.createdAt;
+    return createdAt ? new Date(createdAt).toLocaleDateString() : null;
   });
 
   /**
-   * Format last activity date
+   * Formatted last activity text
    */
-  readonly lastActivityText = computed(() => {
-    const lastActivityAt = this._userDetails()?.lastActivityAt;
-    if (!lastActivityAt) return '';
-
-    try {
-      const date = new Date(lastActivityAt);
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      return '';
-    }
-  });
+  readonly lastActivityText = computed(() => null);
 
   // ==========================================================================
-  // Lifecycle & Initialization
+  // Lifecycle & Initialization (Dumb Component - Effect-based)
   // ==========================================================================
 
   constructor() {
-    // Try to get user data from authFacade
-    const user = this.authFacade.user();
-    if (user) {
-      // Convert domain entity to presentation data model
-      const userDetails: UserDetailsData = {
-        id: user.id,
-        username: user.username?.toString() || '',
-        firstName: user.firstName?.toString() || '',
-        lastName: user.lastName?.toString() || '',
-        email: user.email?.toString() || '',
-        role: {
-          id: user.role?.id,
-          name: user.role?.name,
-          accessLevel: user.role?.accessLevel,
-          isActive: user.role?.isActive,
-        },
-        status: user.status?.toString(),
-        createdAt: user.createdAt?.toString(),
-        lastActivityAt: user.lastActivityAt?.toString(),
-      };
-
-      this._userDetails.set(userDetails);
-      this._originalFormData.set({
-        username: userDetails.username,
-        firstName: userDetails.firstName,
-        lastName: userDetails.lastName,
-        email: userDetails.email,
-      });
-
-      this.updateFormWithUserData(userDetails);
-    }
-    // If no user in facade, try using input data
-    else {
+    // Effect to watch for userData input changes
+    effect(() => {
       const userData = this.userData();
       if (userData) {
-        this._userDetails.set(userData);
         this._originalFormData.set({
           username: userData.username,
           firstName: userData.firstName,
@@ -276,7 +219,7 @@ export class ProfileInfoForm {
 
         this.updateFormWithUserData(userData);
       }
-    }
+    });
   }
 
   // ==========================================================================
@@ -285,14 +228,9 @@ export class ProfileInfoForm {
 
   /**
    * Updates form fields with user data
-   * @param userData - Object with current user data
+   * @param userData - UserProfileData from parent Smart Component
    */
-  private updateFormWithUserData(userData: {
-    username?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  }): void {
+  private updateFormWithUserData(userData: UserProfileData): void {
     this.form.patchValue(
       {
         username: userData.username || '',
@@ -305,18 +243,15 @@ export class ProfileInfoForm {
   }
 
   /**
-   * Handles form submission
+   * Handles form submission (Dumb Component - just emit data)
    */
   onSubmit(): void {
     if (!this.canSubmit()) return;
-
-    this._isSubmitting.set(true);
 
     const formValue = this.form.value as Partial<UserFormData>;
 
     // Ensure required fields are present
     if (!formValue.firstName || !formValue.lastName || !formValue.email) {
-      this._isSubmitting.set(false);
       return;
     }
 
@@ -327,10 +262,8 @@ export class ProfileInfoForm {
       ...(formValue.username && { username: formValue.username }),
     };
 
+    // Emit data to Smart Component - let it handle submission logic
     this.profileUpdate.emit(updateData);
-
-    // Reset submitting state after a brief delay to prevent double submission
-    setTimeout(() => this._isSubmitting.set(false), 100);
   }
 
   /**
@@ -345,7 +278,7 @@ export class ProfileInfoForm {
       this.form.reset();
     }
 
-    this.cancel.emit();
+    this.profileCancel.emit();
   }
 
   /**
@@ -360,8 +293,12 @@ export class ProfileInfoForm {
     }
   }
 
+  // ==========================================================================
+  // Form Validation Helpers (Dumb Component - UI helpers only)
+  // ==========================================================================
+
   /**
-   * Get field error message (returns undefined to match FormField error input type)
+   * Get field error message for FormField component
    */
   getFieldErrorMessage(fieldName: string): string | undefined {
     const error = this.getFieldError(fieldName);
@@ -369,7 +306,7 @@ export class ProfileInfoForm {
   }
 
   /**
-   * Get field error message (legacy method returning string | null)
+   * Get field error message
    */
   getFieldError(fieldName: string): string | null {
     const field = this.form.get(fieldName);
@@ -400,7 +337,7 @@ export class ProfileInfoForm {
    * Get user-friendly field label
    */
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
+    const labels: Record<string, string> = {
       username: 'Username',
       firstName: 'First name',
       lastName: 'Last name',

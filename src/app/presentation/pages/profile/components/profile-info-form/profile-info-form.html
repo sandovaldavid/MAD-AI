@@ -92,7 +92,7 @@
       <div class="section-grid">
         <!-- Role Information (Read-only) -->
         <div class="info-item">
-          <label class="info-label">Role</label>
+          <span class="info-label">Role</span>
           <div class="info-value">
             <div class="role-badge">
               <ui-icon name="shield-check" variant="outline" size="sm" class="role-icon"></ui-icon>
@@ -103,7 +103,7 @@
 
         <!-- Status Information (Read-only) -->
         <div class="info-item">
-          <label class="info-label">Account Status</label>
+          <span class="info-label">Account Status</span>
           <div class="info-value">
             <div [class]="'status-badge ' + statusClass()">
               <ui-icon
@@ -118,13 +118,13 @@
 
         <!-- Account Created (Read-only) -->
         <div class="info-item" *ngIf="createdAtText()">
-          <label class="info-label">Account Created</label>
+          <span class="info-label">Account Created</span>
           <div class="info-value">{{ createdAtText() }}</div>
         </div>
 
         <!-- Last Activity (Read-only) -->
         <div class="info-item" *ngIf="lastActivityText()">
-          <label class="info-label">Last Activity</label>
+          <span class="info-label">Last Activity</span>
           <div class="info-value">{{ lastActivityText() }}</div>
         </div>
       </div>
