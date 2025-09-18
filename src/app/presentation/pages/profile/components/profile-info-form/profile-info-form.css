@@ -20,10 +20,48 @@
   @apply text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4;
 }
 
-/* Form Grid Layout - Responsive Grid for Full Width Usage */
+/* Account Information Grid - Optimized for info cards */
+.account-info-grid {
+  @apply grid gap-4;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Better distribution for account info on larger screens */
+@media (min-width: 768px) {
+  .account-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .account-info-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Form Grid Layout - Improved responsive grid for better space utilization */
 .section-grid {
   @apply grid gap-6;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* Better column distribution for different screen sizes */
+@media (min-width: 640px) {
+  .section-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .section-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* Column span utilities for specific fields */
@@ -31,14 +69,15 @@
   grid-column: span 2 / span 2;
 }
 
-/* Ensure email field takes full width on large screens */
-@media (min-width: 768px) {
-  .section-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+@media (min-width: 1024px) {
   .col-span-2 {
-    grid-column: 1 / -1;
+    grid-column: span 2 / span 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .col-span-2 {
+    grid-column: span 3 / span 3;
   }
 }
 
@@ -56,47 +95,73 @@
   @apply flex gap-3;
 }
 
-/* Read-only Information Item */
+/* Read-only Information Item - Enhanced visual design */
 .info-item {
-  @apply flex flex-col gap-2 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50;
+  @apply flex flex-col gap-3 p-5 rounded-xl border border-neutral-200 dark:border-neutral-700 bg-gradient-to-br from-neutral-50 to-neutral-100/50 dark:from-neutral-800/50 dark:to-neutral-900/30 backdrop-blur-sm;
+  transition: all 0.2s ease-in-out;
 }
 
 .info-label {
-  @apply text-sm font-medium text-neutral-500 dark:text-neutral-400;
+  @apply text-sm font-semibold text-neutral-600 dark:text-neutral-300 uppercase tracking-wide;
 }
 
 .info-value {
   @apply text-base font-medium text-neutral-900 dark:text-neutral-100;
 }
 
-/* Role Badge */
+/* Enhanced Role Badge with better visual hierarchy */
 .role-badge {
-  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 bg-primary-100 text-primary-700 font-medium dark:bg-primary-900/30 dark:text-primary-300;
+  @apply inline-flex items-center gap-2.5 rounded-full px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold shadow-sm border border-primary-400/20;
+  transition: all 0.2s ease-in-out;
+}
+
+.role-badge:hover {
+  @apply shadow-md transform scale-105;
 }
 
 .role-icon {
-  @apply text-primary-500 dark:text-primary-400;
+  @apply text-white/90 drop-shadow-sm;
 }
 
-/* Status Badge */
+/* Enhanced Status Badge with improved colors and animations */
 .status-badge {
-  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 font-medium;
+  @apply inline-flex items-center gap-2.5 rounded-full px-4 py-2 font-semibold shadow-sm border transition-all duration-200;
 }
 
 .status-badge.status-active {
-  @apply bg-successful-100 text-successful-700 dark:bg-successful-900/30 dark:text-successful-300;
+  @apply bg-gradient-to-r from-successful-500 to-successful-600 text-white border-successful-400/20 shadow-successful-500/20;
+}
+
+.status-badge.status-active:hover {
+  @apply shadow-successful-500/30 transform scale-105;
 }
 
 .status-badge.status-inactive {
-  @apply bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300;
+  @apply bg-gradient-to-r from-neutral-400 to-neutral-500 text-white border-neutral-300/20 shadow-neutral-500/20;
+}
+
+.status-badge.status-inactive:hover {
+  @apply shadow-neutral-500/30 transform scale-105;
 }
 
 .status-badge.status-pending {
-  @apply bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300;
+  @apply bg-gradient-to-r from-warning-500 to-warning-600 text-white border-warning-400/20 shadow-warning-500/20;
+}
+
+.status-badge.status-pending:hover {
+  @apply shadow-warning-500/30 transform scale-105;
 }
 
 .status-badge.status-suspended {
-  @apply bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-300;
+  @apply bg-gradient-to-r from-error-500 to-error-600 text-white border-error-400/20 shadow-error-500/20;
+}
+
+.status-badge.status-suspended:hover {
+  @apply shadow-error-500/30 transform scale-105;
+}
+
+.status-icon {
+  @apply drop-shadow-sm;
 }
 
 /* Responsive adjustments for mobile */

@@ -27,11 +27,15 @@
       <div class="section-grid">
         <!-- Username -->
         <ui-form-field
-          class="col-span-2"
+          class="col-span-1"
           label="Username"
           [error]="getFieldErrorMessage('username')"
           [required]="true"
-          controlId="username">
+          controlId="username"
+          iconName="user-circle"
+          iconSize="sm"
+          iconVariant="outline"
+          iconAriaLabel="Username icon">
           <ui-input
             id="username"
             formControlName="username"
@@ -45,7 +49,11 @@
           label="First Name"
           [error]="getFieldErrorMessage('firstName')"
           [required]="true"
-          controlId="firstName">
+          controlId="firstName"
+          iconName="user"
+          iconSize="sm"
+          iconVariant="outline"
+          iconAriaLabel="First name icon">
           <ui-input
             id="firstName"
             formControlName="firstName"
@@ -59,7 +67,11 @@
           label="Last Name"
           [error]="getFieldErrorMessage('lastName')"
           [required]="true"
-          controlId="lastName">
+          controlId="lastName"
+          iconName="user"
+          iconSize="sm"
+          iconVariant="outline"
+          iconAriaLabel="Last name icon">
           <ui-input
             id="lastName"
             formControlName="lastName"
@@ -74,7 +86,11 @@
           label="Email Address"
           [error]="getFieldErrorMessage('email')"
           [required]="true"
-          controlId="email">
+          controlId="email"
+          iconName="envelope"
+          iconSize="sm"
+          iconVariant="outline"
+          iconAriaLabel="Email icon">
           <ui-input
             id="email"
             type="email"
@@ -89,13 +105,16 @@
     <!-- Account Information Section (Read-only) -->
     <div class="form-section">
       <h3 class="section-title">Account Information</h3>
-      <div class="section-grid">
+      <div class="account-info-grid">
         <!-- Role Information (Read-only) -->
         <div class="info-item">
-          <span class="info-label">Role</span>
+          <div class="flex items-center gap-2">
+            <ui-icon name="shield-check" variant="outline" size="sm" class="text-primary-500 dark:text-primary-400"></ui-icon>
+            <span class="info-label">Role</span>
+          </div>
           <div class="info-value">
             <div class="role-badge">
-              <ui-icon name="shield-check" variant="outline" size="sm" class="role-icon"></ui-icon>
+              <ui-icon name="shield-check" variant="filled" size="sm" class="role-icon"></ui-icon>
               <span>{{ roleName() }}</span>
             </div>
           </div>
@@ -103,12 +122,15 @@
 
         <!-- Status Information (Read-only) -->
         <div class="info-item">
-          <span class="info-label">Account Status</span>
+          <div class="flex items-center gap-2">
+            <ui-icon name="status-online" variant="outline" size="sm" class="text-successful-500 dark:text-successful-400"></ui-icon>
+            <span class="info-label">Account Status</span>
+          </div>
           <div class="info-value">
             <div [class]="'status-badge ' + statusClass()">
               <ui-icon
                 [name]="statusIcon()"
-                variant="outline"
+                variant="filled"
                 size="sm"
                 class="status-icon"></ui-icon>
               <span>{{ statusText() }}</span>
@@ -118,13 +140,19 @@
 
         <!-- Account Created (Read-only) -->
         <div class="info-item" *ngIf="createdAtText()">
-          <span class="info-label">Account Created</span>
+          <div class="flex items-center gap-2">
+            <ui-icon name="calendar" variant="outline" size="sm" class="text-info-500 dark:text-info-400"></ui-icon>
+            <span class="info-label">Account Created</span>
+          </div>
           <div class="info-value">{{ createdAtText() }}</div>
         </div>
 
         <!-- Last Activity (Read-only) -->
         <div class="info-item" *ngIf="lastActivityText()">
-          <span class="info-label">Last Activity</span>
+          <div class="flex items-center gap-2">
+            <ui-icon name="clock" variant="outline" size="sm" class="text-warning-500 dark:text-warning-400"></ui-icon>
+            <span class="info-label">Last Activity</span>
+          </div>
           <div class="info-value">{{ lastActivityText() }}</div>
         </div>
       </div>
