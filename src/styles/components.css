@@ -214,3 +214,11 @@
   @apply bg-gradient-to-br from-primary-50 via-neutral-50 to-secondary-50;
   @apply dark:from-primary-950 dark:via-neutral-950 dark:to-secondary-950;
 }
+
+/* ============================================================================
+    Form Header
+   ============================================================================ */
+
+.form-header {
+  @apply flex items-center justify-between space-x-4 p-6 mb-8 bg-primary-50 dark:bg-primary-900 rounded-2xl border border-primary-100 dark:border-primary-800 w-full;
+}
