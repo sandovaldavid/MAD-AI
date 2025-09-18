@@ -65,20 +65,15 @@
             [attr.id]="'tab-panel-info'"
             [attr.aria-labelledby]="'tab-info'"
             tabindex="0">
-            <div class="section-header">
-              <h2>Profile Information</h2>
-              <p>Update your basic account information.</p>
-            </div>
-
             <!-- Profile Info Form Component -->
             <app-profile-info-form
               [userData]="
                 user()
                   ? {
-                      firstName: user()?.firstName?.value ?? '',
-                      lastName: user()?.lastName?.value ?? '',
-                      username: user()?.username?.value ?? '',
-                      email: user()?.email?.value ?? '',
+                      username: user()?.username?.toString() ?? '',
+                      firstName: user()?.firstName?.toString() ?? '',
+                      lastName: user()?.lastName?.toString() ?? '',
+                      email: user()?.email?.toString() ?? '',
                     }
                   : null
               "
