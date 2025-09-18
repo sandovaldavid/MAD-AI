@@ -88,7 +88,7 @@ export class ProfilePage implements OnInit {
     {
       id: 'notifications' as const,
       label: 'Notifications',
-      iconName: 'envelope',
+      iconName: 'mail',
     },
     {
       id: 'password' as const,
@@ -112,6 +112,29 @@ export class ProfilePage implements OnInit {
    * Reactive computed property for template binding
    */
   readonly activeTab = computed(() => this._activeTab());
+
+  /**
+   * User profile data transformed for ProfileInfoForm
+   * Transforms domain User entity into simplified UserProfileData format
+   */
+  readonly userProfileData = computed(() => {
+    const currentUser = this.user();
+    if (!currentUser) {
+      return null;
+    }
+
+    console.log('[ProfilePage] userProfileData computed with user:', currentUser);
+
+    return {
+      username: currentUser.username?.toString() ?? '',
+      firstName: currentUser.firstName?.toString() ?? '',
+      lastName: currentUser.lastName?.toString() ?? '',
+      email: currentUser.email?.toString() ?? '',
+      role: currentUser.role?.name,
+      status: currentUser.status?.toString(),
+      createdAt: currentUser.createdAt?.toString(),
+    };
+  });
 
   // ============================================================================
   // Lifecycle Methods
@@ -148,34 +171,38 @@ export class ProfilePage implements OnInit {
    */
   onTabKeydown(event: KeyboardEvent, tabId: string): void {
     const tabIds = this.tabs.map((tab) => tab.id);
-    const currentIndex = tabIds.indexOf(tabId as any);
+    const currentIndex = tabIds.indexOf(tabId as 'info' | 'notifications' | 'password');
 
     switch (event.key) {
-      case 'ArrowLeft':
+      case 'ArrowLeft': {
         event.preventDefault();
         const prevIndex = currentIndex > 0 ? currentIndex - 1 : tabIds.length - 1;
         this.setActiveTab(tabIds[prevIndex] as 'info' | 'notifications' | 'password');
         this.focusTab(tabIds[prevIndex]);
         break;
+      }
 
-      case 'ArrowRight':
+      case 'ArrowRight': {
         event.preventDefault();
         const nextIndex = currentIndex < tabIds.length - 1 ? currentIndex + 1 : 0;
         this.setActiveTab(tabIds[nextIndex] as 'info' | 'notifications' | 'password');
         this.focusTab(tabIds[nextIndex]);
         break;
+      }
 
-      case 'Home':
+      case 'Home': {
         event.preventDefault();
         this.setActiveTab(tabIds[0] as 'info' | 'notifications' | 'password');
         this.focusTab(tabIds[0]);
         break;
+      }
 
-      case 'End':
+      case 'End': {
         event.preventDefault();
         this.setActiveTab(tabIds[tabIds.length - 1] as 'info' | 'notifications' | 'password');
         this.focusTab(tabIds[tabIds.length - 1]);
         break;
+      }
     }
   }
 
@@ -253,10 +280,15 @@ export class ProfilePage implements OnInit {
     system: boolean;
     task: boolean;
   }): Promise<void> {
+    console.log('[ProfilePage] updateNotificationPreferences called with:', preferences);
+
     try {
+      console.log('[ProfilePage] Calling authFacade.updateNotificationPreferences...');
       await this.authFacade.updateNotificationPreferences(preferences);
+      console.log('[ProfilePage] authFacade.updateNotificationPreferences completed successfully');
     } catch (error) {
-      console.error('Failed to update notification preferences:', error);
+      console.error('[ProfilePage] Failed to update notification preferences:', error);
+      throw error; // Re-throw to maintain error handling
     }
   }
 

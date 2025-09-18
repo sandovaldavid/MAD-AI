@@ -67,19 +67,10 @@
             tabindex="0">
             <!-- Profile Info Form Component -->
             <app-profile-info-form
-              [userData]="
-                user()
-                  ? {
-                      username: user()?.username?.toString() ?? '',
-                      firstName: user()?.firstName?.toString() ?? '',
-                      lastName: user()?.lastName?.toString() ?? '',
-                      email: user()?.email?.toString() ?? '',
-                    }
-                  : null
-              "
+              [userData]="userProfileData()"
               [loading]="authFacadeInstance.loading()"
               (profileUpdate)="updateProfile($event)"
-              (cancel)="onFormCancel()">
+              (profileCancel)="onFormCancel()">
             </app-profile-info-form>
           </div>
         }
@@ -92,11 +83,6 @@
             [attr.id]="'tab-panel-notifications'"
             [attr.aria-labelledby]="'tab-notifications'"
             tabindex="0">
-            <div class="section-header">
-              <h2>Notification Preferences</h2>
-              <p>Control how and when you receive notifications.</p>
-            </div>
-
             <!-- Notification Settings Form Component -->
             <app-notification-settings-form
               [userPreferences]="{
@@ -106,7 +92,7 @@
               }"
               [loading]="authFacadeInstance.loading()"
               (preferencesUpdate)="updateNotificationPreferences($event)"
-              (cancel)="onFormCancel()">
+              (preferencesCancel)="onFormCancel()">
             </app-notification-settings-form>
           </div>
         }
@@ -123,7 +109,7 @@
             <app-change-password-form
               [loading]="authFacadeInstance.loading()"
               (passwordChange)="changePassword($event)"
-              (cancel)="onFormCancel()">
+              (passwordCancel)="onFormCancel()">
             </app-change-password-form>
           </div>
         }
