@@ -1,0 +1,261 @@
+@reference '../../../../../../styles.css';
+
+/* ============================================================================ */
+/* Header Section                                                             */
+/* ============================================================================ */
+
+.page-title {
+  @apply text-3xl font-bold text-neutral-900 dark:text-white mb-3 tracking-tight leading-tight;
+}
+
+.page-description {
+  @apply text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl;
+}
+
+/* ============================================================================ */
+/* Loading State                                                              */
+/* ============================================================================ */
+
+.loading-container {
+  @apply flex flex-col items-center justify-center py-16 px-4;
+}
+
+.loading-spinner {
+  @apply w-12 h-12 border-4 border-primary-200 dark:border-primary-700 border-t-primary-500 rounded-full mb-4;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  @apply text-neutral-600 dark:text-neutral-300 text-lg font-medium;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================================ */
+/* Error State                                                                */
+/* ============================================================================ */
+
+.error-container {
+  @apply flex items-center justify-center py-16 px-4;
+}
+
+.error-message {
+  @apply bg-error-50 dark:bg-error-900/20 border border-error-200 dark:border-error-800 rounded-2xl p-8 text-center max-w-md mx-auto shadow-lg;
+}
+
+.error-message h3 {
+  @apply text-xl font-semibold text-error-700 dark:text-error-300 mb-3;
+}
+
+.error-message p {
+  @apply text-error-600 dark:text-error-400 mb-6 leading-relaxed;
+}
+
+.btn-retry {
+  @apply inline-flex items-center justify-center px-6 py-3 bg-error-500 hover:bg-error-600 dark:bg-error-600 dark:hover:bg-error-700 text-white font-medium rounded-xl shadow-sm transition-all duration-150 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2  focus-visible:ring-error-500 dark:focus-visible:ring-error-400 disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.btn-retry:hover {
+  @apply shadow-md transform -translate-y-0.5;
+}
+
+/* ============================================================================ */
+/* Profile Content                                                            */
+/* ============================================================================ */
+
+.profile-content {
+  @apply max-w-7xl mx-auto;
+}
+
+/* ============================================================================ */
+/* Tab Navigation                                                             */
+/* ============================================================================ */
+
+.tab-navigation {
+  @apply flex flex-wrap gap-2 mb-8 p-2 bg-neutral-100 dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 shadow-inner;
+}
+
+.tab-button {
+  @apply flex-1 min-w-0 flex items-center justify-center gap-3 px-6 py-4 text-sm font-medium rounded-xl transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500 dark:focus-visible:ring-primary-400 disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.tab-button:not(.active) {
+  @apply text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 hover:shadow-sm;
+}
+
+.tab-button.active {
+  @apply bg-white dark:bg-neutral-700 text-primary-700 dark:text-primary-300 shadow-md border border-primary-200 dark:border-primary-600;
+}
+
+.tab-icon {
+  @apply flex-shrink-0 w-5 h-5;
+}
+
+.tab-label {
+  @apply truncate;
+}
+
+/* Responsive tab navigation */
+@media (max-width: 640px) {
+  .tab-navigation {
+    @apply flex-col gap-1;
+  }
+
+  .tab-button {
+    @apply flex-none justify-start px-4 py-3;
+  }
+}
+
+/* ============================================================================ */
+/* Tab Content                                                                */
+/* ============================================================================ */
+
+.tab-pane {
+  @apply bg-white dark:bg-neutral-800 rounded-2xl shadow-sm border border-neutral-200 dark:border-neutral-700 overflow-hidden transition-colors duration-200;
+}
+
+/* ============================================================================ */
+/* Section Headers                                                            */
+/* ============================================================================ */
+
+.section-header {
+  @apply p-6 sm:p-8 border-b border-neutral-200 dark:border-neutral-700 bg-gradient-to-r from-neutral-50 to-transparent dark:from-neutral-800 dark:to-transparent;
+}
+
+.section-header h2 {
+  @apply text-2xl font-semibold text-neutral-900 dark:text-white mb-2 tracking-tight;
+}
+
+.section-header p {
+  @apply text-neutral-600 dark:text-neutral-300 leading-relaxed;
+}
+
+/* ============================================================================ */
+/* Animation Classes                                                          */
+/* ============================================================================ */
+
+.animate-scale-in {
+  @apply scale-98 opacity-0;
+  animation: scaleIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================ */
+/* Utility Classes                                                           */
+/* ============================================================================ */
+
+.scale-98 {
+  transform: scale(0.98);
+}
+
+/* ============================================================================ */
+/* Focus Management                                                           */
+/* ============================================================================ */
+
+.profile-page *:focus-visible {
+  @apply ring-2 ring-offset-2 ring-primary-500 dark:ring-primary-400 ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* ============================================================================ */
+/* Responsive Design                                                          */
+/* ============================================================================ */
+
+@media (max-width: 768px) {
+  .header-content {
+    @apply py-6;
+  }
+
+  .page-title {
+    @apply text-2xl;
+  }
+
+  .page-description {
+    @apply text-base;
+  }
+
+  .profile-content {
+    @apply py-6;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-page {
+    @apply min-h-screen;
+  }
+
+  .header-content,
+  .profile-content {
+    @apply px-3;
+  }
+
+  .section-header {
+    @apply p-4;
+  }
+
+  .section-header h2 {
+    @apply text-xl;
+  }
+}
+
+/* ============================================================================ */
+/* Accessibility Enhancements                                                */
+/* ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-button,
+  .btn-retry,
+  .loading-spinner,
+  .animate-scale-in {
+    @apply transition-none;
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tab-button.active {
+    @apply border-2 border-primary-700;
+  }
+
+  .error-message {
+    @apply border-2;
+  }
+}
+
+/* Print styles */
+@media print {
+  .profile-page {
+    @apply bg-white text-black;
+  }
+
+  .tab-navigation {
+    @apply hidden;
+  }
+
+  .tab-pane {
+    @apply shadow-none border-none;
+  }
+}

@@ -1,0 +1,138 @@
+<main class="dashboard-container" role="main" aria-label="Profile Settings">
+  <!-- Page Header -->
+  <app-page-header [config]="headerConfig()" />
+
+  <!-- Loading State -->
+  @if (authFacadeInstance.loading()) {
+    <div class="loading-container" role="status" aria-live="polite">
+      <div class="loading-spinner" aria-hidden="true"></div>
+      <p class="loading-text">Loading profile...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (authFacadeInstance.error()) {
+    <div class="error-container" role="alert" aria-live="assertive">
+      <div class="error-message">
+        <h3>Unable to Load Profile</h3>
+        <p>{{ authFacadeInstance.error() }}</p>
+        <button
+          type="button"
+          class="btn-retry"
+          (click)="refreshProfile()"
+          aria-label="Retry loading profile">
+          Try Again
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Profile Content -->
+  @if (user() && !authFacadeInstance.loading()) {
+    <section class="profile-content" aria-label="Profile management sections">
+      <!-- Tab Navigation -->
+      <nav class="tab-navigation" role="tablist" aria-label="Profile sections">
+        @for (tab of tabs; track tab.id) {
+          <button
+            type="button"
+            class="tab-button"
+            [class.active]="activeTab() === tab.id"
+            [attr.aria-selected]="activeTab() === tab.id"
+            [attr.aria-controls]="'tab-panel-' + tab.id"
+            [attr.id]="'tab-' + tab.id"
+            role="tab"
+            [attr.tabindex]="activeTab() === tab.id ? 0 : -1"
+            (click)="setActiveTab(tab.id)"
+            (keydown)="onTabKeydown($event, tab.id)">
+            <ui-icon [name]="tab.iconName" size="md" class="tab-icon" [attr.aria-hidden]="true">
+            </ui-icon>
+            <span class="tab-label">{{ tab.label }}</span>
+          </button>
+        } @empty {
+          <div class="no-tabs-message">
+            <p>No tabs available</p>
+          </div>
+        }
+      </nav>
+
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Profile Information Tab -->
+        @if (activeTab() === 'info') {
+          <div
+            class="tab-pane active"
+            role="tabpanel"
+            [attr.id]="'tab-panel-info'"
+            [attr.aria-labelledby]="'tab-info'"
+            tabindex="0">
+            <div class="section-header">
+              <h2>Profile Information</h2>
+              <p>Update your basic account information.</p>
+            </div>
+
+            <!-- Profile Info Form Component -->
+            <app-profile-info-form
+              [userData]="
+                user()
+                  ? {
+                      firstName: user()?.firstName?.value ?? '',
+                      lastName: user()?.lastName?.value ?? '',
+                      username: user()?.username?.value ?? '',
+                      email: user()?.email?.value ?? '',
+                    }
+                  : null
+              "
+              [loading]="authFacadeInstance.loading()"
+              (profileUpdate)="updateProfile($event)"
+              (cancel)="onFormCancel()">
+            </app-profile-info-form>
+          </div>
+        }
+
+        <!-- Notification Settings Tab -->
+        @if (activeTab() === 'notifications') {
+          <div
+            class="tab-pane active"
+            role="tabpanel"
+            [attr.id]="'tab-panel-notifications'"
+            [attr.aria-labelledby]="'tab-notifications'"
+            tabindex="0">
+            <div class="section-header">
+              <h2>Notification Preferences</h2>
+              <p>Control how and when you receive notifications.</p>
+            </div>
+
+            <!-- Notification Settings Form Component -->
+            <app-notification-settings-form
+              [userPreferences]="{
+                email: user()?.notificationPreferences?.email === true ? true : false,
+                system: user()?.notificationPreferences?.system === true ? true : false,
+                task: user()?.notificationPreferences?.task === true ? true : false,
+              }"
+              [loading]="authFacadeInstance.loading()"
+              (preferencesUpdate)="updateNotificationPreferences($event)"
+              (cancel)="onFormCancel()">
+            </app-notification-settings-form>
+          </div>
+        }
+
+        <!-- Password Management Tab -->
+        @if (activeTab() === 'password') {
+          <div
+            class="tab-pane active"
+            role="tabpanel"
+            [attr.id]="'tab-panel-password'"
+            [attr.aria-labelledby]="'tab-password'"
+            tabindex="0">
+            <!-- Change Password Form Component -->
+            <app-change-password-form
+              [loading]="authFacadeInstance.loading()"
+              (passwordChange)="changePassword($event)"
+              (cancel)="onFormCancel()">
+            </app-change-password-form>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</main>
