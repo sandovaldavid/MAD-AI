@@ -15,16 +15,41 @@ import { ToastItem, ToastViewModel } from '../toast-item/toast-item';
 export class ToastContainer {
   private facade = inject(NotificationsFacade);
   private cfg = inject<NotificationConfig>(NOTIFICATION_CONFIG);
-  // Define the notification types for template usage
   readonly NotificationType = {
     SUCCESS: 'success' as const,
     ERROR: 'error' as const,
     WARNING: 'warning' as const,
     INFO: 'info' as const,
   };
-  // Transform Domain notifications to Presentation view models
+
+  // Mapa para controlar los timeouts de autocierre por id
+  private autoCloseTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+  // Duración del autocierre en ms (puedes hacer esto configurable si lo deseas)
+  private readonly AUTO_CLOSE_SUCCESS_MS = 3000;
+
   items = computed(() => {
     const notifications = this.facade.notifications();
+    // Inicia autocierre para los nuevos toasts de tipo success
+    notifications.forEach((notification) => {
+      if (
+        notification.type === this.NotificationType.SUCCESS &&
+        !this.autoCloseTimeouts.has(notification.id)
+      ) {
+        const timeout = setTimeout(() => {
+          this.close(notification.id);
+        }, this.AUTO_CLOSE_SUCCESS_MS);
+        this.autoCloseTimeouts.set(notification.id, timeout);
+      }
+    });
+    // Limpia timeouts de notificaciones que ya no existen
+    const currentIds = new Set(notifications.map((n) => n.id));
+    Array.from(this.autoCloseTimeouts.keys()).forEach((id) => {
+      if (!currentIds.has(id)) {
+        const timeout = this.autoCloseTimeouts.get(id);
+        if (timeout) clearTimeout(timeout);
+        this.autoCloseTimeouts.delete(id);
+      }
+    });
     return notifications.map((notification) => this.toViewModel(notification));
   });
 
@@ -33,19 +58,21 @@ export class ToastContainer {
       ? this.cfg.maxVisibleMobile
       : this.cfg.maxVisibleDesktop;
 
-  // For now, all notifications use the same position configured in the service
-  // In a more complex implementation, you could have different containers for different positions
   allItems = () => this.items().slice(0, this.cap());
 
   trackId = (_: number, t: ToastViewModel) => t.id;
 
   close(id: string) {
+    // Limpiar el timeout si existe
+    const timeout = this.autoCloseTimeouts.get(id);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.autoCloseTimeouts.delete(id);
+    }
     this.facade.dismiss({ notificationId: id });
   }
 
   async onAction(_id: string, _which: 'primary' | 'secondary') {
-    // Actions are not supported in the simplified notification model
-    // This method is kept for interface compatibility but does nothing
     return;
   }
 
