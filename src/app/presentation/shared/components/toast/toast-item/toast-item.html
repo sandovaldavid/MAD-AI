@@ -32,34 +32,15 @@
       <div class="text-sm leading-snug break-words whitespace-pre-line text-black dark:text-white">
         {{ t.message }}
       </div>
-
-      @if (t.actions && t.actions.length > 0) {
-        <div class="mt-2 flex gap-2">
-          @if (t.actions[0]) {
-            <button
-              class="px-2 py-1 rounded bg-primary-600 text-white text-xs"
-              (click)="onAction('primary')">
-              {{ t.actions[0].label }}
-            </button>
-          }
-          @if (t.actions[1]) {
-            <button class="px-2 py-1 rounded border text-xs" (click)="onAction('secondary')">
-              {{ t.actions[1].label }}
-            </button>
-          }
-        </div>
-      }
     </div>
   </div>
 
   <!-- Botón cerrar en la esquina superior derecha -->
-  @if (!t.isDismissed) {
-    <button
-      class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
-      type="button"
-      aria-label="Cerrar notificación"
-      (click)="onClose()">
-      <ui-icon name="outline/x-mark" class="text-red-500 dark:text-red-700" size="md" />
-    </button>
-  }
+  <button
+    class="absolute top-2 right-2 text-sm opacity-70 hover:opacity-100 p-1"
+    type="button"
+    aria-label="Cerrar notificación"
+    (click)="onClose()">
+    <ui-icon name="outline/x-mark" class="text-red-500 dark:text-red-700" size="md" />
+  </button>
 </div>
