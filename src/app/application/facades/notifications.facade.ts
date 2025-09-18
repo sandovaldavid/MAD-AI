@@ -1,14 +1,14 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
+import {
+  NOTIFY_USECASE_PORT,
+  DISMISS_NOTIFICATION_USECASE_PORT,
+  CLEAR_NOTIFICATIONS_USECASE_PORT,
+  UPDATE_NOTIFICATION_USECASE_PORT,
+  GET_NOTIFICATIONS_USECASE_PORT,
+  SUBSCRIBE_TO_NOTIFICATIONS_USECASE_PORT,
+} from '@di/tokens';
 import { Observable, EMPTY, Subject } from 'rxjs';
-import { catchError, startWith, shareReplay, finalize } from 'rxjs/operators';
-
-// Use Cases imports
-import { Notify } from '../use-cases/notifications/notify.usecase';
-import { DismissNotification } from '../use-cases/notifications/dismiss-notification.usecase';
-import { ClearNotifications } from '../use-cases/notifications/clear-notifications.usecase';
-import { UpdateNotification } from '../use-cases/notifications/update-notification.usecase';
-import { GetNotifications } from '../use-cases/notifications/get-notifications.usecase';
-import { SubscribeToNotifications } from '../use-cases/notifications/subscribe-to-notifications.usecase';
+import { catchError, startWith, finalize } from 'rxjs/operators';
 
 // Application types
 import type {
@@ -28,7 +28,6 @@ import type {
 // Domain entities
 import { Notification } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification-type.enum';
-import { NotificationChannel } from '@domain/enums/notification-channel.enum';
 
 // Shared facade types
 import type { FacadeOpts } from '@application/types/facade-opts';
@@ -85,13 +84,13 @@ export interface NotificationEvent {
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationsFacade {
-  // Use Case Dependencies
-  private readonly notifyUC = inject(Notify);
-  private readonly dismissUC = inject(DismissNotification);
-  private readonly clearUC = inject(ClearNotifications);
-  private readonly updateUC = inject(UpdateNotification);
-  private readonly getUC = inject(GetNotifications);
-  private readonly subscribeUC = inject(SubscribeToNotifications);
+  // Use Case Dependencies (Injected via DI tokens)
+  private readonly notifyUC = inject(NOTIFY_USECASE_PORT);
+  private readonly dismissUC = inject(DISMISS_NOTIFICATION_USECASE_PORT);
+  private readonly clearUC = inject(CLEAR_NOTIFICATIONS_USECASE_PORT);
+  private readonly updateUC = inject(UPDATE_NOTIFICATION_USECASE_PORT);
+  private readonly getUC = inject(GET_NOTIFICATIONS_USECASE_PORT);
+  private readonly subscribeUC = inject(SUBSCRIBE_TO_NOTIFICATIONS_USECASE_PORT);
 
   // Event emission system
   private readonly _eventSubject = new Subject<NotificationEvent>();
@@ -196,12 +195,15 @@ export class NotificationsFacade {
       });
 
       // Create notification object using the factory method
-      const notification = Notification.createWithId({
-        type: request.type,
-        message: request.message,
-        title: undefined,
-        userId: request.userId?.toString(),
-      }, notificationId);
+      const notification = Notification.createWithId(
+        {
+          type: request.type,
+          message: request.message,
+          title: undefined,
+          userId: request.userId?.toString(),
+        },
+        notificationId
+      );
 
       // Emit event for real-time coordination
       this.emitEvent(NotificationEventType.NOTIFICATION_CREATED, notification);
@@ -665,12 +667,10 @@ export class NotificationsFacade {
     try {
       // Subscribe to notification changes from the service layer
       const callback = (notifications: Notification[]) => {
-        console.log('[FACADE] Internal callback called with notifications:', notifications.length, 'items');
         // Sync facade state with service state
         this._notifications.set(notifications);
         this._totalCount.set(notifications.length);
         this._unreadCount.set(notifications.filter((n) => !n.isRead).length);
-        console.log('[FACADE] Internal state updated - notifications:', this._notifications().length, 'total:', this._totalCount(), 'unread:', this._unreadCount());
       };
 
       // Use the subscribe use case to establish the connection
