@@ -11,7 +11,7 @@
  */
 
 // User models
-export * from './user.models';
+export * from '../pages/profile/models/user.models';
 
 // Role models
 export type {
