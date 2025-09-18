@@ -371,27 +371,40 @@ export class HttpUserRepository implements UserRepository {
    * ```
    */
   async update(id: number, patch: UpdateUserPatchContract): Promise<User> {
+    console.log('[HttpUserRepository] update called with id:', id, 'and patch:', patch);
+
     try {
       // Get current user data first to merge with updates
+      console.log('[HttpUserRepository] Getting current user data...');
       const currentUser = await this.getById(id);
+      console.log('[HttpUserRepository] Current user retrieved:', currentUser);
 
       // Create update request DTO manually
+      console.log('[HttpUserRepository] Creating update request DTO...');
       const requestDto: UpdateUserRequestDTO = {
         first_name: patch.firstName ?? currentUser.firstName.value,
         last_name: patch.lastName ?? currentUser.lastName.value,
         email: patch.email ?? currentUser.email.value,
         role_id: patch.roleId ?? currentUser.role.id,
         status: patch.isActive !== undefined ? (patch.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
-        email_notifications_enabled: true, // Default values for now
-        system_notifications_enabled: true,
-        task_notifications_enabled: true,
+        email_notifications_enabled: patch.notificationPreferences?.email ?? currentUser.notificationPreferences?.toObject().email ?? true,
+        system_notifications_enabled: patch.notificationPreferences?.system ?? currentUser.notificationPreferences?.toObject().system ?? true,
+        task_notifications_enabled: patch.notificationPreferences?.task ?? currentUser.notificationPreferences?.toObject().task ?? true,
       };
+      console.log('[HttpUserRepository] Update request DTO created:', requestDto);
 
+      console.log('[HttpUserRepository] Calling userClient.update...');
       const responseDto = await firstValueFrom(this.userClient.update(id, requestDto));
+      console.log('[HttpUserRepository] userClient.update completed, response DTO:', responseDto);
 
       // Use the specific mapper method for updated users
-      return this.userMapper.toEntityFromUpdate(responseDto);
+      console.log('[HttpUserRepository] Mapping response to entity...');
+      const result = this.userMapper.toEntityFromUpdate(responseDto);
+      console.log('[HttpUserRepository] Mapping completed, result:', result);
+
+      return result;
     } catch (httpError: unknown) {
+      console.error('[HttpUserRepository] Error in update method:', httpError);
       throw this.errorTransformer.transformWithDefaults(httpError, 'UPDATE_USER', 'UPDATE_USER');
     }
   }
