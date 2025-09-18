@@ -8,8 +8,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RolesFacade } from '@application/facades/roles.facade';
-import { PageHeader, type PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
+import { RolesFacade } from '@application/facades/role';
+import {
+  PageHeader,
+  type PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 import { RoleFormComponent } from '../../forms/role-form/role-form';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';

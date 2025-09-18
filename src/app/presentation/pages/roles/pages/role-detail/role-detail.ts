@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RolesFacade } from '@application/facades/roles.facade';
-import { PageHeader, type PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
+import { RolesFacade } from '@application/facades/role';
+import {
+  PageHeader,
+  type PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { Button } from '@presentation/shared/ui/button/button';

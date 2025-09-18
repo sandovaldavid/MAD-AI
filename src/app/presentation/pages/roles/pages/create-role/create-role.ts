@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RolesFacade } from '@application/facades/roles.facade';
-import { PageHeader, type PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
+import { RolesFacade } from '@application/facades/role';
+import {
+  PageHeader,
+  type PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 import { RoleFormComponent } from '../../forms/role-form/role-form';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { RoleModel } from '../../models/role.model';

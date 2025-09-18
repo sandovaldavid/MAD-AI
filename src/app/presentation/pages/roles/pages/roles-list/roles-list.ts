@@ -8,11 +8,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleTable } from '../../components/role-table/role-table';
-import { PageHeader, type PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
+import {
+  PageHeader,
+  type PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
@@ -276,7 +279,9 @@ export class RolesList {
 
       await this.facade.exportRoles(event.roleIds, exportOptions);
     } catch (error) {
-      console.error('Export failed:', error);
+      // Always serialize error for SSR/prerendering
+      const errorStr = typeof error === 'object' ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : String(error);
+      console.error('Export failed:', errorStr);
     }
   }
 
