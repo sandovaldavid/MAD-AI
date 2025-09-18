@@ -7,9 +7,19 @@ import {
   Output,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NotificationType } from '@domain/enums/notification-type.enum';
-import type { Notification } from '@domain/entities/notification.entity';
 import { Icon } from '@presentation/shared/ui/icon/icon';
+
+/**
+ * Toast View Model - Presentation layer interface
+ */
+export interface ToastViewModel {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  title?: string;
+  description?: string;
+  timestamp?: Date;
+}
 
 @Component({
   selector: 'app-toast-item',
@@ -20,7 +30,7 @@ import { Icon } from '@presentation/shared/ui/icon/icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ToastItem {
-  @Input({ required: true }) t!: Notification;
+  @Input({ required: true }) t!: ToastViewModel;
 
   @Output() close = new EventEmitter<void>();
   @Output() act = new EventEmitter<'primary' | 'secondary'>();
@@ -39,7 +49,7 @@ export class ToastItem {
     return this.t?.type === 'error' ? 'assertive' : 'polite';
   }
 
-  accentClass(type?: NotificationType) {
+  accentClass(type?: string) {
     switch (type) {
       case 'success':
         return 'accent-success';
