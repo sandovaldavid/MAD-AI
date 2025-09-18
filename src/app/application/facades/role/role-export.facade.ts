@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleStateFacade } from './role-state.facade';
-import { RoleExportService } from '@/app/application/services/role-export-report.service';
+import { ROLE_EXPORT_SERVICE_PORT } from '@di/tokens';
 import { Role } from '@domain/entities/role.entity';
 import type { RoleExportConfig } from '@application/types/role-export.types';
 import type { FacadeOpts } from './role.types';
@@ -24,7 +24,7 @@ import type { FacadeOpts } from './role.types';
  */
 @Injectable({ providedIn: 'root' })
 export class RoleExportFacade {
-  private readonly roleExportService = inject(RoleExportService);
+  private readonly roleExportService = inject(ROLE_EXPORT_SERVICE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly notifications = inject(NotificationsFacade);
 

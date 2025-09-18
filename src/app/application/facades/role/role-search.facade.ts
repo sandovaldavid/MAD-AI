@@ -2,9 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleStateFacade } from './role-state.facade';
-import { RoleCrudFacade } from './role-crud.facade';
+import { LIST_ROLES_USECASE_PORT } from '@di/tokens';
 import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 import type { ListRolesParams, FacadeOpts } from './role.types';
+import { RoleApplicationMapper } from '@application/mappers/role.mapper';
 
 /**
  * Search and filtering facade for roles
@@ -27,7 +28,7 @@ export class RoleSearchFacade {
 
   // Dependencies on other role facades
   private readonly roleState = inject(RoleStateFacade);
-  private readonly roleCrud = inject(RoleCrudFacade);
+  private readonly listRolesUC = inject(LIST_ROLES_USECASE_PORT);
 
   constructor() {}
 
@@ -66,9 +67,8 @@ export class RoleSearchFacade {
   async searchRoles(searchParams: ListRolesParams, opts: FacadeOpts = {}): Promise<RoleSummary[]> {
     return this.executeOperation(async () => {
       // Load all roles first
-      await this.roleCrud.loadRoles();
-
-      const allRoles = this.roleState.roles();
+      const roles = await this.listRolesUC.execute();
+      const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
 
       // Apply search and filter logic
       const filteredRoles = allRoles.filter((role) => {
@@ -145,9 +145,8 @@ export class RoleSearchFacade {
   async clearSearch(opts: FacadeOpts = {}): Promise<RoleSummary[]> {
     return this.executeOperation(async () => {
       // Load all roles without filters
-      await this.roleCrud.loadRoles();
-
-      const allRoles = this.roleState.roles();
+      const roles = await this.listRolesUC.execute();
+      const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
 
       if (!opts.silent) {
         this.notifications.success('Search cleared. Showing all roles');
@@ -162,9 +161,8 @@ export class RoleSearchFacade {
    */
   async findRoleByName(name: string, opts: FacadeOpts = {}): Promise<RoleSummary | null> {
     return this.executeOperation(async () => {
-      await this.roleCrud.loadRoles();
-
-      const allRoles = this.roleState.roles();
+      const roles = await this.listRolesUC.execute();
+      const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
       const role = allRoles.find((r) => r.name.toLowerCase() === name.toLowerCase());
 
       if (!role && !opts.silent) {
@@ -184,14 +182,12 @@ export class RoleSearchFacade {
     opts: FacadeOpts = {}
   ): Promise<string[]> {
     return this.executeOperation(async () => {
-      await this.roleCrud.loadRoles();
-
-      const allRoles = this.roleState.roles();
+      const roles = await this.listRolesUC.execute();
+      const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
       const suggestions = allRoles
         .filter((role) => role.name.toLowerCase().includes(partialName.toLowerCase()))
         .map((role) => role.name)
         .slice(0, maxSuggestions);
-
       return suggestions;
     }, opts);
   }

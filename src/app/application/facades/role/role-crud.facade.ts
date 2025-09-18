@@ -1,10 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { ListRoles } from '@application/use-cases/roles/list-roles.usecase';
-import { GetRoleById } from '@application/use-cases/roles/get-role-by-id.usecase';
-import { CreateRoleUseCase } from '@application/use-cases/roles/create-role.usecase';
-import { UpdateRoleUseCase } from '@application/use-cases/roles/update-role.usecase';
-import { DeleteRoleUseCase } from '@application/use-cases/roles/delete-role.usecase';
-import { GetRoleByNameUseCase } from '@application/use-cases/roles/get-role-by-name.usecase';
+import {
+  LIST_ROLES_USECASE_PORT,
+  GET_ROLE_BY_ID_USECASE_PORT,
+  CREATE_ROLE_USECASE_PORT,
+  UPDATE_ROLE_USECASE_PORT,
+  DELETE_ROLE_USECASE_PORT,
+  GET_ROLE_BY_NAME_USECASE_PORT,
+} from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
@@ -29,12 +31,12 @@ import type { FacadeOpts } from '@application/types/facade-opts';
  */
 @Injectable({ providedIn: 'root' })
 export class RoleCrudFacade {
-  private readonly listRolesUC = inject(ListRoles);
-  private readonly getRoleByIdUC = inject(GetRoleById);
-  private readonly createRoleUC = inject(CreateRoleUseCase);
-  private readonly updateRoleUC = inject(UpdateRoleUseCase);
-  private readonly deleteRoleUC = inject(DeleteRoleUseCase);
-  private readonly getRoleByNameUC = inject(GetRoleByNameUseCase);
+  private readonly listRolesUC = inject(LIST_ROLES_USECASE_PORT);
+  private readonly getRoleByIdUC = inject(GET_ROLE_BY_ID_USECASE_PORT);
+  private readonly createRoleUC = inject(CREATE_ROLE_USECASE_PORT);
+  private readonly updateRoleUC = inject(UPDATE_ROLE_USECASE_PORT);
+  private readonly deleteRoleUC = inject(DELETE_ROLE_USECASE_PORT);
+  private readonly getRoleByNameUC = inject(GET_ROLE_BY_NAME_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);

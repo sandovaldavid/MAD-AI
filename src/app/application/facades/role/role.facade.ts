@@ -5,12 +5,7 @@ import { RoleActivationFacade } from './role-activation.facade';
 import { RoleAssignmentFacade } from './role-assignment.facade';
 import { RoleSearchFacade } from './role-search.facade';
 import { RoleExportFacade } from './role-export.facade';
-import type {
-  ListRolesParams,
-  CreateRoleData,
-  UpdateRoleData,
-  FacadeOpts,
-} from './role.types';
+import type { ListRolesParams, CreateRoleData, UpdateRoleData, FacadeOpts } from './role.types';
 import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 import type { User } from '@domain/entities/user.entity';
 import type { RoleExportConfig } from '@application/types/role-export.types';

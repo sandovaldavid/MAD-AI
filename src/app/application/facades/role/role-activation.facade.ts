@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { ActivateRole } from '@application/use-cases/roles/activate-role.usecase';
-import { DeactivateRoleUseCase } from '@application/use-cases/roles/deactivate-role.usecase';
+import { ACTIVATE_ROLE_USECASE_PORT, DEACTIVATE_ROLE_USECASE_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
@@ -23,8 +22,8 @@ import type { FacadeOpts } from '@application/types/facade-opts';
  */
 @Injectable({ providedIn: 'root' })
 export class RoleActivationFacade {
-  private readonly activateRoleUC = inject(ActivateRole);
-  private readonly deactivateRoleUC = inject(DeactivateRoleUseCase);
+  private readonly activateRoleUC = inject(ACTIVATE_ROLE_USECASE_PORT);
+  private readonly deactivateRoleUC = inject(DEACTIVATE_ROLE_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);

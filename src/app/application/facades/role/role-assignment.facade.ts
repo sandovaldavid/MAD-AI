@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { GetUsersByRole } from '@application/use-cases/roles/get-users-by-role.usecase';
-import { AssignRoleToUser } from '@application/use-cases/roles/assign-role-to-user.usecase';
-import { UnassignRoleFromUser } from '@application/use-cases/roles/unassign-role-from-user.usecase';
+import {
+  GET_USERS_BY_ROLE_USECASE_PORT,
+  ASSIGN_ROLE_TO_USER_USECASE_PORT,
+  UNASSIGN_ROLE_FROM_USER_USECASE_PORT,
+} from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
@@ -27,9 +29,9 @@ import type { FacadeOpts } from '@application/types/facade-opts';
  */
 @Injectable({ providedIn: 'root' })
 export class RoleAssignmentFacade {
-  private readonly getUsersByRoleUC = inject(GetUsersByRole);
-  private readonly assignRoleToUserUC = inject(AssignRoleToUser);
-  private readonly unassignRoleFromUserUC = inject(UnassignRoleFromUser);
+  private readonly getUsersByRoleUC = inject(GET_USERS_BY_ROLE_USECASE_PORT);
+  private readonly assignRoleToUserUC = inject(ASSIGN_ROLE_TO_USER_USECASE_PORT);
+  private readonly unassignRoleFromUserUC = inject(UNASSIGN_ROLE_FROM_USER_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
   private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);
