@@ -8,6 +8,9 @@ import {
   CONFIRM_EMAIL_USECASE_PORT,
   REQUEST_PASSWORD_RESET_USECASE_PORT,
   CONFIRM_PASSWORD_RESET_USECASE_PORT,
+  UPDATE_USER_PROFILE_USECASE_PORT,
+  CHANGE_PASSWORD_USECASE_PORT,
+  UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT,
 } from '@di/tokens';
 import type { LoginUseCase } from '../use-cases/auth/login.usecase';
 import type { LogoutUseCase } from '../use-cases/auth/logout.usecase';
@@ -17,6 +20,9 @@ import type { RefreshSessionUseCase } from '../use-cases/auth/refresh-session.us
 import type { ConfirmEmailUseCase } from '../use-cases/auth/confirm-email.usecase';
 import type { RequestPasswordResetUseCase } from '../use-cases/auth/request-password-reset.usecase';
 import type { ConfirmPasswordResetUseCase } from '../use-cases/auth/confirm-password-reset.usecase';
+import type { UpdateUserProfileUseCase } from '../use-cases/auth/update-user-profile.usecase';
+import type { ChangePasswordUseCase } from '../use-cases/auth/change-password.usecase';
+import type { UpdateNotificationPreferencesUseCase } from '../use-cases/auth/update-notification-preferences.usecase';
 import { NotificationsFacade } from './notifications.facade';
 import type {
   LoginRequest,
@@ -24,6 +30,8 @@ import type {
   LogoutRequest,
   PasswordResetConfirmRequest,
 } from '@application/types/auth.types';
+import type { UpdateUserPatchContract, ChangePasswordContract } from '@domain/repositories/business/user.contract';
+import type { UserNotificationPreferences } from '@domain/value-objects/user-notification-preferences.vo';
 import type { User } from '@domain/entities/user.entity';
 import type { Session } from '@domain/entities/session.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
@@ -78,6 +86,15 @@ export class AuthFacade {
   );
   private readonly confirmResetUC = inject<ConfirmPasswordResetUseCase>(
     CONFIRM_PASSWORD_RESET_USECASE_PORT
+  );
+  private readonly updateProfileUC = inject<UpdateUserProfileUseCase>(
+    UPDATE_USER_PROFILE_USECASE_PORT
+  );
+  private readonly changePasswordUC = inject<ChangePasswordUseCase>(
+    CHANGE_PASSWORD_USECASE_PORT
+  );
+  private readonly updateNotificationsUC = inject<UpdateNotificationPreferencesUseCase>(
+    UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT
   );
   private readonly notifications = inject(NotificationsFacade);
   private readonly logger = inject<Logger>(LOGGER_PORT);
@@ -642,6 +659,133 @@ export class AuthFacade {
       await this.notifications.success(
         'Password reset successful!',
         'Your password has been updated. Please log in with your new password.'
+      );
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
+      throw error;
+    } finally {
+      if (!opts?.skipLoading) {
+        this._loading.set(false);
+      }
+    }
+  }
+
+  // ============================================================================
+  // Profile Management Operations
+  // ============================================================================
+
+  /**
+   * Updates user profile information
+   *
+   * @param updateData - Partial user profile data to update
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when profile update is complete
+   * @throws ApplicationError when profile update fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
+  async updateProfile(updateData: UpdateUserPatchContract, opts?: FacadeOpts): Promise<void> {
+    if (!opts?.skipLoading) {
+      this._loading.set(true);
+    }
+    this._authError.set(null);
+
+    try {
+      const currentUser = this._user();
+      if (!currentUser) {
+        throw new Error('No authenticated user found');
+      }
+
+      const updatedUser = await this.updateProfileUC.execute(currentUser.id, updateData);
+      this._user.set(updatedUser);
+
+      // Send success notification
+      await this.notifications.success(
+        'Profile updated!',
+        'Your profile information has been successfully updated.'
+      );
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
+      throw error;
+    } finally {
+      if (!opts?.skipLoading) {
+        this._loading.set(false);
+      }
+    }
+  }
+
+  /**
+   * Changes user password
+   *
+   * @param passwordData - Password change data with current and new passwords
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when password change is complete
+   * @throws ApplicationError when password change fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
+  async changePassword(passwordData: ChangePasswordContract, opts?: FacadeOpts): Promise<void> {
+    if (!opts?.skipLoading) {
+      this._loading.set(true);
+    }
+    this._authError.set(null);
+
+    try {
+      await this.changePasswordUC.execute(passwordData);
+
+      // Send success notification
+      await this.notifications.success(
+        'Password changed!',
+        'Your password has been successfully updated.'
+      );
+    } catch (error: unknown) {
+      const errorMessage = this.errorTransformer.transform(error as Error);
+      this._authError.set(errorMessage.userMessage);
+      throw error;
+    } finally {
+      if (!opts?.skipLoading) {
+        this._loading.set(false);
+      }
+    }
+  }
+
+  /**
+   * Updates user notification preferences
+   *
+   * @param preferences - New notification preferences configuration
+   * @param opts - Optional facade execution options
+   * @returns Promise that resolves when notification preferences update is complete
+   * @throws ApplicationError when notification preferences update fails
+   *
+   * @since 1.0.0
+   * @application AuthFacade
+   */
+  async updateNotificationPreferences(
+    preferences: UserNotificationPreferences,
+    opts?: FacadeOpts
+  ): Promise<void> {
+    if (!opts?.skipLoading) {
+      this._loading.set(true);
+    }
+    this._authError.set(null);
+
+    try {
+      const currentUser = this._user();
+      if (!currentUser) {
+        throw new Error('No authenticated user found');
+      }
+
+      const updatedUser = await this.updateNotificationsUC.execute(currentUser.id, preferences);
+      this._user.set(updatedUser);
+
+      // Send success notification
+      await this.notifications.success(
+        'Preferences updated!',
+        'Your notification preferences have been successfully updated.'
       );
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
