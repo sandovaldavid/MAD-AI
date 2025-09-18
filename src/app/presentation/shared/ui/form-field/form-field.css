@@ -5,7 +5,7 @@
 }
 
 .ff__label {
-  @apply text-[0.9rem] text-neutral-700 dark:text-neutral-200;
+  @apply flex items-center gap-2 text-[0.9rem] text-neutral-700 dark:text-neutral-200;
 }
 
 .ff__req {

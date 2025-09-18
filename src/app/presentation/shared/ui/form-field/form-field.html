@@ -1,22 +1,22 @@
 <div class="ff">
   @if (label()) {
     <label class="ff__label">
-      {{ label() }}
+      @if (iconName()) {
+        <ui-icon
+          [name]="iconName()!"
+          [size]="iconSize()"
+          [variant]="iconVariant()"
+          [ariaLabel]="iconAriaLabel() ?? null"
+          class="ff__icon">
+        </ui-icon>
+      }
+      <span class="ff__label-text">{{ label() }}</span>
       @if (required()) {
         <span [class.ff__req]="!error()" [class.text-error-500]="!!error()">(*)</span>
       }
     </label>
   }
   <div class="ff__ctrl" [attr.aria-describedby]="describedBy()">
-    @if (iconName()) {
-      <ui-icon
-        [name]="iconName()!"
-        [size]="iconSize()"
-        [variant]="iconVariant()"
-        [ariaLabel]="iconAriaLabel() ?? null"
-        class="ff__icon">
-      </ui-icon>
-    }
     <ng-content />
   </div>
   <!-- Siempre mostramos el contenedor para evitar saltos visuales -->
