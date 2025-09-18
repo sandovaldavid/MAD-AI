@@ -1,0 +1,162 @@
+@reference '../../../../../../styles.css';
+
+.notification-settings-form {
+  @apply max-w-6xl mx-auto;
+}
+
+.form-header {
+  @apply mb-8 pb-6 border-b border-neutral-200 dark:border-neutral-700;
+}
+
+.form-title {
+  @apply text-2xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-primary-500 bg-clip-text text-transparent dark:from-primary-400 dark:to-primary-300;
+}
+
+.form-description {
+  @apply text-neutral-600 dark:text-neutral-400 text-base;
+}
+
+.preferences-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8;
+}
+
+/* Responsive adjustments for better mobile experience */
+@media (max-width: 640px) {
+  .preferences-grid {
+    @apply gap-4;
+  }
+
+  .preference-item {
+    @apply p-4;
+  }
+
+  .preference-header {
+    @apply flex-col items-start space-y-3;
+  }
+
+  .preference-info {
+    @apply mr-0;
+  }
+
+  .preference-control {
+    @apply self-start;
+  }
+
+  .form-actions {
+    @apply flex-col-reverse;
+  }
+}
+
+/* Large screens optimization */
+@media (min-width: 1536px) {
+  .preferences-grid {
+    @apply grid-cols-4 gap-8;
+  }
+
+  .notification-settings-form {
+    @apply max-w-7xl;
+  }
+}
+
+/* Enhanced animations and interactions */
+.preference-item {
+  @apply p-6 border border-neutral-200 dark:border-neutral-700  rounded-xl bg-white dark:bg-neutral-800  shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary-300 dark:hover:border-primary-600 hover:scale-[1.02] transform-gpu relative overflow-hidden;
+}
+
+/* Subtle gradient overlay on hover */
+.preference-item::before {
+  @apply content-[''] absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent  dark:from-primary-950/30 dark:to-transparent opacity-0 transition-opacity duration-300 pointer-events-none;
+}
+
+.preference-item:hover::before {
+  @apply opacity-100;
+}
+
+/* Content above gradient */
+.preference-item > * {
+  @apply relative z-10;
+}
+
+.preference-title {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2 transition-colors duration-200;
+}
+
+.preference-item:hover .preference-title {
+  @apply text-primary-600 dark:text-primary-400;
+}
+
+.preference-header {
+  @apply flex items-start justify-between mb-4;
+}
+
+.preference-info {
+  @apply flex-1 mr-4;
+}
+
+.preference-control {
+  @apply flex-shrink-0 mt-1;
+}
+
+.preference-description {
+  @apply text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed;
+}
+
+.preference-details {
+  @apply mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.notification-examples {
+  @apply list-none space-y-2 text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+.notification-examples li {
+  @apply flex items-center space-x-3 py-1;
+}
+
+.notification-examples li:before {
+  @apply content-['✓'] text-primary-500 dark:text-primary-400 font-bold text-xs w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0;
+}
+
+.form-actions {
+  @apply flex flex-col sm:flex-row justify-end gap-3 pt-8 border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.form-status {
+  @apply mt-6;
+}
+
+.status-info {
+  @apply flex items-center space-x-3 p-4 bg-warning-50 dark:bg-warning-950 border border-warning-200 dark:border-warning-800 rounded-xl shadow-sm;
+}
+
+.status-icon {
+  @apply text-warning-600 dark:text-warning-400 text-lg;
+}
+
+.status-text {
+  @apply text-sm text-warning-700 dark:text-warning-300 font-medium;
+}
+
+.privacy-notice {
+  @apply mt-8 p-6 bg-info-50 dark:bg-info-950 border border-info-200 dark:border-info-800 rounded-xl shadow-sm;
+}
+
+.notice-content {
+  @apply flex items-start space-x-4;
+}
+
+.notice-icon {
+  @apply text-2xl text-info-600 dark:text-info-400 flex-shrink-0;
+}
+
+.notice-text {
+  @apply flex-1;
+}
+
+.notice-title {
+  @apply font-semibold text-info-800 dark:text-info-200 mb-2 text-base;
+}
+
+.notice-description {
+  @apply text-sm text-info-700 dark:text-info-300 leading-relaxed;
+}

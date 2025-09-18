@@ -1,0 +1,132 @@
+<div class="notification-settings-form">
+  <form [formGroup]="notificationForm" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Form Header -->
+    <div class="form-header">
+      <h3 class="form-title">Notification Preferences</h3>
+      <p class="form-description">
+        Control how and when you receive notifications. You can change these settings at any time.
+      </p>
+    </div>
+
+    <!-- Preferences Grid -->
+    <div class="preferences-grid">
+      <!-- Email Notifications -->
+      <div class="preference-item">
+        <div class="preference-header">
+          <div class="preference-info">
+            <h4 class="preference-title">Email Notifications</h4>
+            <p class="preference-description">Receive important updates and alerts via email</p>
+          </div>
+          <div class="preference-control">
+            <ui-toggle
+              [checked]="notificationForm.get('email')?.value || false"
+              (toggle)="onToggleChange('email', $event)"
+              size="md"
+              color="primary">
+            </ui-toggle>
+          </div>
+        </div>
+        <div class="preference-details">
+          <ul class="notification-examples">
+            <li>Account security alerts</li>
+            <li>Important system announcements</li>
+            <li>Password change confirmations</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- System Notifications -->
+      <div class="preference-item">
+        <div class="preference-header">
+          <div class="preference-info">
+            <h4 class="preference-title">System Notifications</h4>
+            <p class="preference-description">
+              Show notifications within the application interface
+            </p>
+          </div>
+          <div class="preference-control">
+            <ui-toggle
+              [checked]="notificationForm.get('system')?.value || false"
+              (toggle)="onToggleChange('system', $event)"
+              size="md"
+              color="primary">
+            </ui-toggle>
+          </div>
+        </div>
+        <div class="preference-details">
+          <ul class="notification-examples">
+            <li>Real-time activity updates</li>
+            <li>System status messages</li>
+            <li>Success and error notifications</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Task Notifications -->
+      <div class="preference-item">
+        <div class="preference-header">
+          <div class="preference-info">
+            <h4 class="preference-title">Task Notifications</h4>
+            <p class="preference-description">
+              Get notified about workflow and task-related events
+            </p>
+          </div>
+          <div class="preference-control">
+            <ui-toggle
+              [checked]="notificationForm.get('task')?.value || false"
+              (toggle)="onToggleChange('task', $event)"
+              size="md"
+              color="primary">
+            </ui-toggle>
+          </div>
+        </div>
+        <div class="preference-details">
+          <ul class="notification-examples">
+            <li>Task assignments and updates</li>
+            <li>Workflow status changes</li>
+            <li>Deadline reminders</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <ui-button variant="secondary" (click)="onCancel()" [disabled]="isSubmitting()">
+        Cancel
+      </ui-button>
+
+      <ui-button
+        type="submit"
+        variant="primary"
+        [disabled]="!hasChanges() || isSubmitting()"
+        [loading]="isSubmitting()">
+        Save Preferences
+      </ui-button>
+    </div>
+
+    <!-- Form Status Info -->
+    @if (hasChanges()) {
+      <div class="form-status">
+        <div class="status-info">
+          <span class="status-icon">ⓘ</span>
+          <span class="status-text">You have unsaved notification preferences</span>
+        </div>
+      </div>
+    }
+
+    <!-- Privacy Notice -->
+    <div class="privacy-notice">
+      <div class="notice-content">
+        <span class="notice-icon">🔒</span>
+        <div class="notice-text">
+          <p class="notice-title">Privacy Notice</p>
+          <p class="notice-description">
+            Your notification preferences are private and secure. We will never share your contact
+            information with third parties.
+          </p>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
