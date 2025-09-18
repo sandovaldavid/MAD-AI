@@ -14,6 +14,9 @@ import {
   CONFIRM_EMAIL_USECASE_PORT,
   REQUEST_PASSWORD_RESET_USECASE_PORT,
   CONFIRM_PASSWORD_RESET_USECASE_PORT,
+  UPDATE_USER_PROFILE_USECASE_PORT,
+  CHANGE_PASSWORD_USECASE_PORT,
+  UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT,
 } from './tokens';
 import { HttpAuthRepository } from '@infrastructure/repositories/business/http-auth.repository';
 import { LocalStorageTokenStore } from '@infrastructure/services/storage/local-storage-token-store.service';
@@ -29,6 +32,9 @@ import { RefreshSessionUseCase } from '@application/use-cases/auth/refresh-sessi
 import { ConfirmEmailUseCase } from '@application/use-cases/auth/confirm-email.usecase';
 import { RequestPasswordResetUseCase } from '@application/use-cases/auth/request-password-reset.usecase';
 import { ConfirmPasswordResetUseCase } from '@application/use-cases/auth/confirm-password-reset.usecase';
+import { UpdateUserProfileUseCase } from '@application/use-cases/auth/update-user-profile.usecase';
+import { ChangePasswordUseCase } from '@application/use-cases/auth/change-password.usecase';
+import { UpdateNotificationPreferencesUseCase } from '@application/use-cases/auth/update-notification-preferences.usecase';
 
 export function provideAuth(): EnvironmentProviders {
   return makeEnvironmentProviders([
@@ -45,6 +51,9 @@ export function provideAuth(): EnvironmentProviders {
     { provide: CONFIRM_EMAIL_USECASE_PORT, useClass: ConfirmEmailUseCase },
     { provide: REQUEST_PASSWORD_RESET_USECASE_PORT, useClass: RequestPasswordResetUseCase },
     { provide: CONFIRM_PASSWORD_RESET_USECASE_PORT, useClass: ConfirmPasswordResetUseCase },
+    { provide: UPDATE_USER_PROFILE_USECASE_PORT, useClass: UpdateUserProfileUseCase },
+    { provide: CHANGE_PASSWORD_USECASE_PORT, useClass: ChangePasswordUseCase },
+    { provide: UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT, useClass: UpdateNotificationPreferencesUseCase },
     provideHttpClient(withInterceptors([authInterceptor])),
   ]);
 }
