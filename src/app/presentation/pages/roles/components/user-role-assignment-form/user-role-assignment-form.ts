@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // Application layer imports
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 
 // Presentation layer imports
 import { RoleModel } from '../../models/role.model';

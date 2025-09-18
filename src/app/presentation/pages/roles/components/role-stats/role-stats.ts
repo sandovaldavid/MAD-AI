@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 
 // Application layer imports
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 
 // Presentation layer imports
 import { RoleModel } from '../../models/role.model';

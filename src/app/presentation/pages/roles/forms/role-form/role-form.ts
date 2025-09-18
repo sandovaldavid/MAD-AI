@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleModel } from '../../models/role.model';
 import { Toggle } from '@presentation/shared/ui/toggle/toggle';

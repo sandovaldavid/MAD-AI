@@ -35,7 +35,7 @@ import {
 } from '../access-level-indicator';
 
 // Facade
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 
 /**
  * Available bulk actions for role management
