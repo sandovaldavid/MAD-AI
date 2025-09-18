@@ -39,7 +39,10 @@ export class LayoutService {
           const collapsed = this._sidebarCollapsed();
           localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(collapsed));
         } catch (error) {
-          console.warn(`LayoutService: Error writing to localStorage for key "${LAYOUT_STORAGE_KEY}":`, error);
+          console.warn(
+            `LayoutService: Error writing to localStorage for key "${LAYOUT_STORAGE_KEY}":`,
+            error
+          );
         }
       }
     });
@@ -60,7 +63,10 @@ export class LayoutService {
           this._sidebarCollapsed.set(JSON.parse(stored));
         }
       } catch (error) {
-        console.warn(`LayoutService: Error reading from localStorage for key "${LAYOUT_STORAGE_KEY}":`, error);
+        console.warn(
+          `LayoutService: Error reading from localStorage for key "${LAYOUT_STORAGE_KEY}":`,
+          error
+        );
       }
     }
   }
