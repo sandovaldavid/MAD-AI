@@ -1,13 +1,10 @@
 <div class="notification-settings-form">
-  <form [formGroup]="notificationForm" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Form Header -->
-    <div class="form-header">
-      <h3 class="form-title">Notification Preferences</h3>
-      <p class="form-description">
-        Control how and when you receive notifications. You can change these settings at any time.
-      </p>
-    </div>
+  <!-- Page Header -->
+  <div class="notification-form-header">
+    <app-page-header [config]="headerConfig()" class="embedded-header" />
+  </div>
 
+  <form novalidate>
     <!-- Preferences Grid -->
     <div class="preferences-grid">
       <!-- Email Notifications -->
@@ -19,8 +16,8 @@
           </div>
           <div class="preference-control">
             <ui-toggle
-              [checked]="notificationForm.get('email')?.value || false"
-              (toggle)="onToggleChange('email', $event)"
+              [checked]="emailPref()"
+              (toggle)="onEmailToggle($event)"
               size="md"
               color="primary">
             </ui-toggle>
@@ -46,8 +43,8 @@
           </div>
           <div class="preference-control">
             <ui-toggle
-              [checked]="notificationForm.get('system')?.value || false"
-              (toggle)="onToggleChange('system', $event)"
+              [checked]="systemPref()"
+              (toggle)="onSystemToggle($event)"
               size="md"
               color="primary">
             </ui-toggle>
@@ -73,8 +70,8 @@
           </div>
           <div class="preference-control">
             <ui-toggle
-              [checked]="notificationForm.get('task')?.value || false"
-              (toggle)="onToggleChange('task', $event)"
+              [checked]="taskPref()"
+              (toggle)="onTaskToggle($event)"
               size="md"
               color="primary">
             </ui-toggle>
@@ -97,8 +94,9 @@
       </ui-button>
 
       <ui-button
-        type="submit"
+        type="button"
         variant="primary"
+        (click)="onSubmit()"
         [disabled]="!hasChanges() || isSubmitting()"
         [loading]="isSubmitting()">
         Save Preferences
@@ -114,19 +112,5 @@
         </div>
       </div>
     }
-
-    <!-- Privacy Notice -->
-    <div class="privacy-notice">
-      <div class="notice-content">
-        <span class="notice-icon">🔒</span>
-        <div class="notice-text">
-          <p class="notice-title">Privacy Notice</p>
-          <p class="notice-description">
-            Your notification preferences are private and secure. We will never share your contact
-            information with third parties.
-          </p>
-        </div>
-      </div>
-    </div>
   </form>
 </div>

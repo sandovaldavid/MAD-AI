@@ -1,7 +1,11 @@
 @reference '../../../../../../styles.css';
 
+.notification-form-header {
+  @apply flex justify-between items-center gap-6 p-6 rounded-2xl border border-neutral-200 bg-white dark:border-neutral-600 dark:bg-neutral-800;
+}
+
 .notification-settings-form {
-  @apply max-w-6xl mx-auto;
+  @apply max-w-6xl mx-auto p-8;
 }
 
 .form-header {
@@ -17,7 +21,11 @@
 }
 
 .preferences-grid {
-  @apply grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8;
+  @apply flex flex-row gap-6 my-8;
+}
+
+.preference-item {
+  @apply bg-white dark:bg-neutral-800 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-600 shadow-sm hover:shadow-md transition-shadow duration-200;
 }
 
 /* Responsive adjustments for better mobile experience */
@@ -58,25 +66,6 @@
   }
 }
 
-/* Enhanced animations and interactions */
-.preference-item {
-  @apply p-6 border border-neutral-200 dark:border-neutral-700  rounded-xl bg-white dark:bg-neutral-800  shadow-sm hover:shadow-md transition-all duration-200 hover:border-primary-300 dark:hover:border-primary-600 hover:scale-[1.02] transform-gpu relative overflow-hidden;
-}
-
-/* Subtle gradient overlay on hover */
-.preference-item::before {
-  @apply content-[''] absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent  dark:from-primary-950/30 dark:to-transparent opacity-0 transition-opacity duration-300 pointer-events-none;
-}
-
-.preference-item:hover::before {
-  @apply opacity-100;
-}
-
-/* Content above gradient */
-.preference-item > * {
-  @apply relative z-10;
-}
-
 .preference-title {
   @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2 transition-colors duration-200;
 }
@@ -110,11 +99,11 @@
 }
 
 .notification-examples li {
-  @apply flex items-center space-x-3 py-1;
+  @apply flex items-center space-x-3 py-1 gap-3;
 }
 
 .notification-examples li:before {
-  @apply content-['✓'] text-primary-500 dark:text-primary-400 font-bold text-xs w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-0;
+  @apply content-['✓'] text-primary-500 dark:text-primary-400 font-bold text-xs w-4 h-4 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center flex-shrink-1;
 }
 
 .form-actions {

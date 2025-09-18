@@ -1,89 +1,94 @@
-import { Component, Input, Output, EventEmitter, signal, computed } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Button, Toggle } from '@presentation/shared/ui';
+import {
+  PageHeader,
+  PageHeaderConfig,
+} from '@/app/presentation/shared/components/page-header/page-header';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Button, Toggle],
+  imports: [CommonModule, Button, Toggle, PageHeader],
   selector: 'app-notification-settings-form',
   templateUrl: './notification-settings-form.html',
   styleUrls: ['./notification-settings-form.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationSettingsForm {
   // ==========================================================================
-  // Input Properties
+  // Modern Angular Inputs & Outputs (Dumb Component Pattern)
   // ==========================================================================
 
   /**
-   * Current user data to populate notification preferences
-   * When this changes, the form will be updated with new values
+   * User notification preferences input - pre-processed by Smart Component
+   * Only contains the data needed for form display
    */
-  @Input() set userPreferences(value: { email: boolean; system: boolean; task: boolean } | null) {
-    if (value) {
-      this._originalPreferences.set({ ...value });
-      this.updateFormWithPreferences(value);
-    }
-  }
+  userPreferences = input<{ email: boolean; system: boolean; task: boolean } | null>(null);
 
   /**
-   * Loading state indicator from parent component
-   * Used to show loading states and disable form during submission
+   * Loading state input - controlled by Smart Component
    */
-  @Input() set loading(value: boolean) {
-    this._isSubmitting.set(value);
-  }
-
-  // ==========================================================================
-  // Output Events
-  // ==========================================================================
+  loading = input<boolean>(false);
 
   /**
-   * Emitted when user submits updated notification preferences
-   * Contains the new notification preferences configuration
+   * Events output - emits preference changes to Smart Component
    */
-  @Output() preferencesUpdate = new EventEmitter<{
+  preferencesUpdate = output<{
     email: boolean;
     system: boolean;
     task: boolean;
   }>();
 
   /**
-   * Emitted when user cancels preference changes
-   * Parent can use this to reset form or navigate away
+   * Cancel event output - emits cancellation to Smart Component
    */
-  @Output() cancel = new EventEmitter<void>();
+  preferencesCancel = output<void>();
 
   // ==========================================================================
-  // Component State
+  // Component State with Signals (Dumb Component - UI state only)
   // ==========================================================================
 
-  private readonly fb = new FormBuilder();
-  private readonly _isSubmitting = signal(false);
   private readonly _originalPreferences = signal<{
     email: boolean;
     system: boolean;
     task: boolean;
   } | null>(null);
 
-  /**
-   * Reactive form for notification preferences
-   * Contains boolean controls for each notification type
-   */
-  readonly notificationForm: FormGroup = this.fb.group({
-    email: [true],
-    system: [true],
-    task: [true],
-  });
+  private readonly _emailPref = signal(true);
+  private readonly _systemPref = signal(true);
+  private readonly _taskPref = signal(true);
 
   // ==========================================================================
-  // Computed Properties
+  // Computed Properties (Dumb Component - UI state only)
   // ==========================================================================
+
+  /**
+   * Current email preference value
+   */
+  readonly emailPref = computed(() => this._emailPref());
+
+  /**
+   * Current system preference value
+   */
+  readonly systemPref = computed(() => this._systemPref());
+
+  /**
+   * Current task preference value
+   */
+  readonly taskPref = computed(() => this._taskPref());
 
   /**
    * Submission loading state
    */
-  readonly isSubmitting = computed(() => this._isSubmitting());
+  readonly isSubmitting = computed(() => this.loading());
 
   /**
    * Checks if form has unsaved changes
@@ -92,78 +97,134 @@ export class NotificationSettingsForm {
     const originalPrefs = this._originalPreferences();
     if (!originalPrefs) return false;
 
-    const currentPrefs = this.notificationForm.value;
     return (
-      originalPrefs.email !== currentPrefs.email ||
-      originalPrefs.system !== currentPrefs.system ||
-      originalPrefs.task !== currentPrefs.task
+      originalPrefs.email !== this._emailPref() ||
+      originalPrefs.system !== this._systemPref() ||
+      originalPrefs.task !== this._taskPref()
     );
   });
 
   // ==========================================================================
-  // Form Management Methods
+  // Lifecycle & Initialization (Dumb Component - Effect-based)
   // ==========================================================================
 
-  /**
-   * Updates form fields with user notification preferences
-   * @param preferences - Current notification preferences
-   */
-  private updateFormWithPreferences(preferences: {
-    email: boolean;
-    system: boolean;
-    task: boolean;
-  }): void {
-    this.notificationForm.patchValue(
-      {
-        email: preferences.email ?? true,
-        system: preferences.system ?? true,
-        task: preferences.task ?? true,
-      },
-      { emitEvent: false }
-    );
+  constructor() {
+    // Effect to watch for userPreferences input changes
+    effect(() => {
+      const preferences = this.userPreferences();
+      if (preferences) {
+        // Store original preferences for change detection
+        this._originalPreferences.set({ ...preferences });
+
+        // Update individual preference signals
+        this._emailPref.set(preferences.email ?? true);
+        this._systemPref.set(preferences.system ?? true);
+        this._taskPref.set(preferences.task ?? true);
+      }
+    });
   }
 
   // ==========================================================================
-  // Event Handlers
+  // Event Handlers (Dumb Component - Direct signal updates)
   // ==========================================================================
 
   /**
-   * Handles toggle change events for notification preferences
-   * @param controlName - Name of the form control to update
+   * Handles email notification toggle change
    * @param value - New boolean value from toggle
    */
-  onToggleChange(controlName: string, value: boolean): void {
-    this.notificationForm.get(controlName)?.setValue(value);
+  onEmailToggle(value: boolean): void {
+    this._emailPref.set(value);
   }
 
   /**
-   * Handles form submission
-   * Emits update event with new preference configuration
+   * Handles system notification toggle change
+   * @param value - New boolean value from toggle
+   */
+  onSystemToggle(value: boolean): void {
+    this._systemPref.set(value);
+  }
+
+  /**
+   * Handles task notification toggle change
+   * @param value - New boolean value from toggle
+   */
+  onTaskToggle(value: boolean): void {
+    this._taskPref.set(value);
+  }
+
+  /**
+   * Handles form submission (Dumb Component - just emit data)
    */
   onSubmit(): void {
-    if (this.hasChanges() && !this.isSubmitting()) {
-      const preferences = {
-        email: this.notificationForm.value.email,
-        system: this.notificationForm.value.system,
-        task: this.notificationForm.value.task,
-      };
-      this.preferencesUpdate.emit(preferences);
+    console.log('[NotificationSettingsForm] onSubmit called', {
+      hasChanges: this.hasChanges(),
+      isSubmitting: this.isSubmitting(),
+      currentPreferences: {
+        email: this._emailPref(),
+        system: this._systemPref(),
+        task: this._taskPref(),
+      },
+    });
+
+    if (!this.hasChanges() || this.isSubmitting()) {
+      console.log('[NotificationSettingsForm] Submission blocked', {
+        hasChanges: this.hasChanges(),
+        isSubmitting: this.isSubmitting(),
+      });
+      return;
     }
+
+    const preferences = {
+      email: this._emailPref(),
+      system: this._systemPref(),
+      task: this._taskPref(),
+    };
+
+    console.log('[NotificationSettingsForm] Emitting preferencesUpdate', preferences);
+
+    // Emit data to Smart Component - let it handle submission logic
+    this.preferencesUpdate.emit(preferences);
   }
 
   /**
    * Handles form cancellation
-   * Resets form to original values and emits cancel event
    */
   onCancel(): void {
+    // Reset preferences to original state
     const originalPrefs = this._originalPreferences();
     if (originalPrefs) {
-      this.notificationForm.patchValue({
-        email: originalPrefs.email,
-        system: originalPrefs.system,
-        task: originalPrefs.task,
-      });
+      this._emailPref.set(originalPrefs.email);
+      this._systemPref.set(originalPrefs.system);
+      this._taskPref.set(originalPrefs.task);
+    } else {
+      // Fallback to default values
+      this._emailPref.set(true);
+      this._systemPref.set(true);
+      this._taskPref.set(true);
     }
-    this.cancel.emit();
+
+    this.preferencesCancel.emit();
   }
+
+  /**
+   * Resets preferences to original state
+   */
+  resetPreferences(): void {
+    const originalPrefs = this._originalPreferences();
+    if (originalPrefs) {
+      this._emailPref.set(originalPrefs.email);
+      this._systemPref.set(originalPrefs.system);
+      this._taskPref.set(originalPrefs.task);
+    }
+  }
+
+  // Computed properties for UI components
+  readonly headerConfig = computed(
+    (): PageHeaderConfig => ({
+      title: 'Configuración de Notificaciones',
+      icon: 'mail',
+      description: 'Administra tus preferencias de notificación',
+      showBreadcrumbs: false,
+    })
+  );
 }
