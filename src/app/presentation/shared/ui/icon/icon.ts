@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, Inject, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { IconRegistry } from '@/app/presentation/services/icon-registry.service';
 import { ICON_REGISTRY_OPTIONS, IconRegistryOptions } from '@app/di/tokens';
 import type { Size, Variant } from '@presentation/shared/types/icon';
@@ -12,7 +12,7 @@ import type { Size, Variant } from '@presentation/shared/types/icon';
 })
 export class Icon {
   private registry = inject(IconRegistry);
-  constructor(@Inject(ICON_REGISTRY_OPTIONS) private opts: IconRegistryOptions) {}
+  private opts = inject(ICON_REGISTRY_OPTIONS);
 
   name = input.required<string>();
   size = input<Size>('md');
