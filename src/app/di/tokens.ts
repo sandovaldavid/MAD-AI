@@ -30,6 +30,9 @@ import type { RefreshSessionUseCase } from '@application/use-cases/auth/refresh-
 import type { ConfirmEmailUseCase } from '@application/use-cases/auth/confirm-email.usecase';
 import type { RequestPasswordResetUseCase } from '@application/use-cases/auth/request-password-reset.usecase';
 import type { ConfirmPasswordResetUseCase } from '@application/use-cases/auth/confirm-password-reset.usecase';
+import type { UpdateUserProfileUseCase } from '@application/use-cases/auth/update-user-profile.usecase';
+import type { ChangePasswordUseCase } from '@application/use-cases/auth/change-password.usecase';
+import type { UpdateNotificationPreferencesUseCase } from '@application/use-cases/auth/update-notification-preferences.usecase';
 
 export const LOGIN_USECASE_PORT = new InjectionToken<LoginUseCase>('LOGIN_USECASE_PORT');
 export const LOGOUT_USECASE_PORT = new InjectionToken<LogoutUseCase>('LOGOUT_USECASE_PORT');
@@ -48,6 +51,15 @@ export const REQUEST_PASSWORD_RESET_USECASE_PORT = new InjectionToken<RequestPas
 );
 export const CONFIRM_PASSWORD_RESET_USECASE_PORT = new InjectionToken<ConfirmPasswordResetUseCase>(
   'CONFIRM_PASSWORD_RESET_USECASE_PORT'
+);
+export const UPDATE_USER_PROFILE_USECASE_PORT = new InjectionToken<UpdateUserProfileUseCase>(
+  'UPDATE_USER_PROFILE_USECASE_PORT'
+);
+export const CHANGE_PASSWORD_USECASE_PORT = new InjectionToken<ChangePasswordUseCase>(
+  'CHANGE_PASSWORD_USECASE_PORT'
+);
+export const UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT = new InjectionToken<UpdateNotificationPreferencesUseCase>(
+  'UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT'
 );
 import { InjectionToken } from '@angular/core';
 // Role Use Cases
