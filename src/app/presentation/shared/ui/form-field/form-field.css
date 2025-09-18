@@ -12,8 +12,8 @@
   @apply text-error-500 dark:text-error-400 ml-1;
 }
 
-.ff__message {
-  @apply min-h-[1.25rem]; /* Reservamos espacio fijo para mensajes */
+.ff__icon {
+  @apply flex-shrink-0 text-neutral-500 dark:text-neutral-400;
 }
 
 .ff__error {
