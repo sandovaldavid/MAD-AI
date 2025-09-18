@@ -6,3 +6,6 @@ export * from './register.usecase';
 export * from './confirm-email.usecase';
 export * from './request-password-reset.usecase';
 export * from './confirm-password-reset.usecase';
+export * from './update-user-profile.usecase';
+export * from './change-password.usecase';
+export * from './update-notification-preferences.usecase';
