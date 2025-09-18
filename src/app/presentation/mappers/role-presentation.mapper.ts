@@ -15,20 +15,18 @@ import {
   RoleCardView,
   RoleDetailView,
   RoleStatisticsView,
-  RoleActivityView,
   RoleUserView,
   StatusBadgeView,
   BadgeColor,
   ButtonColor,
   RoleStatus,
-  TableAction
+  TableAction,
 } from '../models/role.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RolePresentationMapper {
-
   /**
    * Maps application role to table row view
    */
@@ -43,7 +41,7 @@ export class RolePresentationMapper {
       statusBadge: this.toStatusBadge(role.status, role.isSystemRole),
       createdAt: this.formatDate(role.createdAt),
       updatedAt: this.formatDate(role.updatedAt),
-      actions: this.getTableActions(role)
+      actions: this.getTableActions(role),
     };
   }
 
@@ -51,7 +49,7 @@ export class RolePresentationMapper {
    * Maps application roles to table rows
    */
   toTableRows(roles: any[]): RoleTableRowView[] {
-    return roles.map(role => this.toTableRow(role));
+    return roles.map((role) => this.toTableRow(role));
   }
 
   /**
@@ -68,7 +66,7 @@ export class RolePresentationMapper {
       userCount: role.userCount || 0,
       permissionCount: role.permissions?.length || 0,
       isSystemRole: role.isSystemRole || false,
-      status: this.mapRoleStatus(role.status, role.isSystemRole)
+      status: this.mapRoleStatus(role.status, role.isSystemRole),
     };
   }
 
@@ -90,7 +88,7 @@ export class RolePresentationMapper {
       updatedAt: this.formatDate(role.updatedAt),
       createdBy: role.createdBy,
       isSystemRole: role.isSystemRole || false,
-      status: this.mapRoleStatus(role.status, role.isSystemRole)
+      status: this.mapRoleStatus(role.status, role.isSystemRole),
     };
   }
 
@@ -108,8 +106,8 @@ export class RolePresentationMapper {
         action: activity.action,
         description: activity.description,
         timestamp: this.formatDate(activity.timestamp),
-        performedBy: activity.performedBy
-      }))
+        performedBy: activity.performedBy,
+      })),
     };
   }
 
@@ -123,7 +121,7 @@ export class RolePresentationMapper {
       email: user.email,
       avatarUrl: user.avatarUrl,
       assignedAt: this.formatDate(user.assignedAt),
-      status: user.status || 'active'
+      status: user.status || 'active',
     };
   }
 
@@ -131,13 +129,13 @@ export class RolePresentationMapper {
    * Maps permissions to permission views
    */
   private toPermissions(permissions: any[]) {
-    return permissions.map(permission => ({
+    return permissions.map((permission) => ({
       id: permission.id,
       name: permission.name,
       description: permission.description,
       category: permission.category,
       granted: permission.granted,
-      required: permission.required || false
+      required: permission.required || false,
     }));
   }
 
@@ -150,7 +148,7 @@ export class RolePresentationMapper {
     return {
       label: statusConfig.label,
       color: statusConfig.color,
-      icon: statusConfig.icon
+      icon: statusConfig.icon,
     };
   }
 
@@ -163,8 +161,8 @@ export class RolePresentationMapper {
         label: 'View',
         icon: 'eye',
         color: 'info' as ButtonColor,
-        action: 'view'
-      }
+        action: 'view',
+      },
     ];
 
     // Don't allow editing system roles
@@ -173,7 +171,7 @@ export class RolePresentationMapper {
         label: 'Edit',
         icon: 'pencil',
         color: 'primary' as ButtonColor,
-        action: 'edit'
+        action: 'edit',
       });
     }
 
@@ -182,14 +180,14 @@ export class RolePresentationMapper {
       label: 'Assign Users',
       icon: 'user-group',
       color: 'success' as ButtonColor,
-      action: 'assign-users'
+      action: 'assign-users',
     });
 
     actions.push({
       label: 'Manage Permissions',
       icon: 'shield',
       color: 'warning' as ButtonColor,
-      action: 'manage-permissions'
+      action: 'manage-permissions',
     });
 
     // Don't allow deleting system roles
@@ -198,14 +196,14 @@ export class RolePresentationMapper {
         label: 'Duplicate',
         icon: 'copy',
         color: 'secondary' as ButtonColor,
-        action: 'duplicate'
+        action: 'duplicate',
       });
 
       actions.push({
         label: 'Delete',
         icon: 'trash',
         color: 'danger' as ButtonColor,
-        action: 'delete'
+        action: 'delete',
       });
     }
 
@@ -224,7 +222,7 @@ export class RolePresentationMapper {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 
@@ -249,11 +247,11 @@ export class RolePresentationMapper {
    */
   private getDefaultColor(roleName: string): string {
     const colorMap: Record<string, string> = {
-      'admin': '#dc3545',
-      'manager': '#ffc107',
-      'user': '#17a2b8',
-      'viewer': '#6c757d',
-      'editor': '#28a745'
+      admin: '#dc3545',
+      manager: '#ffc107',
+      user: '#17a2b8',
+      viewer: '#6c757d',
+      editor: '#28a745',
     };
 
     return colorMap[roleName?.toLowerCase()] || '#6c757d';
@@ -262,7 +260,10 @@ export class RolePresentationMapper {
   /**
    * Gets status configuration
    */
-  private getStatusConfig(status: string, isSystemRole?: boolean): { label: string; color: BadgeColor; icon: string } {
+  private getStatusConfig(
+    status: string,
+    isSystemRole?: boolean
+  ): { label: string; color: BadgeColor; icon: string } {
     if (isSystemRole) {
       return { label: 'System', color: 'danger', icon: 'crown' };
     }
