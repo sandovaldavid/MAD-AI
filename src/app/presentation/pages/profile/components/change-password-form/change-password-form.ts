@@ -2,10 +2,14 @@ import { Component, Input, Output, EventEmitter, signal, computed } from '@angul
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Icon } from '@presentation/shared/ui/icon/icon';
+import {
+  PageHeader,
+  PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Icon],
+  imports: [CommonModule, ReactiveFormsModule, Icon, PageHeader],
   selector: 'app-change-password-form',
   templateUrl: './change-password-form.html',
   styleUrls: ['./change-password-form.css'],
@@ -225,4 +229,14 @@ export class ChangePasswordForm {
     this.passwordForm.reset();
     this.passwordCancel.emit();
   }
+
+  // Computed properties for UI components
+  readonly headerConfig = computed(
+    (): PageHeaderConfig => ({
+      title: 'Cambiar Contraseña',
+      icon: 'lock',
+      description: 'Actualiza tu contraseña para mantener tu cuenta segura.',
+      showBreadcrumbs: false,
+    })
+  );
 }
