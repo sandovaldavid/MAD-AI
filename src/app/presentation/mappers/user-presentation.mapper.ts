@@ -23,7 +23,7 @@ import {
   ButtonColor,
   UserStatus,
   TableAction,
-} from '../models/user.models';
+} from '../pages/profile/models/user.models';
 
 @Injectable({
   providedIn: 'root',
