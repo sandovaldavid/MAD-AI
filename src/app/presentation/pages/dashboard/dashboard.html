@@ -38,7 +38,7 @@
                 {{ authFacade.user()?.username }}
               </h3>
               <p class="text-neutral-600 dark:text-neutral-300">
-                Conectado como {{ authFacade.user()?.getRole?.name }}
+                Conectado como {{ authFacade.user()?.role?.name }}
               </p>
             </div>
           </div>
@@ -72,7 +72,7 @@
                 <div>
                   <p class="text-sm text-neutral-600 dark:text-neutral-400">Rol</p>
                   <p class="font-semibold text-neutral-900 dark:text-white">
-                    {{ authFacade.user()?.getRole?.name }}
+                    {{ authFacade.user()?.role?.name }}
                   </p>
                 </div>
               </div>
@@ -193,7 +193,7 @@
               <div>
                 <p class="text-sm text-neutral-600 dark:text-neutral-400">Nivel de Acceso</p>
                 <p class="text-lg font-bold text-primary-600 dark:text-primary-400">
-                  {{ authFacade.user()?.getRole?.name }}
+                  {{ authFacade.user()?.role?.name }}
                 </p>
               </div>
               <div
