@@ -77,7 +77,7 @@ import type { CreateUserContract } from '@domain/repositories/business/user.cont
  * @layer Application
  * @module User Management
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class CreateUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);

@@ -32,7 +32,7 @@ import type { Logger } from '@core/interfaces/logger.interface';
  * @since 1.0.0
  * @layer Application
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class ActivateUser {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);

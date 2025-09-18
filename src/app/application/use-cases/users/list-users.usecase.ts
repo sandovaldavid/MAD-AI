@@ -34,7 +34,7 @@ import type { UserRepository } from '@domain/repositories/business/user.reposito
  * });
  * ```
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class ListUsersUseCase {
   private readonly userRepository = inject<UserRepository>(USER_REPOSITORY);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);

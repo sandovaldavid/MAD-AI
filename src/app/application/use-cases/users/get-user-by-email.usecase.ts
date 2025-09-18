@@ -64,7 +64,7 @@ import type { User } from '@domain/entities/user.entity';
  * @layer Application
  * @module User Management
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class GetUserByEmail {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);

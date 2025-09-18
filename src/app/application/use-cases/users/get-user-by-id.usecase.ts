@@ -29,7 +29,7 @@ import type { UserRepository } from '@domain/repositories/business/user.reposito
  * @since 1.0.0
  * @layer Application
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class GetUserById {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
