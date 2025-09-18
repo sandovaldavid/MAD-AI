@@ -82,18 +82,24 @@ export class UpdateNotificationPreferencesUseCase {
    * ```
    */
   async execute(userId: number, preferences: UserNotificationPreferences): Promise<User> {
+    console.log('[UpdateNotificationPreferencesUseCase] execute called with userId:', userId, 'and preferences:', preferences);
+
     try {
+      console.log('[UpdateNotificationPreferencesUseCase] Logging info about starting update');
       this.logger.info('Starting notification preferences update', {
         operation: 'update_notification_preferences',
         userId: userId.toString(),
       });
 
       // Execute notification preferences update through domain repository
-      // The update is done via the general user update method; notification preferences are not part of UpdateUserPatchContract
-      // All validation and business logic handled by Domain layer
-      // You may need a dedicated method in the repository for notification preferences, but for now, call update with no patch fields
-      const updatedUser = await this.userRepository.update(userId, {});
+      // The update is done via the general user update method with notification preferences
+      console.log('[UpdateNotificationPreferencesUseCase] Calling userRepository.update...');
+      const updatedUser = await this.userRepository.update(userId, {
+        notificationPreferences: preferences,
+      });
+      console.log('[UpdateNotificationPreferencesUseCase] userRepository.update completed, updated user:', updatedUser);
 
+      console.log('[UpdateNotificationPreferencesUseCase] Logging success');
       this.logger.info('Notification preferences updated successfully', {
         operation: 'update_notification_preferences',
         userId: updatedUser.id.toString(),
@@ -101,11 +107,14 @@ export class UpdateNotificationPreferencesUseCase {
 
       return updatedUser;
     } catch (error) {
+      console.error('[UpdateNotificationPreferencesUseCase] Error occurred:', error);
+      console.log('[UpdateNotificationPreferencesUseCase] Logging error');
       this.logger.error('Notification preferences update failed', {
         operation: 'update_notification_preferences',
         userId: userId.toString(),
       });
 
+      console.log('[UpdateNotificationPreferencesUseCase] Transforming error');
       throw this.errorTransformer.transform(error, {
         operation: 'update_notification_preferences',
         userId: userId.toString(),
