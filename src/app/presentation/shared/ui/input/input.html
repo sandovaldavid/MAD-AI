@@ -1,8 +1,8 @@
 <div class="in-group">
   <ng-content select="[prefix]" />
   <input
-    [id]="id() ?? null"
-    [name]="name() ?? null"
+    [attr.id]="id()"
+    [attr.name]="name()"
     [type]="type()"
     [value]="value"
     [placeholder]="placeholder()"
