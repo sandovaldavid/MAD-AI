@@ -41,10 +41,7 @@ export interface DeviceInfo {
  */
 export interface LoginRequest {
   /** User identifier (email or username) */
-  identifier: {
-    type: 'email' | 'username';
-    value: string;
-  };
+  identifier: string;
   /** User password */
   password: string;
   /** Whether to persist session across browser restarts */
