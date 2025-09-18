@@ -44,11 +44,15 @@ export class AuthMapper {
    * @returns Domain layer contract
    */
   static toCredentialsContract(request: LoginRequest): CredentialsContract {
+    // Convert string identifier to Identifier type for domain contract
+    let identifier: Identifier;
+    if (request.identifier.includes('@')) {
+      identifier = { type: 'email', value: request.identifier };
+    } else {
+      identifier = { type: 'username', value: request.identifier };
+    }
     return {
-      identifier: {
-        type: request.identifier.type,
-        value: request.identifier.value,
-      } as Identifier,
+      identifier,
       password: request.password,
       rememberMe: request.rememberMe ?? false,
     };
