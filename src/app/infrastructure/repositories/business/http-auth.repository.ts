@@ -10,7 +10,7 @@ import {
 import { Session } from '@domain/entities/session.entity';
 import { User } from '@domain/entities/user.entity';
 import { ClockPort } from '@domain/repositories/system/clock.repository';
-import { CLOCK_PORT } from '@di/tokens';
+import { CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { HttpErrorTransformer } from '@infrastructure/errors/http-error-transformer';
 import {
   LoginRequestDTO,
@@ -24,6 +24,7 @@ import {
 import { AuthMapper } from '@infrastructure/mappers/auth.mapper';
 import { AuthApiClient } from '@infrastructure/http/clients/auth-api.client';
 import { API_ENDPOINTS_V1 } from '@infrastructure/config/api-endpoints.config';
+import { Logger } from '@/app/core/interfaces/logger.interface';
 
 @Injectable()
 export class HttpAuthRepository implements AuthRepository {
