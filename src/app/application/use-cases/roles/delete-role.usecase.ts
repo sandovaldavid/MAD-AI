@@ -52,7 +52,7 @@ import type { ClockPort } from '@domain/repositories/system/clock.repository';
  * });
  * ```
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class DeleteRoleUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly logger = inject<Logger>(LOGGER_PORT);

@@ -86,7 +86,7 @@ import type { Role } from '@domain/entities/role.entity';
  * @layer Application
  * @module Role Management
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class GetRoleByNameUseCase {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly clock = inject<ClockPort>(CLOCK_PORT);

@@ -94,7 +94,7 @@ import type { Role } from '@domain/entities/role.entity';
  * @layer Application
  * @module Role Management
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class GetUsersByRole {
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);

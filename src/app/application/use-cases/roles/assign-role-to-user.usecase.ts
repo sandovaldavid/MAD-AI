@@ -25,7 +25,7 @@ import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
  * @property {Logger} logger - The logger for recording application events.
  * @property {ApplicationErrorTransformer} errorTransformer - The transformer for application-specific errors.
  */
-@Injectable({ providedIn: 'root' })
+@Injectable()
 export class AssignRoleToUser {
   private readonly roleRepo = inject<RoleRepository>(ROLE_REPOSITORY);
   private readonly userRepo = inject<UserRepository>(USER_REPOSITORY);
