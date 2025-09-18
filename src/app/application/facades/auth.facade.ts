@@ -768,6 +768,8 @@ export class AuthFacade {
     preferences: UserNotificationPreferences,
     opts?: FacadeOpts
   ): Promise<void> {
+    console.log('[AuthFacade] updateNotificationPreferences called with:', preferences);
+
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -775,25 +777,36 @@ export class AuthFacade {
 
     try {
       const currentUser = this._user();
+      console.log('[AuthFacade] Current user:', currentUser ? 'Found' : 'Not found');
+
       if (!currentUser) {
+        console.error('[AuthFacade] No authenticated user found');
         throw new Error('No authenticated user found');
       }
 
+      console.log('[AuthFacade] Calling updateNotificationsUC.execute with userId:', currentUser.id.toString(), 'and preferences:', preferences);
       const updatedUser = await this.updateNotificationsUC.execute(currentUser.id, preferences);
+      console.log('[AuthFacade] updateNotificationsUC.execute completed, updated user:', updatedUser);
+
       this._user.set(updatedUser);
+      console.log('[AuthFacade] User state updated successfully');
 
       // Send success notification
+      console.log('[AuthFacade] Sending success notification');
       await this.notifications.success(
         'Preferences updated!',
         'Your notification preferences have been successfully updated.'
       );
+      console.log('[AuthFacade] Success notification sent');
     } catch (error: unknown) {
+      console.error('[AuthFacade] Error in updateNotificationPreferences:', error);
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       throw error;
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
+        console.log('[AuthFacade] Loading state set to false');
       }
     }
   }
