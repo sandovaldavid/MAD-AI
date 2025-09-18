@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { TitleService } from '@presentation/services/title.service';
 import { BreadcrumbService } from '@presentation/services/breadcrumb.service';
 import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { AuthFacade } from '@application/facades/auth.facade';
-import { User } from '@domain/entities/user.entity';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,8 +14,9 @@ import { User } from '@domain/entities/user.entity';
   imports: [Button, Icon],
 })
 export class Dashboard implements OnInit {
-  readonly User: User | null;
-  readonly username: string | undefined;
+  // Reactive state using signals - initialized in constructor
+  readonly user;
+  readonly username;
   protected readonly titlePage = 'Dashboard';
 
   constructor(
@@ -25,8 +25,9 @@ export class Dashboard implements OnInit {
     public authFacade: AuthFacade,
     private router: Router
   ) {
-    this.User = this.authFacade.user();
-    this.username = this.User?.username?.value; // ✅ Corrección: usar .value del value object
+    // Initialize reactive state in constructor
+    this.user = this.authFacade.user;
+    this.username = computed(() => this.user()?.username?.value);
   }
 
   ngOnInit(): void {
