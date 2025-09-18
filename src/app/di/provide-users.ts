@@ -1,7 +1,28 @@
 import { makeEnvironmentProviders } from '@angular/core';
 import { UsersFacade } from '@application/facades/users/user.facade';
 import { HttpUserRepository } from '@infrastructure/repositories/business/http-user.repository';
-import { USER_REPOSITORY } from './tokens';
+import {
+  USER_REPOSITORY,
+  ACTIVATE_USER_USECASE_PORT,
+  DEACTIVATE_USER_USECASE_PORT,
+  CREATE_USER_USECASE_PORT,
+  DELETE_USER_USECASE_PORT,
+  UPDATE_USER_USECASE_PORT,
+  LIST_USERS_USECASE_PORT,
+  GET_USER_BY_EMAIL_USECASE_PORT,
+  GET_USER_BY_ID_USECASE_PORT,
+  GET_USER_BY_USERNAME_USECASE_PORT,
+} from './tokens';
+
+import { ActivateUser } from '@application/use-cases/users/activate-user.usecase';
+import { DeactivateUser } from '@application/use-cases/users/deactivate-user.usecase';
+import { CreateUser } from '@application/use-cases/users/create-user.usecase';
+import { DeleteUser } from '@application/use-cases/users/delete-user.usecase';
+import { UpdateUserUseCase } from '@application/use-cases/users/update-user.usecase';
+import { ListUsersUseCase } from '@application/use-cases/users/list-users.usecase';
+import { GetUserByEmail } from '@application/use-cases/users/get-user-by-email.usecase';
+import { GetUserById } from '@application/use-cases/users/get-user-by-id.usecase';
+import { GetUserByUsernameUseCase } from '@application/use-cases/users/get-user-by-username.usecase';
 
 /**
  * Users Module Providers
@@ -50,10 +71,45 @@ export function provideUsers() {
       useClass: HttpUserRepository,
     },
 
+    // User Use Case Providers
+    {
+      provide: ACTIVATE_USER_USECASE_PORT,
+      useClass: ActivateUser,
+    },
+    {
+      provide: DEACTIVATE_USER_USECASE_PORT,
+      useClass: DeactivateUser,
+    },
+    {
+      provide: CREATE_USER_USECASE_PORT,
+      useClass: CreateUser,
+    },
+    {
+      provide: DELETE_USER_USECASE_PORT,
+      useClass: DeleteUser,
+    },
+    {
+      provide: UPDATE_USER_USECASE_PORT,
+      useClass: UpdateUserUseCase,
+    },
+    {
+      provide: LIST_USERS_USECASE_PORT,
+      useClass: ListUsersUseCase,
+    },
+    {
+      provide: GET_USER_BY_EMAIL_USECASE_PORT,
+      useClass: GetUserByEmail,
+    },
+    {
+      provide: GET_USER_BY_ID_USECASE_PORT,
+      useClass: GetUserById,
+    },
+    {
+      provide: GET_USER_BY_USERNAME_USECASE_PORT,
+      useClass: GetUserByUsernameUseCase,
+    },
+
     // User Management Facade
     UsersFacade,
-
-    // Note: Use cases are already provided by their own @Injectable({ providedIn: 'root' })
-    // This provider focuses on facade-level dependencies and repository configuration
   ]);
 }
