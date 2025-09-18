@@ -2,6 +2,8 @@ import { Component, Input, Output, EventEmitter, signal, computed } from '@angul
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Icon } from '@presentation/shared/ui/icon/icon';
+import { FormField } from '@presentation/shared/ui/form-field/form-field';
+import { Input as UiInput } from '@presentation/shared/ui/input/input';
 import {
   PageHeader,
   PageHeaderConfig,
@@ -9,7 +11,7 @@ import {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, Icon, PageHeader],
+  imports: [CommonModule, ReactiveFormsModule, Icon, FormField, UiInput, PageHeader],
   selector: 'app-change-password-form',
   templateUrl: './change-password-form.html',
   styleUrls: ['./change-password-form.css'],
