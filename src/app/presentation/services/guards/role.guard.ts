@@ -9,6 +9,6 @@ export const roleGuard =
     const u = auth.user();
     if (!u) return false;
 
-    const byName = (u.getRole.name ?? '').toLowerCase() === requiredName.toLowerCase();
-    return byName || u.getRole.canAccessAdmin();
+    const byName = (u.role.name ?? '').toLowerCase() === requiredName.toLowerCase();
+    return byName || u.role.canAccessAdmin();
   };
