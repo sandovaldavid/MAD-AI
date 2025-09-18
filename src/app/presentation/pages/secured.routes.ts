@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { rolesRoutes } from './roles/roles.routes';
+import { profileRoutes } from './profile/profile.routes';
 import { provideRoles } from '@di/provide-roles';
 import { RolesFacade } from '@application/facades/role';
 
@@ -13,5 +14,10 @@ export const securedRoutes: Routes = [
     path: 'roles',
     children: rolesRoutes,
     providers: [...provideRoles(), RolesFacade],
+  },
+  {
+    path: 'profile',
+    children: profileRoutes,
+    title: 'User Profile',
   },
 ];
