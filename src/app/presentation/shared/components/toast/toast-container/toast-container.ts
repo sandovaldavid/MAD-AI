@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { NOTIFICATION_CONFIG, NotificationConfig } from '@app/di/tokens';
-import { ToastItem } from '../toast-item/toast-item';
+import { ToastItem, ToastViewModel } from '../toast-item/toast-item';
 
 @Component({
   selector: 'app-toast-container',
@@ -22,7 +22,11 @@ export class ToastContainer {
     WARNING: 'warning' as const,
     INFO: 'info' as const,
   };
-  items = this.facade.notifications;
+  // Transform Domain notifications to Presentation view models
+  items = computed(() => {
+    const notifications = this.facade.notifications();
+    return notifications.map((notification) => this.toViewModel(notification));
+  });
 
   cap = () =>
     typeof window !== 'undefined' && window.matchMedia?.('(max-width: 640px)').matches
@@ -33,46 +37,35 @@ export class ToastContainer {
   // In a more complex implementation, you could have different containers for different positions
   allItems = () => this.items().slice(0, this.cap());
 
-  trackId = (_: any, t: any) => t.id;
+  trackId = (_: number, t: ToastViewModel) => t.id;
 
   close(id: string) {
     this.facade.dismiss({ notificationId: id });
   }
 
-  async onAction(id: string, which: 'primary' | 'secondary') {
-    const item = this.items().find((x: any) => x.id === id);
-
-    // For the domain model, actions are in the actions array
-    // This is a simplified mapping - in a real implementation you'd have
-    // better logic to determine which action to use
-    const primaryAction = item?.actions?.[0];
-    const secondaryAction = item?.actions?.[1];
-
-    const act = which === 'primary' ? primaryAction : secondaryAction;
-    if (!act) return;
-
-    try {
-      // Handle different action types
-      if (act.type === 'dismiss') {
-        this.close(id);
-      } else if (act.url) {
-        // Handle navigation actions - you'd implement routing here
-        console.log('Navigate to:', act.url);
-        this.close(id);
-      } else if (act.data) {
-        // Handle custom actions - you'd implement action handlers here
-        console.log('Execute action:', act, act.data);
-        this.close(id);
-      }
-    } catch (error) {
-      console.error('Action execution failed:', error);
-    }
+  async onAction(_id: string, _which: 'primary' | 'secondary') {
+    // Actions are not supported in the simplified notification model
+    // This method is kept for interface compatibility but does nothing
+    return;
   }
 
   pause(id: string) {
-    (this.facade as any).port?.pause?.(id);
+    // Pause functionality not implemented in simplified model
+    console.log('Pause notification:', id);
   }
   resume(id: string) {
-    (this.facade as any).port?.resume?.(id);
+    // Resume functionality not implemented in simplified model
+    console.log('Resume notification:', id);
+  }
+
+  private toViewModel(notification: any): ToastViewModel {
+    return {
+      id: notification.id,
+      type: notification.type,
+      message: notification.message,
+      title: notification.title,
+      description: notification.description,
+      timestamp: notification.timestamp,
+    };
   }
 }
