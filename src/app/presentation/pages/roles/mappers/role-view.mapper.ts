@@ -1,16 +1,20 @@
-import { Role } from '@domain/entities/role.entity';
+import { inject, Injectable } from '@angular/core';
+import { RoleApplicationMapper } from '@application/mappers/role.mapper';
 import { RoleModel } from '../models/role.model';
 
-export const RoleViewMapper = {
-  toModel(e: Role): RoleModel {
+@Injectable({ providedIn: 'root' })
+export class RoleViewMapper {
+  private readonly roleMapper = inject(RoleApplicationMapper);
+
+  toModel(roleSummary: any): RoleModel {
     return {
-      id: e.id,
-      name: e.name,
-      accessLevel: e.getAccessLevel().getValue(),
-      isActive: e.isActive,
-      description: e.description ?? '',
-      userCount: e.userCount,
-      displayName: `${e.name} (L${e.getAccessLevel().getValue()})`,
+      id: roleSummary.id,
+      name: roleSummary.name,
+      accessLevel: roleSummary.accessLevel,
+      isActive: roleSummary.isActive,
+      description: roleSummary.description ?? '',
+      userCount: roleSummary.userCount,
+      displayName: `${roleSummary.name} (L${roleSummary.accessLevel})`,
     };
-  },
-};
+  }
+}

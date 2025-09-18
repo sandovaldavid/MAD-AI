@@ -34,7 +34,7 @@ export class RolePresentationMapper {
    * Maps array of RoleSummary to RoleModel array
    */
   static toRoleModels(roleSummaries: RoleSummary[]): RoleModel[] {
-    return roleSummaries.map(roleSummary => this.toRoleModel(roleSummary));
+    return roleSummaries.map((roleSummary) => this.toRoleModel(roleSummary));
   }
 
   /**
@@ -50,12 +50,18 @@ export class RolePresentationMapper {
    */
   private static getAccessLevelText(level: number): string {
     switch (level) {
-      case 1: return 'L1';
-      case 2: return 'L2';
-      case 3: return 'L3';
-      case 4: return 'L4';
-      case 5: return 'L5';
-      default: return `L${level}`;
+      case 1:
+        return 'L1';
+      case 2:
+        return 'L2';
+      case 3:
+        return 'L3';
+      case 4:
+        return 'L4';
+      case 5:
+        return 'L5';
+      default:
+        return `L${level}`;
     }
   }
 }
