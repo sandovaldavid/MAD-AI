@@ -1,34 +1,29 @@
-import { User } from '@domain/entities/user.entity';
-import { FirstName } from '@domain/value-objects/firstname.vo';
-import { LastName } from '@domain/value-objects/lastname.vo';
+import { inject, Injectable } from '@angular/core';
+import { UserUtilsFacade } from '@application/facades/users/user-utils.facade';
 
 /**
  * User Display Formatting Service
  *
  * @description
  * Handles presentation-specific formatting and display of user information.
- * This service contains logic that is NOT part of the User entity invariants but
- * rather presentation/formatting rules.
+ * This service delegates to Application layer for formatting logic to maintain
+ * Clean Architecture separation.
  *
  * @since 1.0.0
  * @author MAD-AI Development Team
  */
+@Injectable({ providedIn: 'root' })
 export class UserDisplayFormatterService {
+  private readonly userUtilsFacade = inject(UserUtilsFacade);
+
   /**
    * Returns a display name for the user (username or full name).
    *
    * @param user - User entity
    * @returns Display name for UI purposes
-   *
-   * @example
-   * ```typescript
-   * const user = User.create({...});
-   * const displayName = UserDisplayFormatterService.getDisplayName(user);
-   * console.log(displayName); // "john_doe" or "John Doe"
-   * ```
    */
-  static getDisplayName(user: User): string {
-    return user.username.value || this.getFullName(user.firstName, user.lastName);
+  getDisplayName(user: any): string {
+    return this.userUtilsFacade.getDisplayName(user);
   }
 
   /**
@@ -38,8 +33,8 @@ export class UserDisplayFormatterService {
    * @param lastName - User's last name
    * @returns Formatted full name
    */
-  static getFullName(firstName: FirstName, lastName: LastName): string {
-    return `${firstName.value.trim()} ${lastName.value.trim()}`;
+  getFullName(firstName: any, lastName: any): string {
+    return this.userUtilsFacade.getFullName(firstName, lastName);
   }
 
   /**
@@ -48,7 +43,7 @@ export class UserDisplayFormatterService {
    * @param user - User entity
    * @returns Object with different display variants
    */
-  static getDisplayVariants(user: User): {
+  getDisplayVariants(user: any): {
     displayName: string;
     fullName: string;
     username: string;
