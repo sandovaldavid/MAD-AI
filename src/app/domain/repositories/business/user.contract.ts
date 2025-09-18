@@ -1,3 +1,5 @@
+import type { UserNotificationPreferences } from '../../value-objects/user-notification-preferences.vo';
+
 /**
  * Contract for filtering user lists in the MAD-AI system.
  * Provides comprehensive filtering capabilities for user management operations.
@@ -148,6 +150,8 @@ export interface UpdateUserPatchContract {
   roleId?: number;
   /** Updated active status */
   isActive?: boolean;
+  /** Updated notification preferences */
+  notificationPreferences?: UserNotificationPreferences;
 }
 
 /**
