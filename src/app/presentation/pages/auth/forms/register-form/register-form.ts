@@ -13,7 +13,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
-import { RolesFacade } from '@application/facades/roles.facade';
+import { RolesFacade } from '@application/facades/role';
 import type { RegisterRequest } from '@application/types/auth.types';
 
 import { Button } from '@presentation/shared/ui/button/button';
