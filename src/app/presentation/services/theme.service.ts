@@ -40,7 +40,10 @@ export class ThemeService {
       const stored = localStorage.getItem(this.storageKey);
       return (stored as ThemeMode) || null;
     } catch (error) {
-      console.warn(`ThemeService: Error reading from localStorage for key "${this.storageKey}":`, error);
+      console.warn(
+        `ThemeService: Error reading from localStorage for key "${this.storageKey}":`,
+        error
+      );
       return null;
     }
   }
@@ -120,7 +123,10 @@ export class ThemeService {
         localStorage.setItem(this.storageKey, mode);
       }
     } catch (error) {
-      console.warn(`ThemeService: Error writing to localStorage for key "${this.storageKey}":`, error);
+      console.warn(
+        `ThemeService: Error writing to localStorage for key "${this.storageKey}":`,
+        error
+      );
     }
   }
 
