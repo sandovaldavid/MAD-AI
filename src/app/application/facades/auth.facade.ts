@@ -1,12 +1,22 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { LoginUseCase } from '../use-cases/auth/login.usecase';
-import { LogoutUseCase } from '../use-cases/auth/logout.usecase';
-import { GetProfileUseCase } from '../use-cases/auth/get-profile.usecase';
-import { RegisterUseCase } from '../use-cases/auth/register.usecase';
-import { RefreshSessionUseCase } from '../use-cases/auth/refresh-session.usecase';
-import { ConfirmEmailUseCase } from '../use-cases/auth/confirm-email.usecase';
-import { RequestPasswordResetUseCase } from '../use-cases/auth/request-password-reset.usecase';
-import { ConfirmPasswordResetUseCase } from '../use-cases/auth/confirm-password-reset.usecase';
+import {
+  LOGIN_USECASE_PORT,
+  LOGOUT_USECASE_PORT,
+  GET_PROFILE_USECASE_PORT,
+  REGISTER_USECASE_PORT,
+  REFRESH_SESSION_USECASE_PORT,
+  CONFIRM_EMAIL_USECASE_PORT,
+  REQUEST_PASSWORD_RESET_USECASE_PORT,
+  CONFIRM_PASSWORD_RESET_USECASE_PORT,
+} from '@di/tokens';
+import type { LoginUseCase } from '../use-cases/auth/login.usecase';
+import type { LogoutUseCase } from '../use-cases/auth/logout.usecase';
+import type { GetProfileUseCase } from '../use-cases/auth/get-profile.usecase';
+import type { RegisterUseCase } from '../use-cases/auth/register.usecase';
+import type { RefreshSessionUseCase } from '../use-cases/auth/refresh-session.usecase';
+import type { ConfirmEmailUseCase } from '../use-cases/auth/confirm-email.usecase';
+import type { RequestPasswordResetUseCase } from '../use-cases/auth/request-password-reset.usecase';
+import type { ConfirmPasswordResetUseCase } from '../use-cases/auth/confirm-password-reset.usecase';
 import { NotificationsFacade } from './notifications.facade';
 import type {
   LoginRequest,
@@ -18,7 +28,8 @@ import type { User } from '@domain/entities/user.entity';
 import type { Session } from '@domain/entities/session.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import { ApplicationErrorTransformer } from '../errors/application-error.transformer';
-import { LoggerService } from '@core/services/logger.service';
+import { LOGGER_PORT } from '@di/tokens';
+import type { Logger } from '@core/interfaces/logger.interface';
 import type { NavSection } from '@presentation/navigation/types';
 
 /**
@@ -56,17 +67,20 @@ export class AuthFacade {
   // Dependencies
   // ============================================================================
 
-  private readonly loginUC = inject(LoginUseCase);
-  private readonly logoutUC = inject(LogoutUseCase);
-  private readonly getProfileUC = inject(GetProfileUseCase);
-  private readonly registerUC = inject(RegisterUseCase);
-  private readonly refreshUC = inject(RefreshSessionUseCase);
-  private readonly confirmEmailUC = inject(ConfirmEmailUseCase);
-  private readonly reqResetUC = inject(RequestPasswordResetUseCase);
-  private readonly confirmResetUC = inject(ConfirmPasswordResetUseCase);
-
+  private readonly loginUC = inject<LoginUseCase>(LOGIN_USECASE_PORT);
+  private readonly logoutUC = inject<LogoutUseCase>(LOGOUT_USECASE_PORT);
+  private readonly getProfileUC = inject<GetProfileUseCase>(GET_PROFILE_USECASE_PORT);
+  private readonly registerUC = inject<RegisterUseCase>(REGISTER_USECASE_PORT);
+  private readonly refreshUC = inject<RefreshSessionUseCase>(REFRESH_SESSION_USECASE_PORT);
+  private readonly confirmEmailUC = inject<ConfirmEmailUseCase>(CONFIRM_EMAIL_USECASE_PORT);
+  private readonly reqResetUC = inject<RequestPasswordResetUseCase>(
+    REQUEST_PASSWORD_RESET_USECASE_PORT
+  );
+  private readonly confirmResetUC = inject<ConfirmPasswordResetUseCase>(
+    CONFIRM_PASSWORD_RESET_USECASE_PORT
+  );
   private readonly notifications = inject(NotificationsFacade);
-  private readonly logger = inject(LoggerService);
+  private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
   // ============================================================================
@@ -251,6 +265,9 @@ export class AuthFacade {
     this.clearAuthStateForNewOperation();
 
     try {
+      this.logger.info('Attempting login - start', {
+        operation: 'login',
+      });
       const session = await this.loginUC.execute(request);
 
       this._session.set(session);
@@ -760,25 +777,31 @@ export class AuthFacade {
 
     if (!user) {
       // If no user, only show items without role requirements
-      return sections.map((section) => ({
-        ...section,
-        items: section.items.filter((item) => !item.requireRoles || item.requireRoles.length === 0),
-      })).filter((section) => section.items.length > 0);
+      return sections
+        .map((section) => ({
+          ...section,
+          items: section.items.filter(
+            (item) => !item.requireRoles || item.requireRoles.length === 0
+          ),
+        }))
+        .filter((section) => section.items.length > 0);
     }
 
     const userRoleName = user.role.name;
     const isAdmin = user.role.canAccessAdmin();
 
-    return sections.map((section) => ({
-      ...section,
-      items: section.items.filter(
-        (item) =>
-          !item.requireRoles ||
-          item.requireRoles.length === 0 ||
-          isAdmin ||
-          item.requireRoles.some((role) => userRoleName === role)
-      ),
-    })).filter((section) => section.items.length > 0);
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter(
+          (item) =>
+            !item.requireRoles ||
+            item.requireRoles.length === 0 ||
+            isAdmin ||
+            item.requireRoles.some((role) => userRoleName === role)
+        ),
+      }))
+      .filter((section) => section.items.length > 0);
   }
 
   reset(): void {
