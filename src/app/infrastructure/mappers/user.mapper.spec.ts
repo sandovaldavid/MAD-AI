@@ -62,6 +62,11 @@ describe('UserMapper', () => {
       expect(result.role.id).toBe(2);
       expect(result.role.name).toBe('TestRole');
       expect(result.isEmailConfirmed).toBe(true);
+      // Verify notification preferences are correctly mapped
+      expect(result.notificationPreferences).toBeDefined();
+      expect(result.notificationPreferences!.email).toBe(true);
+      expect(result.notificationPreferences!.system).toBe(true);
+      expect(result.notificationPreferences!.task).toBe(true);
     });
   });
 
@@ -321,6 +326,11 @@ describe('UserMapper', () => {
       expect(result.role.id).toBe(2);
       expect(result.role.name).toBe('TestRole');
       expect(result.isEmailConfirmed).toBe(true);
+      // Verify notification preferences are correctly mapped from update response
+      expect(result.notificationPreferences).toBeDefined();
+      expect(result.notificationPreferences!.email).toBe(true);
+      expect(result.notificationPreferences!.system).toBe(true);
+      expect(result.notificationPreferences!.task).toBe(true);
     });
   });
 
