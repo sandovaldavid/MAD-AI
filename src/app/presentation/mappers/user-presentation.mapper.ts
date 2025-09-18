@@ -22,14 +22,13 @@ import {
   BadgeColor,
   ButtonColor,
   UserStatus,
-  TableAction
+  TableAction,
 } from '../models/user.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserPresentationMapper {
-
   /**
    * Maps application user summary to table row view
    */
@@ -43,7 +42,7 @@ export class UserPresentationMapper {
       statusBadge: this.toStatusBadge(user.status),
       lastLogin: this.formatDate(user.lastLogin),
       createdAt: this.formatDate(user.createdAt),
-      actions: this.getTableActions(user)
+      actions: this.getTableActions(user),
     };
   }
 
@@ -51,7 +50,7 @@ export class UserPresentationMapper {
    * Maps application users to table rows
    */
   toTableRows(users: any[]): UserTableRowView[] {
-    return users.map(user => this.toTableRow(user));
+    return users.map((user) => this.toTableRow(user));
   }
 
   /**
@@ -66,7 +65,7 @@ export class UserPresentationMapper {
       role: user.role?.name || 'No Role',
       status: this.mapUserStatus(user.status),
       joinDate: this.formatDate(user.createdAt),
-      lastActivity: this.formatDate(user.lastLogin)
+      lastActivity: this.formatDate(user.lastLogin),
     };
   }
 
@@ -85,7 +84,7 @@ export class UserPresentationMapper {
       joinDate: this.formatDate(user.createdAt),
       lastLogin: this.formatDate(user.lastLogin),
       permissions: this.toPermissions(user.permissions || []),
-      statistics: this.toUserStatistics(user.statistics)
+      statistics: this.toUserStatistics(user.statistics),
     };
   }
 
@@ -101,8 +100,8 @@ export class UserPresentationMapper {
       usersByRole: (stats?.usersByRole || []).map((role: any) => ({
         roleName: role.name,
         count: role.count,
-        percentage: role.percentage
-      }))
+        percentage: role.percentage,
+      })),
     };
   }
 
@@ -114,14 +113,14 @@ export class UserPresentationMapper {
       return {
         label: 'No Role',
         color: 'secondary' as BadgeColor,
-        icon: 'user'
+        icon: 'user',
       };
     }
 
     return {
       label: role.displayName || role.name,
       color: this.getRoleColor(role.name),
-      icon: role.icon || 'shield'
+      icon: role.icon || 'shield',
     };
   }
 
@@ -134,7 +133,7 @@ export class UserPresentationMapper {
     return {
       label: statusConfig.label,
       color: statusConfig.color,
-      icon: statusConfig.icon
+      icon: statusConfig.icon,
     };
   }
 
@@ -142,12 +141,12 @@ export class UserPresentationMapper {
    * Maps permissions to permission views
    */
   private toPermissions(permissions: any[]): PermissionView[] {
-    return permissions.map(permission => ({
+    return permissions.map((permission) => ({
       id: permission.id,
       name: permission.name,
       description: permission.description,
       category: permission.category,
-      granted: permission.granted
+      granted: permission.granted,
     }));
   }
 
@@ -160,14 +159,14 @@ export class UserPresentationMapper {
         label: 'Edit',
         icon: 'pencil',
         color: 'primary' as ButtonColor,
-        action: 'edit'
+        action: 'edit',
       },
       {
         label: 'View',
         icon: 'eye',
         color: 'info' as ButtonColor,
-        action: 'view'
-      }
+        action: 'view',
+      },
     ];
 
     // Add status-specific actions
@@ -176,14 +175,14 @@ export class UserPresentationMapper {
         label: 'Deactivate',
         icon: 'pause',
         color: 'warning' as ButtonColor,
-        action: 'deactivate'
+        action: 'deactivate',
       });
     } else {
       actions.push({
         label: 'Activate',
         icon: 'play',
         color: 'success' as ButtonColor,
-        action: 'activate'
+        action: 'activate',
       });
     }
 
@@ -191,7 +190,7 @@ export class UserPresentationMapper {
       label: 'Delete',
       icon: 'trash',
       color: 'danger' as ButtonColor,
-      action: 'delete'
+      action: 'delete',
     });
 
     return actions;
@@ -214,7 +213,7 @@ export class UserPresentationMapper {
     return dateObj.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   }
 
@@ -241,11 +240,11 @@ export class UserPresentationMapper {
    */
   private getRoleColor(roleName: string): BadgeColor {
     const colorMap: Record<string, BadgeColor> = {
-      'admin': 'danger',
-      'manager': 'warning',
-      'user': 'info',
-      'viewer': 'secondary',
-      'editor': 'success'
+      admin: 'danger',
+      manager: 'warning',
+      user: 'info',
+      viewer: 'secondary',
+      editor: 'success',
     };
 
     return colorMap[roleName?.toLowerCase()] || 'secondary';
