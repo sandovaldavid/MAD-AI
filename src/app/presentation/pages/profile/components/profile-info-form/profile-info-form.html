@@ -1,160 +1,185 @@
 <div class="profile-info-form">
-  <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Form Header -->
-    <div class="form-header">
-      <h3 class="form-title">Personal Information</h3>
-      <p class="form-description">
-        Update your personal details. Changes will be saved to your account.
-      </p>
-    </div>
+  <!-- Header Section -->
+  <div class="profile-form-header">
+    <!-- Page Header -->
+    <app-page-header [config]="headerConfig()" class="embedded-header" />
 
-    <!-- First Name Field -->
-    <div class="form-field">
-      <label for="firstName" class="field-label"> First Name * </label>
-      <input
-        id="firstName"
-        type="text"
-        formControlName="firstName"
-        class="field-input"
-        [class.error]="isFieldInvalid('firstName')"
-        placeholder="Enter your first name"
-        autocomplete="given-name" />
-
-      @if (isFieldInvalid('firstName')) {
-        <div class="field-error">
-          @if (profileForm.get('firstName')?.errors?.['required']) {
-            <span>First name is required</span>
-          }
-          @if (profileForm.get('firstName')?.errors?.['minlength']) {
-            <span>First name must be at least 2 characters</span>
-          }
-          @if (profileForm.get('firstName')?.errors?.['maxlength']) {
-            <span>First name cannot exceed 50 characters</span>
-          }
-          @if (profileForm.get('firstName')?.errors?.['pattern']) {
-            <span>First name can only contain letters and spaces</span>
-          }
+    <div class="flex items-center gap-2">
+      @if (form.dirty) {
+        <div class="flex items-center gap-2 text-warning-600 dark:text-warning-400">
+          <ui-icon name="alert-circle" variant="outline" size="sm"></ui-icon>
+          <span class="text-sm">Unsaved changes</span>
+        </div>
+      }
+      @if (form.valid && !form.dirty) {
+        <div class="flex items-center gap-2 text-successful-600 dark:text-successful-400">
+          <ui-icon name="check-circle" variant="filled" size="sm"></ui-icon>
+          <span class="text-sm">Up to date</span>
         </div>
       }
     </div>
+  </div>
 
-    <!-- Last Name Field -->
-    <div class="form-field">
-      <label for="lastName" class="field-label"> Last Name * </label>
-      <input
-        id="lastName"
-        type="text"
-        formControlName="lastName"
-        class="field-input"
-        [class.error]="isFieldInvalid('lastName')"
-        placeholder="Enter your last name"
-        autocomplete="family-name" />
+  <!-- Form Content -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="profile-form-content">
+    <!-- Personal Details Section -->
+    <div class="form-section">
+      <div class="section-grid">
+        <!-- Username -->
+        <ui-form-field
+          class="col-span-2"
+          label="Username"
+          [error]="getFieldErrorMessage('username')"
+          [required]="true"
+          controlId="username">
+          <ui-input
+            id="username"
+            formControlName="username"
+            placeholder="Enter your username"
+            autocomplete="username">
+          </ui-input>
+        </ui-form-field>
 
-      @if (isFieldInvalid('lastName')) {
-        <div class="field-error">
-          @if (profileForm.get('lastName')?.errors?.['required']) {
-            <span>Last name is required</span>
-          }
-          @if (profileForm.get('lastName')?.errors?.['minlength']) {
-            <span>Last name must be at least 2 characters</span>
-          }
-          @if (profileForm.get('lastName')?.errors?.['maxlength']) {
-            <span>Last name cannot exceed 50 characters</span>
-          }
-          @if (profileForm.get('lastName')?.errors?.['pattern']) {
-            <span>Last name can only contain letters and spaces</span>
-          }
+        <!-- First Name -->
+        <ui-form-field
+          label="First Name"
+          [error]="getFieldErrorMessage('firstName')"
+          [required]="true"
+          controlId="firstName">
+          <ui-input
+            id="firstName"
+            formControlName="firstName"
+            placeholder="Enter your first name"
+            autocomplete="given-name">
+          </ui-input>
+        </ui-form-field>
+
+        <!-- Last Name -->
+        <ui-form-field
+          label="Last Name"
+          [error]="getFieldErrorMessage('lastName')"
+          [required]="true"
+          controlId="lastName">
+          <ui-input
+            id="lastName"
+            formControlName="lastName"
+            placeholder="Enter your last name"
+            autocomplete="family-name">
+          </ui-input>
+        </ui-form-field>
+
+        <!-- Email -->
+        <ui-form-field
+          class="col-span-2"
+          label="Email Address"
+          [error]="getFieldErrorMessage('email')"
+          [required]="true"
+          controlId="email">
+          <ui-input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="Enter your email address"
+            autocomplete="email">
+          </ui-input>
+        </ui-form-field>
+      </div>
+    </div>
+
+    <!-- Account Information Section (Read-only) -->
+    <div class="form-section">
+      <h3 class="section-title">Account Information</h3>
+      <div class="section-grid">
+        <!-- Role Information (Read-only) -->
+        <div class="info-item">
+          <label class="info-label">Role</label>
+          <div class="info-value">
+            <div class="role-badge">
+              <ui-icon name="shield-check" variant="outline" size="sm" class="role-icon"></ui-icon>
+              <span>{{ roleName() }}</span>
+            </div>
+          </div>
         </div>
-      }
-    </div>
 
-    <!-- Username Field -->
-    <div class="form-field">
-      <label for="username" class="field-label"> Username * </label>
-      <input
-        id="username"
-        type="text"
-        formControlName="username"
-        class="field-input"
-        [class.error]="isFieldInvalid('username')"
-        placeholder="Enter your username"
-        autocomplete="username" />
-
-      @if (isFieldInvalid('username')) {
-        <div class="field-error">
-          @if (profileForm.get('username')?.errors?.['required']) {
-            <span>Username is required</span>
-          }
-          @if (profileForm.get('username')?.errors?.['minlength']) {
-            <span>Username must be at least 3 characters</span>
-          }
-          @if (profileForm.get('username')?.errors?.['maxlength']) {
-            <span>Username cannot exceed 30 characters</span>
-          }
-          @if (profileForm.get('username')?.errors?.['pattern']) {
-            <span>Username can only contain letters, numbers, and underscores</span>
-          }
+        <!-- Status Information (Read-only) -->
+        <div class="info-item">
+          <label class="info-label">Account Status</label>
+          <div class="info-value">
+            <div [class]="'status-badge ' + statusClass()">
+              <ui-icon
+                [name]="statusIcon()"
+                variant="outline"
+                size="sm"
+                class="status-icon"></ui-icon>
+              <span>{{ statusText() }}</span>
+            </div>
+          </div>
         </div>
-      }
-    </div>
 
-    <!-- Email Field -->
-    <div class="form-field">
-      <label for="email" class="field-label"> Email Address * </label>
-      <input
-        id="email"
-        type="email"
-        formControlName="email"
-        class="field-input"
-        [class.error]="isFieldInvalid('email')"
-        placeholder="Enter your email address"
-        autocomplete="email" />
-
-      @if (isFieldInvalid('email')) {
-        <div class="field-error">
-          @if (profileForm.get('email')?.errors?.['required']) {
-            <span>Email address is required</span>
-          }
-          @if (profileForm.get('email')?.errors?.['email']) {
-            <span>Please enter a valid email address</span>
-          }
-          @if (profileForm.get('email')?.errors?.['maxlength']) {
-            <span>Email address cannot exceed 254 characters</span>
-          }
+        <!-- Account Created (Read-only) -->
+        <div class="info-item" *ngIf="createdAtText()">
+          <label class="info-label">Account Created</label>
+          <div class="info-value">{{ createdAtText() }}</div>
         </div>
-      }
-    </div>
 
-    <!-- Form Actions -->
-    <div class="form-actions">
-      <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="isSubmitting()">
-        Cancel
-      </button>
-
-      <button
-        type="submit"
-        class="btn-primary"
-        [disabled]="!profileForm.valid || !hasChanges() || isSubmitting()">
-        @if (!isSubmitting()) {
-          <span>Save Changes</span>
-        }
-        @if (isSubmitting()) {
-          <span class="loading-content">
-            <span class="loading-spinner"></span>
-            Saving...
-          </span>
-        }
-      </button>
-    </div>
-
-    <!-- Form Status Info -->
-    @if (hasChanges() && profileForm.valid) {
-      <div class="form-status">
-        <div class="status-info">
-          <span class="status-icon">ⓘ</span>
-          <span class="status-text">You have unsaved changes</span>
+        <!-- Last Activity (Read-only) -->
+        <div class="info-item" *ngIf="lastActivityText()">
+          <label class="info-label">Last Activity</label>
+          <div class="info-value">{{ lastActivityText() }}</div>
         </div>
       </div>
-    }
+    </div>
+    <!-- Action Bar -->
+    <div class="profile-form-actions">
+      <div class="flex items-center gap-4">
+        <!-- Status Indicator -->
+        @if (form.pending) {
+          <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+            <ui-icon
+              name="arrow-clockwise"
+              variant="outline"
+              size="sm"
+              class="animate-spin"></ui-icon>
+            <span class="text-sm">Validating...</span>
+          </div>
+        }
+
+        @if (form.dirty && !form.pending) {
+          <div class="flex items-center gap-2 text-info-600 dark:text-info-400">
+            <ui-icon name="info" variant="filled" size="sm"></ui-icon>
+            <span class="text-sm">{{ form.valid ? 'Ready to save' : 'Please fix errors' }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="flex gap-3">
+        <!-- Cancel/Reset Button -->
+        @if (form.dirty) {
+          <ui-button
+            variant="ghost"
+            size="md"
+            type="button"
+            (click)="onCancel()"
+            [disabled]="form.pending">
+            <ui-icon name="x-mark" variant="outline" size="sm"></ui-icon>
+            Reset Changes
+          </ui-button>
+        }
+
+        <!-- Save Button -->
+        <ui-button
+          variant="primary"
+          size="md"
+          type="submit"
+          [disabled]="form.invalid || form.pending || !form.dirty">
+          <ui-icon name="check" variant="filled" size="sm"></ui-icon>
+          @if (form.pending) {
+            Saving...
+          } @else {
+            Save Changes
+          }
+        </ui-button>
+      </div>
+    </div>
   </form>
 </div>

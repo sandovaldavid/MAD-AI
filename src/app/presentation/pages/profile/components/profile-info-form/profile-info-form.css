@@ -1,77 +1,185 @@
 @reference '../../../../../../styles.css';
 
+/* Profile Info Form Container */
 .profile-info-form {
-  @apply max-w-2xl;
+  @apply flex flex-col gap-8 max-w-none w-full p-8;
 }
 
-.form-header {
-  @apply mb-6 pb-4 border-b border-neutral-200;
+/* Header Section */
+.profile-form-header {
+  @apply flex justify-between items-center gap-6 p-6 rounded-2xl border border-neutral-200 bg-white dark:border-neutral-600 dark:bg-neutral-800;
 }
 
-.form-title {
-  @apply text-xl font-semibold text-neutral-900 mb-2;
+/* Form Content */
+.profile-form-content {
+  @apply flex flex-col gap-8;
 }
 
-.form-description {
-  @apply text-neutral-600;
+/* Form Sections */
+.form-section {
+  @apply bg-white dark:bg-neutral-800 p-6 rounded-2xl border border-neutral-200 dark:border-neutral-600;
 }
 
-.form-field {
-  @apply mb-6;
+/* Section Title */
+.section-title {
+  @apply text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-4;
 }
 
-.field-label {
-  @apply block text-sm font-medium text-neutral-900 mb-2;
+/* Form Grid Layout - Responsive Grid for Full Width Usage */
+.section-grid {
+  @apply grid gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-.field-input {
-  @apply w-full px-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors duration-200 bg-white text-neutral-900;
+/* Column span utilities for specific fields */
+.col-span-2 {
+  grid-column: span 2 / span 2;
 }
 
-.field-input.error {
-  @apply border-error-500 focus:ring-error-500 focus:border-error-500;
+/* Ensure email field takes full width on large screens */
+@media (min-width: 768px) {
+  .section-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .col-span-2 {
+    grid-column: 1 / -1;
+  }
 }
 
-.field-input:disabled {
-  @apply bg-gray-700 text-gray-300 cursor-not-allowed;
+/* Action Bar */
+.profile-form-actions {
+  @apply flex items-center justify-between gap-4 p-6 rounded-2xl border border-neutral-200 bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900/50;
 }
 
-.field-error {
-  @apply mt-2 text-sm text-error-600;
+/* Status indicators in actions */
+.profile-form-actions .flex:first-child {
+  @apply flex items-center gap-4;
 }
 
-.form-actions {
-  @apply flex justify-end space-x-3 pt-6 border-t border-neutral-200;
+.profile-form-actions .flex:last-child {
+  @apply flex gap-3;
 }
 
-.btn-primary {
-  @apply flex items-center space-x-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:bg-primary-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium;
+/* Read-only Information Item */
+.info-item {
+  @apply flex flex-col gap-2 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800/50;
 }
 
-.btn-secondary {
-  @apply px-6 py-3 border border-neutral-200 text-neutral-600 rounded-lg hover:bg-neutral-50 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 font-medium;
+.info-label {
+  @apply text-sm font-medium text-neutral-500 dark:text-neutral-400;
 }
 
-.loading-content {
-  @apply flex items-center space-x-2;
+.info-value {
+  @apply text-base font-medium text-neutral-900 dark:text-neutral-100;
 }
 
-.loading-spinner {
-  @apply w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin;
+/* Role Badge */
+.role-badge {
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 bg-primary-100 text-primary-700 font-medium dark:bg-primary-900/30 dark:text-primary-300;
 }
 
-.form-status {
-  @apply mt-4;
+.role-icon {
+  @apply text-primary-500 dark:text-primary-400;
 }
 
-.status-info {
-  @apply flex items-center space-x-2 p-3 bg-warning-50 border border-warning-200 rounded-lg;
+/* Status Badge */
+.status-badge {
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1 font-medium;
 }
 
-.status-icon {
-  @apply text-warning-600;
+.status-badge.status-active {
+  @apply bg-successful-100 text-successful-700 dark:bg-successful-900/30 dark:text-successful-300;
 }
 
-.status-text {
-  @apply text-sm text-warning-700;
+.status-badge.status-inactive {
+  @apply bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300;
+}
+
+.status-badge.status-pending {
+  @apply bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-300;
+}
+
+.status-badge.status-suspended {
+  @apply bg-error-100 text-error-700 dark:bg-error-900/30 dark:text-error-300;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+  .profile-form-header {
+    @apply flex-col items-start gap-4 p-4;
+  }
+
+  .form-section {
+    @apply p-4;
+  }
+
+  .section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .col-span-2 {
+    grid-column: span 1 / span 1;
+  }
+
+  .profile-form-actions {
+    @apply flex-col items-stretch gap-4 p-4;
+  }
+
+  .profile-form-actions .flex:first-child,
+  .profile-form-actions .flex:last-child {
+    @apply justify-center;
+  }
+}
+
+/* Extra Large Screens - Take advantage of full width */
+@media (min-width: 1536px) {
+  .profile-info-form {
+    @apply max-w-none;
+  }
+
+  .section-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+}
+
+/* Professional Styling Enhancements */
+.profile-form-header,
+.form-section,
+.profile-form-actions {
+  @apply transition-all duration-200;
+}
+
+/* Focus within sections for better accessibility */
+.form-section:focus-visible {
+  @apply ring-2 ring-primary-500/25 border-primary-300
+  dark:ring-primary-400/25 dark:border-primary-600;
+}
+
+/* Status indicator styling */
+.profile-form-actions .text-warning-600 {
+  @apply animate-pulse;
+}
+
+/* Professional spacing and typography */
+.section-header h3 {
+  @apply tracking-tight;
+}
+
+.profile-form-header h2 {
+  @apply tracking-tight;
+}
+
+/* Ensure consistent spacing */
+.profile-info-form > * + * {
+  @apply mt-0;
+}
+
+/* Loading state improvements */
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
