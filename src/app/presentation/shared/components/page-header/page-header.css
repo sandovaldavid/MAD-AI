@@ -1,5 +1,10 @@
 @reference '../../../../../styles.css';
 
+/* Add this to the page-header.css file */
+:host.embedded-header .page-header {
+  margin-bottom: 0;
+}
+
 .page-header {
   @apply space-y-4 mb-8;
 }
