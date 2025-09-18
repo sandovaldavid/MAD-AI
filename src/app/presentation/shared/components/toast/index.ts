@@ -35,13 +35,3 @@ export type {
   UINotificationResponsive,
   UINotificationSystemConfig,
 } from './types/ui-notification.types';
-
-// Services
-export { NotificationActionRegistryService } from './services/notification-action-registry.service';
-
-// Mappers
-export {
-  NotificationUIMapper,
-  NotificationActionFactory,
-  CommonNotificationActions,
-} from './mappers/notification-ui.mapper';
