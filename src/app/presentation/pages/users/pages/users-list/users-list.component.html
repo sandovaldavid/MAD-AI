@@ -3,22 +3,32 @@
   <!-- Page Header -->
   <app-page-header [config]="headerConfig()" />
 
-  <!-- User Filter -->
-  <app-user-filter
-    [availableRoles]="availableRoleNames()"
-    [loading]="loading()"
-    (filtersChange)="onFilterChange($event)">
-  </app-user-filter>
+  <!-- User Filter and View Controls -->
+  <div class="filter-controls">
+    <app-user-filter
+      [availableRoles]="availableRoleNames()"
+      [loading]="loading()"
+      (filtersChange)="onFilterChange($event)">
+    </app-user-filter>
+
+    <ui-view-toggle
+      [availableViews]="availableViews()"
+      [selectedView]="viewMode()"
+      [compact]="false"
+      [disabled]="loading()"
+      (viewChange)="onViewModeChange($event)">
+    </ui-view-toggle>
+  </div>
 
   <!-- Bulk Actions Toolbar -->
   @if (selectedUsers().length > 0) {
     <ui-bulk-actions-toolbar
       [selectedCount]="selectedUsers().length"
-      [totalCount]="users().length"
-      [actions]="bulkActions()"
-      [loading]="loading()"
-      (actionTriggered)="onBulkAction($event)"
-      (selectionCleared)="onClearSelection()">
+      [quickActions]="bulkActions()"
+      [executingAction]="null"
+      [title]="'users selected'"
+      (quickActionTriggered)="onBulkAction($event)"
+      (clearSelection)="onClearSelection()">
     </ui-bulk-actions-toolbar>
   }
 
@@ -33,21 +43,43 @@
     </div>
   }
 
-  <!-- Users Table -->
-  <div class="users-table-container">
-    <app-user-table
-      [users]="paginatedUsers()"
-      [loading]="loading()"
-      [sortConfig]="sortConfig()"
-      [userActions]="userActions()"
-      [enableSelection]="true"
-      [selectedUsers]="selectedUsers()"
-      [showAvatars]="true"
-      [compact]="false"
-      (userAction)="onUserAction($event)"
-      (selectionChange)="onSelectionChange($event)"
-      (sortChange)="onSortChange($event)">
-    </app-user-table>
+  <!-- Users Content - Table or Grid View -->
+  <div class="users-content">
+    @if (isTableView()) {
+      <!-- Table View -->
+      <div class="users-table-container">
+        <app-user-table
+          [users]="paginatedUsers()"
+          [loading]="loading()"
+          [sortConfig]="sortConfig()"
+          [userActions]="userActions()"
+          [enableSelection]="true"
+          [selectedUsers]="selectedUsers()"
+          [showAvatars]="true"
+          [compact]="false"
+          (userAction)="onUserAction($event)"
+          (selectionChange)="onSelectionChange($event)"
+          (sortChange)="onSortChange($event)">
+        </app-user-table>
+      </div>
+    } @else {
+      <!-- Grid/Card View -->
+      <div class="users-grid-container">
+        <app-users-grid
+          [users]="paginatedUsers()"
+          [userActions]="userActions()"
+          [loading]="loading()"
+          [compact]="false"
+          [enableSelection]="true"
+          [selectedUsers]="selectedUserIds()"
+          [showActions]="true"
+          [showDetails]="true"
+          (userAction)="onCardAction($event)"
+          (cardClick)="onCardClick($event)"
+          (selectionChange)="onGridSelectionChange($event)">
+        </app-users-grid>
+      </div>
+    }
   </div>
 
   <!-- Pagination -->

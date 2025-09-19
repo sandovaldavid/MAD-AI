@@ -14,12 +14,12 @@
 
 /* Page Layout */
 .users-list-page {
-  @apply flex flex-col h-full bg-neutral-50 dark:bg-neutral-900 p-6 gap-6;
+  @apply flex flex-col h-full bg-neutral-50 dark:bg-primary-950 p-6 gap-6;
 }
 
 /* Page Header */
 .page-header {
-  @apply bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
+  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
 }
 
 .header-content {
@@ -79,7 +79,32 @@
   @apply text-sm text-error-600 dark:text-error-300 mb-4;
 }
 
+/* Filter Controls */
+.filter-controls {
+  @apply flex items-center justify-between gap-4 mb-8;
+}
+
+app-user-filter {
+  @apply flex-1;
+}
+
+@media (max-width: 768px) {
+  .filter-controls {
+    @apply flex-col items-stretch gap-3;
+  }
+}
+
+/* Users Content */
+.users-content {
+  @apply flex-1 min-h-0 mb-8;
+}
+
 /* Users Table Container */
 .users-table-container {
-  @apply bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden;
+  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden;
+}
+
+/* Users Grid Container */
+.users-grid-container {
+  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
 }

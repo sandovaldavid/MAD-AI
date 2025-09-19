@@ -62,9 +62,17 @@ import {
 import { UserFilterComponent, FilterChangeEvent } from '../../components/user-filter/user-filter';
 import {
   BulkActionsToolbar,
-  BulkActionEvent,
   BulkAction,
-} from '../../components/bulk-actions-toolbar/bulk-actions-toolbar';
+} from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
+import {
+  UsersGridComponent,
+  UserSelectionChangeEvent as GridSelectionEvent,
+} from '../../components/users-grid/users-grid';
+import { UserCardActionEvent } from '../../components/user-card/user-card';
+import {
+  ViewToggleComponent,
+  ViewMode,
+} from '@presentation/shared/components/view-toggle/view-toggle';
 import {
   Pagination,
   PageChangeEvent,
@@ -99,6 +107,8 @@ import {
     PageHeader,
     UserTableComponent,
     UserFilterComponent,
+    UsersGridComponent,
+    ViewToggleComponent,
     BulkActionsToolbar,
     Pagination,
     ConfirmationModal,
@@ -214,6 +224,31 @@ export class UsersListPage implements OnInit {
   private readonly _selectedUsers = signal<UserDisplayData[]>([]);
 
   /**
+   * View mode state (table or card)
+   */
+  private readonly _viewMode = signal<string>('table');
+
+  /**
+   * Available view modes configuration
+   */
+  private readonly _availableViews = signal<ViewMode[]>([
+    {
+      id: 'table',
+      label: 'Table',
+      icon: 'table-cells',
+      description: 'View users in a structured table format',
+      shortcut: 'T',
+    },
+    {
+      id: 'card',
+      label: 'Cards',
+      icon: 'grid',
+      description: 'View users as individual cards in a grid layout',
+      shortcut: 'C',
+    },
+  ]);
+
+  /**
    * Page header configuration
    */
   readonly headerConfig = computed(
@@ -225,7 +260,7 @@ export class UsersListPage implements OnInit {
       actions: [
         {
           label: 'Actualizar',
-          icon: 'refresh',
+          icon: 'reload',
           variant: 'secondary' as const,
           action: () => this.loadUsers(),
           disabled: false,
@@ -259,6 +294,15 @@ export class UsersListPage implements OnInit {
   readonly paginationConfig = this._paginationConfig.asReadonly();
   readonly bulkActions = this._bulkActions.asReadonly();
   readonly confirmationModal = this._confirmationModal.asReadonly();
+  readonly viewMode = this._viewMode.asReadonly();
+  readonly availableViews = this._availableViews.asReadonly();
+
+  // Computed property for card layout
+  readonly isCardView = computed(() => this._viewMode() === 'card');
+  readonly isTableView = computed(() => this._viewMode() === 'table');
+
+  // Computed property for selected user IDs
+  readonly selectedUserIds = computed(() => this.selectedUsers().map((u) => u.id));
 
   // Transform User entities to UserDisplayData for the UI
   readonly users = computed(() => {
@@ -347,7 +391,9 @@ export class UsersListPage implements OnInit {
 
     // Apply role filter
     if (criteria.roleFilter && criteria.roleFilter !== '') {
-      filtered = filtered.filter((user) => user.role.toLowerCase() === criteria.roleFilter!.toLowerCase());
+      filtered = filtered.filter(
+        (user) => user.role.toLowerCase() === criteria.roleFilter!.toLowerCase()
+      );
     }
 
     return filtered;
@@ -398,7 +444,7 @@ export class UsersListPage implements OnInit {
     const baseConfig = this._paginationConfig();
     const totalItems = this.totalFilteredItems();
     const totalPages = this.totalPages();
-    
+
     return {
       ...baseConfig,
       totalItems,
@@ -455,10 +501,72 @@ export class UsersListPage implements OnInit {
   }
 
   /**
-   * Handle user selection changes for bulk operations
+   * Handle user selection changes for bulk operations (from table)
    */
   onSelectionChange(event: UserSelectionEvent): void {
     this._selectedUsers.set(event.selectedUsers);
+  }
+
+  /**
+   * Handle user selection changes from grid view
+   */
+  onGridSelectionChange(event: GridSelectionEvent): void {
+    const currentSelected = this._selectedUsers();
+    let updatedSelection: UserDisplayData[];
+
+    if (event.selected) {
+      // Add user to selection if not already selected
+      if (!currentSelected.find((user) => user.id === event.user.id)) {
+        updatedSelection = [...currentSelected, event.user];
+      } else {
+        updatedSelection = currentSelected;
+      }
+    } else {
+      // Remove user from selection
+      updatedSelection = currentSelected.filter((user) => user.id !== event.user.id);
+    }
+
+    this._selectedUsers.set(updatedSelection);
+  }
+
+  /**
+   * Handle view mode changes
+   */
+  onViewModeChange(viewMode: string): void {
+    this._viewMode.set(viewMode);
+    // Clear selection when switching views
+    this._selectedUsers.set([]);
+  }
+
+  /**
+   * Handle user card actions from grid view
+   */
+  onCardAction(event: UserCardActionEvent): void {
+    // Filter out 'select' action as it's not supported in UserActionEvent
+    if (event.action === 'select') {
+      // Handle selection separately - toggle user selection
+      const isSelected = this.selectedUsers().some((u) => u.id === event.user.id);
+      this.onGridSelectionChange({
+        user: event.user,
+        selected: !isSelected,
+      });
+      return;
+    }
+
+    // Handle supported actions
+    if (event.action === 'view' || event.action === 'edit') {
+      this.onUserAction({
+        action: event.action,
+        user: event.user,
+      });
+    }
+  }
+
+  /**
+   * Handle card clicks from grid view
+   */
+  onCardClick(user: UserDisplayData): void {
+    this.viewUser(user.id);
   }
 
   /**
@@ -525,14 +633,14 @@ export class UsersListPage implements OnInit {
   /**
    * Handle bulk actions
    */
-  onBulkAction(event: BulkActionEvent): void {
+  onBulkAction(event: { actionId: string; selectedCount: number }): void {
     const selectedUsers = this._selectedUsers();
 
     if (selectedUsers.length === 0) {
       return;
     }
 
-    switch (event.action) {
+    switch (event.actionId) {
       case 'activate':
         this.showConfirmationModal(
           {
@@ -591,7 +699,7 @@ export class UsersListPage implements OnInit {
   onPageChange(event: PageChangeEvent): void {
     const maxPages = this.totalPages();
     const requestedPage = Math.max(1, Math.min(event.page, maxPages));
-    
+
     this._paginationConfig.update((config) => ({
       ...config,
       currentPage: requestedPage,
