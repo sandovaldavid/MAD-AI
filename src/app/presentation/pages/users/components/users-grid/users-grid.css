@@ -1,0 +1,312 @@
+/**
+ * Users Grid Component Styles
+ *
+ * @description
+ * Styles for the Users Grid component following MAD-AI design system.
+ * Uses Tailwind CSS v4.1 with custom color palette and responsive grid layout.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ * @layer Presentation
+ */
+
+@reference '../../../../../../styles.css';
+
+/* ============================================================================
+   Screen Reader Support
+   ============================================================================ */
+
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* ============================================================================
+   Grid Container
+   ============================================================================ */
+
+.users-grid-container {
+  @apply relative w-full min-h-[200px];
+}
+
+.users-grid-container.loading {
+  @apply pointer-events-none;
+}
+
+/* ============================================================================
+   Users Grid Layout
+   ============================================================================ */
+
+.users-grid {
+  @apply grid gap-6 w-full;
+
+  /* Responsive grid layout */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+
+  /* Ensure minimum height for empty grids */
+  min-height: 100px;
+}
+
+.users-grid.compact {
+  @apply gap-4;
+  /* Smaller cards for compact mode */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+/* ============================================================================
+   Loading States
+   ============================================================================ */
+
+.grid-loading {
+  @apply flex items-center justify-center min-h-[300px] w-full;
+}
+
+.loading-message {
+  @apply flex flex-col items-center gap-4 text-center;
+}
+
+.loading-spinner {
+  @apply animate-spin text-primary-500 dark:text-primary-400;
+}
+
+.loading-text {
+  @apply text-sm font-medium text-secondary-600 dark:text-secondary-400;
+}
+
+/* Loading overlay for existing content */
+.loading-overlay {
+  @apply absolute inset-0 bg-white/80 dark:bg-primary-950/80 backdrop-blur-sm
+         flex items-center justify-center z-10 rounded-lg;
+}
+
+.overlay-content {
+  @apply flex items-center gap-2 px-4 py-2 bg-white dark:bg-primary-900
+         rounded-lg shadow-lg border border-secondary-200 dark:border-secondary-700;
+}
+
+/* ============================================================================
+   Empty State
+   ============================================================================ */
+
+.grid-empty {
+  @apply flex items-center justify-center min-h-[400px] w-full;
+}
+
+.empty-content {
+  @apply flex flex-col items-center gap-4 text-center max-w-md mx-auto p-8;
+}
+
+.empty-icon {
+  @apply text-secondary-400 dark:text-secondary-500 mb-2;
+}
+
+.empty-title {
+  @apply text-lg font-medium text-secondary-900 dark:text-secondary-100;
+}
+
+.empty-description {
+  @apply text-sm text-secondary-600 dark:text-secondary-400 leading-relaxed;
+}
+
+/* ============================================================================
+   Responsive Grid Breakpoints
+   ============================================================================ */
+
+/* Large screens: 4 columns max */
+@media (min-width: 1280px) {
+  .users-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    @apply gap-8;
+  }
+
+  .users-grid.compact {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    @apply gap-6;
+  }
+}
+
+/* Desktop: 3 columns max */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .users-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    max-width: none;
+  }
+
+  .users-grid.compact {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+/* Tablet: 2 columns max */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .users-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    @apply gap-4;
+  }
+
+  .users-grid.compact {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    @apply gap-3;
+  }
+}
+
+/* Mobile landscape: 2 columns */
+@media (min-width: 640px) and (max-width: 767px) {
+  .users-grid {
+    grid-template-columns: repeat(2, 1fr);
+    @apply gap-4;
+  }
+
+  .users-grid.compact {
+    grid-template-columns: repeat(2, 1fr);
+    @apply gap-3;
+  }
+}
+
+/* Mobile portrait: 1 column */
+@media (max-width: 639px) {
+  .users-grid {
+    grid-template-columns: 1fr;
+    @apply gap-3;
+  }
+
+  .users-grid.compact {
+    grid-template-columns: 1fr;
+    @apply gap-2;
+  }
+
+  .empty-content {
+    @apply p-6;
+  }
+
+  .empty-title {
+    @apply text-base;
+  }
+
+  .empty-description {
+    @apply text-xs;
+  }
+}
+
+/* ============================================================================
+   Grid Cell Styling
+   ============================================================================ */
+
+.users-grid > div[role="gridcell"] {
+  @apply transition-all duration-200 ease-out;
+}
+
+/* Subtle hover effect for entire grid cell */
+.users-grid > div[role="gridcell"]:hover {
+  @apply transform translate-y-[-2px];
+}
+
+/* ============================================================================
+   Accessibility and Focus Management
+   ============================================================================ */
+
+.users-grid > div[role="gridcell"]:focus-within {
+  @apply ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2
+         ring-offset-white dark:ring-offset-primary-950 rounded-lg;
+}
+
+/* ============================================================================
+   Animation and Transitions
+   ============================================================================ */
+
+.users-grid {
+  @apply transition-all duration-300 ease-out;
+}
+
+.loading-overlay {
+  @apply transition-opacity duration-300;
+}
+
+.overlay-content {
+  @apply transition-transform duration-200;
+}
+
+/* Staggered animation for grid items */
+.users-grid > div[role="gridcell"] {
+  animation: fadeInUp 0.3s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.users-grid > div[role="gridcell"]:nth-child(1) { animation-delay: 0.05s; }
+.users-grid > div[role="gridcell"]:nth-child(2) { animation-delay: 0.1s; }
+.users-grid > div[role="gridcell"]:nth-child(3) { animation-delay: 0.15s; }
+.users-grid > div[role="gridcell"]:nth-child(4) { animation-delay: 0.2s; }
+.users-grid > div[role="gridcell"]:nth-child(5) { animation-delay: 0.25s; }
+.users-grid > div[role="gridcell"]:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Reduced Motion Support
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .users-grid > div[role="gridcell"] {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .users-grid > div[role="gridcell"]:hover {
+    @apply transform-none;
+  }
+
+  .loading-spinner {
+    @apply animate-none;
+  }
+
+  .overlay-content,
+  .loading-overlay,
+  .users-grid {
+    @apply transition-none;
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  .users-grid {
+    @apply grid-cols-2 gap-2;
+  }
+
+  .loading-overlay,
+  .grid-loading {
+    @apply hidden;
+  }
+
+  .users-grid > div[role="gridcell"] {
+    @apply break-inside-avoid;
+  }
+}
+
+/* ============================================================================
+   High Contrast Mode
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  .loading-overlay {
+    @apply bg-white/95 dark:bg-black/95;
+  }
+
+  .overlay-content {
+    @apply border-2 border-neutral-900 dark:border-neutral-100;
+  }
+
+  .empty-icon {
+    @apply text-neutral-700 dark:text-neutral-300;
+  }
+}
