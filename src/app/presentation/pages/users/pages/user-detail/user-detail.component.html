@@ -1,304 +1,164 @@
-<!-- User Detail Page Template -->
-<div class="user-detail-page">
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="loading-state" role="status" aria-live="polite">
-      <ui-icon name="arrow-clockwise" variant="outline" size="xl" class="loading-spinner"></ui-icon>
-      <div class="loading-content">
-        <h2>Loading user details...</h2>
-        <p>Please wait while we fetch the user information.</p>
-      </div>
-    </div>
-  }
-
-  <!-- Error State -->
-  @else if (error()) {
-    <div class="error-state" role="alert">
-      <ui-icon name="alert-circle" variant="filled" size="xl" class="error-icon"></ui-icon>
-      <div class="error-content">
-        <h2>Failed to load user details</h2>
-        <p>{{ error() }}</p>
-        <div class="error-actions">
-          <ui-button variant="primary" size="md" (click)="refreshUser()">
-            <ui-icon name="arrow-clockwise" variant="outline" size="sm"></ui-icon>
-            Try Again
-          </ui-button>
-          <ui-button variant="secondary" size="md" (click)="goBackToList()">
-            <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-            Back to List
-          </ui-button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- User Not Found -->
-  @else if (userNotFound()) {
-    <div class="not-found-state">
-      <ui-icon name="user-x" variant="outline" size="xl" class="not-found-icon"></ui-icon>
-      <div class="not-found-content">
-        <h2>User not found</h2>
-        <p>The user you're looking for doesn't exist or may have been deleted.</p>
-        <div class="not-found-actions">
-          <ui-button variant="primary" size="md" (click)="goBackToList()">
-            <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-            Back to Users List
-          </ui-button>
-        </div>
-      </div>
-    </div>
-  }
+<!-- User Detail Page Template - Optimized Full-Width Layout -->
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <app-page-header [config]="headerConfig()" />
 
   <!-- User Detail Content -->
-  @else {
-    @if (userDetailData(); as userData) {
-      <!-- Page Header -->
-      <header class="page-header">
-        <div class="header-navigation">
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (click)="goBackToList()"
-          class="back-button">
-          <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-          Back to Users
-        </ui-button>
-      </div>
-
-      <div class="header-content">
-        <!-- User Avatar and Basic Info -->
-        <div class="user-header">
-          <div class="user-avatar">
-            @if (userData.avatar) {
-              <img [src]="userData.avatar" [alt]="userData.displayName + ' avatar'" class="avatar-image">
-            } @else {
-              <div class="avatar-initials">
-                {{ userData.initials }}
-              </div>
-            }
-          </div>
-
-          <div class="user-basic-info">
-            <h1 class="user-name">{{ userData.displayName }}</h1>
-            <p class="user-email">{{ userData.email }}</p>
-            <div class="user-metadata">
-              <span class="user-username">@{{ userData.username }}</span>
-              <span class="user-role">{{ userData.role }}</span>
+  @if (!isLoading() && !error() && !userNotFound() && userDetailData(); as userData) {
+    <!-- Main Content - Full Width Layout -->
+    <main class="main-content-fullwidth">
+      <!-- User Profile Overview Header -->
+      <section class="profile-overview-banner">
+        <div class="profile-banner-content">
+          <!-- User Avatar & Basic Info -->
+          <div class="user-identity">
+            <div class="user-avatar">
+              @if (userData.avatar) {
+                <img [src]="userData.avatar" [alt]="userData.displayName + ' avatar'" />
+              } @else {
+                <div class="avatar-placeholder">{{ userData.initials }}</div>
+              }
+            </div>
+            
+            <div class="user-primary-info">
+              <h1 class="user-display-name">{{ userData.displayName }}</h1>
+              <p class="user-email">{{ userData.email }}</p>
+              <p class="user-username">@{{ userData.username }}</p>
             </div>
           </div>
 
-          <div class="user-status">
-            <span [class]="'status-badge ' + userData.status.cssClass">
-              <ui-icon [name]="userData.status.iconName" variant="outline" size="sm"></ui-icon>
-              {{ userData.status.label }}
-            </span>
+          <!-- Status & Role Summary -->
+          <div class="user-status-summary">
+            <div class="status-badge">
+              <span [class]="'status-indicator ' + userData.status.cssClass">
+                <ui-icon [name]="userData.status.iconName" variant="filled" size="sm"></ui-icon>
+                {{ userData.status.label }}
+              </span>
+            </div>
+
+            @if (roleAccessLevelInfo(); as roleInfo) {
+              <div class="role-badge-compact">
+                <ui-icon
+                  [name]="roleAccessLevelIcon() || 'shield'"
+                  variant="outline"
+                  size="sm"
+                  [class]="roleInfo.iconColor"></ui-icon>
+                <span class="role-name">{{ userData.role }}</span>
+                <span [class]="'access-level-tag ' + roleInfo.badgeClasses">{{ roleInfo.label }}</span>
+              </div>
+            }
+
+            <div class="account-summary">
+              <span class="account-age">{{ userData.accountAge }} member</span>
+              <span class="last-active">Last active {{ userData.lastActivityDisplay }}</span>
+            </div>
           </div>
         </div>
+      </section>
 
-        <!-- Action Buttons -->
-        <div class="header-actions">
-          @if (availableActions().canEdit) {
-            <ui-button
-              variant="primary"
-              size="md"
-              (click)="editUser()"
-              [disabled]="processing()">
-              <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
-              Edit User
-            </ui-button>
-          }
-
-          <!-- Dropdown for more actions (simplified for now) -->
-          <div class="action-dropdown">
-            @if (availableActions().canActivate) {
-              <ui-button
-                variant="secondary"
-                size="md"
-                (click)="activateUser()"
-                [disabled]="processing()">
-                <ui-icon name="check-circle" variant="outline" size="sm"></ui-icon>
-                Activate
-              </ui-button>
-            }
-
-            @if (availableActions().canDeactivate) {
-              <ui-button
-                variant="secondary"
-                size="md"
-                (click)="deactivateUser()"
-                [disabled]="processing()">
-                <ui-icon name="x-circle" variant="outline" size="sm"></ui-icon>
-                Deactivate
-              </ui-button>
-            }
-
-            @if (availableActions().canResetPassword) {
-              <ui-button
-                variant="secondary"
-                size="md"
-                (click)="resetPassword()"
-                [disabled]="processing()">
-                <ui-icon name="key" variant="outline" size="sm"></ui-icon>
-                Reset Password
-              </ui-button>
-            }
-
-            @if (availableActions().canDelete) {
-              <ui-button
-                variant="danger"
-                size="md"
-                (click)="deleteUser()"
-                [disabled]="processing()"
-                class="danger-action">
-                <ui-icon name="trash" variant="outline" size="sm"></ui-icon>
-                Delete User
-              </ui-button>
-            }
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-      <div class="content-grid">
-        <!-- Personal Information Section -->
-        <section class="info-section">
-          <div class="section-header">
-            <h2 class="section-title">
-              <ui-icon name="user" variant="outline" size="md"></ui-icon>
-              Personal Information
-            </h2>
-          </div>
-
-          <div class="section-content">
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">First Name</span>
-                <span class="info-value">{{ userData.firstName }}</span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">Last Name</span>
-                <span class="info-value">{{ userData.lastName }}</span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">Email Address</span>
-                <span class="info-value">{{ userData.email }}</span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">Username</span>
-                <span class="info-value">{{ userData.username }}</span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">Role</span>
-                <span class="info-value role-value">{{ userData.role }}</span>
-              </div>
-
-              <div class="info-item">
-                <span class="info-label">Account Status</span>
-                <span class="info-value">
-                  <span [class]="'status-inline ' + userData.status.cssClass">
-                    {{ userData.status.label }}
+      <!-- Three-Column Layout for Comprehensive Information -->
+      <div class="content-columns-layout">
+        <!-- Left Column: Personal & Account Information -->
+        <div class="left-column">
+          <!-- Personal Information Card -->
+          <section class="info-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <ui-icon name="user" variant="outline" size="md"></ui-icon>
+                Personal Information
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="info-list">
+                <div class="info-row">
+                  <span class="info-key">Full Name</span>
+                  <span class="info-value">{{ userData.firstName }} {{ userData.lastName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Email Address</span>
+                  <span class="info-value">{{ userData.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Username</span>
+                  <span class="info-value">{{ userData.username }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Account Status</span>
+                  <span class="info-value">
+                    <span [class]="'status-compact ' + userData.status.cssClass">
+                      {{ userData.status.label }}
+                    </span>
                   </span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Activity Information Section -->
-        <section class="info-section">
-          <div class="section-header">
-            <h2 class="section-title">
-              <ui-icon name="activity" variant="outline" size="md"></ui-icon>
-              Activity & Statistics
-            </h2>
-          </div>
-
-          <div class="section-content">
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-value">{{ userData.stats.totalLogins }}</div>
-                <div class="stat-label">Total Logins</div>
-              </div>
-
-              <div class="stat-item">
-                <div class="stat-value">{{ userData.stats.completionRate }}%</div>
-                <div class="stat-label">Completion Rate</div>
-              </div>
-
-              <div class="stat-item">
-                <div class="stat-value">{{ userData.stats.totalActions }}</div>
-                <div class="stat-label">Total Actions</div>
-              </div>
-
-              <div class="stat-item">
-                <div class="stat-value">{{ userData.accountAge }}</div>
-                <div class="stat-label">Account Age</div>
-              </div>
-            </div>
-
-            <div class="activity-details">
-              <div class="activity-item">
-                <span class="activity-label">Last Activity</span>
-                <span class="activity-value">{{ userData.lastActivityDisplay }}</span>
-              </div>
-
-              <div class="activity-item">
-                <span class="activity-label">Activity Level</span>
-                <span class="activity-value">
-                  <span [class]="'activity-level activity-' + userData.activityLevel">
-                    {{ userData.activityLevel | titlecase }}
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Account Timeline Section -->
-        <section class="info-section">
-          <div class="section-header">
-            <h2 class="section-title">
-              <ui-icon name="clock" variant="outline" size="md"></ui-icon>
-              Account Timeline
-            </h2>
-          </div>
-
-          <div class="section-content">
-            <div class="timeline">
-              <div class="timeline-item">
-                <div class="timeline-marker created"></div>
-                <div class="timeline-content">
-                  <div class="timeline-title">Account Created</div>
-                  <div class="timeline-date">{{ userData.createdAt }}</div>
                 </div>
               </div>
+            </div>
+          </section>
+        </div>
 
-              @if (userData.lastActivity) {
-                <div class="timeline-item">
-                  <div class="timeline-marker activity"></div>
-                  <div class="timeline-content">
-                    <div class="timeline-title">Last Activity</div>
-                    <div class="timeline-date">{{ userData.lastActivityDisplay }}</div>
+        <!-- Right Column: Activity & Statistics -->
+        <div class="right-column">
+          <!-- Quick Stats Summary -->
+          <section class="info-card quick-stats">
+            <div class="card-header">
+              <h3 class="card-title">
+                <ui-icon name="trending-up" variant="outline" size="md"></ui-icon>
+                Quick Summary
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="summary-stats">
+                <div class="summary-item">
+                  <ui-icon name="calendar" variant="outline" size="sm"></ui-icon>
+                  <span>{{ userData.accountAge }} with us</span>
+                </div>
+                <div class="summary-item">
+                  <ui-icon name="shield" variant="outline" size="sm"></ui-icon>
+                  <span>{{ userData.role }} access</span>
+                </div>
+                <div class="summary-item">
+                  <ui-icon name="activity" variant="outline" size="sm"></ui-icon>
+                  <span>{{ userData.activityLevel | titlecase }} activity</span>
+                </div>
+              </div>
+            </div>
+          </section>
+                    <!-- Account Timeline Card -->
+          <section class="info-card">
+            <div class="card-header">
+              <h3 class="card-title">
+                <ui-icon name="clock" variant="outline" size="md"></ui-icon>
+                Account Timeline
+              </h3>
+            </div>
+            <div class="card-content">
+              <div class="timeline-compact">
+                <div class="timeline-event">
+                  <div class="event-marker created"></div>
+                  <div class="event-info">
+                    <span class="event-label">Created</span>
+                    <span class="event-date">{{ userData.createdAt }}</span>
                   </div>
                 </div>
-              }
-
-              <div class="timeline-item">
-                <div class="timeline-marker updated"></div>
-                <div class="timeline-content">
-                  <div class="timeline-title">Last Updated</div>
-                  <div class="timeline-date">{{ userData.updatedAt }}</div>
+                @if (userData.lastActivity) {
+                  <div class="timeline-event">
+                    <div class="event-marker activity"></div>
+                    <div class="event-info">
+                      <span class="event-label">Last Active</span>
+                      <span class="event-date">{{ userData.lastActivityDisplay }}</span>
+                    </div>
+                  </div>
+                }
+                <div class="timeline-event">
+                  <div class="event-marker updated"></div>
+                  <div class="event-info">
+                    <span class="event-label">Last Updated</span>
+                    <span class="event-date">{{ userData.updatedAt }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </main>
 
@@ -306,11 +166,14 @@
     @if (processing()) {
       <div class="processing-overlay" role="status" aria-live="polite">
         <div class="processing-content">
-          <ui-icon name="arrow-clockwise" variant="outline" size="lg" class="processing-spinner"></ui-icon>
+          <ui-icon
+            name="arrow-clockwise"
+            variant="outline"
+            size="lg"
+            class="processing-spinner"></ui-icon>
           <p>Processing request...</p>
         </div>
       </div>
-    }
     }
   }
 </div>

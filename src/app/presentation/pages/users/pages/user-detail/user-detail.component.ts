@@ -29,27 +29,47 @@
  * @layer Presentation
  */
 
-import { Component, computed, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  computed,
+  signal,
+  OnInit,
+  inject,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 
 // Application Layer Imports
 import { UserLookupFacade, UserCrudFacade } from '@application/facades/users';
+import { RolesFacade } from '@application/facades/role/role.facade';
 
 // Domain Imports (for typing only)
 import type { User } from '@domain/entities/user.entity';
+
+// Application Layer Types
+import type { RoleSummary } from '@application/mappers/role.mapper';
 
 // Presentation Layer Imports
 import { TitleService } from '@presentation/services/title.service';
 import { BreadcrumbService } from '@presentation/services/breadcrumb.service';
 
 // Shared UI Components
-import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
+import {
+  PageHeader,
+  PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 
 // Local Imports
 import type { UserActionConfig } from '../../types';
 import { UserPresentationMapper } from '../../mappers';
+
+// Role Access Level Imports
+import {
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
+} from '@presentation/pages/roles/types/role-colors.type';
 
 /**
  * User Detail Page Component
@@ -61,11 +81,7 @@ import { UserPresentationMapper } from '../../mappers';
 @Component({
   selector: 'app-user-detail',
   standalone: true,
-  imports: [
-    CommonModule,
-    Button,
-    Icon,
-  ],
+  imports: [CommonModule, Icon, PageHeader],
   templateUrl: './user-detail.component.html',
   styleUrl: './user-detail.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -77,6 +93,7 @@ export class UserDetailPage implements OnInit {
 
   private readonly userLookupFacade = inject(UserLookupFacade);
   private readonly userCrudFacade = inject(UserCrudFacade);
+  private readonly rolesFacade = inject(RolesFacade);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly titleService = inject(TitleService);
@@ -97,9 +114,19 @@ export class UserDetailPage implements OnInit {
   private readonly _user = signal<User | null>(null);
 
   /**
+   * Current user's role details from roles facade
+   */
+  private readonly _userRole = signal<RoleSummary | null>(null);
+
+  /**
    * Loading state for user operations
    */
   private readonly _loading = signal<boolean>(false);
+
+  /**
+   * Loading state for role operations
+   */
+  private readonly _roleLoading = signal<boolean>(false);
 
   /**
    * Error state for user operations
@@ -126,9 +153,19 @@ export class UserDetailPage implements OnInit {
   readonly user = computed(() => this._user());
 
   /**
+   * Current user's role details
+   */
+  readonly userRole = computed(() => this._userRole());
+
+  /**
    * Loading state
    */
   readonly loading = computed(() => this._loading());
+
+  /**
+   * Role loading state
+   */
+  readonly roleLoading = computed(() => this._roleLoading());
 
   /**
    * Error state
@@ -156,14 +193,16 @@ export class UserDetailPage implements OnInit {
    */
   readonly availableActions = computed(() => {
     const userData = this.userDetailData();
-    return userData?.actions || {
-      canView: false,
-      canEdit: false,
-      canDelete: false,
-      canActivate: false,
-      canDeactivate: false,
-      canResetPassword: false,
-    };
+    return (
+      userData?.actions || {
+        canView: false,
+        canEdit: false,
+        canDelete: false,
+        canActivate: false,
+        canDeactivate: false,
+        canResetPassword: false,
+      }
+    );
   });
 
   /**
@@ -203,10 +242,141 @@ export class UserDetailPage implements OnInit {
   });
 
   /**
+   * Role access level information based on user's role
+   */
+  readonly roleAccessLevelInfo = computed(() => {
+    const role = this.userRole();
+    if (!role?.accessLevel) return null;
+
+    return getRoleAccessLevelInfo(role.accessLevel);
+  });
+
+  /**
+   * Role access level icon based on user's role
+   */
+  readonly roleAccessLevelIcon = computed(() => {
+    const role = this.userRole();
+    if (!role?.accessLevel) return null;
+
+    return getRoleAccessLevelIcon(role.accessLevel);
+  });
+
+  /**
+   * Combined loading state for both user and role data
+   */
+  readonly isLoading = computed(() => {
+    return this.loading() || this.roleLoading();
+  });
+
+  /**
+   * Page header configuration for the PageHeader component
+   */
+  readonly headerConfig = computed((): PageHeaderConfig => {
+    const userData = this.userDetailData();
+    const roleInfo = this.roleAccessLevelInfo();
+    const isLoading = this.isLoading();
+
+    if (isLoading) {
+      return {
+        title: 'Loading User Details...',
+        description: 'Please wait while we load the user information',
+        icon: 'user',
+        showBreadcrumbs: true,
+        actions: [],
+      };
+    }
+
+    if (!userData) {
+      return {
+        title: 'User Not Found',
+        description: 'The requested user could not be found',
+        icon: 'alert-circle',
+        iconColor: 'text-error-500',
+        showBreadcrumbs: true,
+        actions: [
+          {
+            label: 'Go Back',
+            icon: 'arrow-left',
+            action: () => this.goBackToList(),
+            variant: 'secondary',
+          },
+        ],
+      };
+    }
+
+    const actions = [];
+    const availableActions = this.availableActions();
+
+    if (availableActions.canEdit) {
+      actions.push({
+        label: 'Edit User',
+        icon: 'pencil',
+        action: () => this.editUser(),
+        variant: 'primary' as const,
+      });
+    }
+
+    if (availableActions.canActivate) {
+      actions.push({
+        label: 'Activate',
+        icon: 'check-circle',
+        action: () => this.activateUser(),
+        variant: 'secondary' as const,
+        disabled: this.processing(),
+      });
+    }
+
+    if (availableActions.canDeactivate) {
+      actions.push({
+        label: 'Deactivate',
+        icon: 'x-circle',
+        action: () => this.deactivateUser(),
+        variant: 'secondary' as const,
+        disabled: this.processing(),
+      });
+    }
+    console.log(`role color: ${roleInfo?.iconColor}`);
+    return {
+      title: userData.displayName,
+      description: roleInfo
+        ? `${userData.email} • ${roleInfo.label} (${roleInfo.description})`
+        : userData.email,
+      icon: 'user',
+      iconColor: roleInfo?.iconColor + ' ' + roleInfo?.iconBg || 'text-primary-500 bg-primary-100',
+      showBreadcrumbs: true,
+      actions,
+    };
+  });
+
+  /**
    * User not found state
    */
   readonly userNotFound = computed(() => {
     return !this.loading() && !this.user() && this.userId() !== null;
+  });
+
+  /**
+   * User initials for profile display (delegates to model)
+   */
+  readonly initials = computed(() => {
+    const userData = this.userDetailData();
+    return userData?.initials || 'U';
+  });
+
+  /**
+   * Formatted last activity display (delegates to model)
+   */
+  readonly lastActivityDisplay = computed(() => {
+    const userData = this.userDetailData();
+    return userData?.lastActivityDisplay || 'Never logged in';
+  });
+
+  /**
+   * Activity level (delegates to model)
+   */
+  readonly activityLevel = computed(() => {
+    const userData = this.userDetailData();
+    return userData?.activityLevel || 'inactive';
   });
 
   // ============================================================================
@@ -226,7 +396,6 @@ export class UserDetailPage implements OnInit {
     // Set initial page metadata
     this.titleService.setTitle('User Details');
     this.breadcrumbService.setBreadcrumbs([
-      { label: 'Dashboard', icon: 'home', route: '/dashboard' },
       { label: 'Users', icon: 'users', route: '/users' },
       { label: 'Loading...', icon: 'user' },
     ]);
@@ -253,6 +422,11 @@ export class UserDetailPage implements OnInit {
       const user = await this.userLookupFacade.getUserById(userId);
       this._user.set(user);
 
+      // Load role details if user has a role
+      if (user?.role?.id) {
+        await this.loadUserRole(user.role.id);
+      }
+
       // Update page metadata with user info
       this.updatePageMetadata();
     } catch (error: unknown) {
@@ -261,6 +435,24 @@ export class UserDetailPage implements OnInit {
       console.error('Failed to load user:', error);
     } finally {
       this._loading.set(false);
+    }
+  }
+
+  /**
+   * Load user role details by role ID
+   */
+  async loadUserRole(roleId: number): Promise<void> {
+    this._roleLoading.set(true);
+
+    try {
+      await this.rolesFacade.loadRole(roleId);
+      const role = this.rolesFacade.currentRole();
+      this._userRole.set(role);
+    } catch (error: unknown) {
+      console.error('Failed to load user role:', error);
+      // Don't set error for role loading as it's secondary data
+    } finally {
+      this._roleLoading.set(false);
     }
   }
 
@@ -380,7 +572,9 @@ export class UserDetailPage implements OnInit {
     if (!userId || !userData) return;
 
     // This would typically show a confirmation dialog
-    const confirmed = confirm(`Are you sure you want to delete ${userData.displayName}? This action cannot be undone.`);
+    const confirmed = confirm(
+      `Are you sure you want to delete ${userData.displayName}? This action cannot be undone.`
+    );
     if (!confirmed) return;
 
     this._processing.set(true);
@@ -390,7 +584,7 @@ export class UserDetailPage implements OnInit {
 
       // Navigate back to list after successful deletion
       this.router.navigate(['/users'], {
-        state: { message: `User ${userData.displayName} has been deleted successfully.` }
+        state: { message: `User ${userData.displayName} has been deleted successfully.` },
       });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';

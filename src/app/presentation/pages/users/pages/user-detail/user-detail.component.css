@@ -14,14 +14,6 @@
 @reference '../../../../../../styles.css';
 
 /* ============================================================================
-   Page Layout
-   ============================================================================ */
-
-.user-detail-page {
-  @apply flex flex-col h-full bg-primary-50 dark:bg-primary-900;
-}
-
-/* ============================================================================
    State Components
    ============================================================================ */
 
@@ -143,8 +135,7 @@
 }
 
 .user-role {
-  @apply px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200
-         rounded-full text-xs font-medium;
+  @apply px-2.5 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-full text-xs font-medium;
 }
 
 .user-status {
@@ -152,7 +143,7 @@
 }
 
 .status-badge {
-  @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium;
+  @apply inline-flex items-center gap-2 border rounded-full text-sm font-medium;
 }
 
 .status-badge.status-active {
@@ -188,15 +179,413 @@
 }
 
 /* ============================================================================
-   Main Content
+   Main Content - Full Width Layout
    ============================================================================ */
 
-.main-content {
-  @apply flex-1 overflow-y-auto p-6;
+.main-content-fullwidth {
+  @apply flex-1 overflow-y-auto;
 }
 
-.content-grid {
-  @apply grid gap-6 max-w-4xl mx-auto;
+/* ============================================================================
+   Profile Overview Banner
+   ============================================================================ */
+
+.profile-overview-banner {
+  @apply border rounded-xl bg-primary-100 dark:bg-primary-900 border-neutral-200 dark:border-neutral-700 px-8 py-8;
+}
+
+.profile-banner-content {
+  @apply flex items-start justify-between gap-8 max-w-none;
+}
+
+.user-identity {
+  @apply flex items-center gap-6;
+}
+
+.user-avatar {
+  @apply w-24 h-24 rounded-full overflow-hidden ring-4 ring-primary-100 dark:ring-primary-800;
+}
+
+.user-avatar img {
+  @apply w-full h-full object-cover;
+}
+
+.avatar-placeholder {
+  @apply w-full h-full bg-primary-500 dark:bg-primary-600 text-white 
+    text-2xl font-bold flex items-center justify-center;
+}
+
+.user-primary-info {
+  @apply space-y-1;
+}
+
+.user-display-name {
+  @apply text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-2;
+}
+
+.user-email {
+  @apply text-lg text-neutral-600 dark:text-neutral-300;
+}
+
+.user-username {
+  @apply text-sm text-neutral-500 dark:text-neutral-400 font-mono;
+}
+
+.user-status-summary {
+  @apply flex flex-col items-end gap-4 text-right;
+}
+
+.status-badge {
+  @apply mb-2;
+}
+
+.status-indicator {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium text-sm;
+}
+
+.role-badge-compact {
+  @apply inline-flex items-center gap-3 px-4 py-3 bg-white dark:bg-primary-800
+    border border-neutral-200 dark:border-neutral-700 rounded-lg;
+}
+
+.role-name {
+  @apply font-semibold text-neutral-900 dark:text-neutral-100;
+}
+
+.access-level-tag {
+  @apply px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.account-summary {
+  @apply space-y-1 text-sm text-neutral-500 dark:text-neutral-400;
+}
+
+.account-age,
+.last-active {
+  @apply block;
+}
+
+/* ============================================================================
+   Three Column Layout
+   ============================================================================ */
+
+.content-columns-layout {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-8 p-8;
+}
+
+.left-column,
+.center-column,
+.right-column {
+  @apply space-y-6;
+}
+
+/* ============================================================================
+   Information Cards
+   ============================================================================ */
+
+.info-card {
+  @apply bg-white dark:bg-primary-900 border border-neutral-200 dark:border-neutral-700 
+    rounded-xl shadow-sm hover:shadow-md transition-shadow;
+}
+
+.card-header {
+  @apply px-6 py-4 border-b border-neutral-200 dark:border-neutral-700;
+}
+
+.card-title {
+  @apply flex items-center gap-3 text-lg font-semibold text-neutral-900 dark:text-neutral-100;
+}
+
+.card-content {
+  @apply p-6;
+}
+
+/* ============================================================================
+   Info Lists
+   ============================================================================ */
+
+.info-list {
+  @apply space-y-4;
+}
+
+.info-row {
+  @apply flex justify-between items-start gap-4 py-2 border-b border-neutral-100 
+    dark:border-neutral-800 last:border-b-0;
+}
+
+.info-key {
+  @apply text-sm font-medium text-neutral-600 dark:text-neutral-400 min-w-0 flex-shrink-0;
+}
+
+.info-value {
+  @apply text-sm text-neutral-900 dark:text-neutral-100 text-right;
+}
+
+.status-compact {
+  @apply px-2 py-1 rounded-full text-xs font-medium;
+}
+
+/* ============================================================================
+   Timeline Compact
+   ============================================================================ */
+
+.timeline-compact {
+  @apply space-y-4;
+}
+
+.timeline-event {
+  @apply flex items-center gap-4;
+}
+
+.event-marker {
+  @apply w-3 h-3 rounded-full flex-shrink-0;
+}
+
+.event-marker.created {
+  @apply bg-successful-500;
+}
+
+.event-marker.activity {
+  @apply bg-primary-500;
+}
+
+.event-marker.updated {
+  @apply bg-info-500;
+}
+
+.event-info {
+  @apply flex-1 flex justify-between items-center;
+}
+
+.event-label {
+  @apply text-sm font-medium text-neutral-600 dark:text-neutral-400;
+}
+
+.event-date {
+  @apply text-sm text-neutral-900 dark:text-neutral-100;
+}
+
+/* ============================================================================
+   Role Card Enhanced
+   ============================================================================ */
+
+.role-card {
+  @apply lg:col-span-1;
+}
+
+.role-primary-display {
+  @apply mb-8;
+}
+
+.role-badge-large {
+  @apply flex items-start gap-6 p-6 rounded-xl border-2;
+}
+
+.role-icon-container {
+  @apply w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0;
+}
+
+.role-text-content {
+  @apply flex-1;
+}
+
+.role-name-large {
+  @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-1;
+}
+
+.role-access-level {
+  @apply text-lg font-medium mb-2;
+}
+
+.role-description {
+  @apply text-sm text-neutral-600 dark:text-neutral-300;
+}
+
+/* ============================================================================
+   Permissions Summary
+   ============================================================================ */
+
+.permissions-summary {
+  @apply space-y-4;
+}
+
+.permissions-title {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-4;
+}
+
+.permissions-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-3;
+}
+
+.permission-item {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg bg-neutral-50 
+    dark:bg-primary-800 border border-neutral-200 dark:border-neutral-700;
+}
+
+.permission-item.granted {
+  @apply bg-successful-50 dark:bg-successful-900/20 border-successful-200 
+    dark:border-successful-700 text-successful-700 dark:text-successful-300;
+}
+
+/* ============================================================================
+   Activity Statistics
+   ============================================================================ */
+
+.stats-card {
+  @apply space-y-6;
+}
+
+.metrics-grid {
+  @apply grid grid-cols-1 gap-4 mb-8;
+}
+
+.metric-card {
+  @apply relative bg-neutral-50 dark:bg-primary-800 rounded-lg p-6 border 
+    border-neutral-200 dark:border-neutral-700;
+}
+
+.metric-value {
+  @apply text-3xl font-bold text-neutral-900 dark:text-neutral-100 mb-1;
+}
+
+.metric-label {
+  @apply text-sm font-medium text-neutral-600 dark:text-neutral-400;
+}
+
+.metric-icon {
+  @apply absolute top-4 right-4 text-neutral-400 dark:text-neutral-500;
+}
+
+/* ============================================================================
+   Activity Level Section
+   ============================================================================ */
+
+.activity-level-section {
+  @apply space-y-4;
+}
+
+.activity-level-header {
+  @apply flex items-center justify-between;
+}
+
+.activity-level-label {
+  @apply text-sm font-medium text-neutral-600 dark:text-neutral-400;
+}
+
+.activity-level-badge {
+  @apply px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.activity-level-badge.activity-high {
+  @apply bg-successful-100 dark:bg-successful-900/20 text-successful-700 dark:text-successful-300;
+}
+
+.activity-level-badge.activity-medium {
+  @apply bg-warning-100 dark:bg-warning-900/20 text-warning-700 dark:text-warning-300;
+}
+
+.activity-level-badge.activity-low {
+  @apply bg-error-100 dark:bg-error-900/20 text-error-700 dark:text-error-300;
+}
+
+/* ============================================================================
+   Activity Progress Bar
+   ============================================================================ */
+
+.activity-progress-bar {
+  @apply w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden;
+}
+
+.activity-progress-fill {
+  @apply h-full transition-all duration-500 ease-out rounded-full;
+}
+
+.activity-progress-fill.activity-high {
+  @apply bg-successful-500;
+}
+
+.activity-progress-fill.activity-medium {
+  @apply bg-warning-500;
+}
+
+.activity-progress-fill.activity-low {
+  @apply bg-error-500;
+}
+
+/* ============================================================================
+   Quick Stats Summary
+   ============================================================================ */
+
+.quick-stats .card-content {
+  @apply p-4;
+}
+
+.summary-stats {
+  @apply space-y-4;
+}
+
+.summary-item {
+  @apply flex items-center gap-3 text-sm text-neutral-600 dark:text-neutral-300;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .content-columns-layout {
+    @apply grid-cols-1 gap-6 p-6;
+  }
+
+  .profile-banner-content {
+    @apply flex-col items-start gap-6;
+  }
+
+  .user-status-summary {
+    @apply items-start text-left w-full;
+  }
+
+  .role-badge-compact {
+    @apply self-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-overview-banner {
+    @apply px-6 py-6;
+  }
+
+  .content-columns-layout {
+    @apply p-4 gap-4;
+  }
+
+  .user-identity {
+    @apply gap-4;
+  }
+
+  .user-avatar {
+    @apply w-20 h-20;
+  }
+
+  .user-display-name {
+    @apply text-2xl;
+  }
+
+  .role-badge-large {
+    @apply flex-col gap-4 p-4;
+  }
+
+  .role-icon-container {
+    @apply self-center;
+  }
+
+  .role-text-content {
+    @apply text-center;
+  }
+
+  .permissions-grid {
+    @apply grid-cols-1;
+  }
 }
 
 /* ============================================================================
@@ -261,6 +650,70 @@
 
 .status-inline.status-suspended {
   @apply bg-error-100 dark:bg-error-900 text-error-800 dark:text-error-200;
+}
+
+/* ============================================================================
+   Role Info and Access Level
+   ============================================================================ */
+
+.role-info {
+  @apply flex flex-col gap-2;
+}
+
+.role-name {
+  @apply font-medium text-primary-600 dark:text-primary-400;
+}
+
+.role-access-badge {
+  @apply inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium;
+}
+
+.role-access-level-info {
+  @apply space-y-6;
+}
+
+.access-level-badge-container {
+  @apply flex justify-center mb-6;
+}
+
+.access-level-badge {
+  @apply inline-flex items-center p-4 rounded-xl shadow-sm border-2 transition-all duration-200;
+}
+
+.badge-content {
+  @apply flex items-center gap-4;
+}
+
+.badge-icon {
+  @apply flex items-center justify-center w-12 h-12 rounded-lg;
+}
+
+.badge-text {
+  @apply flex flex-col gap-1;
+}
+
+.access-level-name {
+  @apply text-lg font-semibold;
+}
+
+.access-level-description {
+  @apply text-sm opacity-80;
+}
+
+.access-level-details {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+}
+
+.detail-item {
+  @apply flex flex-col gap-1 p-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg;
+}
+
+.detail-label {
+  @apply text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide;
+}
+
+.detail-value {
+  @apply text-sm font-medium text-neutral-900 dark:text-neutral-100;
 }
 
 /* ============================================================================
@@ -445,10 +898,6 @@
   .header-actions,
   .processing-overlay {
     @apply hidden;
-  }
-
-  .user-detail-page {
-    @apply bg-white;
   }
 
   .info-section {
