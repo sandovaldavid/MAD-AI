@@ -200,7 +200,7 @@
 }
 
 .status-badge.clickable.variant-outline.status-inactive:hover {
-  @apply bg-neutral-50 dark:bg-neutral-900;
+  @apply bg-neutral-50 dark:bg-primary-950;
 }
 
 .status-badge.clickable.variant-outline.status-pending:hover {
@@ -216,7 +216,7 @@
    ============================================================================ */
 
 .status-badge.clickable:focus {
-  @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+  @apply outline-none ring-2 ring-offset-2 ring-offset-white dark:ring-offset-primary-950;
 }
 
 .status-badge.clickable.status-active:focus {
