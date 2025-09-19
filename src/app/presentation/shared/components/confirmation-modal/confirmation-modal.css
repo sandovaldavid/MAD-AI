@@ -1,0 +1,165 @@
+@reference '../../../../../styles.css';
+
+/* Modal Overlay */
+.modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4
+    bg-black/50 backdrop-blur-sm duration-200;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Modal Container */
+.modal {
+  @apply relative bg-white border border-neutral-200 rounded-2xl shadow-2xl
+    max-h-[90vh] overflow-hidden duration-200
+    dark:bg-neutral-800 dark:border-neutral-700;
+  animation: zoomIn 0.2s ease-out forwards;
+}
+
+.modal.loading {
+  @apply pointer-events-none;
+}
+
+/* Modal Sizes */
+.modal--sm {
+  @apply w-full max-w-sm mx-4;
+}
+
+.modal--md {
+  @apply w-full max-w-md mx-4;
+}
+
+.modal--lg {
+  @apply w-full max-w-lg mx-4;
+}
+
+.modal--xl {
+  @apply w-full max-w-2xl mx-4;
+}
+
+/* Modal Header */
+.modal-header {
+  @apply flex items-start gap-4 p-6 border-b border-neutral-100 
+    dark:border-neutral-700;
+}
+
+.modal-icon {
+  @apply flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full
+    bg-neutral-100 dark:bg-neutral-700;
+}
+
+.modal-icon.text-successful-500 {
+  @apply bg-successful-100 text-successful-500 dark:bg-successful-900/20 dark:text-successful-400;
+}
+
+.modal-icon.text-warning-500 {
+  @apply bg-warning-100 text-warning-500 dark:bg-warning-900/20 dark:text-warning-400;
+}
+
+.modal-icon.text-error-500 {
+  @apply bg-error-100 text-error-500 dark:bg-error-900/20 dark:text-error-400;
+}
+
+.modal-icon.text-info-500 {
+  @apply bg-info-100 text-info-500 dark:bg-info-900/20 dark:text-info-400;
+}
+
+.modal-header-content {
+  @apply flex-1 min-w-0;
+}
+
+.modal-title {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100 mb-2;
+}
+
+.modal-description {
+  @apply text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed;
+}
+
+.modal-close-btn {
+  @apply flex-shrink-0 -mt-1 -mr-1;
+}
+
+/* Modal Body */
+.modal-body {
+  @apply px-6 py-4 max-h-[60vh] overflow-y-auto;
+}
+
+.modal-body:empty {
+  @apply hidden;
+}
+
+/* Modal Actions */
+.modal-actions {
+  @apply flex items-center justify-end gap-3 px-6 py-4 bg-neutral-50 
+    border-t border-neutral-100 dark:bg-neutral-800/50 dark:border-neutral-700;
+}
+
+/* Modal Loading Overlay */
+.modal-loading-overlay {
+  @apply absolute inset-0 bg-white/90 dark:bg-neutral-800/90 
+    flex items-center justify-center z-10;
+}
+
+/* Animations */
+.animate-in {
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.fade-in-0 {
+  animation-name: fadeIn;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .modal {
+    @apply mx-2 max-h-[95vh];
+  }
+  
+  .modal-header {
+    @apply p-4;
+  }
+  
+  .modal-body {
+    @apply px-4 py-3;
+  }
+  
+  .modal-actions {
+    @apply px-4 py-3 flex-col gap-2;
+  }
+  
+  .modal-actions > * {
+    @apply w-full;
+  }
+}
+
+/* Focus Management */
+.modal *:focus-visible {
+  @apply outline-none ring-2 ring-primary-500/25 ring-offset-2 
+    dark:ring-primary-400/25 dark:ring-offset-neutral-800;
+}

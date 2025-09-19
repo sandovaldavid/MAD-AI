@@ -1,0 +1,92 @@
+<!-- Confirmation Modal Template -->
+@if (visible) {
+  <div 
+    class="modal-overlay"
+    (click)="onBackdropClick($event)"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="getModalTitleId()"
+    [attr.aria-describedby]="config.description ? getModalDescriptionId() : null">
+    
+    <div 
+      #modalContainer
+      class="modal"
+      [class]="getModalSizeClass() + ' ' + customClass"
+      [class.loading]="loading">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <!-- Icon -->
+        @if (config.icon || config.iconVariant) {
+          <div class="modal-icon" [class]="getIconClass()">
+            <ui-icon 
+              [name]="getModalIcon()" 
+              size="lg">
+            </ui-icon>
+          </div>
+        }
+        
+        <!-- Title and Description -->
+        <div class="modal-header-content">
+          <h2 
+            class="modal-title"
+            [id]="getModalTitleId()">
+            {{ config.title }}
+          </h2>
+          
+          @if (config.description) {
+            <p 
+              class="modal-description"
+              [id]="getModalDescriptionId()">
+              {{ config.description }}
+            </p>
+          }
+        </div>
+        
+        <!-- Close Button -->
+        @if (config.closable) {
+          <ui-button
+            #firstFocusable
+            variant="ghost"
+            size="sm"
+            class="modal-close-btn"
+            (clicked)="onClose()"
+            [disabled]="loading"
+            ariaLabel="Close modal">
+            <ui-icon name="x-mark" size="sm"></ui-icon>
+          </ui-button>
+        }
+      </div>
+      
+      <!-- Modal Body (for custom content projection) -->
+      <div class="modal-body">
+        <ng-content></ng-content>
+      </div>
+      
+      <!-- Modal Actions -->
+      @if (config.actions.length > 0) {
+        <div class="modal-actions">
+          @for (action of config.actions; track action.label) {
+            <ui-button
+              [variant]="action.variant"
+              [disabled]="action.disabled || loading"
+              [loading]="action.loading || false"
+              (clicked)="onAction(action)">
+              @if (action.icon) {
+                <ui-icon [name]="action.icon" size="sm"></ui-icon>
+              }
+              {{ action.label }}
+            </ui-button>
+          }
+        </div>
+      }
+      
+      <!-- Loading Overlay -->
+      @if (loading) {
+        <div class="modal-loading-overlay">
+          <ui-icon name="spinner" size="lg" class="animate-spin"></ui-icon>
+        </div>
+      }
+    </div>
+  </div>
+}
