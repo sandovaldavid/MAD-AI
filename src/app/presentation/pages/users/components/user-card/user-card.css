@@ -18,7 +18,7 @@
    ============================================================================ */
 
 .user-card {
-  @apply relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden transition-all duration-200;
+  @apply relative bg-white dark:bg-primary-950 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden transition-all duration-200;
 }
 
 .user-card.clickable {
@@ -26,7 +26,7 @@
 }
 
 .user-card.selectable {
-  @apply hover:bg-neutral-50 dark:hover:bg-neutral-800;
+  @apply hover:bg-neutral-50 dark:hover:bg-primary-900;
 }
 
 .user-card.selected {
@@ -62,7 +62,7 @@
 }
 
 .selection-checkbox {
-  @apply w-4 h-4 text-primary-600 dark:text-primary-500 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 rounded focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-2 focus:ring-offset-0 transition-colors;
+  @apply w-4 h-4 text-primary-600 dark:text-primary-500 bg-white dark:bg-primary-950 border-neutral-300 dark:border-neutral-600 rounded focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-2 focus:ring-offset-0 transition-colors;
 }
 
 .selection-checkbox:checked {
@@ -86,7 +86,7 @@
 }
 
 .status-indicator {
-  @apply absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-neutral-900 flex items-center justify-center;
+  @apply absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-primary-950 flex items-center justify-center;
 }
 
 .status-indicator.status-active {
@@ -397,11 +397,11 @@
    ============================================================================ */
 
 .user-card:focus {
-  @apply outline-none ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+  @apply outline-none ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2 ring-offset-white dark:ring-offset-primary-950;
 }
 
 .selection-checkbox:focus {
-  @apply ring-offset-white dark:ring-offset-neutral-900;
+  @apply ring-offset-white dark:ring-offset-primary-950;
 }
 
 /* ============================================================================
