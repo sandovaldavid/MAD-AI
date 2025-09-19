@@ -1,0 +1,73 @@
+<!-- Users List Page Template -->
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <app-page-header [config]="headerConfig()" />
+
+  <!-- User Filter -->
+  <app-user-filter
+    [availableRoles]="availableRoleNames()"
+    [loading]="loading()"
+    (filtersChange)="onFilterChange($event)">
+  </app-user-filter>
+
+  <!-- Bulk Actions Toolbar -->
+  @if (selectedUsers().length > 0) {
+    <ui-bulk-actions-toolbar
+      [selectedCount]="selectedUsers().length"
+      [totalCount]="users().length"
+      [actions]="bulkActions()"
+      [loading]="loading()"
+      (actionTriggered)="onBulkAction($event)"
+      (selectionCleared)="onClearSelection()">
+    </ui-bulk-actions-toolbar>
+  }
+
+  <!-- Error Display -->
+  @if (error()) {
+    <div class="error-message">
+      <div class="error-content">
+        <h3>Error al cargar usuarios</h3>
+        <p>{{ error() }}</p>
+        <button type="button" class="btn btn--primary" (click)="loadUsers()">Reintentar</button>
+      </div>
+    </div>
+  }
+
+  <!-- Users Table -->
+  <div class="users-table-container">
+    <app-user-table
+      [users]="paginatedUsers()"
+      [loading]="loading()"
+      [sortConfig]="sortConfig()"
+      [userActions]="userActions()"
+      [enableSelection]="true"
+      [selectedUsers]="selectedUsers()"
+      [showAvatars]="true"
+      [compact]="false"
+      (userAction)="onUserAction($event)"
+      (selectionChange)="onSelectionChange($event)"
+      (sortChange)="onSortChange($event)">
+    </app-user-table>
+  </div>
+
+  <!-- Pagination -->
+  <ui-pagination
+    [currentPage]="dynamicPaginationConfig().currentPage"
+    [totalPages]="dynamicPaginationConfig().totalPages"
+    [totalItems]="dynamicPaginationConfig().totalItems"
+    [pageSize]="dynamicPaginationConfig().pageSize"
+    [pageSizeOptions]="dynamicPaginationConfig().pageSizeOptions"
+    [loading]="loading()"
+    [disabled]="loading()"
+    (pageChange)="onPageChange($event)"
+    (pageSizeChange)="onPageSizeChange($event)">
+  </ui-pagination>
+
+  <!-- Confirmation Modal -->
+  <app-confirmation-modal
+    [visible]="confirmationModal().visible"
+    [config]="confirmationModal().config"
+    [loading]="confirmationModal().loading"
+    (actionTriggered)="onConfirmationAction($event)">
+  </app-confirmation-modal>
+</div>

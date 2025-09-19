@@ -1,0 +1,85 @@
+/**
+ * Users List Page Styles
+ *
+ * @description
+ * Simplified styles for the Users List Page Smart Component.
+ * Uses Tailwind CSS v4.1 with custom color palette.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @layer Presentation
+ */
+
+@reference '../../../../../../styles.css';
+
+/* Page Layout */
+.users-list-page {
+  @apply flex flex-col h-full bg-neutral-50 dark:bg-neutral-900 p-6 gap-6;
+}
+
+/* Page Header */
+.page-header {
+  @apply bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
+}
+
+.header-content {
+  @apply flex items-center justify-between;
+}
+
+.header-info {
+  @apply flex-1;
+}
+
+.page-title {
+  @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2;
+}
+
+.page-description {
+  @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+.header-actions {
+  @apply flex items-center gap-3;
+}
+
+/* Button Styles */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
+    transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 
+    select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  min-height: 2.25rem;
+  padding-inline: 0.875rem;
+}
+
+.btn--primary {
+  @apply text-white bg-primary-500 hover:bg-primary-700 
+    focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
+}
+
+.btn--secondary {
+  @apply text-neutral-900 bg-neutral-200 hover:bg-neutral-300
+    focus-visible:ring-neutral-500/25 dark:text-neutral-100 
+    dark:bg-neutral-700 dark:hover:bg-neutral-600;
+}
+
+/* Error Display */
+.error-message {
+  @apply bg-error-50 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded-2xl p-4;
+}
+
+.error-content {
+  @apply text-center;
+}
+
+.error-content h3 {
+  @apply text-lg font-semibold text-error-800 dark:text-error-200 mb-2;
+}
+
+.error-content p {
+  @apply text-sm text-error-600 dark:text-error-300 mb-4;
+}
+
+/* Users Table Container */
+.users-table-container {
+  @apply bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden;
+}
