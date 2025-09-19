@@ -1,0 +1,42 @@
+<!-- User Status Badge Component Template -->
+@if (statusConfig(); as config) {
+  <span
+    [class]="badgeClasses()"
+    [attr.title]="tooltipText()"
+    [attr.aria-label]="'Status: ' + config.label"
+    role="status">
+
+    <!-- Status Icon -->
+    @if (showIcon) {
+      <ui-icon
+        [name]="config.iconName"
+        variant="filled"
+        [size]="iconSize()"
+        class="status-icon">
+      </ui-icon>
+    }
+
+    <!-- Status Label -->
+    @if (showLabel) {
+      <span class="status-label">{{ config.label }}</span>
+    }
+  </span>
+} @else {
+  <!-- Fallback for unknown status -->
+  <span
+    class="status-badge status-unknown"
+    role="status"
+    aria-label="Unknown status">
+    @if (showIcon) {
+      <ui-icon
+        name="help-circle"
+        variant="filled"
+        [size]="iconSize()"
+        class="status-icon">
+      </ui-icon>
+    }
+    @if (showLabel) {
+      <span class="status-label">Unknown</span>
+    }
+  </span>
+}
