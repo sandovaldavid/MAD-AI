@@ -1,0 +1,442 @@
+/**
+ * User Card Component Styles
+ *
+ * @description
+ * Styles for the User Card Dumb Component following MAD-AI design system.
+ * Uses Tailwind CSS v4.1 with custom color palette and semantic class patterns.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ * @layer Presentation
+ */
+
+@reference '../../../../../../styles.css';
+
+/* ============================================================================
+    Card Base Styles
+   ============================================================================ */
+
+.user-card {
+  @apply relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg overflow-hidden transition-all duration-200;
+}
+
+.user-card.clickable {
+  @apply cursor-pointer hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-600;
+}
+
+.user-card.selectable {
+  @apply hover:bg-neutral-50 dark:hover:bg-neutral-800;
+}
+
+.user-card.selected {
+  @apply ring-2 ring-primary-500 dark:ring-primary-400 border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-950;
+}
+
+.user-card.loading {
+  @apply pointer-events-none animate-pulse;
+}
+
+/* ============================================================================
+    Card Size Variants
+   ============================================================================ */
+
+.user-card.size-compact {
+  @apply p-3;
+}
+
+.user-card.size-normal {
+  @apply p-4;
+}
+
+.user-card.size-large {
+  @apply p-6;
+}
+
+/* ============================================================================
+    Selection Indicator
+   ============================================================================ */
+
+.selection-indicator {
+  @apply absolute top-3 right-3 z-10;
+}
+
+.selection-checkbox {
+  @apply w-4 h-4 text-primary-600 dark:text-primary-500 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 rounded focus:ring-primary-500 dark:focus:ring-primary-400 focus:ring-2 focus:ring-offset-0 transition-colors;
+}
+
+.selection-checkbox:checked {
+  @apply bg-primary-600 dark:bg-primary-500 border-primary-600 dark:border-primary-500;
+}
+
+/* ============================================================================
+    Avatar Section
+   ============================================================================ */
+
+.avatar-section {
+  @apply relative flex justify-center mb-4;
+}
+
+.user-avatar-image {
+  @apply w-16 h-16 rounded-full object-cover border-2 border-neutral-200 dark:border-neutral-700;
+}
+
+.user-avatar-initials {
+  @apply w-16 h-16 rounded-full bg-primary-500 dark:bg-primary-600 text-white flex items-center justify-center text-lg font-bold;
+}
+
+.status-indicator {
+  @apply absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white dark:border-neutral-900 flex items-center justify-center;
+}
+
+.status-indicator.status-active {
+  @apply bg-successful-500 dark:bg-successful-400;
+}
+
+.status-indicator.status-inactive {
+  @apply bg-neutral-400 dark:bg-neutral-500;
+}
+
+.status-indicator.status-pending {
+  @apply bg-warning-500 dark:bg-warning-400;
+}
+
+.status-indicator.status-suspended {
+  @apply bg-error-500 dark:bg-error-400;
+}
+
+/* ============================================================================
+    Size Variants for Avatar
+   ============================================================================ */
+
+.user-card.size-compact .user-avatar-image,
+.user-card.size-compact .user-avatar-initials {
+  @apply w-12 h-12 text-base;
+}
+
+.user-card.size-compact .status-indicator {
+  @apply w-5 h-5;
+}
+
+.user-card.size-large .user-avatar-image,
+.user-card.size-large .user-avatar-initials {
+  @apply w-20 h-20 text-xl;
+}
+
+.user-card.size-large .status-indicator {
+  @apply w-7 h-7;
+}
+
+/* ============================================================================
+    Content Section
+   ============================================================================ */
+
+.content-section {
+  @apply flex-1 text-center;
+}
+
+.user-info {
+  @apply mb-3;
+}
+
+.user-name {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-50 mb-1 truncate;
+}
+
+.user-email {
+  @apply text-sm text-neutral-600 dark:text-neutral-300 mb-1 truncate;
+}
+
+.user-username {
+  @apply text-xs text-neutral-500 dark:text-neutral-400 truncate;
+}
+
+/* ============================================================================
+    Size Variants for Content
+   ============================================================================ */
+
+.user-card.size-compact .user-name {
+  @apply text-base;
+}
+
+.user-card.size-compact .user-email {
+  @apply text-xs;
+}
+
+.user-card.size-compact .user-username {
+  @apply hidden;
+}
+
+.user-card.size-large .user-name {
+  @apply text-xl;
+}
+
+.user-card.size-large .user-email {
+  @apply text-base;
+}
+
+.user-card.size-large .user-username {
+  @apply text-sm;
+}
+
+/* ============================================================================
+    User Details
+   ============================================================================ */
+
+.user-details {
+  @apply space-y-2;
+}
+
+.detail-item {
+  @apply flex justify-center;
+}
+
+.role-badge {
+  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.role-badge.role-admin {
+  @apply bg-error-100 dark:bg-error-900 text-error-800 dark:text-error-200;
+}
+
+.role-badge.role-manager {
+  @apply bg-warning-100 dark:bg-warning-900 text-warning-800 dark:text-warning-200;
+}
+
+.role-badge.role-user {
+  @apply bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200;
+}
+
+.role-badge.role-viewer {
+  @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200;
+}
+
+.role-badge.role-default {
+  @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200;
+}
+
+.status-badge {
+  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge.status-active {
+  @apply bg-successful-100 dark:bg-successful-900 text-successful-800 dark:text-successful-200;
+}
+
+.status-badge.status-inactive {
+  @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200;
+}
+
+.status-badge.status-pending {
+  @apply bg-warning-100 dark:bg-warning-900 text-warning-800 dark:text-warning-200;
+}
+
+.status-badge.status-suspended {
+  @apply bg-error-100 dark:bg-error-900 text-error-800 dark:text-error-200;
+}
+
+.activity-info {
+  @apply inline-flex items-center gap-1 text-xs text-neutral-500 dark:text-neutral-400;
+}
+
+/* ============================================================================
+    Actions Section
+   ============================================================================ */
+
+.actions-section {
+  @apply mt-4 flex justify-center;
+}
+
+.action-buttons {
+  @apply flex items-center gap-2;
+}
+
+/* ============================================================================
+    Hover Overlay
+   ============================================================================ */
+
+.hover-overlay {
+  @apply absolute inset-0 bg-primary-500/10 transition-all duration-200 flex items-center justify-center opacity-0;
+}
+
+.user-card.clickable:hover .hover-overlay {
+  @apply opacity-100;
+}
+
+.overlay-content {
+  @apply text-primary-600 dark:text-primary-400;
+}
+
+/* ============================================================================
+    Loading States and Skeletons
+   ============================================================================ */
+
+.card-loading {
+  @apply space-y-4;
+}
+
+.user-info-skeleton {
+  @apply space-y-2;
+}
+
+.details-skeleton {
+  @apply space-y-2 mt-3;
+}
+
+.skeleton {
+  @apply bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse;
+}
+
+.skeleton-avatar {
+  @apply w-16 h-16 rounded-full mx-auto;
+}
+
+.skeleton-name {
+  @apply h-5 w-24 mx-auto;
+}
+
+.skeleton-email {
+  @apply h-4 w-32 mx-auto;
+}
+
+.skeleton-role {
+  @apply h-6 w-16 rounded-full mx-auto;
+}
+
+.skeleton-status {
+  @apply h-6 w-20 rounded-full mx-auto;
+}
+
+.skeleton-actions {
+  @apply h-8 w-16 mx-auto;
+}
+
+/* ============================================================================
+    Size Variants for Skeletons
+   ============================================================================ */
+
+.user-card.size-compact .skeleton-avatar {
+  @apply w-12 h-12;
+}
+
+.user-card.size-compact .skeleton-name {
+  @apply h-4 w-20;
+}
+
+.user-card.size-compact .skeleton-email {
+  @apply h-3 w-24;
+}
+
+.user-card.size-large .skeleton-avatar {
+  @apply w-20 h-20;
+}
+
+.user-card.size-large .skeleton-name {
+  @apply h-6 w-32;
+}
+
+.user-card.size-large .skeleton-email {
+  @apply h-5 w-40;
+}
+
+/* ============================================================================
+    Responsive Design
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .user-card.size-normal {
+    @apply p-3;
+  }
+
+  .user-card.size-large {
+    @apply p-4;
+  }
+
+  .user-details {
+    @apply space-y-1;
+  }
+
+  .detail-item {
+    @apply text-xs;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-card {
+    @apply p-3;
+  }
+
+  .user-avatar-image,
+  .user-avatar-initials {
+    @apply w-12 h-12 text-base;
+  }
+
+  .status-indicator {
+    @apply w-5 h-5;
+  }
+
+  .user-name {
+    @apply text-base;
+  }
+
+  .user-email {
+    @apply text-xs;
+  }
+
+  .user-username {
+    @apply hidden;
+  }
+
+  .user-details {
+    @apply hidden;
+  }
+}
+
+/* ============================================================================
+    Focus and Accessibility
+   ============================================================================ */
+
+.user-card:focus {
+  @apply outline-none ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+}
+
+.selection-checkbox:focus {
+  @apply ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* ============================================================================
+    Print Styles
+   ============================================================================ */
+
+@media print {
+  .hover-overlay,
+  .actions-section,
+  .selection-indicator {
+    @apply hidden;
+  }
+
+  .user-card {
+    @apply bg-white border border-neutral-300 break-inside-avoid;
+  }
+}
+
+/* ============================================================================
+    Animation and Transitions
+   ============================================================================ */
+
+.role-badge,
+.status-badge {
+  @apply transition-colors duration-200;
+}
+
+.action-buttons button {
+  @apply transition-all duration-200;
+}
+
+.status-indicator {
+  @apply transition-all duration-200;
+}
+
+.user-card.selectable {
+  @apply transition-all duration-200;
+}

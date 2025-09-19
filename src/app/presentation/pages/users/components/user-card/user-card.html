@@ -1,0 +1,150 @@
+<!-- User Card Component Template -->
+<div
+  [class]="getCardClasses()"
+  (click)="onCardClick()"
+  [attr.aria-selected]="selectable ? selected : null"
+  [attr.role]="selectable ? 'option' : 'button'"
+  [attr.tabindex]="clickable ? 0 : -1">
+
+  <!-- Loading State -->
+  @if (loading) {
+    <div class="card-loading">
+      <!-- Avatar Skeleton -->
+      <div class="avatar-section">
+        <div class="skeleton skeleton-avatar"></div>
+      </div>
+
+      <!-- Content Skeleton -->
+      <div class="content-section">
+        <div class="user-info-skeleton">
+          <div class="skeleton skeleton-name"></div>
+          <div class="skeleton skeleton-email"></div>
+        </div>
+
+        @if (showDetails) {
+          <div class="details-skeleton">
+            <div class="skeleton skeleton-role"></div>
+            <div class="skeleton skeleton-status"></div>
+          </div>
+        }
+      </div>
+
+      <!-- Actions Skeleton -->
+      @if (showActions) {
+        <div class="actions-section">
+          <div class="skeleton skeleton-actions"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Card Content -->
+  @else {
+    <!-- Selection Indicator -->
+    @if (selectable) {
+      <div class="selection-indicator">
+        <input
+          type="checkbox"
+          [checked]="selected"
+          (change)="onToggleSelection()"
+          (click)="$event.stopPropagation()"
+          class="selection-checkbox"
+          [attr.aria-label]="'Select ' + user.displayName">
+      </div>
+    }
+
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      @if (user.avatar) {
+        <img
+          [src]="user.avatar"
+          [alt]="user.displayName + ' avatar'"
+          class="user-avatar-image">
+      } @else {
+        <div class="user-avatar-initials">
+          {{ getUserInitials() }}
+        </div>
+      }
+
+      <!-- Status Indicator -->
+      <div class="status-indicator" [class]="getStatusClass()">
+        <ui-icon [name]="user.status.iconName" variant="filled" size="xs"></ui-icon>
+      </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content-section">
+      <!-- User Basic Info -->
+      <div class="user-info">
+        <h3 class="user-name">{{ user.displayName }}</h3>
+        <p class="user-email">{{ user.email }}</p>
+        <p class="user-username">@{{ user.username }}</p>
+      </div>
+
+      <!-- Detailed Information -->
+      @if (showDetails) {
+        <div class="user-details">
+          <!-- Role Badge -->
+          <div class="detail-item">
+            <span class="role-badge" [class]="getRoleClass()">
+              <ui-icon name="shield" variant="outline" size="xs"></ui-icon>
+              {{ user.role | titlecase }}
+            </span>
+          </div>
+
+          <!-- Status Badge -->
+          <div class="detail-item">
+            <span class="status-badge" [class]="getStatusClass()">
+              <ui-icon [name]="user.status.iconName" variant="outline" size="xs"></ui-icon>
+              {{ user.status.label }}
+            </span>
+          </div>
+
+          <!-- Last Activity -->
+          @if (user.lastActivity) {
+            <div class="detail-item">
+              <span class="activity-info">
+                <ui-icon name="clock" variant="outline" size="xs"></ui-icon>
+                {{ getLastActivityDisplay() }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Actions Section -->
+    @if (showActions && (userActions.canView || userActions.canEdit)) {
+      <div class="actions-section">
+        <div class="action-buttons">
+          @if (userActions.canView) {
+            <ui-button
+              variant="ghost"
+              size="sm"
+              (click)="onUserAction('view', $event)"
+              [attr.aria-label]="'View ' + user.displayName">
+              <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
+            </ui-button>
+          }
+
+          @if (userActions.canEdit) {
+            <ui-button
+              variant="ghost"
+              size="sm"
+              (click)="onUserAction('edit', $event)"
+              [attr.aria-label]="'Edit ' + user.displayName">
+              <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
+            </ui-button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Hover Overlay -->
+    <div class="hover-overlay">
+      <div class="overlay-content">
+        <ui-icon name="arrow-right" variant="outline" size="md"></ui-icon>
+      </div>
+    </div>
+  }
+</div>
