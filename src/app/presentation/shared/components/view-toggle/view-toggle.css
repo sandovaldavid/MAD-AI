@@ -1,0 +1,216 @@
+/**
+ * View Toggle Component Styles
+ *
+ * @description
+ * Styles for the View Toggle shared component following MAD-AI design system.
+ * Uses Tailwind CSS v4.1 with custom color palette and semantic class patterns.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ * @layer Presentation/Shared
+ */
+
+@reference '../../../../../styles.css';
+
+/* ============================================================================
+   Screen Reader Support
+   ============================================================================ */
+
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+  clip: rect(0, 0, 0, 0);
+}
+
+/* ============================================================================
+   View Toggle Container
+   ============================================================================ */
+
+.view-toggle {
+  @apply inline-flex items-center gap-1 p-1 bg-secondary-50 dark:bg-secondary-950 border border-secondary-200 dark:border-secondary-800 rounded-lg shadow-sm transition-all duration-200;
+}
+
+.view-toggle.compact {
+  @apply gap-0.5 p-0.5;
+}
+
+/* ============================================================================
+   View Options
+   ============================================================================ */
+
+.view-option {
+  @apply relative transition-all duration-200 ease-out min-w-0 whitespace-nowrap;
+}
+
+.view-option:not(.active) {
+  @apply bg-transparent hover:bg-secondary-100 dark:hover:bg-secondary-900 text-secondary-600 dark:text-secondary-400 hover:text-secondary-700 dark:hover:text-secondary-300 border-transparent hover:border-secondary-300 dark:hover:border-secondary-700;
+}
+
+.view-option.active {
+  @apply text-white border-primary-600 dark:border-primary-500 shadow-sm;
+}
+
+/* Focus states - Using focus-visible for better UX */
+.view-option:focus-visible {
+  @apply ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2 ring-offset-secondary-50 dark:ring-offset-secondary-950 outline-none;
+}
+
+.view-option:focus:not(:focus-visible) {
+  @apply ring-0 outline-none;
+}
+
+/* ============================================================================
+   View Option Content
+   ============================================================================ */
+
+.view-label {
+  @apply text-sm font-medium;
+}
+
+.view-toggle.compact .view-label {
+  @apply text-xs;
+}
+
+/* ============================================================================
+   Toggle Label
+   ============================================================================ */
+
+.toggle-label {
+  @apply text-sm font-medium text-secondary-600 dark:text-secondary-400 ml-2 px-2 py-1 rounded-md bg-secondary-100 dark:bg-secondary-900 border border-secondary-200 dark:border-secondary-800;
+}
+
+.view-toggle.compact .toggle-label {
+  @apply text-xs ml-1 px-1.5 py-0.5;
+}
+
+/* ============================================================================
+   Icon Styling
+   ============================================================================ */
+
+.view-option ui-icon {
+  @apply transition-colors duration-200;
+}
+
+.view-option:not(.active) ui-icon {
+  @apply text-secondary-500 dark:text-secondary-400;
+}
+
+.view-option.active ui-icon {
+  @apply text-white;
+}
+
+/* ============================================================================
+   Hover and Active States
+   ============================================================================ */
+
+.view-option:hover:not(.active) {
+  @apply transform scale-105;
+}
+
+.view-option:active {
+  @apply transform scale-95;
+}
+
+.view-option.active:hover {
+  @apply transform scale-100;
+}
+
+/* ============================================================================
+   Disabled State
+   ============================================================================ */
+
+.view-toggle[aria-disabled='true'] .view-option {
+  @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  .view-toggle:not(.compact) {
+    @apply p-0.5 gap-0.5;
+  }
+
+  .view-label {
+    @apply hidden;
+  }
+
+  .toggle-label {
+    @apply text-xs;
+  }
+}
+
+/* ============================================================================
+   Animation and Transitions
+   ============================================================================ */
+
+.view-option {
+  @apply transition-all duration-200 ease-out;
+}
+
+.view-toggle {
+  @apply transition-all duration-200 ease-out;
+}
+
+/* Smooth color transitions */
+.view-option ui-icon,
+.view-label,
+.toggle-label {
+  @apply transition-colors duration-200;
+}
+
+/* Subtle shadow transitions */
+.view-option.active {
+  @apply transition-shadow duration-200;
+}
+
+/* ============================================================================
+   High Contrast Mode Support
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+  .view-toggle {
+    @apply border-2 border-neutral-900 dark:border-neutral-100;
+  }
+
+  .view-option.active {
+    @apply bg-neutral-900 dark:bg-neutral-100 text-neutral-100 dark:text-neutral-900;
+  }
+
+  .view-option:not(.active) {
+    @apply text-neutral-900 dark:text-neutral-100;
+  }
+}
+
+/* ============================================================================
+   Reduced Motion Support
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .view-option,
+  .view-toggle,
+  .view-option ui-icon,
+  .view-label,
+  .toggle-label {
+    @apply transition-none;
+  }
+
+  .view-option:hover:not(.active) {
+    @apply transform-none;
+  }
+
+  .view-option:active {
+    @apply transform-none;
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  .view-toggle {
+    @apply hidden;
+  }
+}

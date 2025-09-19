@@ -1,0 +1,40 @@
+<div
+  class="view-toggle"
+  [class.compact]="compact()"
+  role="radiogroup"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-describedby]="'view-toggle-help'">
+  <div id="view-toggle-help" class="sr-only">
+    Choose how to display the data: {{ availableViewLabels() }}
+  </div>
+
+  @for (view of availableViews(); track view.id) {
+    <ui-button
+      [variant]="isActive(view.id) ? 'primary' : 'ghost'"
+      [size]="compact() ? 'sm' : 'md'"
+      (click)="selectView(view.id)"
+      [attr.aria-label]="view.label + ': ' + view.description"
+      [attr.aria-pressed]="isActive(view.id)"
+      [attr.title]="getTooltip(view)"
+      role="radio"
+      class="view-option"
+      [class.active]="isActive(view.id)">
+      <ui-icon
+        [name]="view.icon"
+        variant="outline"
+        [size]="compact() ? 'sm' : 'md'"
+        aria-hidden="true">
+      </ui-icon>
+
+      @if (!compact()) {
+        <span class="view-label">{{ view.label }}</span>
+      }
+    </ui-button>
+  }
+
+  @if (showLabel()) {
+    <span class="toggle-label" aria-hidden="true">
+      {{ getCurrentViewLabel() }}
+    </span>
+  }
+</div>
