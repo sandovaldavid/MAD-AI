@@ -6,3 +6,9 @@ export { Input } from './input/input';
 export { ThemeToggle } from './theme-toggle/theme-toggle';
 export { Toggle, type ToggleSize, type ToggleColor } from './toggle/toggle';
 export { BulkActionsToolbar } from './bulk-actions-toolbar/bulk-actions-toolbar';
+export { 
+  Pagination, 
+  type PaginationConfig, 
+  type PageChangeEvent, 
+  type PageSizeChangeEvent 
+} from './pagination/pagination';
