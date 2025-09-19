@@ -168,7 +168,7 @@
 }
 
 .clear-button {
-  @apply hover:bg-error-100 hover:text-error-700 dark:hover:bg-error-900/20 dark:hover:text-error-400;
+  @apply hover:text-error-700 dark:hover:text-error-400;
   @apply transition-all duration-200;
 }
 
