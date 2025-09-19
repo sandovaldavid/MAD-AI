@@ -194,7 +194,16 @@ export class UsersFacade extends BaseUserFacade {
    * @returns Promise resolving to the list result
    */
   async listUsers(request?: ListUsersRequest, opts?: FacadeOpts): Promise<ListUsersResult> {
-    return this.listFacade.listUsers(request, opts);
+    console.log('UsersFacade.listUsers called with:', request);
+    const result = await this.listFacade.listUsers(request, opts);
+    console.log('UsersFacade.listUsers received result:', result);
+
+    // Synchronize state with coordinated facade
+    this._users.set(result.users);
+    this._totalCount.set(result.totalCount);
+    console.log('UsersFacade state synchronized - users count:', result.users.length);
+
+    return result;
   }
 
   /**
@@ -204,7 +213,13 @@ export class UsersFacade extends BaseUserFacade {
    * @returns Promise resolving to the search result
    */
   async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<ListUsersResult> {
-    return this.listFacade.searchUsers(criteria, opts);
+    const result = await this.listFacade.searchUsers(criteria, opts);
+
+    // Synchronize state with coordinated facade
+    this._users.set(result.users);
+    this._totalCount.set(result.totalCount);
+
+    return result;
   }
 
   // ============================================================================
