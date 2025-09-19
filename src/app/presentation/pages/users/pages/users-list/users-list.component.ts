@@ -168,7 +168,7 @@ export class UsersListPage implements OnInit {
     {
       id: 'deactivate',
       label: 'Deactivate',
-      icon: 'user-x',
+      icon: 'user',
       variant: 'secondary',
       requiresConfirmation: true,
     },
