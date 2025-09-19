@@ -1,0 +1,502 @@
+/**
+ * User Table Component Styles
+ *
+ * @description
+ * Styles for the User Table Dumb Component following MAD-AI design system.
+ * Uses Tailwind CSS v4.1 with custom color palette and semantic class patterns.
+ *
+ * @author MAD-AI Development Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ * @layer Presentation
+ */
+
+@reference '../../../../../../styles.css';
+
+/* ============================================================================
+   Container Layout
+   ============================================================================ */
+
+.user-table-container {
+  @apply flex flex-col h-full;
+}
+
+.user-table-container.compact {
+  @apply text-sm;
+}
+
+/* ============================================================================
+   Table Actions Bar
+   ============================================================================ */
+
+.table-actions-bar {
+  @apply flex items-center justify-between gap-4 p-4 bg-primary-50 dark:bg-primary-950
+         border-b border-primary-200 dark:border-primary-800;
+}
+
+.selection-info {
+  @apply flex items-center gap-2;
+}
+
+.selection-count {
+  @apply text-sm font-medium text-primary-800 dark:text-primary-200;
+}
+
+.bulk-actions {
+  @apply flex items-center gap-2;
+}
+
+/* ============================================================================
+   Table Wrapper and Base Table
+   ============================================================================ */
+
+.table-wrapper {
+  @apply flex-1 overflow-auto border border-neutral-200 dark:border-neutral-700 rounded-lg;
+}
+
+.users-table {
+  @apply w-full border-collapse bg-white dark:bg-primary-900;
+}
+
+.users-table.loading {
+  @apply pointer-events-none;
+}
+
+/* ============================================================================
+   Table Header
+   ============================================================================ */
+
+.table-header {
+  @apply bg-neutral-50 dark:bg-neutral-900 sticky top-0 z-10;
+}
+
+.header-row {
+  @apply border-b border-neutral-200 dark:border-neutral-700;
+}
+
+.header-row th {
+  @apply px-4 py-3 text-left text-xs font-medium text-neutral-500 dark:text-neutral-100
+         uppercase tracking-wider;
+}
+
+.sortable-column {
+  @apply cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors;
+}
+
+.column-header {
+  @apply flex items-center gap-2;
+}
+
+.column-title {
+  @apply select-none;
+}
+
+.sort-icon {
+  @apply text-neutral-400 dark:text-neutral-500;
+}
+
+/* ============================================================================
+   Table Body
+   ============================================================================ */
+
+.table-body {
+  @apply divide-y divide-neutral-200 dark:divide-neutral-700;
+}
+
+.user-row {
+  @apply hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors;
+}
+
+.user-row.selected {
+  @apply bg-primary-50 dark:bg-primary-950;
+}
+
+.user-row td {
+  @apply px-4 py-3 whitespace-nowrap;
+}
+
+/* ============================================================================
+   Column Specific Styles
+   ============================================================================ */
+
+.selection-column,
+.selection-cell {
+  @apply w-12 text-center;
+}
+
+.user-column {
+  @apply min-w-64;
+}
+
+.email-column {
+  @apply min-w-56;
+}
+
+.role-column {
+  @apply w-32;
+}
+
+.status-column {
+  @apply w-32;
+}
+
+.activity-column {
+  @apply w-40;
+}
+
+.actions-column {
+  @apply w-32;
+}
+
+/* ============================================================================
+   Checkbox Styles
+   ============================================================================ */
+
+.checkbox-input {
+  @apply w-4 h-4 text-primary-600 dark:text-primary-500 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 rounded focus-visible:ring-primary-500 dark:focus-visible:ring-primary-400 focus-visible:ring-2 focus-visible:ring-offset-0 transition-colors;
+}
+
+.checkbox-input:checked {
+  @apply bg-primary-600 dark:bg-primary-500 border-primary-600 dark:border-primary-500;
+}
+
+.checkbox-input:indeterminate {
+  @apply bg-primary-600 dark:bg-primary-500 border-primary-600 dark:border-primary-500;
+}
+
+/* ============================================================================
+   User Information Cell
+   ============================================================================ */
+
+.user-cell {
+  @apply max-w-0;
+}
+
+.user-info {
+  @apply flex items-center gap-3;
+}
+
+.user-avatar {
+  @apply flex-shrink-0;
+}
+
+.avatar-image {
+  @apply w-10 h-10 rounded-full object-cover border border-neutral-200 dark:border-neutral-700;
+}
+
+.avatar-initials {
+  @apply w-10 h-10 rounded-full bg-primary-500 dark:bg-primary-600 text-white
+         flex items-center justify-center text-sm font-medium;
+}
+
+.user-details {
+  @apply min-w-0 flex-1;
+}
+
+.user-name {
+  @apply font-medium text-neutral-900 dark:text-neutral-100 truncate;
+}
+
+.user-username {
+  @apply text-sm text-neutral-500 dark:text-neutral-100 truncate;
+}
+
+/* ============================================================================
+   Email Cell
+   ============================================================================ */
+
+.email-cell {
+  @apply max-w-0;
+}
+
+.email-address {
+  @apply text-neutral-900 dark:text-neutral-100 truncate;
+}
+
+/* ============================================================================
+   Role Cell
+   ============================================================================ */
+
+.role-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium
+         transition-colors duration-150;
+}
+
+/* Remove old role-specific classes since we're using the dynamic color system */
+
+/* ============================================================================
+   Status Cell
+   ============================================================================ */
+
+.status-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+}
+
+.status-badge.status-active {
+  @apply bg-successful-100 dark:bg-successful-900 text-successful-800 dark:text-successful-200;
+}
+
+.status-badge.status-inactive {
+  @apply bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200;
+}
+
+.status-badge.status-pending {
+  @apply bg-warning-100 dark:bg-warning-900 text-warning-800 dark:text-warning-200;
+}
+
+.status-badge.status-suspended {
+  @apply bg-error-100 dark:bg-error-900 text-error-800 dark:text-error-200;
+}
+
+/* ============================================================================
+   Activity Cell
+   ============================================================================ */
+
+.activity-info {
+  @apply flex flex-col gap-1;
+}
+
+.activity-date {
+  @apply text-neutral-900 dark:text-neutral-100 text-sm;
+}
+
+.activity-details {
+  @apply text-neutral-500 dark:text-neutral-100 text-xs;
+}
+
+/* ============================================================================
+   Actions Cell
+   ============================================================================ */
+
+.action-buttons {
+  @apply flex items-center gap-1;
+}
+
+.action-dropdown {
+  @apply flex items-center gap-1;
+}
+
+.danger-action {
+  @apply hover:bg-error-50 dark:hover:bg-error-950 hover:text-error-600 dark:hover:text-error-400;
+}
+
+/* ============================================================================
+   Loading States and Skeletons
+   ============================================================================ */
+
+.loading-row {
+  @apply animate-pulse;
+}
+
+.skeleton {
+  @apply bg-neutral-200 dark:bg-neutral-700 rounded;
+}
+
+.skeleton-checkbox {
+  @apply w-4 h-4;
+}
+
+.skeleton-avatar {
+  @apply w-10 h-10 rounded-full;
+}
+
+.skeleton-name {
+  @apply h-4 w-24 mb-1;
+}
+
+.skeleton-username {
+  @apply h-3 w-16;
+}
+
+.skeleton-email {
+  @apply h-4 w-32;
+}
+
+.skeleton-role {
+  @apply h-6 w-16 rounded-full;
+}
+
+.skeleton-status {
+  @apply h-6 w-20 rounded-full;
+}
+
+.skeleton-activity {
+  @apply h-4 w-24;
+}
+
+.skeleton-actions {
+  @apply h-8 w-24;
+}
+
+.user-info-loading {
+  @apply flex items-center gap-3;
+}
+
+.user-details-loading {
+  @apply flex-1 min-w-0;
+}
+
+/* ============================================================================
+   Empty State
+   ============================================================================ */
+
+.empty-row {
+  @apply h-96;
+}
+
+.empty-cell {
+  @apply text-center p-12;
+}
+
+.empty-state {
+  @apply flex flex-col items-center justify-center h-full;
+}
+
+.empty-icon {
+  @apply text-neutral-400 dark:text-neutral-500 mb-4;
+}
+
+.empty-content {
+  @apply max-w-md mx-auto;
+}
+
+.empty-title {
+  @apply text-lg font-medium text-neutral-900 dark:text-neutral-100 mb-2;
+}
+
+.empty-description {
+  @apply text-neutral-500 dark:text-neutral-100;
+}
+
+/* ============================================================================
+   Compact Mode
+   ============================================================================ */
+
+.user-table-container.compact .header-row th {
+  @apply px-3 py-2;
+}
+
+.user-table-container.compact .user-row td {
+  @apply px-3 py-2;
+}
+
+.user-table-container.compact .avatar-image,
+.user-table-container.compact .avatar-initials {
+  @apply w-8 h-8 text-xs;
+}
+
+.user-table-container.compact .user-name {
+  @apply text-sm;
+}
+
+.user-table-container.compact .user-username {
+  @apply text-xs;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .activity-column,
+  .activity-cell {
+    @apply hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  .role-column,
+  .role-cell {
+    @apply hidden;
+  }
+
+  .email-column,
+  .email-cell {
+    @apply hidden;
+  }
+
+  .user-column {
+    @apply min-w-48;
+  }
+
+  .actions-cell .action-dropdown {
+    @apply hidden;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-actions-bar {
+    @apply flex-col items-stretch gap-3;
+  }
+
+  .bulk-actions {
+    @apply flex-wrap justify-center;
+  }
+
+  .user-info {
+    @apply flex-col items-start gap-2;
+  }
+
+  .user-details {
+    @apply self-stretch;
+  }
+}
+
+/* ============================================================================
+   Focus and Accessibility
+   ============================================================================ */
+
+.sortable-column:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 dark:ring-primary-400 ring-inset;
+}
+
+.checkbox-input:focus-visible {
+  @apply ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  .table-actions-bar,
+  .actions-column,
+  .actions-cell,
+  .selection-column,
+  .selection-cell {
+    @apply hidden;
+  }
+
+  .user-table-container {
+    @apply bg-white;
+  }
+
+  .users-table {
+    @apply border border-neutral-300;
+  }
+
+  .header-row {
+    @apply bg-neutral-100;
+  }
+}
+
+/* ============================================================================
+   Animation and Transitions
+   ============================================================================ */
+
+.user-row {
+  @apply transition-all duration-200;
+}
+
+.role-badge,
+.status-badge {
+  @apply transition-colors duration-200;
+}
+
+.action-buttons button {
+  @apply transition-all duration-200;
+}
+
+.sort-icon {
+  @apply transition-transform duration-200;
+}
