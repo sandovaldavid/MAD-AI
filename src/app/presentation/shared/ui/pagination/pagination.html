@@ -1,0 +1,98 @@
+<!-- Pagination Component Template -->
+<nav class="pagination" [class.disabled]="disabled" [class.loading]="loading" role="navigation" aria-label="Pagination">
+  
+  <!-- Page Size Selector -->
+  @if (showPageSizeSelector) {
+    <div class="page-size-selector">
+      <label class="page-size-label" for="page-size-select">Show:</label>
+      <select
+        id="page-size-select"
+        class="page-size-select"
+        [value]="pageSize"
+        [disabled]="disabled || loading"
+        (change)="onPageSizeChange($event)">
+        @for (size of pageSizeOptions; track size) {
+          <option [value]="size">{{ size }}</option>
+        }
+      </select>
+      <span class="page-size-suffix">per page</span>
+    </div>
+  }
+
+  <!-- Pagination Controls -->
+  <div class="pagination-controls">
+    <!-- First Page Button -->
+    @if (showFirstPage()) {
+      <ui-button
+        variant="ghost"
+        size="sm"
+        [disabled]="!canGoPrevious() || disabled || loading"
+        (clicked)="onFirstPage()"
+        ariaLabel="Go to first page">
+        <ui-icon name="chevron-double-left" size="sm"></ui-icon>
+      </ui-button>
+    }
+
+    <!-- Previous Page Button -->
+    <ui-button
+      variant="ghost"
+      size="sm"
+      [disabled]="!canGoPrevious() || disabled || loading"
+      (clicked)="onPreviousPage()"
+      ariaLabel="Go to previous page">
+      <ui-icon name="chevron-left" size="sm"></ui-icon>
+    </ui-button>
+
+    <!-- Page Numbers -->
+    <div class="page-numbers">
+      @for (page of visiblePages(); track page) {
+        <ui-button
+          [variant]="isCurrentPage(page) ? 'primary' : 'ghost'"
+          size="sm"
+          [disabled]="disabled || loading"
+          [class.current-page]="isCurrentPage(page)"
+          (clicked)="onPageChange(page)"
+          [ariaLabel]="getPageAriaLabel(page)"
+          [attr.aria-current]="isCurrentPage(page) ? 'page' : null">
+          {{ page }}
+        </ui-button>
+      }
+    </div>
+
+    <!-- Next Page Button -->
+    <ui-button
+      variant="ghost"
+      size="sm"
+      [disabled]="!canGoNext() || disabled || loading"
+      (clicked)="onNextPage()"
+      ariaLabel="Go to next page">
+      <ui-icon name="chevron-right" size="sm"></ui-icon>
+    </ui-button>
+
+    <!-- Last Page Button -->
+    @if (showLastPage()) {
+      <ui-button
+        variant="ghost"
+        size="sm"
+        [disabled]="!canGoNext() || disabled || loading"
+        (clicked)="onLastPage()"
+        ariaLabel="Go to last page">
+        <ui-icon name="chevron-double-right" size="sm"></ui-icon>
+      </ui-button>
+    }
+  </div>
+
+  <!-- Page Information -->
+  @if (showPageInfo) {
+    <div class="page-info">
+      @if (totalItems > 0) {
+        <span class="page-info-text">
+          Showing {{ startItem() }}-{{ endItem() }} of {{ totalItems }} items
+        </span>
+      } @else {
+        <span class="page-info-text">No items to display</span>
+      }
+    </div>
+  }
+
+</nav>

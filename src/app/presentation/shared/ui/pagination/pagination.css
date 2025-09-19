@@ -1,0 +1,88 @@
+@reference '../../../../../styles.css';
+
+/* Pagination Container */
+.pagination {
+  @apply flex items-center justify-between gap-4 p-4 
+    bg-white border border-neutral-200 rounded-xl
+    dark:bg-neutral-800 dark:border-neutral-700;
+}
+
+.pagination.disabled {
+  @apply opacity-60 pointer-events-none;
+}
+
+.pagination.loading {
+  @apply opacity-75;
+}
+
+/* Page Size Selector */
+.page-size-selector {
+  @apply flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300;
+}
+
+.page-size-label {
+  @apply font-medium;
+}
+
+.page-size-select {
+  @apply px-2 py-1 border border-neutral-300 rounded-lg bg-white text-neutral-900
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/25
+    focus-visible:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed
+    dark:bg-neutral-800 dark:border-neutral-600 dark:text-neutral-100
+    dark:focus-visible:border-primary-400 dark:focus-visible:ring-primary-400/25;
+}
+
+.page-size-suffix {
+  @apply text-neutral-600 dark:text-neutral-400;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+  @apply flex items-center gap-1;
+}
+
+.page-numbers {
+  @apply flex items-center gap-1;
+}
+
+.current-page {
+  @apply font-semibold;
+}
+
+/* Page Information */
+.page-info {
+  @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+.page-info-text {
+  @apply font-medium;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .pagination {
+    @apply flex-col items-stretch gap-3;
+  }
+  
+  .page-size-selector {
+    @apply justify-center;
+  }
+  
+  .pagination-controls {
+    @apply justify-center;
+  }
+  
+  .page-info {
+    @apply text-center;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-numbers {
+    @apply flex-wrap justify-center;
+  }
+  
+  .page-info-text {
+    @apply text-xs;
+  }
+}
