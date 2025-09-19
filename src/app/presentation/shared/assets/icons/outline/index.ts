@@ -63,3 +63,4 @@ export { default as chevronLeft } from './chevron-left.svg?raw';
 export { default as userCircle } from './user-circle.svg?raw';
 export { default as logout } from './logout.svg?raw';
 export { default as folder } from './folder.svg?raw';
+export { default as reload } from './reload.svg?raw';

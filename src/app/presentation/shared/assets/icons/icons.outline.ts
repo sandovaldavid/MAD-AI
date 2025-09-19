@@ -64,6 +64,7 @@ import {
   logout,
   userCircle,
   folder,
+  reload,
 } from './outline';
 
 export const ICONS_CORE_OUTLINE = {
@@ -132,4 +133,5 @@ export const ICONS_CORE_OUTLINE = {
   'outline/logout': logout,
   'outline/user-circle': userCircle,
   'outline/folder': folder,
+  'outline/reload': reload,
 } as const;
