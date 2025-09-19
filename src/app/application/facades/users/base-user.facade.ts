@@ -13,16 +13,18 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
-// Use Cases Imports
-import { CreateUser } from '@application/use-cases/users/create-user.usecase';
-import { UpdateUserUseCase } from '@application/use-cases/users/update-user.usecase';
-import { DeleteUser } from '@application/use-cases/users/delete-user.usecase';
-import { GetUserById } from '@application/use-cases/users/get-user-by-id.usecase';
-import { GetUserByEmail } from '@application/use-cases/users/get-user-by-email.usecase';
-import { GetUserByUsernameUseCase } from '@application/use-cases/users/get-user-by-username.usecase';
-import { ListUsersUseCase } from '@application/use-cases/users/list-users.usecase';
-import { ActivateUser } from '@application/use-cases/users/activate-user.usecase';
-import { DeactivateUser } from '@application/use-cases/users/deactivate-user.usecase';
+// Injection Tokens
+import {
+  CREATE_USER_USECASE_PORT,
+  UPDATE_USER_USECASE_PORT,
+  DELETE_USER_USECASE_PORT,
+  GET_USER_BY_ID_USECASE_PORT,
+  GET_USER_BY_EMAIL_USECASE_PORT,
+  GET_USER_BY_USERNAME_USECASE_PORT,
+  LIST_USERS_USECASE_PORT,
+  ACTIVATE_USER_USECASE_PORT,
+  DEACTIVATE_USER_USECASE_PORT,
+} from '@di/tokens';
 
 // Domain Imports
 import type { User } from '@domain/entities/user.entity';
@@ -74,31 +76,31 @@ export abstract class BaseUserFacade {
   // ============================================================================
 
   /** Use case for creating new users */
-  protected readonly createUserUC = inject(CreateUser);
+  protected readonly createUserUC = inject(CREATE_USER_USECASE_PORT);
 
   /** Use case for updating existing users */
-  protected readonly updateUserUC = inject(UpdateUserUseCase);
+  protected readonly updateUserUC = inject(UPDATE_USER_USECASE_PORT);
 
   /** Use case for deleting users */
-  protected readonly deleteUserUC = inject(DeleteUser);
+  protected readonly deleteUserUC = inject(DELETE_USER_USECASE_PORT);
 
   /** Use case for retrieving user by ID */
-  protected readonly getUserByIdUC = inject(GetUserById);
+  protected readonly getUserByIdUC = inject(GET_USER_BY_ID_USECASE_PORT);
 
   /** Use case for retrieving user by email */
-  protected readonly getUserByEmailUC = inject(GetUserByEmail);
+  protected readonly getUserByEmailUC = inject(GET_USER_BY_EMAIL_USECASE_PORT);
 
   /** Use case for retrieving user by username */
-  protected readonly getUserByUsernameUC = inject(GetUserByUsernameUseCase);
+  protected readonly getUserByUsernameUC = inject(GET_USER_BY_USERNAME_USECASE_PORT);
 
   /** Use case for listing users with filtering */
-  protected readonly listUsersUC = inject(ListUsersUseCase);
+  protected readonly listUsersUC = inject(LIST_USERS_USECASE_PORT);
 
   /** Use case for activating users */
-  protected readonly activateUserUC = inject(ActivateUser);
+  protected readonly activateUserUC = inject(ACTIVATE_USER_USECASE_PORT);
 
   /** Use case for deactivating users */
-  protected readonly deactivateUserUC = inject(DeactivateUser);
+  protected readonly deactivateUserUC = inject(DEACTIVATE_USER_USECASE_PORT);
 
   /** Service for transforming domain errors to user-friendly messages */
   protected readonly errorTransformer = inject(ApplicationErrorTransformer);
