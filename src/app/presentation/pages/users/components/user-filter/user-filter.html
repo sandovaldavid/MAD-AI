@@ -1,0 +1,41 @@
+<div class="user-filter">
+  <form [formGroup]="filterForm" class="filter-form">
+    <ui-form-field class="search-field">
+      <ui-input
+        type="search"
+        placeholder="Search users..."
+        formControlName="searchTerm"
+        autocomplete="off">
+        <ui-icon name="search" variant="outline" size="sm" slot="prefix"></ui-icon>
+      </ui-input>
+    </ui-form-field>
+
+    <ui-form-field class="status-field">
+      <select formControlName="statusFilter" class="status-select">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </ui-form-field>
+
+    <ui-form-field class="role-field">
+      <select formControlName="roleFilter" class="role-select">
+        <option value="">All Roles</option>
+        @for (role of availableRoles; track role) {
+          <option [value]="role">{{ role }}</option>
+        }
+      </select>
+    </ui-form-field>
+
+    <div class="filter-actions">
+      @if (hasActiveFilters()) {
+        <ui-button variant="ghost" size="sm" (click)="onClearFilters()" [disabled]="loading">
+          <ui-icon name="x" size="sm"></ui-icon>
+          Clear Filters
+        </ui-button>
+      }
+
+      <span class="filter-count"> {{ activeFiltersCount() }} filter(s) active </span>
+    </div>
+  </form>
+</div>

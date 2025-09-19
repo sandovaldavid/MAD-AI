@@ -1,0 +1,74 @@
+@reference '../../../../../../styles.css';
+
+/* Base filter container */
+.user-filter {
+  @apply bg-white border border-neutral-200 rounded-2xl p-4 shadow-sm dark:bg-neutral-800 dark:border-neutral-700;
+}
+
+/* Filter form layout */
+.filter-form {
+  @apply flex flex-col gap-4 md:flex-row md:items-start md:gap-4 lg:gap-6;
+}
+
+/* Search field */
+.search-field {
+  @apply flex-1 min-w-0 md:max-w-sm;
+}
+
+.search-field ui-input {
+  @apply w-full;
+}
+
+/* Status field */
+.status-field,
+.role-field {
+  @apply shrink-0 min-w-0;
+}
+
+.status-select,
+.role-select {
+  @apply w-full px-3 py-2 border border-neutral-300 rounded-xl bg-white text-neutral-900 
+    text-sm outline-none transition-all duration-150
+    hover:border-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/25
+    disabled:cursor-not-allowed disabled:opacity-60 disabled:bg-neutral-50
+    dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 
+    dark:hover:border-neutral-600 dark:focus:border-primary-400 dark:focus:ring-primary-400/25
+    dark:disabled:bg-neutral-900/50;
+  min-width: 120px;
+}
+
+/* Filter actions */
+.filter-actions {
+  @apply flex items-center justify-between gap-4 mt-4 md:mt-0 md:ml-auto md:shrink-0;
+}
+
+.filter-count {
+  @apply text-xs font-medium text-neutral-600 dark:text-neutral-400 
+    px-2 py-1 bg-neutral-100 rounded-full dark:bg-neutral-700/50;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-form {
+    @apply space-y-3;
+  }
+
+  .search-field,
+  .status-field,
+  .role-field {
+    @apply min-w-0 w-full;
+  }
+
+  .status-select,
+  .role-select {
+    min-width: auto;
+  }
+
+  .filter-actions {
+    @apply flex-col-reverse items-stretch gap-3;
+  }
+
+  .filter-count {
+    @apply text-center;
+  }
+}
