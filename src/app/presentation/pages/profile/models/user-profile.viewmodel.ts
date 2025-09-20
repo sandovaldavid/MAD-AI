@@ -4,17 +4,17 @@
  * @returns User-friendly status text
  */
 export function getStatusDisplayText(status?: string): string {
-  if (!status) return 'Unknown';
+  if (!status) return 'Desconocido';
 
   switch (status.toLowerCase()) {
     case 'active':
-      return 'Active';
+      return 'Activo';
     case 'inactive':
-      return 'Inactive';
+      return 'Inactivo';
     case 'suspended':
-      return 'Suspended';
+      return 'Suspendido';
     case 'pending':
-      return 'Pending Activation';
+      return 'Activación pendiente';
     default:
       return status;
   }

@@ -6,7 +6,7 @@
   @if (authFacadeInstance.loading()) {
     <div class="loading-container" role="status" aria-live="polite">
       <div class="loading-spinner" aria-hidden="true"></div>
-      <p class="loading-text">Loading profile...</p>
+      <p class="loading-text">Cargando perfil...</p>
     </div>
   }
 
@@ -14,14 +14,14 @@
   @if (authFacadeInstance.error()) {
     <div class="error-container" role="alert" aria-live="assertive">
       <div class="error-message">
-        <h3>Unable to Load Profile</h3>
+        <h3>No se pudo cargar el perfil</h3>
         <p>{{ authFacadeInstance.error() }}</p>
         <button
           type="button"
           class="btn-retry"
           (click)="refreshProfile()"
           aria-label="Retry loading profile">
-          Try Again
+          Intentar de nuevo
         </button>
       </div>
     </div>
@@ -50,7 +50,7 @@
           </button>
         } @empty {
           <div class="no-tabs-message">
-            <p>No tabs available</p>
+            <p>No hay pestañas disponibles</p>
           </div>
         }
       </nav>

@@ -315,22 +315,22 @@ export class ProfileInfoForm {
     }
 
     if (field.errors['required']) {
-      return `${this.getFieldLabel(fieldName)} is required`;
+      return `${this.getFieldLabel(fieldName)} es requerido`;
     }
     if (field.errors['minlength']) {
-      return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
+      return `${this.getFieldLabel(fieldName)} debe tener al menos ${field.errors['minlength'].requiredLength} caracteres`;
     }
     if (field.errors['maxlength']) {
-      return `${this.getFieldLabel(fieldName)} must not exceed ${field.errors['maxlength'].requiredLength} characters`;
+      return `${this.getFieldLabel(fieldName)} no debe exceder ${field.errors['maxlength'].requiredLength} caracteres`;
     }
     if (field.errors['email']) {
-      return 'Please enter a valid email address';
+      return 'Por favor ingresa una dirección de correo electrónico válida';
     }
     if (field.errors['pattern']) {
-      return `${this.getFieldLabel(fieldName)} contains invalid characters`;
+      return `${this.getFieldLabel(fieldName)} contiene caracteres inválidos`;
     }
 
-    return 'Invalid input';
+    return 'Entrada inválida';
   }
 
   /**
@@ -338,10 +338,10 @@ export class ProfileInfoForm {
    */
   private getFieldLabel(fieldName: string): string {
     const labels: Record<string, string> = {
-      username: 'Username',
-      firstName: 'First name',
-      lastName: 'Last name',
-      email: 'Email',
+      username: 'Nombre de usuario',
+      firstName: 'Nombre',
+      lastName: 'Apellido',
+      email: 'Correo electrónico',
     };
     return labels[fieldName] || fieldName;
   }

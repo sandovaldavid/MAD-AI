@@ -193,16 +193,16 @@ export class ChangePasswordForm {
     switch (strength) {
       case 0:
       case 1:
-        return 'Weak';
+        return 'Débil';
       case 2:
-        return 'Fair';
+        return 'Regular';
       case 3:
       case 4:
-        return 'Good';
+        return 'Buena';
       case 5:
-        return 'Strong';
+        return 'Fuerte';
       default:
-        return 'Weak';
+        return 'Débil';
     }
   }
 

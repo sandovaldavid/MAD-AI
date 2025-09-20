@@ -11,8 +11,8 @@
       <div class="preference-item">
         <div class="preference-header">
           <div class="preference-info">
-            <h4 class="preference-title">Email Notifications</h4>
-            <p class="preference-description">Receive important updates and alerts via email</p>
+            <h4 class="preference-title">Notificaciones por correo electrónico</h4>
+            <p class="preference-description">Recibe actualizaciones importantes y alertas por correo electrónico</p>
           </div>
           <div class="preference-control">
             <ui-toggle
@@ -25,9 +25,9 @@
         </div>
         <div class="preference-details">
           <ul class="notification-examples">
-            <li>Account security alerts</li>
-            <li>Important system announcements</li>
-            <li>Password change confirmations</li>
+            <li>Alertas de seguridad de la cuenta</li>
+            <li>Anuncios importantes del sistema</li>
+            <li>Confirmaciones de cambio de contraseña</li>
           </ul>
         </div>
       </div>
@@ -36,9 +36,9 @@
       <div class="preference-item">
         <div class="preference-header">
           <div class="preference-info">
-            <h4 class="preference-title">System Notifications</h4>
+            <h4 class="preference-title">Notificaciones del sistema</h4>
             <p class="preference-description">
-              Show notifications within the application interface
+              Mostrar notificaciones dentro de la interfaz de la aplicación
             </p>
           </div>
           <div class="preference-control">
@@ -52,9 +52,9 @@
         </div>
         <div class="preference-details">
           <ul class="notification-examples">
-            <li>Real-time activity updates</li>
-            <li>System status messages</li>
-            <li>Success and error notifications</li>
+            <li>Actualizaciones de actividad en tiempo real</li>
+            <li>Mensajes de estado del sistema</li>
+            <li>Notificaciones de éxito y error</li>
           </ul>
         </div>
       </div>
@@ -63,9 +63,9 @@
       <div class="preference-item">
         <div class="preference-header">
           <div class="preference-info">
-            <h4 class="preference-title">Task Notifications</h4>
+            <h4 class="preference-title">Notificaciones de tareas</h4>
             <p class="preference-description">
-              Get notified about workflow and task-related events
+              Recibe notificaciones sobre eventos relacionados con flujos de trabajo y tareas
             </p>
           </div>
           <div class="preference-control">
@@ -79,9 +79,9 @@
         </div>
         <div class="preference-details">
           <ul class="notification-examples">
-            <li>Task assignments and updates</li>
-            <li>Workflow status changes</li>
-            <li>Deadline reminders</li>
+            <li>Asignaciones y actualizaciones de tareas</li>
+            <li>Cambios de estado del flujo de trabajo</li>
+            <li>Recordatorios de fechas límite</li>
           </ul>
         </div>
       </div>
@@ -90,7 +90,7 @@
     <!-- Form Actions -->
     <div class="form-actions">
       <ui-button variant="secondary" (click)="onCancel()" [disabled]="isSubmitting()">
-        Cancel
+        Cancelar
       </ui-button>
 
       <ui-button
@@ -99,7 +99,7 @@
         (click)="onSubmit()"
         [disabled]="!hasChanges() || isSubmitting()"
         [loading]="isSubmitting()">
-        Save Preferences
+        Guardar preferencias
       </ui-button>
     </div>
 
@@ -108,7 +108,7 @@
       <div class="form-status">
         <div class="status-info">
           <span class="status-icon">ⓘ</span>
-          <span class="status-text">You have unsaved notification preferences</span>
+          <span class="status-text">Tienes preferencias de notificación sin guardar</span>
         </div>
       </div>
     }

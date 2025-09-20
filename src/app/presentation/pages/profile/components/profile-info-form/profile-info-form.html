@@ -4,20 +4,35 @@
     <!-- Page Header -->
     <app-page-header [config]="headerConfig()" class="embedded-header" />
 
-    <div class="flex items-center gap-2">
-      @if (form.dirty) {
-        <div class="flex items-center gap-2 text-warning-600 dark:text-warning-400">
-          <ui-icon name="alert-circle" variant="outline" size="sm"></ui-icon>
-          <span class="text-sm">Unsaved changes</span>
-        </div>
-      }
-      @if (form.valid && !form.dirty) {
-        <div class="flex items-center gap-2 text-successful-600 dark:text-successful-400">
-          <ui-icon name="check-circle" variant="filled" size="sm"></ui-icon>
-          <span class="text-sm">Up to date</span>
-        </div>
-      }
-    </div>
+    <!-- Form Status Messages -->
+    @if (hasChanges() && !loading()) {
+      <div class="flex items-center gap-2 text-warning-600 dark:text-warning-400">
+        <ui-icon name="exclamation-triangle" variant="filled" size="sm"></ui-icon>
+        <span class="text-sm">Cambios sin guardar</span>
+      </div>
+    }
+    @if (form.valid && !form.dirty) {
+      <div class="flex items-center gap-2 text-successful-600 dark:text-successful-400">
+        <ui-icon name="check-circle" variant="filled" size="sm"></ui-icon>
+        <span class="text-sm">Actualizado</span>
+      </div>
+    }
+    @if (form.pending) {
+      <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
+        <ui-icon
+          name="arrow-clockwise"
+          variant="outline"
+          size="sm"
+          class="animate-spin"></ui-icon>
+        <span class="text-sm">Validando...</span>
+      </div>
+    }
+    @if (form.dirty && !form.pending) {
+      <div class="flex items-center gap-2 text-info-600 dark:text-info-400">
+        <ui-icon name="info" variant="filled" size="sm"></ui-icon>
+        <span class="text-sm">{{ form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores' }}</span>
+      </div>
+    }
   </div>
 
   <!-- Form Content -->
@@ -28,54 +43,54 @@
         <!-- Username -->
         <ui-form-field
           class="col-span-1"
-          label="Username"
+          label="Nombre de usuario"
           [error]="getFieldErrorMessage('username')"
           [required]="true"
           controlId="username"
           iconName="user-circle"
           iconSize="sm"
           iconVariant="outline"
-          iconAriaLabel="Username icon">
+          iconAriaLabel="Icono de nombre de usuario">
           <ui-input
             id="username"
             formControlName="username"
-            placeholder="Enter your username"
+            placeholder="Ingresa tu nombre de usuario"
             autocomplete="username">
           </ui-input>
         </ui-form-field>
 
         <!-- First Name -->
         <ui-form-field
-          label="First Name"
+          label="Nombre"
           [error]="getFieldErrorMessage('firstName')"
           [required]="true"
           controlId="firstName"
           iconName="user"
           iconSize="sm"
           iconVariant="outline"
-          iconAriaLabel="First name icon">
+          iconAriaLabel="Icono de nombre">
           <ui-input
             id="firstName"
             formControlName="firstName"
-            placeholder="Enter your first name"
+            placeholder="Ingresa tu nombre"
             autocomplete="given-name">
           </ui-input>
         </ui-form-field>
 
         <!-- Last Name -->
         <ui-form-field
-          label="Last Name"
+          label="Apellido"
           [error]="getFieldErrorMessage('lastName')"
           [required]="true"
           controlId="lastName"
           iconName="user"
           iconSize="sm"
           iconVariant="outline"
-          iconAriaLabel="Last name icon">
+          iconAriaLabel="Icono de apellido">
           <ui-input
             id="lastName"
             formControlName="lastName"
-            placeholder="Enter your last name"
+            placeholder="Ingresa tu apellido"
             autocomplete="family-name">
           </ui-input>
         </ui-form-field>
@@ -83,19 +98,19 @@
         <!-- Email -->
         <ui-form-field
           class="col-span-2"
-          label="Email Address"
+          label="Dirección de correo electrónico"
           [error]="getFieldErrorMessage('email')"
           [required]="true"
           controlId="email"
           iconName="envelope"
           iconSize="sm"
           iconVariant="outline"
-          iconAriaLabel="Email icon">
+          iconAriaLabel="Icono de correo electrónico">
           <ui-input
             id="email"
             type="email"
             formControlName="email"
-            placeholder="Enter your email address"
+            placeholder="Ingresa tu dirección de correo electrónico"
             autocomplete="email">
           </ui-input>
         </ui-form-field>
@@ -104,7 +119,7 @@
 
     <!-- Account Information Section (Read-only) -->
     <div class="form-section">
-      <h3 class="section-title">Account Information</h3>
+      <h3 class="section-title">Información de la cuenta</h3>
       <div class="account-info-grid">
         <!-- Role Information (Read-only) -->
         <div class="info-item">
@@ -114,7 +129,7 @@
               variant="outline"
               size="sm"
               class="text-primary-500 dark:text-primary-400"></ui-icon>
-            <span class="info-label">Role</span>
+            <span class="info-label">Rol</span>
           </div>
           <div class="info-value">
             <div class="role-badge">
@@ -132,7 +147,7 @@
               variant="outline"
               size="sm"
               class="text-successful-500 dark:text-successful-400"></ui-icon>
-            <span class="info-label">Account Status</span>
+            <span class="info-label">Estado de la cuenta</span>
           </div>
           <div class="info-value">
             <div [class]="'status-badge ' + statusClass()">
@@ -153,8 +168,8 @@
               name="calendar"
               variant="outline"
               size="sm"
-              class="text-info-500 dark:text-info-400"></ui-icon>
-            <span class="info-label">Account Created</span>
+              class="text-neutral-500 dark:text-neutral-400"></ui-icon>
+            <span class="info-label">Cuenta creada</span>
           </div>
           <div class="info-value">{{ createdAtText() }}</div>
         </div>
@@ -167,12 +182,13 @@
               variant="outline"
               size="sm"
               class="text-warning-500 dark:text-warning-400"></ui-icon>
-            <span class="info-label">Last Activity</span>
+            <span class="info-label">Última actividad</span>
           </div>
           <div class="info-value">{{ lastActivityText() }}</div>
         </div>
       </div>
     </div>
+
     <!-- Action Bar -->
     <div class="profile-form-actions">
       <div class="flex items-center gap-4">
@@ -184,14 +200,14 @@
               variant="outline"
               size="sm"
               class="animate-spin"></ui-icon>
-            <span class="text-sm">Validating...</span>
+            <span class="text-sm">Validando...</span>
           </div>
         }
 
         @if (form.dirty && !form.pending) {
           <div class="flex items-center gap-2 text-info-600 dark:text-info-400">
             <ui-icon name="info" variant="filled" size="sm"></ui-icon>
-            <span class="text-sm">{{ form.valid ? 'Ready to save' : 'Please fix errors' }}</span>
+            <span class="text-sm">{{ form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores' }}</span>
           </div>
         }
       </div>
@@ -206,7 +222,7 @@
             (click)="onCancel()"
             [disabled]="form.pending">
             <ui-icon name="x-mark" variant="outline" size="sm"></ui-icon>
-            Reset Changes
+            Restablecer cambios
           </ui-button>
         }
 
@@ -218,9 +234,9 @@
           [disabled]="form.invalid || form.pending || !form.dirty">
           <ui-icon name="check" variant="filled" size="sm"></ui-icon>
           @if (form.pending) {
-            Saving...
+            Guardando...
           } @else {
-            Save Changes
+            Guardar cambios
           }
         </ui-button>
       </div>

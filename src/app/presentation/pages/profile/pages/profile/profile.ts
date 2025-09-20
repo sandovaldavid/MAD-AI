@@ -82,17 +82,17 @@ export class ProfilePage implements OnInit {
   readonly tabs = [
     {
       id: 'info' as const,
-      label: 'Profile Info',
+      label: 'Información del Perfil',
       iconName: 'user',
     },
     {
       id: 'notifications' as const,
-      label: 'Notifications',
+      label: 'Notificaciones',
       iconName: 'mail',
     },
     {
       id: 'password' as const,
-      label: 'Security',
+      label: 'Seguridad',
       iconName: 'lock',
     },
   ];
@@ -142,10 +142,10 @@ export class ProfilePage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     // Set page metadata
-    this.titleService.setTitle('Profile Settings');
+    this.titleService.setTitle('Configuración del Perfil');
     this.breadcrumbService.setBreadcrumbs([
       { label: 'Dashboard', icon: 'home', route: '/dashboard' },
-      { label: 'Profile Settings', icon: 'user' },
+      { label: 'Configuración del Perfil', icon: 'user' },
     ]);
 
     // Ensure user profile is loaded
