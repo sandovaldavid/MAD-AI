@@ -49,7 +49,7 @@
           (change)="onToggleSelection()"
           (click)="$event.stopPropagation()"
           class="selection-checkbox"
-          [attr.aria-label]="'Select ' + user.displayName">
+          [attr.aria-label]="'Seleccionar ' + user.displayName">
       </div>
     }
 
@@ -122,7 +122,7 @@
               variant="ghost"
               size="sm"
               (click)="onUserAction('view', $event)"
-              [attr.aria-label]="'View ' + user.displayName">
+              [attr.aria-label]="'Ver ' + user.displayName">
               <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
             </ui-button>
           }
@@ -132,7 +132,7 @@
               variant="ghost"
               size="sm"
               (click)="onUserAction('edit', $event)"
-              [attr.aria-label]="'Edit ' + user.displayName">
+              [attr.aria-label]="'Editar ' + user.displayName">
               <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
             </ui-button>
           }

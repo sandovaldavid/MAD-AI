@@ -13,12 +13,12 @@
           <div class="success-state" role="status" aria-live="polite">
             <ui-icon name="check-circle" variant="filled" size="xl" class="success-icon"></ui-icon>
             <div class="success-content">
-              <h2>User updated successfully!</h2>
-              <p>The user information has been updated and changes are now active.</p>
+              <h2>¡Usuario actualizado exitosamente!</h2>
+              <p>La información del usuario ha sido actualizada y los cambios están activos.</p>
               <div class="success-actions">
                 <ui-button variant="primary" size="md" (click)="goBackToDetail()">
                   <ui-icon name="user" variant="outline" size="sm"></ui-icon>
-                  View User Details
+                  Ver Detalles del Usuario
                 </ui-button>
               </div>
             </div>
@@ -48,34 +48,34 @@
                 <div class="section-header">
                   <h2 class="section-title">
                     <ui-icon name="user" variant="outline" size="md"></ui-icon>
-                    Personal Information
+                    Información Personal
                   </h2>
-                  <p class="section-description">Update personal details for the user account.</p>
+                  <p class="section-description">Actualizar los detalles personales de la cuenta de usuario.</p>
                 </div>
 
                 <div class="fields-grid">
                   <!-- First Name -->
                   <ui-form-field
-                    label="First Name"
+                    label="Nombre"
                     [required]="true"
                     [error]="getValidationError('firstName')"
                     class="field-item">
                     <ui-input
                       formControlName="firstName"
-                      placeholder="Enter first name"
+                      placeholder="Ingrese el nombre"
                       autocomplete="given-name">
                     </ui-input>
                   </ui-form-field>
 
                   <!-- Last Name -->
                   <ui-form-field
-                    label="Last Name"
+                    label="Apellido"
                     [required]="true"
                     [error]="getValidationError('lastName')"
                     class="field-item">
                     <ui-input
                       formControlName="lastName"
-                      placeholder="Enter last name"
+                      placeholder="Ingrese el apellido"
                       autocomplete="family-name">
                     </ui-input>
                   </ui-form-field>
@@ -87,17 +87,17 @@
                 <div class="section-header">
                   <h2 class="section-title">
                     <ui-icon name="at-sign" variant="outline" size="md"></ui-icon>
-                    Account Information
+                    Información de la Cuenta
                   </h2>
                   <p class="section-description">
-                    Update login credentials and contact information.
+                    Actualizar credenciales de acceso e información de contacto.
                   </p>
                 </div>
 
                 <div class="fields-grid">
                   <!-- Email -->
                   <ui-form-field
-                    label="Email Address"
+                    label="Dirección de Email"
                     [required]="true"
                     [error]="getValidationError('email') || getFieldError('email')"
                     class="field-item">
@@ -111,13 +111,13 @@
 
                   <!-- Username -->
                   <ui-form-field
-                    label="Username"
+                    label="Nombre de Usuario"
                     [required]="true"
                     [error]="getValidationError('username') || getFieldError('username')"
                     class="field-item">
                     <ui-input
                       formControlName="username"
-                      placeholder="Enter username"
+                      placeholder="Ingrese el nombre de usuario"
                       autocomplete="username">
                     </ui-input>
                   </ui-form-field>
@@ -129,20 +129,20 @@
                 <div class="section-header">
                   <h2 class="section-title">
                     <ui-icon name="toggle-left" variant="outline" size="md"></ui-icon>
-                    Account Status
+                    Estado de la Cuenta
                   </h2>
-                  <p class="section-description">Control user account access and permissions.</p>
+                  <p class="section-description">Controlar el acceso y permisos de la cuenta de usuario.</p>
                 </div>
 
                 <div class="fields-grid">
                   <!-- Account Status -->
-                  <ui-form-field label="Account Status" class="field-item">
+                  <ui-form-field label="Estado de la Cuenta" class="field-item">
                     <div class="checkbox-group">
                       <label class="checkbox-item">
                         <input type="checkbox" formControlName="isActive" class="checkbox-input" />
-                        <span class="checkbox-label">Account is active</span>
+                        <span class="checkbox-label">La cuenta está activa</span>
                         <span class="checkbox-description"
-                          >User can log in and access the system</span
+                          >El usuario puede iniciar sesión y acceder al sistema</span
                         >
                       </label>
                     </div>
@@ -155,9 +155,9 @@
                 <div class="section-header">
                   <h2 class="section-title">
                     <ui-icon name="shield" variant="outline" size="md"></ui-icon>
-                    Role and Permissions
+                    Rol y Permisos
                   </h2>
-                  <p class="section-description">Update user role and account settings.</p>
+                  <p class="section-description">Actualizar el rol de usuario y configuraciones de cuenta.</p>
                 </div>
 
                 <!-- Role Loading State -->
@@ -168,7 +168,7 @@
                       variant="outline"
                       size="md"
                       class="animate-spin"></ui-icon>
-                    <span>Loading available roles...</span>
+                    <span>Cargando roles disponibles...</span>
                   </div>
                 }
 
@@ -195,7 +195,7 @@
                   <div class="fields-grid">
                     <!-- Role Selection -->
                     <ui-form-field
-                      label="User Role"
+                      label="Rol de Usuario"
                       [required]="true"
                       [error]="getValidationError('roleId')"
                       class="field-item">
@@ -205,7 +205,7 @@
                         [class.has-error]="
                           userForm.get('roleId')?.invalid && userForm.get('roleId')?.touched
                         ">
-                        <option value="" disabled>Select a role...</option>
+                        <option value="" disabled>Seleccione un rol...</option>
                         @for (role of availableRoles(); track role.id) {
                           <option [value]="role.id">{{ role.name }}</option>
                         }
@@ -238,43 +238,43 @@
                 <div class="section-header">
                   <h2 class="section-title">
                     <ui-icon name="clock" variant="outline" size="md"></ui-icon>
-                    Account Information
+                    Información de la Cuenta
                   </h2>
-                  <p class="section-description">Account creation and modification details.</p>
+                  <p class="section-description">Detalles de creación y modificación de la cuenta.</p>
                 </div>
 
                 <div class="info-grid">
                   <div class="info-item">
-                    <span class="info-label">Account Created</span>
+                    <span class="info-label">Cuenta Creada</span>
                     <span class="info-value">{{
                       userData.createdAt
                         ? (userData.createdAt.toString() | date: 'medium')
-                        : 'Not available'
+                        : 'No disponible'
                     }}</span>
                   </div>
 
                   <div class="info-item">
-                    <span class="info-label">Last Updated</span>
+                    <span class="info-label">Última Actualización</span>
                     <span class="info-value">{{
                       userData.updatedAt
                         ? (userData.updatedAt.toString() | date: 'medium')
-                        : 'Not available'
+                        : 'No disponible'
                     }}</span>
                   </div>
 
                   <div class="info-item">
-                    <span class="info-label">User ID</span>
+                    <span class="info-label">ID de Usuario</span>
                     <span class="info-value">#{{ userData.id }}</span>
                   </div>
 
                   <div class="info-item">
-                    <span class="info-label">Current Status</span>
+                    <span class="info-label">Estado Actual</span>
                     <span class="info-value">
                       <span
                         [class]="
                           'status-badge ' + (userData.active ? 'status-active' : 'status-inactive')
                         ">
-                        {{ userData.active ? 'Active' : 'Inactive' }}
+                        {{ userData.active ? 'Activo' : 'Inactivo' }}
                       </span>
                     </span>
                   </div>
@@ -293,7 +293,7 @@
                   (click)="resetForm()"
                   [disabled]="isSubmitting() || !isFormDirty()">
                   <ui-icon name="refresh-cw" variant="outline" size="sm"></ui-icon>
-                  Reset Changes
+                  Restablecer Cambios
                 </ui-button>
               </div>
 
@@ -302,7 +302,7 @@
                 @if (isFormDirty()) {
                   <span class="form-status-indicator">
                     <ui-icon name="edit" variant="outline" size="sm"></ui-icon>
-                    Unsaved changes
+                    Cambios no guardados
                   </span>
                 }
               </div>

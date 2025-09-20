@@ -4,7 +4,7 @@
   @if (hasSelection()) {
     <div class="table-actions-bar">
       <div class="selection-info">
-        <span class="selection-count">{{ currentSelection().length }} selected</span>
+        <span class="selection-count">{{ currentSelection().length }} seleccionados</span>
       </div>
 
       <div class="bulk-actions">
@@ -18,7 +18,7 @@
               variant="outline"
               size="sm">
             </ui-icon>
-            {{ action | titlecase }}
+            {{ getActionLabel(action) }}
           </ui-button>
         }
       </div>
@@ -41,7 +41,7 @@
                 [indeterminate]="isSomeSelected()"
                 (change)="onSelectAll()"
                 [disabled]="loading"
-                aria-label="Select all users">
+                aria-label="Seleccionar todos los usuarios">
             </th>
           }
 
@@ -51,7 +51,7 @@
             (click)="onSort('displayName')"
             [attr.aria-sort]="sortConfig?.field === 'displayName' ? sortConfig?.direction : null">
             <div class="column-header">
-              <span class="column-title">User</span>
+              <span class="column-title">Usuario</span>
               @if (isSortable('displayName')) {
                 <ui-icon
                   [name]="getSortIcon('displayName')"
@@ -87,7 +87,7 @@
             (click)="onSort('role')"
             [attr.aria-sort]="sortConfig?.field === 'role' ? sortConfig?.direction : null">
             <div class="column-header">
-              <span class="column-title">Role</span>
+              <span class="column-title">Rol</span>
               @if (isSortable('role')) {
                 <ui-icon
                   [name]="getSortIcon('role')"
@@ -102,7 +102,7 @@
           <!-- Status Column -->
           <th class="status-column">
             <div class="column-header">
-              <span class="column-title">Status</span>
+              <span class="column-title">Estado</span>
             </div>
           </th>
 
@@ -112,7 +112,7 @@
             (click)="onSort('lastActivity')"
             [attr.aria-sort]="sortConfig?.field === 'lastActivity' ? sortConfig?.direction : null">
             <div class="column-header">
-              <span class="column-title">Last Activity</span>
+              <span class="column-title">Última Actividad</span>
               @if (isSortable('lastActivity')) {
                 <ui-icon
                   [name]="getSortIcon('lastActivity')"
@@ -127,7 +127,7 @@
           <!-- Actions Column -->
           <th class="actions-column">
             <div class="column-header">
-              <span class="column-title">Actions</span>
+              <span class="column-title">Acciones</span>
             </div>
           </th>
         </tr>
@@ -186,7 +186,7 @@
                       class="checkbox-input"
                       [checked]="isUserSelected(user)"
                       (change)="onSelectUser(user)"
-                      [attr.aria-label]="'Select ' + user.displayName">
+                      [attr.aria-label]="'Seleccionar ' + user.displayName">
                   </td>
                 }
 
@@ -259,7 +259,7 @@
                         variant="ghost"
                         size="sm"
                         (click)="onUserAction('view', user)"
-                        [attr.aria-label]="'View ' + user.displayName">
+                        [attr.aria-label]="'Ver ' + user.displayName">
                         <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
                       </ui-button>
                     }
@@ -269,7 +269,7 @@
                         variant="ghost"
                         size="sm"
                         (click)="onUserAction('edit', user)"
-                        [attr.aria-label]="'Edit ' + user.displayName">
+                        [attr.aria-label]="'Editar ' + user.displayName">
                         <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
                       </ui-button>
                     }
@@ -281,7 +281,7 @@
                           variant="ghost"
                           size="sm"
                           (click)="onUserAction('activate', user)"
-                          [attr.aria-label]="'Activate ' + user.displayName">
+                          [attr.aria-label]="'Activar ' + user.displayName">
                           <ui-icon name="check-circle" variant="outline" size="sm"></ui-icon>
                         </ui-button>
                       }
@@ -291,7 +291,7 @@
                           variant="ghost"
                           size="sm"
                           (click)="onUserAction('deactivate', user)"
-                          [attr.aria-label]="'Deactivate ' + user.displayName">
+                          [attr.aria-label]="'Desactivar ' + user.displayName">
                           <ui-icon name="x-circle" variant="outline" size="sm"></ui-icon>
                         </ui-button>
                       }
@@ -301,7 +301,7 @@
                           variant="ghost"
                           size="sm"
                           (click)="onUserAction('resetPassword', user)"
-                          [attr.aria-label]="'Reset password for ' + user.displayName">
+                          [attr.aria-label]="'Restablecer contraseña para ' + user.displayName">
                           <ui-icon name="key" variant="outline" size="sm"></ui-icon>
                         </ui-button>
                       }
@@ -312,7 +312,7 @@
                           size="sm"
                           (click)="onUserAction('delete', user)"
                           class="danger-action"
-                          [attr.aria-label]="'Delete ' + user.displayName">
+                          [attr.aria-label]="'Eliminar ' + user.displayName">
                           <ui-icon name="trash" variant="outline" size="sm"></ui-icon>
                         </ui-button>
                       }
@@ -330,8 +330,8 @@
                 <div class="empty-state">
                   <ui-icon name="user-group" variant="outline" size="xl" class="empty-icon"></ui-icon>
                   <div class="empty-content">
-                    <h3 class="empty-title">No users found</h3>
-                    <p class="empty-description">There are no users to display. Try adjusting your filters or create a new user.</p>
+                    <h3 class="empty-title">No se encontraron usuarios</h3>
+                    <p class="empty-description">No hay usuarios para mostrar. Intente ajustar sus filtros o crear un nuevo usuario.</p>
                   </div>
                 </div>
               </td>

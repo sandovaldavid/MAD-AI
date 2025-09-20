@@ -253,18 +253,18 @@ export class UserDetailViewModel {
    * Get last activity in human-readable format
    */
   get lastActivityDisplay(): string {
-    if (!this.lastActivity) return 'Never';
+    if (!this.lastActivity) return 'Nunca';
 
     const lastActive = new Date(this.lastActivity);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - lastActive.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    return `${Math.floor(diffDays / 30)} months ago`;
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} día${diffDays === 1 ? '' : 's'}`;
+    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) === 1 ? '' : 's'}`;
+    return `Hace ${Math.floor(diffDays / 30)} mes${Math.floor(diffDays / 30) === 1 ? '' : 'es'}`;
   }
 
   /**

@@ -3,7 +3,7 @@
     <ui-form-field class="search-field">
       <ui-input
         type="search"
-        placeholder="Search users..."
+        placeholder="Buscar usuarios..."
         formControlName="searchTerm"
         autocomplete="off">
         <ui-icon name="search" variant="outline" size="sm" slot="prefix"></ui-icon>
@@ -12,15 +12,15 @@
 
     <ui-form-field class="status-field">
       <select formControlName="statusFilter" class="status-select">
-        <option value="all">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
+        <option value="all">Todos los Estados</option>
+        <option value="active">Activo</option>
+        <option value="inactive">Inactivo</option>
       </select>
     </ui-form-field>
 
     <ui-form-field class="role-field">
       <select formControlName="roleFilter" class="role-select">
-        <option value="">All Roles</option>
+        <option value="">Todos los Roles</option>
         @for (role of availableRoles; track role) {
           <option [value]="role">{{ role }}</option>
         }
@@ -31,11 +31,11 @@
       @if (hasActiveFilters()) {
         <ui-button variant="ghost" size="sm" (click)="onClearFilters()" [disabled]="loading">
           <ui-icon name="x-mark" size="sm"></ui-icon>
-          Clear Filters
+          Limpiar Filtros
         </ui-button>
       }
 
-      <span class="filter-count"> {{ activeFiltersCount() }} filter(s) active </span>
+      <span class="filter-count"> {{ activeFiltersCount() }} filtro(s) activo(s) </span>
     </div>
   </form>
 </div>

@@ -49,8 +49,8 @@
             }
 
             <div class="account-summary">
-              <span class="account-age">{{ userData.accountAge }} member</span>
-              <span class="last-active">Last active {{ userData.lastActivityDisplay }}</span>
+              <span class="account-age">{{ userData.accountAge }} como miembro</span>
+              <span class="last-active">Última actividad {{ userData.lastActivityDisplay }}</span>
             </div>
           </div>
         </div>
@@ -65,25 +65,25 @@
             <div class="card-header">
               <h3 class="card-title">
                 <ui-icon name="user" variant="outline" size="md"></ui-icon>
-                Personal Information
+                Información Personal
               </h3>
             </div>
             <div class="card-content">
               <div class="info-list">
                 <div class="info-row">
-                  <span class="info-key">Full Name</span>
+                  <span class="info-key">Nombre Completo</span>
                   <span class="info-value">{{ userData.firstName }} {{ userData.lastName }}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-key">Email Address</span>
+                  <span class="info-key">Dirección de Email</span>
                   <span class="info-value">{{ userData.email }}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-key">Username</span>
+                  <span class="info-key">Nombre de Usuario</span>
                   <span class="info-value">{{ userData.username }}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-key">Account Status</span>
+                  <span class="info-key">Estado de la Cuenta</span>
                   <span class="info-value">
                     <span [class]="'status-compact ' + userData.status.cssClass">
                       {{ userData.status.label }}
@@ -102,22 +102,22 @@
             <div class="card-header">
               <h3 class="card-title">
                 <ui-icon name="trending-up" variant="outline" size="md"></ui-icon>
-                Quick Summary
+                Resumen Rápido
               </h3>
             </div>
             <div class="card-content">
               <div class="summary-stats">
                 <div class="summary-item">
                   <ui-icon name="calendar" variant="outline" size="sm"></ui-icon>
-                  <span>{{ userData.accountAge }} with us</span>
+                  <span>{{ userData.accountAge }} con nosotros</span>
                 </div>
                 <div class="summary-item">
                   <ui-icon name="shield" variant="outline" size="sm"></ui-icon>
-                  <span>{{ userData.role }} access</span>
+                  <span>Acceso {{ userData.role }}</span>
                 </div>
                 <div class="summary-item">
                   <ui-icon name="activity" variant="outline" size="sm"></ui-icon>
-                  <span>{{ userData.activityLevel | titlecase }} activity</span>
+                  <span>Actividad {{ userData.activityLevel | titlecase }}</span>
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@
             <div class="card-header">
               <h3 class="card-title">
                 <ui-icon name="clock" variant="outline" size="md"></ui-icon>
-                Account Timeline
+                Cronología de la Cuenta
               </h3>
             </div>
             <div class="card-content">
@@ -135,7 +135,7 @@
                 <div class="timeline-event">
                   <div class="event-marker created"></div>
                   <div class="event-info">
-                    <span class="event-label">Created</span>
+                    <span class="event-label">Creado</span>
                     <span class="event-date">{{ userData.createdAt }}</span>
                   </div>
                 </div>
@@ -143,7 +143,7 @@
                   <div class="timeline-event">
                     <div class="event-marker activity"></div>
                     <div class="event-info">
-                      <span class="event-label">Last Active</span>
+                      <span class="event-label">Última Actividad</span>
                       <span class="event-date">{{ userData.lastActivityDisplay }}</span>
                     </div>
                   </div>
@@ -151,7 +151,7 @@
                 <div class="timeline-event">
                   <div class="event-marker updated"></div>
                   <div class="event-info">
-                    <span class="event-label">Last Updated</span>
+                    <span class="event-label">Última Actualización</span>
                     <span class="event-date">{{ userData.updatedAt }}</span>
                   </div>
                 </div>
@@ -171,7 +171,7 @@
             variant="outline"
             size="lg"
             class="processing-spinner"></ui-icon>
-          <p>Processing request...</p>
+          <p>Procesando solicitud...</p>
         </div>
       </div>
     }

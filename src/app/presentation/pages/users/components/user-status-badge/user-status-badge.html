@@ -3,7 +3,7 @@
   <span
     [class]="badgeClasses()"
     [attr.title]="tooltipText()"
-    [attr.aria-label]="'Status: ' + config.label"
+    [attr.aria-label]="'Estado: ' + config.label"
     role="status">
     <!-- Status Icon -->
     @if (showIcon) {
@@ -18,13 +18,13 @@
   </span>
 } @else {
   <!-- Fallback for unknown status -->
-  <span class="status-badge status-unknown" role="status" aria-label="Unknown status">
+  <span class="status-badge status-unknown" role="status" aria-label="Estado desconocido">
     @if (showIcon) {
       <ui-icon name="help-circle" variant="filled" [size]="iconSize()" class="status-icon">
       </ui-icon>
     }
     @if (showLabel) {
-      <span class="status-label">Unknown</span>
+      <span class="status-label">Desconocido</span>
     }
   </span>
 }

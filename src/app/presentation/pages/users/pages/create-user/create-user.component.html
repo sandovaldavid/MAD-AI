@@ -5,15 +5,15 @@
     <div class="header-navigation">
       <ui-button variant="ghost" size="sm" (click)="goBackToList()" class="back-button">
         <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-        Back to Users
+        Volver a Usuarios
       </ui-button>
     </div>
 
     <div class="header-content">
       <div class="header-info">
-        <h1 class="page-title">Create New User</h1>
+        <h1 class="page-title">Crear Nuevo Usuario</h1>
         <p class="page-description">
-          Add a new user to the system with their basic information and account settings.
+          Agregar un nuevo usuario al sistema con su información básica y configuraciones de cuenta.
         </p>
       </div>
     </div>
@@ -27,14 +27,14 @@
         <div class="success-state" role="status" aria-live="polite">
           <ui-icon name="check-circle" variant="filled" size="xl" class="success-icon"></ui-icon>
           <div class="success-content">
-            <h2>User created successfully!</h2>
+            <h2>¡Usuario creado exitosamente!</h2>
             <p>
-              The user account has been created and they will receive a welcome email if enabled.
+              La cuenta de usuario ha sido creada y recibirá un email de bienvenida si está habilitado.
             </p>
             <div class="success-actions">
               <ui-button variant="primary" size="md" (click)="goBackToList()">
                 <ui-icon name="users" variant="outline" size="sm"></ui-icon>
-                View All Users
+                Ver Todos los Usuarios
               </ui-button>
             </div>
           </div>
@@ -59,21 +59,21 @@
             <div class="section-header">
               <h2 class="section-title">
                 <ui-icon name="user" variant="outline" size="md"></ui-icon>
-                Personal Information
+                Información Personal
               </h2>
-              <p class="section-description">Basic personal details for the user account.</p>
+              <p class="section-description">Detalles personales básicos para la cuenta de usuario.</p>
             </div>
 
             <div class="fields-grid">
               <!-- First Name -->
               <ui-form-field
-                label="First Name"
+                label="Nombre"
                 [required]="true"
                 [error]="getValidationError('firstName')"
                 class="field-item">
                 <ui-input
                   formControlName="firstName"
-                  placeholder="Enter first name"
+                  placeholder="Ingrese el nombre"
                   (input)="onFirstNameChange()"
                   autocomplete="given-name">
                 </ui-input>
@@ -81,13 +81,13 @@
 
               <!-- Last Name -->
               <ui-form-field
-                label="Last Name"
+                label="Apellido"
                 [required]="true"
                 [error]="getValidationError('lastName')"
                 class="field-item">
                 <ui-input
                   formControlName="lastName"
-                  placeholder="Enter last name"
+                  placeholder="Ingrese el apellido"
                   (input)="onLastNameChange()"
                   autocomplete="family-name">
                 </ui-input>
@@ -100,15 +100,15 @@
             <div class="section-header">
               <h2 class="section-title">
                 <ui-icon name="at-sign" variant="outline" size="md"></ui-icon>
-                Account Information
+                Información de la Cuenta
               </h2>
-              <p class="section-description">Login credentials and contact information.</p>
+              <p class="section-description">Credenciales de acceso e información de contacto.</p>
             </div>
 
             <div class="fields-grid">
               <!-- Email -->
               <ui-form-field
-                label="Email Address"
+                label="Dirección de Email"
                 [required]="true"
                 [error]="getValidationError('email') || getFieldError('email')"
                 class="field-item">
@@ -122,17 +122,17 @@
 
               <!-- Username -->
               <ui-form-field
-                label="Username"
+                label="Nombre de Usuario"
                 [required]="true"
                 [error]="getValidationError('username') || getFieldError('username')"
                 class="field-item">
                 <ui-input
                   formControlName="username"
-                  placeholder="Enter username"
+                  placeholder="Ingrese el nombre de usuario"
                   autocomplete="username">
                 </ui-input>
                 <div class="field-hint">
-                  Username will be auto-generated from name if left empty
+                  El nombre de usuario se generará automáticamente desde el nombre si se deja vacío
                 </div>
               </ui-form-field>
             </div>
@@ -143,15 +143,15 @@
             <div class="section-header">
               <h2 class="section-title">
                 <ui-icon name="shield" variant="outline" size="md"></ui-icon>
-                Role and Permissions
+                Rol y Permisos
               </h2>
-              <p class="section-description">Assign user role and account settings.</p>
+              <p class="section-description">Asignar rol de usuario y configuraciones de cuenta.</p>
             </div>
 
             <div class="fields-grid">
               <!-- Role Selection -->
               <ui-form-field
-                label="User Role"
+                label="Rol de Usuario"
                 [required]="true"
                 [error]="getValidationError('role')"
                 class="field-item">
@@ -168,12 +168,12 @@
               </ui-form-field>
 
               <!-- Account Status -->
-              <ui-form-field label="Account Status" class="field-item">
+              <ui-form-field label="Estado de la Cuenta" class="field-item">
                 <div class="checkbox-group">
                   <label class="checkbox-item">
                     <input type="checkbox" formControlName="isActive" class="checkbox-input" />
-                    <span class="checkbox-label">Account is active</span>
-                    <span class="checkbox-description">User can log in and access the system</span>
+                    <span class="checkbox-label">La cuenta está activa</span>
+                    <span class="checkbox-description">El usuario puede iniciar sesión y acceder al sistema</span>
                   </label>
                 </div>
               </ui-form-field>
@@ -185,22 +185,22 @@
             <div class="section-header">
               <h2 class="section-title">
                 <ui-icon name="mail" variant="outline" size="md"></ui-icon>
-                Notification Settings
+                Configuración de Notificaciones
               </h2>
-              <p class="section-description">Configure initial communication preferences.</p>
+              <p class="section-description">Configurar preferencias iniciales de comunicación.</p>
             </div>
 
             <div class="fields-grid">
-              <ui-form-field label="Welcome Email" class="field-item">
+              <ui-form-field label="Email de Bienvenida" class="field-item">
                 <div class="checkbox-group">
                   <label class="checkbox-item">
                     <input
                       type="checkbox"
                       formControlName="sendWelcomeEmail"
                       class="checkbox-input" />
-                    <span class="checkbox-label">Send welcome email</span>
+                    <span class="checkbox-label">Enviar email de bienvenida</span>
                     <span class="checkbox-description"
-                      >Send account setup instructions to the user</span
+                      >Enviar instrucciones de configuración de cuenta al usuario</span
                     >
                   </label>
                 </div>
@@ -218,7 +218,7 @@
                 (click)="resetForm()"
                 [disabled]="isSubmitting() || !isFormDirty()">
                 <ui-icon name="refresh-cw" variant="outline" size="sm"></ui-icon>
-                Reset Form
+                Restablecer Formulario
               </ui-button>
             </div>
 
@@ -229,7 +229,7 @@
                 size="md"
                 (click)="onCancel()"
                 [disabled]="isSubmitting()">
-                Cancel
+                Cancelar
               </ui-button>
 
               <ui-button
@@ -244,10 +244,10 @@
                     variant="outline"
                     size="sm"
                     class="spinning"></ui-icon>
-                  Creating User...
+                  Creando Usuario...
                 } @else {
                   <ui-icon name="plus" variant="outline" size="sm"></ui-icon>
-                  Create User
+                  Crear Usuario
                 }
               </ui-button>
             </div>
