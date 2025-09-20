@@ -122,16 +122,23 @@
 }
 
 .form-container {
-  @apply max-w-3xl mx-auto;
+  @apply max-w-7xl mx-auto;
 }
 
 /* ============================================================================
-   Success State
+    Responsive Grid Layout for Cards
+   ============================================================================ */
+
+.form-grid {
+  @apply grid gap-6 grid-cols-1 lg:grid-cols-2 items-start;
+}
+
+/* ============================================================================
+    Success State
    ============================================================================ */
 
 .success-state {
-  @apply flex flex-col items-center justify-center text-center p-12
-         bg-white dark:bg-primary-900 rounded-lg border border-neutral-200 dark:border-neutral-700;
+  @apply flex flex-col items-center justify-center text-center p-12 bg-white dark:bg-primary-900 rounded-lg border border-neutral-200 dark:border-neutral-700;
 }
 
 .success-icon {
@@ -172,11 +179,20 @@
    ============================================================================ */
 
 .user-form {
-  @apply space-y-8;
+  @apply space-y-0;
 }
 
 .form-section {
-  @apply bg-white dark:bg-primary-900 border border-neutral-200 dark:border-neutral-700 rounded-lg;
+  @apply bg-white dark:bg-primary-900 border border-neutral-200 dark:border-neutral-700 rounded-lg h-fit transition-shadow duration-200 hover:shadow-md;
+}
+
+/* Special classes for different card sizes */
+.form-section.full-width {
+  @apply lg:col-span-2;
+}
+
+.form-section.half-width {
+  @apply lg:col-span-1;
 }
 
 .section-header {
@@ -196,7 +212,12 @@
    ============================================================================ */
 
 .fields-grid {
-  @apply grid grid-cols-1 md:grid-cols-2 gap-6 p-6;
+  @apply grid grid-cols-1 gap-4 p-6;
+}
+
+/* Fields grid variations for different card widths */
+.form-section.full-width .fields-grid {
+  @apply md:grid-cols-2 gap-6;
 }
 
 .field-item {
@@ -240,15 +261,11 @@
    ============================================================================ */
 
 .role-select {
-  @apply w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600
-         bg-white dark:bg-primary-900 text-neutral-900 dark:text-neutral-100
-         rounded-md shadow-sm focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400
-         focus:border-primary-500 dark:focus:border-primary-400 transition-colors;
+  @apply w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-primary-900 text-neutral-900 dark:text-neutral-100 rounded-md shadow-sm focus:ring-2 transition-colors;
 }
 
 .role-select.has-error {
-  @apply border-error-300 dark:border-error-600 focus:ring-error-500 dark:focus:ring-error-400
-         focus:border-error-500 dark:focus:border-error-400;
+  @apply border-error-300 dark:border-error-600 focus:ring-error-500 dark:focus:ring-error-400 focus:border-error-500 dark:focus:border-error-400;
 }
 
 .role-select option {
@@ -316,6 +333,17 @@
    ============================================================================ */
 
 @media (max-width: 768px) {
+  /* Revert to single column layout on mobile */
+  .form-grid {
+    @apply grid-cols-1 gap-4;
+  }
+
+  /* Ensure all sections take full width on mobile */
+  .form-section.full-width,
+  .form-section.half-width {
+    @apply col-span-1;
+  }
+
   .fields-grid,
   .info-grid {
     @apply grid-cols-1 gap-4 p-4;
@@ -394,12 +422,29 @@
    ============================================================================ */
 
 .form-section {
-  @apply transition-shadow duration-200 hover:shadow-sm;
+  @apply transition-all duration-300 hover:shadow-lg;
+}
+
+/* Enhanced grid spacing for better visual hierarchy */
+.form-grid {
+  @apply auto-rows-min;
+}
+
+/* Grid gap adjustments for different screen sizes */
+@media (min-width: 1024px) {
+  .form-grid {
+    @apply gap-8;
+  }
+}
+
+@media (min-width: 1280px) {
+  .form-grid {
+    @apply gap-10;
+  }
 }
 
 .checkbox-item {
-  @apply transition-colors duration-200 hover:bg-neutral-50 dark:hover:bg-neutral-800
-         rounded-md p-2 -m-2;
+  @apply transition-colors duration-200 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-md p-2 -m-2;
 }
 
 .role-select {
@@ -416,12 +461,133 @@
 }
 
 /* ============================================================================
+   Role Loading and Error States
+   ============================================================================ */
+
+.role-loading-state {
+  @apply flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-800
+         border border-neutral-200 dark:border-neutral-700 rounded-lg mb-4;
+}
+
+.role-loading-state span {
+  @apply text-sm text-neutral-600 dark:text-neutral-400;
+}
+
+.role-error-state {
+  @apply flex items-start gap-3 p-4 bg-error-50 dark:bg-error-900
+         border border-error-200 dark:border-error-700 rounded-lg mb-4;
+}
+
+.role-error-state .error-content {
+  @apply flex-1 flex items-center justify-between gap-3;
+}
+
+.role-error-state p {
+  @apply text-sm text-error-700 dark:text-error-300;
+}
+
+/* ============================================================================
+   Role Preview Section
+   ============================================================================ */
+
+.role-preview-section {
+  @apply mt-4 p-4 bg-neutral-50 dark:bg-neutral-800
+         border border-neutral-200 dark:border-neutral-700 rounded-lg;
+}
+
+/* Compact role preview for 2-column layout */
+.role-preview-compact {
+  @apply inline-flex items-center gap-2 mt-2 px-3 py-1.5
+         bg-neutral-100 dark:bg-neutral-800 rounded-full text-sm;
+}
+
+.role-preview-compact .role-icon-small {
+  @apply w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0;
+}
+
+.role-preview-compact .role-name-small {
+  @apply font-medium text-neutral-900 dark:text-neutral-100;
+}
+
+.role-preview-compact .role-level-badge {
+  @apply px-2 py-0.5 rounded-md text-xs font-medium;
+}
+
+.role-preview-header h4 {
+  @apply text-sm font-semibold text-neutral-700 dark:text-neutral-300 mb-3;
+}
+
+.role-preview-card {
+  @apply flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-200;
+}
+
+.role-icon {
+  @apply w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0;
+}
+
+.role-details {
+  @apply flex-1;
+}
+
+.role-name {
+  @apply text-lg font-bold text-neutral-900 dark:text-neutral-100 mb-1;
+}
+
+.role-access-level {
+  @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-medium mb-2;
+}
+
+.role-description {
+  @apply text-sm text-neutral-600 dark:text-neutral-300 mb-3;
+}
+
+.role-stats {
+  @apply flex items-center gap-4 text-xs;
+}
+
+.user-count {
+  @apply text-neutral-500 dark:text-neutral-400;
+}
+
+.role-status.active {
+  @apply text-successful-600 dark:text-successful-400;
+}
+
+.role-status.inactive {
+  @apply text-neutral-500 dark:text-neutral-400;
+}
+
+/* ============================================================================
+   Form Status Indicator
+   ============================================================================ */
+
+.form-status-indicator {
+  @apply flex items-center gap-2 px-3 py-1.5 bg-warning-100 dark:bg-warning-900
+         text-warning-700 dark:text-warning-300 rounded-md text-sm font-medium;
+}
+
+/* ============================================================================
+   Enhanced Form Actions
+   ============================================================================ */
+
+.form-actions {
+  @apply flex items-center justify-between mt-8 pt-6
+         border-t border-neutral-200 dark:border-neutral-700;
+}
+
+.actions-left,
+.actions-right {
+  @apply flex items-center gap-3;
+}
+
+/* ============================================================================
    Print Styles
    ============================================================================ */
 
 @media print {
   .header-navigation,
-  .form-actions {
+  .form-actions,
+  .role-preview-section {
     @apply hidden;
   }
 

@@ -30,16 +30,21 @@
  * @layer Presentation
  */
 
-import { Component, computed, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, signal, OnInit, OnDestroy, inject, ChangeDetectionStrategy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 // Application Layer Imports
 import { UserLookupFacade, UserCrudFacade } from '@application/facades/users';
+import { RolesFacade } from '@application/facades/role/role.facade';
 
 // Domain Imports (for typing only)
 import type { User } from '@domain/entities/user.entity';
+
+// Application Layer Types
+import type { RoleSummary } from '@application/mappers/role.mapper';
 
 // Presentation Layer Imports
 import { TitleService } from '@presentation/services/title.service';
@@ -50,9 +55,16 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Input } from '@presentation/shared/ui/input/input';
+import { PageHeader, PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
 
 // Local Imports
 import type { UserFormData, UserFormErrors } from '../../types';
+
+// Role Access Level Imports
+import {
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
+} from '@presentation/pages/roles/types/role-colors.type';
 
 /**
  * Edit User Page Component
@@ -71,18 +83,20 @@ import type { UserFormData, UserFormErrors } from '../../types';
     Icon,
     FormField,
     Input,
+    PageHeader,
   ],
   templateUrl: './edit-user.component.html',
   styleUrl: './edit-user.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EditUserPage implements OnInit {
+export class EditUserPage implements OnInit, OnDestroy {
   // ============================================================================
   // Dependencies
   // ============================================================================
 
   private readonly userLookupFacade = inject(UserLookupFacade);
   private readonly userCrudFacade = inject(UserCrudFacade);
+  private readonly rolesFacade = inject(RolesFacade);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly titleService = inject(TitleService);
@@ -129,9 +143,29 @@ export class EditUserPage implements OnInit {
   private readonly _success = signal<boolean>(false);
 
   /**
-   * Available roles for selection
+   * Available roles for selection from RolesFacade
    */
-  private readonly _availableRoles = signal<string[]>(['user', 'admin', 'manager', 'viewer']);
+  private readonly _availableRoles = signal<RoleSummary[]>([]);
+
+  /**
+   * Role loading state
+   */
+  private readonly _roleLoading = signal<boolean>(false);
+
+  /**
+   * Role loading error
+   */
+  private readonly _roleError = signal<string | null>(null);
+
+  /**
+   * Form dirty state signal for reactive change detection
+   */
+  private readonly _formDirty = signal<boolean>(false);
+
+  /**
+   * Subscription for form changes
+   */
+  private formSubscription?: Subscription;
 
   // ============================================================================
   // Form Definition
@@ -145,7 +179,7 @@ export class EditUserPage implements OnInit {
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern(/^[a-zA-Z0-9_-]+$/)]],
-    role: ['user', [Validators.required]],
+    roleId: [null, [Validators.required]],
     isActive: [true],
   });
 
@@ -194,14 +228,24 @@ export class EditUserPage implements OnInit {
   readonly availableRoles = computed(() => this._availableRoles());
 
   /**
+   * Role loading state
+   */
+  readonly roleLoading = computed(() => this._roleLoading());
+
+  /**
+   * Role loading error
+   */
+  readonly roleError = computed(() => this._roleError());
+
+  /**
    * Form validity state
    */
   readonly isFormValid = computed(() => this.userForm.valid);
 
   /**
-   * Form dirty state
+   * Form dirty state - reactive using signal for better change detection
    */
-  readonly isFormDirty = computed(() => this.userForm.dirty);
+  readonly isFormDirty = computed(() => this._formDirty());
 
   /**
    * Can submit form
@@ -209,6 +253,26 @@ export class EditUserPage implements OnInit {
   readonly canSubmit = computed(() =>
     this.isFormValid() && this.isFormDirty() && !this.isSubmitting() && !this.loading()
   );
+
+  /**
+   * Selected role details with access level info
+   */
+  readonly selectedRoleInfo = computed(() => {
+    const roleId = this.userForm.get('roleId')?.value;
+    if (!roleId) return null;
+
+    const role = this.availableRoles().find(r => r.id === Number(roleId));
+    if (!role) return null;
+
+    const accessLevelInfo = getRoleAccessLevelInfo(role.accessLevel);
+    const accessLevelIcon = getRoleAccessLevelIcon(role.accessLevel);
+
+    return {
+      ...role,
+      accessLevelInfo,
+      accessLevelIcon,
+    };
+  });
 
   /**
    * Form data as UserFormData
@@ -220,7 +284,7 @@ export class EditUserPage implements OnInit {
       lastName: value.lastName || '',
       email: value.email || '',
       username: value.username || '',
-      role: value.role || 'user',
+      role: value.roleId ? String(value.roleId) : '',
       isActive: value.isActive ?? true,
       sendWelcomeEmail: false, // Not applicable for edit
     };
@@ -270,6 +334,70 @@ export class EditUserPage implements OnInit {
   });
 
   /**
+   * Page header configuration for the PageHeader component
+   */
+  readonly headerConfig = computed((): PageHeaderConfig => {
+    const user = this.user();
+    const selectedRole = this.selectedRoleInfo();
+    const isLoading = this.loading();
+
+    if (isLoading) {
+      return {
+        title: 'Loading User...',
+        description: 'Please wait while we load the user data',
+        icon: 'user',
+        showBreadcrumbs: true,
+        actions: []
+      };
+    }
+
+    if (!user) {
+      return {
+        title: 'User Not Found',
+        description: 'The requested user could not be found',
+        icon: 'alert-circle',
+        iconColor: 'text-error-500',
+        showBreadcrumbs: true,
+        actions: [
+          {
+            label: 'Go Back',
+            icon: 'arrow-left',
+            action: () => this.goBackToList(),
+            variant: 'secondary'
+          }
+        ]
+      };
+    }
+
+    return {
+      title: `Edit ${user.firstName} ${user.lastName}`,
+      description: selectedRole
+        ? `${user.email.toString()} • ${selectedRole.name} (${selectedRole.accessLevelInfo?.label})`
+        : user.email.toString(),
+      icon: 'pencil',
+      iconColor: selectedRole?.accessLevelInfo?.iconColor || 'text-primary-500',
+      showBreadcrumbs: true,
+      actions: [
+        {
+          label: 'Cancel',
+          icon: 'x',
+          action: () => this.onCancel(),
+          variant: 'ghost' as const,
+          disabled: this.isSubmitting()
+        },
+        {
+          label: this.isSubmitting() ? 'Saving...' : 'Save Changes',
+          icon: this.isSubmitting() ? 'arrow-clockwise' : 'save',
+          action: () => this.onSubmit(),
+          variant: 'primary' as const,
+          disabled: !this.canSubmit(),
+          loading: this.isSubmitting()
+        }
+      ]
+    };
+  });
+
+  /**
    * User not found state
    */
   readonly userNotFound = computed(() => {
@@ -299,16 +427,48 @@ export class EditUserPage implements OnInit {
       { label: 'Edit', icon: 'pencil' },
     ]);
 
-    // Load user data and populate form
+    // Load roles first, then user data and populate form
+    await this.loadAvailableRoles();
     await this.loadUserAndPopulateForm();
 
     // Setup form validation
     this.setupFormValidation();
+
+    // Setup form change listeners for reactive dirty state detection
+    this.setupFormChangeListeners();
+  }
+
+  /**
+   * Cleanup on component destroy
+   */
+  ngOnDestroy(): void {
+    if (this.formSubscription) {
+      this.formSubscription.unsubscribe();
+    }
   }
 
   // ============================================================================
   // Data Loading Methods
   // ============================================================================
+
+  /**
+   * Load available roles from RolesFacade
+   */
+  async loadAvailableRoles(): Promise<void> {
+    this._roleLoading.set(true);
+    this._roleError.set(null);
+
+    try {
+      const roles = await this.rolesFacade.getActiveRoles();
+      this._availableRoles.set(roles);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load roles';
+      this._roleError.set(errorMessage);
+      console.error('Failed to load roles:', error);
+    } finally {
+      this._roleLoading.set(false);
+    }
+  }
 
   /**
    * Load user data and populate form
@@ -345,14 +505,17 @@ export class EditUserPage implements OnInit {
     this.userForm.patchValue({
       firstName: user.firstName,
       lastName: user.lastName,
-      email: user.email,
+      email: user.email.toString(),
       username: user.username,
-      role: user.role,
+      roleId: user.role.id, // Use role ID instead of role string
       isActive: user.active,
     });
 
     // Mark form as pristine after populating
     this.userForm.markAsPristine();
+
+    // Update dirty state signal
+    this._formDirty.set(false);
   }
 
   // ============================================================================
@@ -371,6 +534,21 @@ export class EditUserPage implements OnInit {
       if (Object.keys(this._formErrors()).length > 0) {
         this._formErrors.set({});
       }
+    });
+  }
+
+  /**
+   * Setup form change listeners for reactive dirty state detection
+   */
+  private setupFormChangeListeners(): void {
+    // Subscribe to form value changes to track dirty state
+    this.formSubscription = this.userForm.valueChanges.subscribe(() => {
+      this._formDirty.set(this.userForm.dirty);
+    });
+
+    // Subscribe to form status changes to track dirty state
+    this.userForm.statusChanges.subscribe(() => {
+      this._formDirty.set(this.userForm.dirty);
     });
   }
 
@@ -409,7 +587,7 @@ export class EditUserPage implements OnInit {
       lastName: 'Last name',
       email: 'Email',
       username: 'Username',
-      role: 'Role',
+      roleId: 'Role',
     };
     return labels[fieldName] || fieldName;
   }
@@ -442,7 +620,7 @@ export class EditUserPage implements OnInit {
           lastName: formData.lastName,
           email: formData.email,
           username: formData.username,
-          roleId: formData.role ? parseInt(formData.role) : undefined,
+          roleId: this.userForm.get('roleId')?.value || undefined,
           isActive: formData.isActive,
         },
         requesterId: 1, // This would come from AuthService

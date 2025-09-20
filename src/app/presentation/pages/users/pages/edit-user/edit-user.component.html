@@ -1,78 +1,10 @@
 <!-- Edit User Page Template -->
-<div class="edit-user-page">
-  <!-- Loading State -->
-  @if (loading()) {
-    <div class="loading-state" role="status" aria-live="polite">
-      <ui-icon name="arrow-clockwise" variant="outline" size="xl" class="loading-spinner"></ui-icon>
-      <div class="loading-content">
-        <h2>Loading user data...</h2>
-        <p>Please wait while we fetch the user information.</p>
-      </div>
-    </div>
-  }
-
-  <!-- Error State -->
-  @else if (error() && !user()) {
-    <div class="error-state" role="alert">
-      <ui-icon name="alert-circle" variant="filled" size="xl" class="error-icon"></ui-icon>
-      <div class="error-content">
-        <h2>Failed to load user data</h2>
-        <p>{{ error() }}</p>
-        <div class="error-actions">
-          <ui-button variant="primary" size="md" (click)="loadUserAndPopulateForm()">
-            <ui-icon name="arrow-clockwise" variant="outline" size="sm"></ui-icon>
-            Try Again
-          </ui-button>
-          <ui-button variant="secondary" size="md" (click)="goBackToList()">
-            <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-            Back to List
-          </ui-button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- User Not Found -->
-  @else if (userNotFound()) {
-    <div class="not-found-state">
-      <ui-icon name="user-x" variant="outline" size="xl" class="not-found-icon"></ui-icon>
-      <div class="not-found-content">
-        <h2>User not found</h2>
-        <p>The user you're trying to edit doesn't exist or may have been deleted.</p>
-        <div class="not-found-actions">
-          <ui-button variant="primary" size="md" (click)="goBackToList()">
-            <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-            Back to Users List
-          </ui-button>
-        </div>
-      </div>
-    </div>
-  }
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <app-page-header [config]="headerConfig()" />
 
   <!-- Edit User Content -->
-  @else {
-    @if (user(); as userData) {
-      <!-- Header Section -->
-      <header class="page-header">
-        <div class="header-navigation">
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (click)="goBackToDetail()"
-          class="back-button">
-          <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
-          Back to {{ userData.firstName }} {{ userData.lastName }}
-        </ui-button>
-      </div>
-
-      <div class="header-content">
-        <div class="header-info">
-          <h1 class="page-title">{{ pageTitle() }}</h1>
-          <p class="page-description">Update user information and account settings.</p>
-        </div>
-      </div>
-    </header>
-
+  @if (!loading() && !error() && !userNotFound() && user(); as userData) {
     <!-- Main Content -->
     <main class="main-content">
       <div class="form-container">
@@ -99,175 +31,259 @@
             <!-- General Error Message -->
             @if (error()) {
               <div class="error-banner" role="alert">
-                <ui-icon name="alert-circle" variant="filled" size="md" class="error-icon"></ui-icon>
+                <ui-icon
+                  name="alert-circle"
+                  variant="filled"
+                  size="md"
+                  class="error-icon"></ui-icon>
                 <div class="error-content">
                   <p>{{ error() }}</p>
                 </div>
               </div>
             }
 
-            <!-- Personal Information Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <ui-icon name="user" variant="outline" size="md"></ui-icon>
-                  Personal Information
-                </h2>
-                <p class="section-description">Update personal details for the user account.</p>
-              </div>
+            <div class="form-grid">
+              <!-- Personal Information Section -->
+              <section class="form-section half-width">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <ui-icon name="user" variant="outline" size="md"></ui-icon>
+                    Personal Information
+                  </h2>
+                  <p class="section-description">Update personal details for the user account.</p>
+                </div>
 
-              <div class="fields-grid">
-                <!-- First Name -->
-                <ui-form-field
-                  label="First Name"
-                  [required]="true"
-                  [error]="getValidationError('firstName')"
-                  class="field-item">
-                  <ui-input
-                    formControlName="firstName"
-                    placeholder="Enter first name"
-                    autocomplete="given-name">
-                  </ui-input>
-                </ui-form-field>
+                <div class="fields-grid">
+                  <!-- First Name -->
+                  <ui-form-field
+                    label="First Name"
+                    [required]="true"
+                    [error]="getValidationError('firstName')"
+                    class="field-item">
+                    <ui-input
+                      formControlName="firstName"
+                      placeholder="Enter first name"
+                      autocomplete="given-name">
+                    </ui-input>
+                  </ui-form-field>
 
-                <!-- Last Name -->
-                <ui-form-field
-                  label="Last Name"
-                  [required]="true"
-                  [error]="getValidationError('lastName')"
-                  class="field-item">
-                  <ui-input
-                    formControlName="lastName"
-                    placeholder="Enter last name"
-                    autocomplete="family-name">
-                  </ui-input>
-                </ui-form-field>
-              </div>
-            </section>
+                  <!-- Last Name -->
+                  <ui-form-field
+                    label="Last Name"
+                    [required]="true"
+                    [error]="getValidationError('lastName')"
+                    class="field-item">
+                    <ui-input
+                      formControlName="lastName"
+                      placeholder="Enter last name"
+                      autocomplete="family-name">
+                    </ui-input>
+                  </ui-form-field>
+                </div>
+              </section>
 
-            <!-- Account Information Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <ui-icon name="at-sign" variant="outline" size="md"></ui-icon>
-                  Account Information
-                </h2>
-                <p class="section-description">Update login credentials and contact information.</p>
-              </div>
+              <!-- Account Information Section -->
+              <section class="form-section half-width">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <ui-icon name="at-sign" variant="outline" size="md"></ui-icon>
+                    Account Information
+                  </h2>
+                  <p class="section-description">
+                    Update login credentials and contact information.
+                  </p>
+                </div>
 
-              <div class="fields-grid">
-                <!-- Email -->
-                <ui-form-field
-                  label="Email Address"
-                  [required]="true"
-                  [error]="getValidationError('email') || getFieldError('email')"
-                  class="field-item">
-                  <ui-input
-                    type="email"
-                    formControlName="email"
-                    placeholder="user@example.com"
-                    autocomplete="email">
-                  </ui-input>
-                </ui-form-field>
+                <div class="fields-grid">
+                  <!-- Email -->
+                  <ui-form-field
+                    label="Email Address"
+                    [required]="true"
+                    [error]="getValidationError('email') || getFieldError('email')"
+                    class="field-item">
+                    <ui-input
+                      type="email"
+                      formControlName="email"
+                      placeholder="user@example.com"
+                      autocomplete="email">
+                    </ui-input>
+                  </ui-form-field>
 
-                <!-- Username -->
-                <ui-form-field
-                  label="Username"
-                  [required]="true"
-                  [error]="getValidationError('username') || getFieldError('username')"
-                  class="field-item">
-                  <ui-input
-                    formControlName="username"
-                    placeholder="Enter username"
-                    autocomplete="username">
-                  </ui-input>
-                </ui-form-field>
-              </div>
-            </section>
+                  <!-- Username -->
+                  <ui-form-field
+                    label="Username"
+                    [required]="true"
+                    [error]="getValidationError('username') || getFieldError('username')"
+                    class="field-item">
+                    <ui-input
+                      formControlName="username"
+                      placeholder="Enter username"
+                      autocomplete="username">
+                    </ui-input>
+                  </ui-form-field>
+                </div>
+              </section>
 
-            <!-- Role and Permissions Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <ui-icon name="shield" variant="outline" size="md"></ui-icon>
-                  Role and Permissions
-                </h2>
-                <p class="section-description">Update user role and account settings.</p>
-              </div>
+              <!-- Account Status Section -->
+              <section class="form-section half-width">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <ui-icon name="toggle-left" variant="outline" size="md"></ui-icon>
+                    Account Status
+                  </h2>
+                  <p class="section-description">Control user account access and permissions.</p>
+                </div>
 
-              <div class="fields-grid">
-                <!-- Role Selection -->
-                <ui-form-field
-                  label="User Role"
-                  [required]="true"
-                  [error]="getValidationError('role')"
-                  class="field-item">
-                  <select
-                    formControlName="role"
-                    class="role-select"
-                    [class.has-error]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
-                    @for (role of availableRoles(); track role) {
-                      <option [value]="role">{{ role | titlecase }}</option>
-                    }
-                  </select>
-                </ui-form-field>
+                <div class="fields-grid">
+                  <!-- Account Status -->
+                  <ui-form-field label="Account Status" class="field-item">
+                    <div class="checkbox-group">
+                      <label class="checkbox-item">
+                        <input type="checkbox" formControlName="isActive" class="checkbox-input" />
+                        <span class="checkbox-label">Account is active</span>
+                        <span class="checkbox-description"
+                          >User can log in and access the system</span
+                        >
+                      </label>
+                    </div>
+                  </ui-form-field>
+                </div>
+              </section>
 
-                <!-- Account Status -->
-                <ui-form-field
-                  label="Account Status"
-                  class="field-item">
-                  <div class="checkbox-group">
-                    <label class="checkbox-item">
-                      <input
-                        type="checkbox"
-                        formControlName="isActive"
-                        class="checkbox-input">
-                      <span class="checkbox-label">Account is active</span>
-                      <span class="checkbox-description">User can log in and access the system</span>
-                    </label>
+              <!-- Role and Permissions Section -->
+              <section class="form-section half-width">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <ui-icon name="shield" variant="outline" size="md"></ui-icon>
+                    Role and Permissions
+                  </h2>
+                  <p class="section-description">Update user role and account settings.</p>
+                </div>
+
+                <!-- Role Loading State -->
+                @if (roleLoading()) {
+                  <div class="role-loading-state">
+                    <ui-icon
+                      name="arrow-clockwise"
+                      variant="outline"
+                      size="md"
+                      class="animate-spin"></ui-icon>
+                    <span>Loading available roles...</span>
                   </div>
-                </ui-form-field>
-              </div>
-            </section>
+                }
 
-            <!-- Change History Section -->
-            <section class="form-section">
-              <div class="section-header">
-                <h2 class="section-title">
-                  <ui-icon name="clock" variant="outline" size="md"></ui-icon>
-                  Account Information
-                </h2>
-                <p class="section-description">Account creation and modification details.</p>
-              </div>
+                <!-- Role Error State -->
+                @else if (roleError()) {
+                  <div class="role-error-state" role="alert">
+                    <ui-icon
+                      name="alert-circle"
+                      variant="filled"
+                      size="md"
+                      class="text-error-500"></ui-icon>
+                    <div class="error-content">
+                      <p>{{ roleError() }}</p>
+                      <ui-button variant="secondary" size="sm" (click)="loadAvailableRoles()">
+                        <ui-icon name="refresh-cw" variant="outline" size="sm"></ui-icon>
+                        Retry
+                      </ui-button>
+                    </div>
+                  </div>
+                }
 
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="info-label">Account Created</span>
-                  <span class="info-value">{{ (userData.createdAt ? (userData.createdAt.toString() | date:'medium') : 'Not available') }}</span>
+                <!-- Role Selection Fields -->
+                @else {
+                  <div class="fields-grid">
+                    <!-- Role Selection -->
+                    <ui-form-field
+                      label="User Role"
+                      [required]="true"
+                      [error]="getValidationError('roleId')"
+                      class="field-item">
+                      <select
+                        formControlName="roleId"
+                        class="role-select"
+                        [class.has-error]="
+                          userForm.get('roleId')?.invalid && userForm.get('roleId')?.touched
+                        ">
+                        <option value="" disabled>Select a role...</option>
+                        @for (role of availableRoles(); track role.id) {
+                          <option [value]="role.id">{{ role.name }}</option>
+                        }
+                      </select>
+                    </ui-form-field>
+
+                    <!-- Selected Role Preview - Compact Version -->
+                    @if (selectedRoleInfo(); as roleInfo) {
+                      <div class="role-preview-compact">
+                        <div [class]="'role-icon-small ' + roleInfo.accessLevelInfo.iconBg">
+                          <ui-icon
+                            [name]="roleInfo.accessLevelIcon || 'shield'"
+                            variant="filled"
+                            size="sm"
+                            [class]="roleInfo.accessLevelInfo.iconColor">
+                          </ui-icon>
+                        </div>
+                        <span class="role-name-small">{{ roleInfo.name }}</span>
+                        <span [class]="'role-level-badge ' + roleInfo.accessLevelInfo.badgeClasses">
+                          {{ roleInfo.accessLevelInfo.label }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+              </section>
+
+              <!-- Account Information (Read-only) Section -->
+              <section class="form-section half-width">
+                <div class="section-header">
+                  <h2 class="section-title">
+                    <ui-icon name="clock" variant="outline" size="md"></ui-icon>
+                    Account Information
+                  </h2>
+                  <p class="section-description">Account creation and modification details.</p>
                 </div>
 
-                <div class="info-item">
-                  <span class="info-label">Last Updated</span>
-                  <span class="info-value">{{ (userData.updatedAt ? (userData.updatedAt.toString() | date:'medium') : 'Not available') }}</span>
-                </div>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="info-label">Account Created</span>
+                    <span class="info-value">{{
+                      userData.createdAt
+                        ? (userData.createdAt.toString() | date: 'medium')
+                        : 'Not available'
+                    }}</span>
+                  </div>
 
-                <div class="info-item">
-                  <span class="info-label">User ID</span>
-                  <span class="info-value">#{{ userData.id }}</span>
-                </div>
+                  <div class="info-item">
+                    <span class="info-label">Last Updated</span>
+                    <span class="info-value">{{
+                      userData.updatedAt
+                        ? (userData.updatedAt.toString() | date: 'medium')
+                        : 'Not available'
+                    }}</span>
+                  </div>
 
-                <div class="info-item">
-                  <span class="info-label">Current Status</span>
-                  <span class="info-value">
-                    <span [class]="'status-badge ' + (userData.active ? 'status-active' : 'status-inactive')">
-                      {{ userData.active ? 'Active' : 'Inactive' }}
+                  <div class="info-item">
+                    <span class="info-label">User ID</span>
+                    <span class="info-value">#{{ userData.id }}</span>
+                  </div>
+
+                  <div class="info-item">
+                    <span class="info-label">Current Status</span>
+                    <span class="info-value">
+                      <span
+                        [class]="
+                          'status-badge ' + (userData.active ? 'status-active' : 'status-inactive')
+                        ">
+                        {{ userData.active ? 'Active' : 'Inactive' }}
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
+            </div>
+            <!-- Close form-grid -->
 
-            <!-- Form Actions -->
+            <!-- Additional Form Actions -->
             <div class="form-actions">
               <div class="actions-left">
                 <ui-button
@@ -282,35 +298,18 @@
               </div>
 
               <div class="actions-right">
-                <ui-button
-                  type="button"
-                  variant="ghost"
-                  size="md"
-                  (click)="onCancel()"
-                  [disabled]="isSubmitting()">
-                  Cancel
-                </ui-button>
-
-                <ui-button
-                  type="submit"
-                  variant="primary"
-                  size="md"
-                  [disabled]="!canSubmit()"
-                  [loading]="isSubmitting()">
-                  @if (isSubmitting()) {
-                    <ui-icon name="arrow-clockwise" variant="outline" size="sm" class="spinning"></ui-icon>
-                    Updating User...
-                  } @else {
-                    <ui-icon name="save" variant="outline" size="sm"></ui-icon>
-                    Save Changes
-                  }
-                </ui-button>
+                <!-- Form dirty state indicator -->
+                @if (isFormDirty()) {
+                  <span class="form-status-indicator">
+                    <ui-icon name="edit" variant="outline" size="sm"></ui-icon>
+                    Unsaved changes
+                  </span>
+                }
               </div>
             </div>
           </form>
         }
       </div>
     </main>
-    }
   }
 </div>
