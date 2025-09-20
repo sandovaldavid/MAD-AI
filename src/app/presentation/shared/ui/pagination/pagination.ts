@@ -241,7 +241,13 @@ export class Pagination {
    * Handle page navigation
    */
   onPageChange(page: number): void {
-    if (page === this.currentPage || page < 1 || page > this.totalPages || this.disabled || this.loading) {
+    if (
+      page === this.currentPage ||
+      page < 1 ||
+      page > this.totalPages ||
+      this.disabled ||
+      this.loading
+    ) {
       return;
     }
 
@@ -311,8 +317,6 @@ export class Pagination {
    * Get page button ARIA label
    */
   getPageAriaLabel(page: number): string {
-    return this.isCurrentPage(page)
-      ? `Page ${page}, current page`
-      : `Go to page ${page}`;
+    return this.isCurrentPage(page) ? `Page ${page}, current page` : `Go to page ${page}`;
   }
 }

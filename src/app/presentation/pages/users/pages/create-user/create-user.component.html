@@ -3,11 +3,7 @@
   <!-- Header Section -->
   <header class="page-header">
     <div class="header-navigation">
-      <ui-button
-        variant="ghost"
-        size="sm"
-        (click)="goBackToList()"
-        class="back-button">
+      <ui-button variant="ghost" size="sm" (click)="goBackToList()" class="back-button">
         <ui-icon name="arrow-left" variant="outline" size="sm"></ui-icon>
         Back to Users
       </ui-button>
@@ -16,7 +12,9 @@
     <div class="header-content">
       <div class="header-info">
         <h1 class="page-title">Create New User</h1>
-        <p class="page-description">Add a new user to the system with their basic information and account settings.</p>
+        <p class="page-description">
+          Add a new user to the system with their basic information and account settings.
+        </p>
       </div>
     </div>
   </header>
@@ -30,7 +28,9 @@
           <ui-icon name="check-circle" variant="filled" size="xl" class="success-icon"></ui-icon>
           <div class="success-content">
             <h2>User created successfully!</h2>
-            <p>The user account has been created and they will receive a welcome email if enabled.</p>
+            <p>
+              The user account has been created and they will receive a welcome email if enabled.
+            </p>
             <div class="success-actions">
               <ui-button variant="primary" size="md" (click)="goBackToList()">
                 <ui-icon name="users" variant="outline" size="sm"></ui-icon>
@@ -158,7 +158,9 @@
                 <select
                   formControlName="role"
                   class="role-select"
-                  [class.has-error]="userForm.get('role')?.invalid && userForm.get('role')?.touched">
+                  [class.has-error]="
+                    userForm.get('role')?.invalid && userForm.get('role')?.touched
+                  ">
                   @for (role of availableRoles(); track role) {
                     <option [value]="role">{{ role | titlecase }}</option>
                   }
@@ -166,15 +168,10 @@
               </ui-form-field>
 
               <!-- Account Status -->
-              <ui-form-field
-                label="Account Status"
-                class="field-item">
+              <ui-form-field label="Account Status" class="field-item">
                 <div class="checkbox-group">
                   <label class="checkbox-item">
-                    <input
-                      type="checkbox"
-                      formControlName="isActive"
-                      class="checkbox-input">
+                    <input type="checkbox" formControlName="isActive" class="checkbox-input" />
                     <span class="checkbox-label">Account is active</span>
                     <span class="checkbox-description">User can log in and access the system</span>
                   </label>
@@ -194,17 +191,17 @@
             </div>
 
             <div class="fields-grid">
-              <ui-form-field
-                label="Welcome Email"
-                class="field-item">
+              <ui-form-field label="Welcome Email" class="field-item">
                 <div class="checkbox-group">
                   <label class="checkbox-item">
                     <input
                       type="checkbox"
                       formControlName="sendWelcomeEmail"
-                      class="checkbox-input">
+                      class="checkbox-input" />
                     <span class="checkbox-label">Send welcome email</span>
-                    <span class="checkbox-description">Send account setup instructions to the user</span>
+                    <span class="checkbox-description"
+                      >Send account setup instructions to the user</span
+                    >
                   </label>
                 </div>
               </ui-form-field>
@@ -242,7 +239,11 @@
                 [disabled]="!canSubmit()"
                 [loading]="isSubmitting()">
                 @if (isSubmitting()) {
-                  <ui-icon name="arrow-clockwise" variant="outline" size="sm" class="spinning"></ui-icon>
+                  <ui-icon
+                    name="arrow-clockwise"
+                    variant="outline"
+                    size="sm"
+                    class="spinning"></ui-icon>
                   Creating User...
                 } @else {
                   <ui-icon name="plus" variant="outline" size="sm"></ui-icon>

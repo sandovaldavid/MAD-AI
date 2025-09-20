@@ -387,9 +387,18 @@ export class HttpUserRepository implements UserRepository {
         email: patch.email ?? currentUser.email.value,
         role_id: patch.roleId ?? currentUser.role.id,
         status: patch.isActive !== undefined ? (patch.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
-        email_notifications_enabled: patch.notificationPreferences?.email ?? currentUser.notificationPreferences?.toObject().email ?? true,
-        system_notifications_enabled: patch.notificationPreferences?.system ?? currentUser.notificationPreferences?.toObject().system ?? true,
-        task_notifications_enabled: patch.notificationPreferences?.task ?? currentUser.notificationPreferences?.toObject().task ?? true,
+        email_notifications_enabled:
+          patch.notificationPreferences?.email ??
+          currentUser.notificationPreferences?.toObject().email ??
+          true,
+        system_notifications_enabled:
+          patch.notificationPreferences?.system ??
+          currentUser.notificationPreferences?.toObject().system ??
+          true,
+        task_notifications_enabled:
+          patch.notificationPreferences?.task ??
+          currentUser.notificationPreferences?.toObject().task ??
+          true,
       };
       console.log('[HttpUserRepository] Update request DTO created:', requestDto);
 

@@ -56,11 +56,7 @@ export interface UserCardActionEvent {
 @Component({
   selector: 'app-user-card',
   standalone: true,
-  imports: [
-    CommonModule,
-    Button,
-    Icon,
-  ],
+  imports: [CommonModule, Button, Icon],
   templateUrl: './user-card.html',
   styleUrl: './user-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -201,10 +197,10 @@ export class UserCardComponent {
    */
   getRoleClass(): string {
     const roleClasses: Record<string, string> = {
-      'admin': 'role-admin',
-      'manager': 'role-manager',
-      'user': 'role-user',
-      'viewer': 'role-viewer',
+      admin: 'role-admin',
+      manager: 'role-manager',
+      user: 'role-user',
+      viewer: 'role-viewer',
     };
     return roleClasses[this.user.role.toLowerCase()] || 'role-default';
   }

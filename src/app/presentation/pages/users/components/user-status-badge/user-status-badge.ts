@@ -58,10 +58,7 @@ export interface StatusConfig {
 @Component({
   selector: 'app-user-status-badge',
   standalone: true,
-  imports: [
-    CommonModule,
-    Icon,
-  ],
+  imports: [CommonModule, Icon],
   templateUrl: './user-status-badge.html',
   styleUrl: './user-status-badge.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -130,7 +127,7 @@ export class UserStatusBadgeComponent {
 
     if (this.statusValue) {
       // Check custom statuses first
-      const customStatus = this.customStatuses.find(s => s.value === this.statusValue);
+      const customStatus = this.customStatuses.find((s) => s.value === this.statusValue);
       if (customStatus) {
         return {
           value: customStatus.value,
@@ -171,10 +168,10 @@ export class UserStatusBadgeComponent {
    */
   readonly iconSize = computed(() => {
     const sizeMap = {
-      'xs': 'xs' as const,
-      'sm': 'xs' as const,
-      'md': 'sm' as const,
-      'lg': 'md' as const,
+      xs: 'xs' as const,
+      sm: 'xs' as const,
+      md: 'sm' as const,
+      lg: 'md' as const,
     };
     return sizeMap[this.size];
   });
@@ -188,7 +185,7 @@ export class UserStatusBadgeComponent {
 
     // Check if custom status has description
     if (this.statusValue) {
-      const customStatus = this.customStatuses.find(s => s.value === this.statusValue);
+      const customStatus = this.customStatuses.find((s) => s.value === this.statusValue);
       if (customStatus?.description) {
         return customStatus.description;
       }
@@ -206,42 +203,42 @@ export class UserStatusBadgeComponent {
    */
   private getDefaultStatusConfig(statusValue: string): UserStatusDisplay {
     const defaultStatuses: Record<string, UserStatusDisplay> = {
-      'active': {
+      active: {
         value: 'active',
         label: 'Active',
         cssClass: 'active',
         iconName: 'check-circle',
         description: 'User account is active and can access the system',
       },
-      'inactive': {
+      inactive: {
         value: 'inactive',
         label: 'Inactive',
         cssClass: 'inactive',
         iconName: 'x-circle',
         description: 'User account is deactivated and cannot access the system',
       },
-      'pending': {
+      pending: {
         value: 'pending',
         label: 'Pending',
         cssClass: 'pending',
         iconName: 'clock',
         description: 'User account is pending activation or verification',
       },
-      'suspended': {
+      suspended: {
         value: 'suspended',
         label: 'Suspended',
         cssClass: 'suspended',
         iconName: 'alert-circle',
         description: 'User account has been temporarily suspended',
       },
-      'banned': {
+      banned: {
         value: 'banned',
         label: 'Banned',
         cssClass: 'banned',
         iconName: 'slash',
         description: 'User account has been permanently banned',
       },
-      'verified': {
+      verified: {
         value: 'verified',
         label: 'Verified',
         cssClass: 'verified',
@@ -250,13 +247,15 @@ export class UserStatusBadgeComponent {
       },
     };
 
-    return defaultStatuses[statusValue.toLowerCase()] || {
-      value: statusValue,
-      label: statusValue.charAt(0).toUpperCase() + statusValue.slice(1),
-      cssClass: 'unknown',
-      iconName: 'help-circle',
-      description: `User status: ${statusValue}`,
-    };
+    return (
+      defaultStatuses[statusValue.toLowerCase()] || {
+        value: statusValue,
+        label: statusValue.charAt(0).toUpperCase() + statusValue.slice(1),
+        cssClass: 'unknown',
+        iconName: 'help-circle',
+        description: `User status: ${statusValue}`,
+      }
+    );
   }
 
   /**

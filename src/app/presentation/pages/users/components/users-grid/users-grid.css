@@ -193,12 +193,12 @@
    Grid Cell Styling
    ============================================================================ */
 
-.users-grid > div[role="gridcell"] {
+.users-grid > div[role='gridcell'] {
   @apply transition-all duration-200 ease-out;
 }
 
 /* Subtle hover effect for entire grid cell */
-.users-grid > div[role="gridcell"]:hover {
+.users-grid > div[role='gridcell']:hover {
   @apply transform translate-y-[-2px];
 }
 
@@ -206,7 +206,7 @@
    Accessibility and Focus Management
    ============================================================================ */
 
-.users-grid > div[role="gridcell"]:focus-within {
+.users-grid > div[role='gridcell']:focus-within {
   @apply ring-2 ring-primary-500 dark:ring-primary-400 ring-offset-2
          ring-offset-white dark:ring-offset-primary-950 rounded-lg;
 }
@@ -228,18 +228,30 @@
 }
 
 /* Staggered animation for grid items */
-.users-grid > div[role="gridcell"] {
+.users-grid > div[role='gridcell'] {
   animation: fadeInUp 0.3s ease-out forwards;
   opacity: 0;
   transform: translateY(20px);
 }
 
-.users-grid > div[role="gridcell"]:nth-child(1) { animation-delay: 0.05s; }
-.users-grid > div[role="gridcell"]:nth-child(2) { animation-delay: 0.1s; }
-.users-grid > div[role="gridcell"]:nth-child(3) { animation-delay: 0.15s; }
-.users-grid > div[role="gridcell"]:nth-child(4) { animation-delay: 0.2s; }
-.users-grid > div[role="gridcell"]:nth-child(5) { animation-delay: 0.25s; }
-.users-grid > div[role="gridcell"]:nth-child(6) { animation-delay: 0.3s; }
+.users-grid > div[role='gridcell']:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.users-grid > div[role='gridcell']:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.users-grid > div[role='gridcell']:nth-child(3) {
+  animation-delay: 0.15s;
+}
+.users-grid > div[role='gridcell']:nth-child(4) {
+  animation-delay: 0.2s;
+}
+.users-grid > div[role='gridcell']:nth-child(5) {
+  animation-delay: 0.25s;
+}
+.users-grid > div[role='gridcell']:nth-child(6) {
+  animation-delay: 0.3s;
+}
 
 @keyframes fadeInUp {
   to {
@@ -253,13 +265,13 @@
    ============================================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  .users-grid > div[role="gridcell"] {
+  .users-grid > div[role='gridcell'] {
     animation: none;
     opacity: 1;
     transform: none;
   }
 
-  .users-grid > div[role="gridcell"]:hover {
+  .users-grid > div[role='gridcell']:hover {
     @apply transform-none;
   }
 
@@ -288,7 +300,7 @@
     @apply hidden;
   }
 
-  .users-grid > div[role="gridcell"] {
+  .users-grid > div[role='gridcell'] {
     @apply break-inside-avoid;
   }
 }

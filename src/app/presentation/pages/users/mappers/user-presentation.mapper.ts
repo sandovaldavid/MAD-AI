@@ -191,7 +191,10 @@ export class UserPresentationMapper {
   /**
    * Map user status to display-friendly format
    */
-  private static mapUserStatus(status: UserStatusVO | undefined, isActive: boolean): UserStatusDisplay {
+  private static mapUserStatus(
+    status: UserStatusVO | undefined,
+    isActive: boolean
+  ): UserStatusDisplay {
     const statusMap: Record<string, Omit<UserStatusDisplay, 'value'>> = {
       ACTIVE: {
         label: 'Active',
@@ -262,8 +265,10 @@ export class UserPresentationMapper {
   private static generateUserStats(user: User): UserStatsData {
     // This would typically come from analytics or activity tracking
     // For now, we'll generate mock data based on user properties
-    const accountAge = user.createdAt 
-      ? Math.floor((Date.now() - new Date(user.createdAt.toString()).getTime()) / (1000 * 60 * 60 * 24))
+    const accountAge = user.createdAt
+      ? Math.floor(
+          (Date.now() - new Date(user.createdAt.toString()).getTime()) / (1000 * 60 * 60 * 24)
+        )
       : 0;
 
     return {
@@ -315,7 +320,7 @@ export class UserPresentationMapper {
   private static generateInitials(firstName: string, lastName: string): string {
     const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
     const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
-    return (firstInitial + lastInitial) || 'U';
+    return firstInitial + lastInitial || 'U';
   }
 
   /**
@@ -331,7 +336,7 @@ export class UserPresentationMapper {
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    
+
     return date.toLocaleDateString();
   }
 }

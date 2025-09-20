@@ -68,7 +68,7 @@ export class UserListMapper {
     const totalPages = Math.ceil(result.totalCount / pageSize);
 
     return {
-      users: userViewModels.map(vm => ({
+      users: userViewModels.map((vm) => ({
         id: vm.id,
         displayName: vm.displayName,
         email: vm.email,
@@ -99,14 +99,11 @@ export class UserListMapper {
    * @param permissions Optional permissions mapping for users
    * @returns UserListData with pagination disabled
    */
-  static fromUsersArray(
-    users: User[],
-    permissions?: Map<number, UserActionConfig>
-  ): UserListData {
+  static fromUsersArray(users: User[], permissions?: Map<number, UserActionConfig>): UserListData {
     const userViewModels = UserPresentationMapper.toListViewModels(users, permissions);
 
     return {
-      users: userViewModels.map(vm => ({
+      users: userViewModels.map((vm) => ({
         id: vm.id,
         displayName: vm.displayName,
         email: vm.email,

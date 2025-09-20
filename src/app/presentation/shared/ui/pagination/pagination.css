@@ -63,15 +63,15 @@
   .pagination {
     @apply flex-col items-stretch gap-3;
   }
-  
+
   .page-size-selector {
     @apply justify-center;
   }
-  
+
   .pagination-controls {
     @apply justify-center;
   }
-  
+
   .page-info {
     @apply text-center;
   }
@@ -81,7 +81,7 @@
   .page-numbers {
     @apply flex-wrap justify-center;
   }
-  
+
   .page-info-text {
     @apply text-xs;
   }

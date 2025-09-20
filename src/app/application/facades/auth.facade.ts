@@ -30,7 +30,10 @@ import type {
   LogoutRequest,
   PasswordResetConfirmRequest,
 } from '@application/types/auth.types';
-import type { UpdateUserPatchContract, ChangePasswordContract } from '@domain/repositories/business/user.contract';
+import type {
+  UpdateUserPatchContract,
+  ChangePasswordContract,
+} from '@domain/repositories/business/user.contract';
 import type { UserNotificationPreferences } from '@domain/value-objects/user-notification-preferences.vo';
 import type { User } from '@domain/entities/user.entity';
 import type { Session } from '@domain/entities/session.entity';
@@ -90,9 +93,7 @@ export class AuthFacade {
   private readonly updateProfileUC = inject<UpdateUserProfileUseCase>(
     UPDATE_USER_PROFILE_USECASE_PORT
   );
-  private readonly changePasswordUC = inject<ChangePasswordUseCase>(
-    CHANGE_PASSWORD_USECASE_PORT
-  );
+  private readonly changePasswordUC = inject<ChangePasswordUseCase>(CHANGE_PASSWORD_USECASE_PORT);
   private readonly updateNotificationsUC = inject<UpdateNotificationPreferencesUseCase>(
     UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT
   );
@@ -784,9 +785,17 @@ export class AuthFacade {
         throw new Error('No authenticated user found');
       }
 
-      console.log('[AuthFacade] Calling updateNotificationsUC.execute with userId:', currentUser.id.toString(), 'and preferences:', preferences);
+      console.log(
+        '[AuthFacade] Calling updateNotificationsUC.execute with userId:',
+        currentUser.id.toString(),
+        'and preferences:',
+        preferences
+      );
       const updatedUser = await this.updateNotificationsUC.execute(currentUser.id, preferences);
-      console.log('[AuthFacade] updateNotificationsUC.execute completed, updated user:', updatedUser);
+      console.log(
+        '[AuthFacade] updateNotificationsUC.execute completed, updated user:',
+        updatedUser
+      );
 
       this._user.set(updatedUser);
       console.log('[AuthFacade] User state updated successfully');

@@ -280,7 +280,10 @@ export class RolesList {
       await this.facade.exportRoles(event.roleIds, exportOptions);
     } catch (error) {
       // Always serialize error for SSR/prerendering
-      const errorStr = typeof error === 'object' ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : String(error);
+      const errorStr =
+        typeof error === 'object'
+          ? JSON.stringify(error, Object.getOwnPropertyNames(error))
+          : String(error);
       console.error('Export failed:', errorStr);
     }
   }

@@ -1,6 +1,10 @@
 <!-- Pagination Component Template -->
-<nav class="pagination" [class.disabled]="disabled" [class.loading]="loading" role="navigation" aria-label="Pagination">
-  
+<nav
+  class="pagination"
+  [class.disabled]="disabled"
+  [class.loading]="loading"
+  role="navigation"
+  aria-label="Pagination">
   <!-- Page Size Selector -->
   @if (showPageSizeSelector) {
     <div class="page-size-selector">
@@ -94,5 +98,4 @@
       }
     </div>
   }
-
 </nav>

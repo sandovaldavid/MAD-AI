@@ -26,13 +26,7 @@
  * @layer Presentation
  */
 
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  output,
-  computed,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Local Components
@@ -68,12 +62,16 @@ export interface UserSelectionChangeEvent {
       [class.loading]="loading()"
       [attr.aria-label]="'Users grid with ' + users().length + ' users'"
       role="grid">
-
       <!-- Loading State -->
       @if (loading() && users().length === 0) {
         <div class="grid-loading" role="status" aria-label="Loading users">
           <div class="loading-message">
-            <ui-icon name="arrow-clockwise" variant="outline" size="lg" class="loading-spinner" aria-hidden="true"></ui-icon>
+            <ui-icon
+              name="arrow-clockwise"
+              variant="outline"
+              size="lg"
+              class="loading-spinner"
+              aria-hidden="true"></ui-icon>
             <span class="loading-text">Loading users...</span>
           </div>
         </div>
@@ -83,7 +81,12 @@ export interface UserSelectionChangeEvent {
       @else if (!loading() && users().length === 0) {
         <div class="grid-empty" role="status" aria-label="No users found">
           <div class="empty-content">
-            <ui-icon name="user-group" variant="outline" size="xl" class="empty-icon" aria-hidden="true"></ui-icon>
+            <ui-icon
+              name="user-group"
+              variant="outline"
+              size="xl"
+              class="empty-icon"
+              aria-hidden="true"></ui-icon>
             <h3 class="empty-title">No users found</h3>
             <p class="empty-description">
               There are no users to display. Try adjusting your filters or create a new user.
@@ -100,13 +103,11 @@ export interface UserSelectionChangeEvent {
           role="grid"
           [attr.aria-rowcount]="gridRows()"
           [attr.aria-colcount]="gridCols()">
-
           @for (user of users(); track user.id; let index = $index) {
             <div
               role="gridcell"
               [attr.aria-rowindex]="getRowIndex(index)"
               [attr.aria-colindex]="getColIndex(index)">
-
               <app-user-card
                 [user]="user"
                 [userActions]="userActions()"
@@ -130,7 +131,12 @@ export interface UserSelectionChangeEvent {
       @if (loading() && users().length > 0) {
         <div class="loading-overlay" role="status" aria-label="Updating users">
           <div class="overlay-content">
-            <ui-icon name="arrow-clockwise" variant="outline" size="md" class="loading-spinner" aria-hidden="true"></ui-icon>
+            <ui-icon
+              name="arrow-clockwise"
+              variant="outline"
+              size="md"
+              class="loading-spinner"
+              aria-hidden="true"></ui-icon>
             <span class="sr-only">Updating users...</span>
           </div>
         </div>

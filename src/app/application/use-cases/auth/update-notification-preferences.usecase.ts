@@ -82,7 +82,12 @@ export class UpdateNotificationPreferencesUseCase {
    * ```
    */
   async execute(userId: number, preferences: UserNotificationPreferences): Promise<User> {
-    console.log('[UpdateNotificationPreferencesUseCase] execute called with userId:', userId, 'and preferences:', preferences);
+    console.log(
+      '[UpdateNotificationPreferencesUseCase] execute called with userId:',
+      userId,
+      'and preferences:',
+      preferences
+    );
 
     try {
       console.log('[UpdateNotificationPreferencesUseCase] Logging info about starting update');
@@ -97,7 +102,10 @@ export class UpdateNotificationPreferencesUseCase {
       const updatedUser = await this.userRepository.update(userId, {
         notificationPreferences: preferences,
       });
-      console.log('[UpdateNotificationPreferencesUseCase] userRepository.update completed, updated user:', updatedUser);
+      console.log(
+        '[UpdateNotificationPreferencesUseCase] userRepository.update completed, updated user:',
+        updatedUser
+      );
 
       console.log('[UpdateNotificationPreferencesUseCase] Logging success');
       this.logger.info('Notification preferences updated successfully', {

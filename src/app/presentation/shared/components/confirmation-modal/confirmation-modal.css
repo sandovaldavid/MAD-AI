@@ -140,19 +140,19 @@
   .modal {
     @apply mx-2 max-h-[95vh];
   }
-  
+
   .modal-header {
     @apply p-4;
   }
-  
+
   .modal-body {
     @apply px-4 py-3;
   }
-  
+
   .modal-actions {
     @apply px-4 py-3 flex-col gap-2;
   }
-  
+
   .modal-actions > * {
     @apply w-full;
   }

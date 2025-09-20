@@ -30,7 +30,16 @@
  * @layer Presentation
  */
 
-import { Component, computed, signal, OnInit, OnDestroy, inject, ChangeDetectionStrategy, effect } from '@angular/core';
+import {
+  Component,
+  computed,
+  signal,
+  OnInit,
+  OnDestroy,
+  inject,
+  ChangeDetectionStrategy,
+  effect,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -55,7 +64,10 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Input } from '@presentation/shared/ui/input/input';
-import { PageHeader, PageHeaderConfig } from '@presentation/shared/components/page-header/page-header';
+import {
+  PageHeader,
+  PageHeaderConfig,
+} from '@presentation/shared/components/page-header/page-header';
 
 // Local Imports
 import type { UserFormData, UserFormErrors } from '../../types';
@@ -76,15 +88,7 @@ import {
 @Component({
   selector: 'app-edit-user',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    Button,
-    Icon,
-    FormField,
-    Input,
-    PageHeader,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, Button, Icon, FormField, Input, PageHeader],
   templateUrl: './edit-user.component.html',
   styleUrl: './edit-user.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -178,7 +182,15 @@ export class EditUserPage implements OnInit, OnDestroy {
     firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-    username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern(/^[a-zA-Z0-9_-]+$/)]],
+    username: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30),
+        Validators.pattern(/^[a-zA-Z0-9_-]+$/),
+      ],
+    ],
     roleId: [null, [Validators.required]],
     isActive: [true],
   });
@@ -250,8 +262,8 @@ export class EditUserPage implements OnInit, OnDestroy {
   /**
    * Can submit form
    */
-  readonly canSubmit = computed(() =>
-    this.isFormValid() && this.isFormDirty() && !this.isSubmitting() && !this.loading()
+  readonly canSubmit = computed(
+    () => this.isFormValid() && this.isFormDirty() && !this.isSubmitting() && !this.loading()
   );
 
   /**
@@ -261,7 +273,7 @@ export class EditUserPage implements OnInit, OnDestroy {
     const roleId = this.userForm.get('roleId')?.value;
     if (!roleId) return null;
 
-    const role = this.availableRoles().find(r => r.id === Number(roleId));
+    const role = this.availableRoles().find((r) => r.id === Number(roleId));
     if (!role) return null;
 
     const accessLevelInfo = getRoleAccessLevelInfo(role.accessLevel);
@@ -347,7 +359,7 @@ export class EditUserPage implements OnInit, OnDestroy {
         description: 'Please wait while we load the user data',
         icon: 'user',
         showBreadcrumbs: true,
-        actions: []
+        actions: [],
       };
     }
 
@@ -363,9 +375,9 @@ export class EditUserPage implements OnInit, OnDestroy {
             label: 'Go Back',
             icon: 'arrow-left',
             action: () => this.goBackToList(),
-            variant: 'secondary'
-          }
-        ]
+            variant: 'secondary',
+          },
+        ],
       };
     }
 
@@ -383,7 +395,7 @@ export class EditUserPage implements OnInit, OnDestroy {
           icon: 'x',
           action: () => this.onCancel(),
           variant: 'ghost' as const,
-          disabled: this.isSubmitting()
+          disabled: this.isSubmitting(),
         },
         {
           label: this.isSubmitting() ? 'Saving...' : 'Save Changes',
@@ -391,9 +403,9 @@ export class EditUserPage implements OnInit, OnDestroy {
           action: () => this.onSubmit(),
           variant: 'primary' as const,
           disabled: !this.canSubmit(),
-          loading: this.isSubmitting()
-        }
-      ]
+          loading: this.isSubmitting(),
+        },
+      ],
     };
   });
 
@@ -571,8 +583,10 @@ export class EditUserPage implements OnInit, OnDestroy {
 
     if (errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
     if (errors['email']) return 'Please enter a valid email address';
-    if (errors['minlength']) return `${this.getFieldLabel(fieldName)} must be at least ${errors['minlength'].requiredLength} characters`;
-    if (errors['maxlength']) return `${this.getFieldLabel(fieldName)} cannot exceed ${errors['maxlength'].requiredLength} characters`;
+    if (errors['minlength'])
+      return `${this.getFieldLabel(fieldName)} must be at least ${errors['minlength'].requiredLength} characters`;
+    if (errors['maxlength'])
+      return `${this.getFieldLabel(fieldName)} cannot exceed ${errors['maxlength'].requiredLength} characters`;
     if (errors['pattern']) return `${this.getFieldLabel(fieldName)} contains invalid characters`;
 
     return 'Invalid value';
@@ -642,11 +656,10 @@ export class EditUserPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.router.navigate(['/users/detail', userId], {
           state: {
-            message: `User ${formData.firstName} ${formData.lastName} has been updated successfully.`
-          }
+            message: `User ${formData.firstName} ${formData.lastName} has been updated successfully.`,
+          },
         });
       }, 2000);
-
     } catch (error: unknown) {
       this.handleSubmissionError(error);
     } finally {

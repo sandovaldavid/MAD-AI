@@ -363,9 +363,7 @@ export class ConfirmationModal implements OnInit, OnDestroy {
       '[tabindex]:not([tabindex="-1"]):not([disabled])',
     ].join(', ');
 
-    return Array.from(
-      this.modalContainer.nativeElement.querySelectorAll(focusableSelectors)
-    );
+    return Array.from(this.modalContainer.nativeElement.querySelectorAll(focusableSelectors));
   }
 
   /**

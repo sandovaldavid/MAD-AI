@@ -53,7 +53,10 @@ export function provideAuth(): EnvironmentProviders {
     { provide: CONFIRM_PASSWORD_RESET_USECASE_PORT, useClass: ConfirmPasswordResetUseCase },
     { provide: UPDATE_USER_PROFILE_USECASE_PORT, useClass: UpdateUserProfileUseCase },
     { provide: CHANGE_PASSWORD_USECASE_PORT, useClass: ChangePasswordUseCase },
-    { provide: UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT, useClass: UpdateNotificationPreferencesUseCase },
+    {
+      provide: UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT,
+      useClass: UpdateNotificationPreferencesUseCase,
+    },
     provideHttpClient(withInterceptors([authInterceptor])),
   ]);
 }

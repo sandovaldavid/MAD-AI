@@ -109,7 +109,11 @@
         <!-- Role Information (Read-only) -->
         <div class="info-item">
           <div class="flex items-center gap-2">
-            <ui-icon name="shield-check" variant="outline" size="sm" class="text-primary-500 dark:text-primary-400"></ui-icon>
+            <ui-icon
+              name="shield-check"
+              variant="outline"
+              size="sm"
+              class="text-primary-500 dark:text-primary-400"></ui-icon>
             <span class="info-label">Role</span>
           </div>
           <div class="info-value">
@@ -123,7 +127,11 @@
         <!-- Status Information (Read-only) -->
         <div class="info-item">
           <div class="flex items-center gap-2">
-            <ui-icon name="status-online" variant="outline" size="sm" class="text-successful-500 dark:text-successful-400"></ui-icon>
+            <ui-icon
+              name="status-online"
+              variant="outline"
+              size="sm"
+              class="text-successful-500 dark:text-successful-400"></ui-icon>
             <span class="info-label">Account Status</span>
           </div>
           <div class="info-value">
@@ -141,7 +149,11 @@
         <!-- Account Created (Read-only) -->
         <div class="info-item" *ngIf="createdAtText()">
           <div class="flex items-center gap-2">
-            <ui-icon name="calendar" variant="outline" size="sm" class="text-info-500 dark:text-info-400"></ui-icon>
+            <ui-icon
+              name="calendar"
+              variant="outline"
+              size="sm"
+              class="text-info-500 dark:text-info-400"></ui-icon>
             <span class="info-label">Account Created</span>
           </div>
           <div class="info-value">{{ createdAtText() }}</div>
@@ -150,7 +162,11 @@
         <!-- Last Activity (Read-only) -->
         <div class="info-item" *ngIf="lastActivityText()">
           <div class="flex items-center gap-2">
-            <ui-icon name="clock" variant="outline" size="sm" class="text-warning-500 dark:text-warning-400"></ui-icon>
+            <ui-icon
+              name="clock"
+              variant="outline"
+              size="sm"
+              class="text-warning-500 dark:text-warning-400"></ui-icon>
             <span class="info-label">Last Activity</span>
           </div>
           <div class="info-value">{{ lastActivityText() }}</div>

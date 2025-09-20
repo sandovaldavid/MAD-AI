@@ -58,9 +58,10 @@ export const UPDATE_USER_PROFILE_USECASE_PORT = new InjectionToken<UpdateUserPro
 export const CHANGE_PASSWORD_USECASE_PORT = new InjectionToken<ChangePasswordUseCase>(
   'CHANGE_PASSWORD_USECASE_PORT'
 );
-export const UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT = new InjectionToken<UpdateNotificationPreferencesUseCase>(
-  'UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT'
-);
+export const UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT =
+  new InjectionToken<UpdateNotificationPreferencesUseCase>(
+    'UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT'
+  );
 import { InjectionToken } from '@angular/core';
 // Role Use Cases
 import type { ActivateRole } from '@application/use-cases/roles/activate-role.usecase';
