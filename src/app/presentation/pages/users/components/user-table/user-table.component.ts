@@ -47,7 +47,8 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Imports
-import { UserDisplayData, SortConfig, UserActionConfig } from '../../types/user-ui.types';
+import { SortConfig, UserActionConfig } from '../../types/user-ui.types';
+import { UserViewModel } from '../../models/user-view.model';
 import {
   RoleAccessLevelInfo,
   getRoleAccessLevelInfo,
@@ -59,14 +60,14 @@ import {
  */
 export interface UserActionEvent {
   readonly action: 'view' | 'edit' | 'delete' | 'activate' | 'deactivate' | 'resetPassword';
-  readonly user: UserDisplayData;
+  readonly user: UserViewModel;
 }
 
 /**
  * User selection event data
  */
 export interface UserSelectionEvent {
-  readonly selectedUsers: UserDisplayData[];
+  readonly selectedUsers: UserViewModel[];
   readonly isAllSelected: boolean;
 }
 
@@ -74,7 +75,7 @@ export interface UserSelectionEvent {
  * Sort change event data
  */
 export interface SortChangeEvent {
-  readonly field: keyof UserDisplayData;
+  readonly field: keyof UserViewModel;
   readonly direction: 'asc' | 'desc';
 }
 
@@ -101,12 +102,12 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * List of users to display
    */
-  @Input({ required: true }) users: UserDisplayData[] = [];
+  @Input({ required: true }) users: UserViewModel[] = [];
 
   /**
    * Internal signal for users to enable reactivity
    */
-  readonly _users = signal<UserDisplayData[]>([]);
+  readonly _users = signal<UserViewModel[]>([]);
 
   ngOnInit(): void {
     // Initialize internal signal with current users input
@@ -150,7 +151,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Currently selected users
    */
-  @Input() selectedUsers: UserDisplayData[] = [];
+  @Input() selectedUsers: UserViewModel[] = [];
 
   /**
    * Show user avatars in table
@@ -189,7 +190,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Emitted when a bulk action is triggered
    */
-  @Output() bulkAction = new EventEmitter<{ action: string; users: UserDisplayData[] }>();
+  @Output() bulkAction = new EventEmitter<{ action: string; users: UserViewModel[] }>();
 
   // ============================================================================
   // Component State
@@ -257,7 +258,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Handle column sort
    */
-  onSort(field: keyof UserDisplayData): void {
+  onSort(field: keyof UserViewModel): void {
     const currentSort = this.sortConfig;
     let direction: 'asc' | 'desc' = 'asc';
 
@@ -271,7 +272,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Get sort icon for column
    */
-  getSortIcon(field: keyof UserDisplayData): string {
+  getSortIcon(field: keyof UserViewModel): string {
     const currentSort = this.sortConfig;
 
     if (currentSort?.field !== field) {
@@ -284,7 +285,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Check if column is sortable
    */
-  isSortable(field: keyof UserDisplayData): boolean {
+  isSortable(field: keyof UserViewModel): boolean {
     return ['displayName', 'email', 'role', 'createdAt', 'lastActivity'].includes(field as string);
   }
 
@@ -316,7 +317,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Handle individual user selection
    */
-  onSelectUser(user: UserDisplayData): void {
+  onSelectUser(user: UserViewModel): void {
     if (!this.enableSelection) return;
 
     const selection = this._internalSelection();
@@ -335,7 +336,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Check if user is selected
    */
-  isUserSelected(user: UserDisplayData): boolean {
+  isUserSelected(user: UserViewModel): boolean {
     return this._internalSelection().has(user.id);
   }
 
@@ -357,7 +358,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Handle user action
    */
-  onUserAction(action: UserActionEvent['action'], user: UserDisplayData): void {
+  onUserAction(action: UserActionEvent['action'], user: UserViewModel): void {
     this.userAction.emit({ action, user });
   }
 
@@ -378,7 +379,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Get user initials for avatar
    */
-  getUserInitials(user: UserDisplayData): string {
+  getUserInitials(user: UserViewModel): string {
     // Check if initials are already computed
     if (user.initials && user.initials.length > 0) {
       return user.initials;
@@ -400,7 +401,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   } /**
    * Get user status CSS class
    */
-  getStatusClass(status: UserDisplayData['status']): string {
+  getStatusClass(status: UserViewModel['status']): string {
     return `status-${status.cssClass}`;
   }
 
@@ -408,15 +409,15 @@ export class UserTableComponent implements OnInit, OnChanges {
    * Get role display information including colors and styling
    * Uses the role access level that should be provided in the user data
    */
-  getRoleInfo(user: UserDisplayData): RoleAccessLevelInfo {
-    const level = user.accessLevel || 5;
+  getRoleInfo(user: UserViewModel): RoleAccessLevelInfo {
+    const level = user.role.accessLevel || 5;
     return getRoleAccessLevelInfo(level);
   }
 
   /**
    * Get role badge CSS classes based on the user's access level
    */
-  getRoleClass(user: UserDisplayData): string {
+  getRoleClass(user: UserViewModel): string {
     const roleInfo = this.getRoleInfo(user);
     return roleInfo.badgeClasses;
   }
@@ -424,15 +425,15 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Get role icon based on the user's access level
    */
-  getRoleIcon(user: UserDisplayData): string {
-    const level = user.accessLevel || 5;
+  getRoleIcon(user: UserViewModel): string {
+    const level = user.role.accessLevel || 5;
     return getRoleAccessLevelIcon(level);
   }
 
   /**
    * Get role icon background classes based on the user's access level
    */
-  getRoleIconBg(user: UserDisplayData): string {
+  getRoleIconBg(user: UserViewModel): string {
     const roleInfo = this.getRoleInfo(user);
     return roleInfo.iconBg;
   }
@@ -440,7 +441,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Get role icon color classes based on the user's access level
    */
-  getRoleIconColor(user: UserDisplayData): string {
+  getRoleIconColor(user: UserViewModel): string {
     const roleInfo = this.getRoleInfo(user);
     return roleInfo.iconColor;
   }
@@ -470,7 +471,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   /**
    * Track users by ID for ngFor
    */
-  trackByUserId(_index: number, user: UserDisplayData): number {
+  trackByUserId(_index: number, user: UserViewModel): number {
     return user.id;
   }
 

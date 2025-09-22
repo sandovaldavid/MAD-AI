@@ -88,7 +88,15 @@
           <div class="detail-item">
             <span class="role-badge" [class]="getRoleClass()">
               <ui-icon name="shield" variant="outline" size="xs"></ui-icon>
-              {{ user.role | titlecase }}
+              <span>{{ user.role.name | titlecase }}</span>
+              @if (!user.role.isActive) {
+                <ui-icon
+                  name="exclamation-triangle"
+                  variant="outline"
+                  size="xs"
+                  class="text-warning-500"
+                  title="Role is inactive"></ui-icon>
+              }
             </span>
           </div>
 

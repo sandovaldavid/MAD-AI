@@ -36,13 +36,14 @@ import { UserCardComponent, type UserCardActionEvent } from '../user-card/user-c
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Types
-import type { UserDisplayData, UserActionConfig } from '../../types';
+import type { UserActionConfig } from '../../types';
+import { UserViewModel } from '../../models/user-view.model';
 
 /**
  * Selection change event
  */
 export interface UserSelectionChangeEvent {
-  readonly user: UserDisplayData;
+  readonly user: UserViewModel;
   readonly selected: boolean;
 }
 
@@ -152,7 +153,7 @@ export class UsersGridComponent {
   // ============================================================================
 
   /** Users to display */
-  users = input.required<UserDisplayData[]>();
+  users = input.required<UserViewModel[]>();
 
   /** Available actions for users */
   userActions = input<UserActionConfig>({
@@ -190,7 +191,7 @@ export class UsersGridComponent {
   userAction = output<UserCardActionEvent>();
 
   /** Emitted when a card is clicked */
-  cardClick = output<UserDisplayData>();
+  cardClick = output<UserViewModel>();
 
   /** Emitted when user selection changes */
   selectionChange = output<UserSelectionChangeEvent>();
@@ -226,14 +227,14 @@ export class UsersGridComponent {
   /**
    * Handle card click
    */
-  onCardClick(user: UserDisplayData): void {
+  onCardClick(user: UserViewModel): void {
     this.cardClick.emit(user);
   }
 
   /**
    * Handle selection change
    */
-  onSelectionChange(event: { user: UserDisplayData; selected: boolean }): void {
+  onSelectionChange(event: { user: UserViewModel; selected: boolean }): void {
     this.selectionChange.emit({
       user: event.user,
       selected: event.selected,

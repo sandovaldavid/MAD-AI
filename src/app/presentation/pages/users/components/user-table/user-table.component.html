@@ -223,13 +223,20 @@
                 <!-- Role Cell -->
                 <td class="role-cell">
                   <span class="role-badge" [class]="getRoleClass(user)">
-                    <ui-icon 
-                      [name]="getRoleIcon(user)" 
-                      variant="outline" 
+                    <ui-icon
+                      [name]="getRoleIcon(user)"
+                      variant="outline"
                       size="sm"
-                      [class]="getRoleIconColor(user)">
-                    </ui-icon>
-                    {{ user.role | titlecase }}
+                      [class]="getRoleIconColor(user)"></ui-icon>
+                    <span>{{ user.role.name | titlecase }}</span>
+                    @if (!user.role.isActive) {
+                      <ui-icon
+                        name="exclamation-triangle"
+                        variant="outline"
+                        size="sm"
+                        class="text-warning-500"
+                        title="Role is inactive"></ui-icon>
+                    }
                   </span>
                 </td>
 

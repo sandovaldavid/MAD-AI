@@ -87,14 +87,14 @@ import {
 
 // Types
 import {
-  UserDisplayData,
   UserSearchCriteria,
   SortConfig,
   UserActionConfig,
-  UserStatusDisplay,
   UserSortField,
   SortDirection,
 } from '../../types/user-ui.types';
+import { UserViewModel } from '../../models/user-view.model';
+import { UserViewModelMapper } from '../../mappers/user-view-model.mapper';
 
 @Component({
   selector: 'app-users-list',
@@ -124,6 +124,7 @@ export class UsersListPage implements OnInit {
   private readonly rolesFacade = inject(RolesFacade);
   private readonly router = inject(Router);
   private readonly breadcrumbService = inject(BreadcrumbService);
+  private readonly userMapper = inject(UserViewModelMapper);
 
   // ============================================================================
   // Component State
@@ -221,7 +222,7 @@ export class UsersListPage implements OnInit {
   /**
    * Selection state for bulk operations
    */
-  private readonly _selectedUsers = signal<UserDisplayData[]>([]);
+  private readonly _selectedUsers = signal<UserViewModel[]>([]);
 
   /**
    * View mode state (table or card)
@@ -304,61 +305,15 @@ export class UsersListPage implements OnInit {
   // Computed property for selected user IDs
   readonly selectedUserIds = computed(() => this.selectedUsers().map((u) => u.id));
 
-  // Transform User entities to UserDisplayData for the UI
+  // Transform User entities to UserViewModel for the UI
   readonly users = computed(() => {
     const domainUsers = this.facadeUsers();
-
+    const domainRoles = this.availableRoles();
     if (domainUsers.length === 0) {
       return [];
     }
-
     try {
-      const mappedUsers = domainUsers.map((user): UserDisplayData => {
-        // Create display name from first and last name
-        const displayName = `${user.firstName.value} ${user.lastName.value}`.trim();
-
-        // Create initials from first letters
-        const initials = displayName
-          .split(' ')
-          .map((name) => name.charAt(0).toUpperCase())
-          .join('')
-          .substring(0, 2);
-
-        // Format dates
-        const createdAt = user.createdAt ? user.createdAt.value : '';
-        const lastActivity = user.lastActivityAt ? user.lastActivityAt.value : undefined;
-        const lastActivityDisplay = lastActivity
-          ? new Date(lastActivity).toLocaleDateString()
-          : undefined;
-
-        // Create status display
-        const status: UserStatusDisplay = {
-          value: user.active ? 'active' : 'inactive',
-          label: user.active ? 'Activo' : 'Inactivo',
-          cssClass: user.active ? 'text-success-600 bg-success-50' : 'text-error-600 bg-error-50',
-          iconName: user.active ? 'check-circle' : 'x-circle',
-          description: user.active ? 'Usuario activo' : 'Usuario inactivo',
-        };
-
-        return {
-          id: user.id,
-          displayName,
-          email: user.email.value,
-          username: user.username.value,
-          role: user.role.name,
-          accessLevel: user.role.accessLevel,
-          status,
-          initials,
-          lastActivity,
-          lastActivityDisplay,
-          createdAt,
-          isActive: user.active,
-          canEdit: user.role.accessLevel <= 2,
-          canDelete: user.role.accessLevel == 1,
-        };
-      });
-
-      return mappedUsers;
+      return this.userMapper.mapToViewModels(domainUsers, domainRoles);
     } catch (error) {
       console.error('❌ users-list.component: Error mapping users:', error);
       return [];
@@ -380,7 +335,7 @@ export class UsersListPage implements OnInit {
           user.displayName.toLowerCase().includes(searchTerm) ||
           user.email.toLowerCase().includes(searchTerm) ||
           user.username.toLowerCase().includes(searchTerm) ||
-          user.role.toLowerCase().includes(searchTerm)
+          user.role.name.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -392,7 +347,7 @@ export class UsersListPage implements OnInit {
     // Apply role filter
     if (criteria.roleFilter && criteria.roleFilter !== '') {
       filtered = filtered.filter(
-        (user) => user.role.toLowerCase() === criteria.roleFilter!.toLowerCase()
+        (user) => user.role.name.toLowerCase() === criteria.roleFilter!.toLowerCase()
       );
     }
 
@@ -512,7 +467,7 @@ export class UsersListPage implements OnInit {
    */
   onGridSelectionChange(event: GridSelectionEvent): void {
     const currentSelected = this._selectedUsers();
-    let updatedSelection: UserDisplayData[];
+    let updatedSelection: UserViewModel[];
 
     if (event.selected) {
       // Add user to selection if not already selected
@@ -565,7 +520,7 @@ export class UsersListPage implements OnInit {
   /**
    * Handle card clicks from grid view
    */
-  onCardClick(user: UserDisplayData): void {
+  onCardClick(user: UserViewModel): void {
     this.viewUser(user.id);
   }
 
@@ -776,7 +731,7 @@ export class UsersListPage implements OnInit {
   /**
    * Delete user with confirmation
    */
-  private deleteUser(user: UserDisplayData): void {
+  private deleteUser(user: UserViewModel): void {
     this.showConfirmationModal(
       {
         title: 'Delete User',
@@ -794,14 +749,14 @@ export class UsersListPage implements OnInit {
   /**
    * Activate user
    */
-  private activateUser(user: UserDisplayData): void {
+  private activateUser(user: UserViewModel): void {
     this.usersFacade.activateUser(user.id);
   }
 
   /**
    * Deactivate user
    */
-  private deactivateUser(user: UserDisplayData): void {
+  private deactivateUser(user: UserViewModel): void {
     this.usersFacade.deactivateUser(user.id);
   }
 
@@ -848,19 +803,19 @@ export class UsersListPage implements OnInit {
           this.usersFacade.deleteUser(context.userId);
           break;
         case 'bulk-activate':
-          context.users.forEach((user: UserDisplayData) => {
+          context.users.forEach((user: UserViewModel) => {
             this.usersFacade.activateUser(user.id);
           });
           this._selectedUsers.set([]);
           break;
         case 'bulk-deactivate':
-          context.users.forEach((user: UserDisplayData) => {
+          context.users.forEach((user: UserViewModel) => {
             this.usersFacade.deactivateUser(user.id);
           });
           this._selectedUsers.set([]);
           break;
         case 'bulk-delete':
-          context.users.forEach((user: UserDisplayData) => {
+          context.users.forEach((user: UserViewModel) => {
             this.usersFacade.deleteUser(user.id);
           });
           this._selectedUsers.set([]);
@@ -897,7 +852,7 @@ export class UsersListPage implements OnInit {
   /**
    * Get sort value for comparison
    */
-  private getSortValue(user: UserDisplayData, field: string): any {
+  private getSortValue(user: UserViewModel, field: string): any {
     switch (field) {
       case 'displayName':
         return user.displayName.toLowerCase();
@@ -906,7 +861,7 @@ export class UsersListPage implements OnInit {
       case 'username':
         return user.username.toLowerCase();
       case 'role':
-        return user.role.toLowerCase();
+        return user.role.name.toLowerCase();
       case 'createdAt':
         return new Date(user.createdAt || 0).getTime();
       case 'lastActivity':

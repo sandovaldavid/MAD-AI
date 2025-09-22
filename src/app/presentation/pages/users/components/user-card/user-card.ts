@@ -36,14 +36,15 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Imports
-import type { UserDisplayData, UserActionConfig } from '../../types';
+import type { UserActionConfig } from '../../types';
+import { UserViewModel } from '../../models/user-view.model';
 
 /**
  * User card action event data
  */
 export interface UserCardActionEvent {
   readonly action: 'view' | 'edit' | 'select';
-  readonly user: UserDisplayData;
+  readonly user: UserViewModel;
 }
 
 /**
@@ -69,7 +70,7 @@ export class UserCardComponent {
   /**
    * User data to display
    */
-  @Input({ required: true }) user!: UserDisplayData;
+  @Input({ required: true }) user!: UserViewModel;
 
   /**
    * Available actions for this user
@@ -130,12 +131,12 @@ export class UserCardComponent {
   /**
    * Emitted when the card is clicked
    */
-  @Output() cardClick = new EventEmitter<UserDisplayData>();
+  @Output() cardClick = new EventEmitter<UserViewModel>();
 
   /**
    * Emitted when the card selection changes
    */
-  @Output() selectionChange = new EventEmitter<{ user: UserDisplayData; selected: boolean }>();
+  @Output() selectionChange = new EventEmitter<{ user: UserViewModel; selected: boolean }>();
 
   // ============================================================================
   // Event Handlers
@@ -202,7 +203,7 @@ export class UserCardComponent {
       user: 'role-user',
       viewer: 'role-viewer',
     };
-    return roleClasses[this.user.role.toLowerCase()] || 'role-default';
+    return roleClasses[this.user.role.name.toLowerCase()] || 'role-default';
   }
 
   /**
