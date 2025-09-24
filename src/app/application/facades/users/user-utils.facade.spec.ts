@@ -200,10 +200,10 @@ describe('UserUtilsFacade', () => {
         spyOn(facade as any, 'emitEvent');
 
         // Act
-        const result = facade.selectUserById(1);
+  const result = facade.selectUserById(1);
 
-        // Assert
-        expect(result).toBe(true);
+  // Assert
+  expect(result).toEqual({ success: true, message: 'User selected', error: undefined, data: mockUser1 });
         expect(facade['_selectedUser']()).toBe(mockUser1);
         expect((facade as any).emitEvent).toHaveBeenCalledWith({
           type: 'bulk-operation-completed',
@@ -217,10 +217,10 @@ describe('UserUtilsFacade', () => {
         spyOn(facade as any, 'emitEvent');
 
         // Act
-        const result = facade.selectUserById(999);
+  const result = facade.selectUserById(999);
 
-        // Assert
-        expect(result).toBe(false);
+  // Assert
+  expect(result).toEqual({ success: false, message: 'User not found', error: undefined, data: null });
         expect(facade['_selectedUser']()).toBeNull();
         expect((facade as any).emitEvent).toHaveBeenCalledWith({
           type: 'bulk-operation-completed',
@@ -251,7 +251,7 @@ describe('UserUtilsFacade', () => {
         facade['_userError'].set('Test error message');
 
         // Act & Assert
-        expect(facade.hasError()).toBe(true);
+  expect(facade.hasError()).toEqual({ success: true, message: 'Error exists', error: 'Test error message' });
       });
 
       it('should return false when there is no error', () => {
@@ -259,7 +259,7 @@ describe('UserUtilsFacade', () => {
         facade['_userError'].set(null);
 
         // Act & Assert
-        expect(facade.hasError()).toBe(false);
+  expect(facade.hasError()).toEqual({ success: false, message: 'No error', error: undefined });
       });
     });
   });

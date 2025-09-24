@@ -135,28 +135,28 @@ describe('UserLookupFacade', () => {
   describe('getUserById', () => {
     it('should get user by ID successfully', async () => {
       // Arrange
-      mockGetUserByIdUC.execute.and.returnValue(Promise.resolve(mockUser));
+  mockGetUserByIdUC.execute.and.returnValue(Promise.resolve(mockUser));
 
       // Act
       const result = await facade.getUserById(1);
 
       // Assert
       expect(mockGetUserByIdUC.execute).toHaveBeenCalledWith({ userId: 1 });
-      expect(result).toEqual(mockUser);
+  expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
 
     it('should get user by ID with skip loading option', async () => {
       // Arrange
-      mockGetUserByIdUC.execute.and.returnValue(Promise.resolve(mockUser));
+  mockGetUserByIdUC.execute.and.returnValue(Promise.resolve(mockUser));
 
       // Act
       const result = await facade.getUserById(1, { skipLoading: true });
 
       // Assert
       expect(mockGetUserByIdUC.execute).toHaveBeenCalledWith({ userId: 1 });
-      expect(result).toEqual(mockUser);
+  expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
     });
 
@@ -199,28 +199,28 @@ describe('UserLookupFacade', () => {
   describe('getUserByEmail', () => {
     it('should get user by email successfully', async () => {
       // Arrange
-      mockGetUserByEmailUC.execute.and.returnValue(Promise.resolve(mockUser));
+  mockGetUserByEmailUC.execute.and.returnValue(Promise.resolve(mockUser));
 
       // Act
       const result = await facade.getUserByEmail('john.doe@example.com');
 
       // Assert
       expect(mockGetUserByEmailUC.execute).toHaveBeenCalledWith({ email: 'john.doe@example.com' });
-      expect(result).toEqual(mockUser);
+  expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
 
     it('should get user by email with skip loading option', async () => {
       // Arrange
-      mockGetUserByEmailUC.execute.and.returnValue(Promise.resolve(mockUser));
+  mockGetUserByEmailUC.execute.and.returnValue(Promise.resolve(mockUser));
 
       // Act
       const result = await facade.getUserByEmail('john.doe@example.com', { skipLoading: true });
 
       // Assert
       expect(mockGetUserByEmailUC.execute).toHaveBeenCalledWith({ email: 'john.doe@example.com' });
-      expect(result).toEqual(mockUser);
+  expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
     });
 
@@ -254,7 +254,7 @@ describe('UserLookupFacade', () => {
         username: 'johndoe',
         requesterId: 1, // Assuming current user ID from auth
       });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -271,7 +271,7 @@ describe('UserLookupFacade', () => {
         username: 'johndoe',
         requesterId: 1,
       });
-      expect(result).toEqual(mockUser);
+  expect(result).toEqual({ success: true, message: 'User found', error: undefined, data: mockUser });
       expect(facade.loading()).toBe(false);
     });
 
