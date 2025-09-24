@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleStateFacade } from './role-state.facade';
 import { ROLE_EXPORT_SERVICE_PORT } from '@di/tokens';
 import { Role } from '@domain/entities/role.entity';
 import type { RoleExportConfig } from '@application/types/role-export.types';
 import type { FacadeOpts } from './role.types';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Export facade for roles
@@ -26,7 +26,6 @@ import type { FacadeOpts } from './role.types';
 export class RoleExportFacade {
   private readonly roleExportService = inject(ROLE_EXPORT_SERVICE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly notifications = inject(NotificationsFacade);
 
   // Dependencies on other role facades
   private readonly roleState = inject(RoleStateFacade);
@@ -37,9 +36,9 @@ export class RoleExportFacade {
    * Execute operation with standardized error handling
    */
   private async executeOperation<T>(
-    operation: () => Promise<T>,
+    operation: () => Promise<T | Message>,
     opts: FacadeOpts = {}
-  ): Promise<T> {
+  ): Promise<T | Message> {
     try {
       if (!opts.skipLoading) {
         this.roleState.setLoading(true);
@@ -49,12 +48,11 @@ export class RoleExportFacade {
     } catch (error) {
       const applicationError = this.errorTransformer.transform(error);
       this.roleState.setError(applicationError.message);
-
-      if (!opts.silent) {
-        this.notifications.notificationError(applicationError.message);
-      }
-
-      throw applicationError;
+      return {
+        success: false,
+        error: `Error: ${applicationError.message}`,
+        message: 'Ocurrió un error al exportar los roles.',
+      };
     } finally {
       if (!opts.skipLoading) {
         this.roleState.setLoading(false);
@@ -69,17 +67,21 @@ export class RoleExportFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const selectedRoleSummaries = this.roleState
         .roles()
         .filter((roleModel) => roleIds.includes(roleModel.id));
 
       if (selectedRoleSummaries.length === 0) {
-        throw new Error('No roles selected for export');
+        return {
+          success: false,
+          error: 'No se seleccionaron roles para exportar.',
+          message: 'Debe seleccionar al menos un rol para exportar.',
+        };
       }
 
-      // Convert RoleSummary to Domain Role entities for export service
+      // Convierte RoleSummary a entidades de dominio
       const domainRoles = selectedRoleSummaries.map((summary) =>
         Role.create({
           id: summary.id,
@@ -103,14 +105,10 @@ export class RoleExportFacade {
 
       await this.roleExportService.exportRoles(domainRoles, exportOptions);
 
-      if (!opts.silent) {
-        this.notifications.success(
-          'Export completed',
-          `Successfully exported ${
-            selectedRoleSummaries.length
-          } roles as ${(exportOptions.format || 'CSV').toUpperCase()}.`
-        );
-      }
+      return {
+        success: true,
+        message: `Exportación completada: ${selectedRoleSummaries.length} roles exportados como ${(exportOptions.format || 'CSV').toUpperCase()}.`,
+      };
     }, opts);
   }
 
@@ -120,12 +118,16 @@ export class RoleExportFacade {
   async exportAllVisibleRoles(
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const visibleRoles = this.roleState.roles();
 
       if (visibleRoles.length === 0) {
-        throw new Error('No roles available for export');
+        return {
+          success: false,
+          error: 'No hay roles disponibles para exportar.',
+          message: 'No se encontraron roles visibles para exportar.',
+        };
       }
 
       const roleIds = visibleRoles.map((role) => role.id);
@@ -140,12 +142,16 @@ export class RoleExportFacade {
   async exportActiveRoles(
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const activeRoles = this.roleState.roles().filter((role) => role.isActive);
 
       if (activeRoles.length === 0) {
-        throw new Error('No active roles available for export');
+        return {
+          success: false,
+          error: 'No hay roles activos disponibles para exportar.',
+          message: 'No se encontraron roles activos para exportar.',
+        };
       }
 
       const roleIds = activeRoles.map((role) => role.id);
@@ -161,14 +167,18 @@ export class RoleExportFacade {
     accessLevel: number,
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const filteredRoles = this.roleState
         .roles()
         .filter((role) => role.accessLevel === accessLevel);
 
       if (filteredRoles.length === 0) {
-        throw new Error(`No roles found with access level ${accessLevel}`);
+        return {
+          success: false,
+          error: `No se encontraron roles con nivel de acceso ${accessLevel}.`,
+          message: 'No se encontraron roles para exportar con el nivel de acceso especificado.',
+        };
       }
 
       const roleIds = filteredRoles.map((role) => role.id);
@@ -180,14 +190,14 @@ export class RoleExportFacade {
   /**
    * Quick CSV export with default options
    */
-  async quickCSVExport(roleIds: number[], opts: FacadeOpts = {}): Promise<void> {
+  async quickCSVExport(roleIds: number[], opts: FacadeOpts = {}): Promise<Message> {
     return this.exportRoles(roleIds, { format: 'csv' }, opts);
   }
 
   /**
    * Quick JSON export with default options
    */
-  async quickJSONExport(roleIds: number[], opts: FacadeOpts = {}): Promise<void> {
+  async quickJSONExport(roleIds: number[], opts: FacadeOpts = {}): Promise<Message> {
     return this.exportRoles(roleIds, { format: 'json' }, opts);
   }
 
@@ -198,7 +208,7 @@ export class RoleExportFacade {
     roleIds: number[],
     format: 'csv' | 'json' | 'pdf' = 'pdf',
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.exportRoles(
       roleIds,
       {
@@ -220,7 +230,7 @@ export class RoleExportFacade {
     roleIds: number[],
     format: 'csv' | 'json' = 'csv',
     opts: FacadeOpts = {}
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.exportRoles(
       roleIds,
       {
@@ -242,17 +252,21 @@ export class RoleExportFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<any[]> {
+  ): Promise<any[] | Message> {
     return this.executeOperation(async () => {
       const selectedRoleSummaries = this.roleState
         .roles()
         .filter((roleModel) => roleIds.includes(roleModel.id));
 
       if (selectedRoleSummaries.length === 0) {
-        return [];
+        return {
+          success: false,
+          error: 'No se seleccionaron roles para previsualizar.',
+          message: 'Debe seleccionar al menos un rol para previsualizar.',
+        };
       }
 
-      // Create preview data based on export options
+      // Crear datos de previsualización según las opciones
       const exportOptions: RoleExportConfig = {
         includeId: true,
         includeAccessLevel: true,
@@ -268,7 +282,7 @@ export class RoleExportFacade {
         if (exportOptions.includeId) data.id = role.id;
         data.name = role.name;
         if (exportOptions.includeAccessLevel) data.accessLevel = role.accessLevel;
-        if (exportOptions.includeStatus) data.status = role.isActive ? 'Active' : 'Inactive';
+        if (exportOptions.includeStatus) data.status = role.isActive ? 'Activo' : 'Inactivo';
         if (exportOptions.includeDescription) data.description = role.description || '';
         if (exportOptions.includeUserCount) data.userCount = role.userCount || 0;
 
