@@ -4,7 +4,7 @@ import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { of, throwError } from 'rxjs';
 import { authInterceptor } from './auth.interceptor';
-import { TOKEN_STORE_PORT, SECURITY_EVENT_REPOSITORY } from '@di/tokens';
+import { TOKEN_STORE_PORT } from '@di/tokens';
 import { TokenSnapshotContract } from '@domain/repositories/session/token-store.contract';
 import { SecurityEvent } from '@domain/repositories/system/security-event.repository';
 import { HttpErrorTransformer } from '@infrastructure/errors/http-error-transformer';
@@ -39,7 +39,6 @@ describe('AuthInterceptor', () => {
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
         { provide: TOKEN_STORE_PORT, useValue: mockTokenStore },
-        { provide: SECURITY_EVENT_REPOSITORY, useValue: mockSecurityLogger },
         { provide: HttpErrorTransformer, useValue: mockErrorTransformer },
       ],
     });
