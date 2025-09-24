@@ -18,9 +18,6 @@ import type {
   ClearNotificationsRequest,
   SubscribeToNotificationsRequest,
   NotifyResult,
-  DismissNotificationResult,
-  UpdateNotificationResult,
-  ClearNotificationsResult,
   GetNotificationsResult,
   GetNotificationsRequest,
 } from '@application/types/notifications.types';
@@ -28,6 +25,7 @@ import type {
 // Domain entities
 import { Notification } from '@domain/entities/notification.entity';
 import { NotificationType } from '@domain/enums/notification-type.enum';
+import type { Message } from '@application/types/message.type';
 
 // Shared facade types
 import type { FacadeOpts } from '@application/types/facade-opts';
@@ -181,7 +179,7 @@ export class NotificationsFacade {
    * @param opts - Optional facade configuration
    * @returns Promise resolving to the notification creation result
    */
-  async notify(request: NotifyRequest, opts?: FacadeOpts): Promise<NotifyResult> {
+  async notify(request: NotifyRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
@@ -208,11 +206,20 @@ export class NotificationsFacade {
       // Emit event for real-time coordination
       this.emitEvent(NotificationEventType.NOTIFICATION_CREATED, notification);
 
-      return notification;
+      return {
+        success: true,
+        message: 'Notificación creada exitosamente.',
+        notification,
+      };
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create notification';
+      const errorMessage =
+        error instanceof Error ? error.message : 'No se pudo crear la notificación.';
       this._notificationError.set(errorMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage,
+        message: 'Error al crear la notificación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.endLoading();
     }
@@ -225,10 +232,7 @@ export class NotificationsFacade {
    * @param opts - Optional facade configuration
    * @returns Promise resolving to the dismissal result
    */
-  async dismiss(
-    request: DismissNotificationRequest,
-    opts?: FacadeOpts
-  ): Promise<DismissNotificationResult> {
+  async dismiss(request: DismissNotificationRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
@@ -251,14 +255,19 @@ export class NotificationsFacade {
       this.emitEvent(NotificationEventType.NOTIFICATION_DISMISSED, dismissedNotification);
 
       return {
-        notificationId: request.notificationId,
         success: true,
+        message: 'Notificación descartada exitosamente.',
+        notificationId: request.notificationId,
       };
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to dismiss notification';
+        error instanceof Error ? error.message : 'No se pudo descartar la notificación.';
       this._notificationError.set(errorMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage,
+        message: 'Error al descartar la notificación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.endLoading();
     }
@@ -285,10 +294,7 @@ export class NotificationsFacade {
    * });
    * ```
    */
-  async update(
-    request: UpdateNotificationRequest,
-    opts?: FacadeOpts
-  ): Promise<UpdateNotificationResult> {
+  async update(request: UpdateNotificationRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
@@ -309,13 +315,19 @@ export class NotificationsFacade {
 
       return {
         success: true,
+        message: 'Notificación actualizada exitosamente.',
         notificationId: request.notificationId,
         updatedFields: Object.keys(request.updateData || {}),
       };
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update notification';
+      const errorMessage =
+        error instanceof Error ? error.message : 'No se pudo actualizar la notificación.';
       this._notificationError.set(errorMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage,
+        message: 'Error al actualizar la notificación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.endLoading();
     }
@@ -338,10 +350,7 @@ export class NotificationsFacade {
    * await notificationsFacade.clear({ requesterId: userId });
    * ```
    */
-  async clear(
-    request: ClearNotificationsRequest = {},
-    opts?: FacadeOpts
-  ): Promise<ClearNotificationsResult> {
+  async clear(request: ClearNotificationsRequest = {}, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) this.startLoading();
     this._notificationError.set(null);
 
@@ -364,12 +373,18 @@ export class NotificationsFacade {
 
       return {
         success: true,
+        message: 'Notificaciones eliminadas exitosamente.',
         clearedCount,
       };
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to clear notifications';
+      const errorMessage =
+        error instanceof Error ? error.message : 'No se pudieron eliminar las notificaciones.';
       this._notificationError.set(errorMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage,
+        message: 'Error al eliminar las notificaciones.',
+      };
     } finally {
       if (!opts?.skipLoading) this.endLoading();
     }
@@ -500,7 +515,7 @@ export class NotificationsFacade {
    * @application NotificationsFacade
    */
   async success(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
-    return this.notify(
+    const result = await this.notify(
       {
         type: NotificationType.SUCCESS,
         message,
@@ -508,6 +523,7 @@ export class NotificationsFacade {
       },
       opts
     );
+    return result['notification'];
   }
 
   /**
@@ -518,7 +534,7 @@ export class NotificationsFacade {
     description?: string,
     opts?: FacadeOpts
   ): Promise<NotifyResult> {
-    return this.notify(
+    const result = await this.notify(
       {
         type: NotificationType.ERROR,
         message,
@@ -526,13 +542,14 @@ export class NotificationsFacade {
       },
       opts
     );
+    return result['notification'];
   }
 
   /**
    * Convenience method to show warning notification
    */
   async warning(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
-    return this.notify(
+    const result = await this.notify(
       {
         type: NotificationType.WARNING,
         message,
@@ -540,13 +557,14 @@ export class NotificationsFacade {
       },
       opts
     );
+    return result['notification'];
   }
 
   /**
    * Convenience method to show info notification
    */
   async info(message: string, description?: string, opts?: FacadeOpts): Promise<NotifyResult> {
-    return this.notify(
+    const result = await this.notify(
       {
         type: NotificationType.INFO,
         message,
@@ -554,6 +572,7 @@ export class NotificationsFacade {
       },
       opts
     );
+    return result['notification'];
   }
 
   /**
