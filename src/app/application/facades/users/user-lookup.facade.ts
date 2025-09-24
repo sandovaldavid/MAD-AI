@@ -13,11 +13,9 @@
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 
-// Domain Imports
-import type { User } from '@domain/entities/user.entity';
-
 // Application Layer Imports
 import type { FacadeOpts } from '@application/types/facade-opts';
+import type { Message } from '@application/types/message.type';
 import type { UserLookupCriteria } from '@application/types/users.types';
 
 /**
@@ -82,7 +80,7 @@ export class UserLookupFacade extends BaseUserFacade {
    * const user = await userLookupFacade.getUserById(123, { skipLoading: true });
    * ```
    */
-  async getUserById(userId: number, opts?: FacadeOpts): Promise<User> {
+  async getUserById(userId: number, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -91,12 +89,24 @@ export class UserLookupFacade extends BaseUserFacade {
     try {
       const user = await this.getUserByIdUC.execute({ userId });
       if (!user) {
-        throw new Error(`User with ID ${userId} not found`);
+        return {
+          success: false,
+          message: `Usuario con ID ${userId} no encontrado.`,
+          error: `Usuario con ID ${userId} no encontrado.`,
+        };
       }
-      return user;
+      return {
+        success: true,
+        message: `Usuario encontrado correctamente.`,
+        user,
+      };
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        message: 'Error al buscar usuario por ID.',
+        error: String(error),
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -125,7 +135,7 @@ export class UserLookupFacade extends BaseUserFacade {
    * const user = await userLookupFacade.getUserByEmail('user@example.com', { skipLoading: true });
    * ```
    */
-  async getUserByEmail(email: string, opts?: FacadeOpts): Promise<User> {
+  async getUserByEmail(email: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -134,12 +144,24 @@ export class UserLookupFacade extends BaseUserFacade {
     try {
       const user = await this.getUserByEmailUC.execute({ email });
       if (!user) {
-        throw new Error(`User with email ${email} not found`);
+        return {
+          success: false,
+          message: `Usuario con correo ${email} no encontrado.`,
+          error: `Usuario con correo ${email} no encontrado.`,
+        };
       }
-      return user;
+      return {
+        success: true,
+        message: `Usuario encontrado correctamente.`,
+        user,
+      };
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        message: 'Error al buscar usuario por correo.',
+        error: String(error),
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -168,7 +190,7 @@ export class UserLookupFacade extends BaseUserFacade {
    * const user = await userLookupFacade.getUserByUsername('jane_smith', { skipLoading: true });
    * ```
    */
-  async getUserByUsername(username: string, opts?: FacadeOpts): Promise<User> {
+  async getUserByUsername(username: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -180,12 +202,24 @@ export class UserLookupFacade extends BaseUserFacade {
         requesterId: this.getCurrentUserId(),
       });
       if (!user) {
-        throw new Error(`User with username ${username} not found`);
+        return {
+          success: false,
+          message: `Usuario con nombre de usuario ${username} no encontrado.`,
+          error: `Usuario con nombre de usuario ${username} no encontrado.`,
+        };
       }
-      return user;
+      return {
+        success: true,
+        message: `Usuario encontrado correctamente.`,
+        user,
+      };
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        message: 'Error al buscar usuario por nombre de usuario.',
+        error: String(error),
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -228,7 +262,7 @@ export class UserLookupFacade extends BaseUserFacade {
    * });
    * ```
    */
-  async findUser(criteria: UserLookupCriteria, opts?: FacadeOpts): Promise<User> {
+  async findUser(criteria: UserLookupCriteria, opts?: FacadeOpts): Promise<Message> {
     if (criteria.id) {
       return this.getUserById(criteria.id, opts);
     } else if (criteria.email) {
@@ -236,9 +270,12 @@ export class UserLookupFacade extends BaseUserFacade {
     } else if (criteria.username) {
       return this.getUserByUsername(criteria.username, opts);
     } else {
-      const error = new Error('At least one lookup criterion must be provided');
-      this.handleError(error);
-      throw error;
+      this.handleError('Debe proporcionar al menos un criterio de búsqueda.');
+      return {
+        success: false,
+        message: 'Debe proporcionar al menos un criterio de búsqueda.',
+        error: 'Criterio de búsqueda faltante.',
+      };
     }
   }
 }
