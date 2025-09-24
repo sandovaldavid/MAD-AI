@@ -1,11 +1,11 @@
 import { Injectable, inject } from '@angular/core';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleStateFacade } from './role-state.facade';
 import { LIST_ROLES_USECASE_PORT } from '@di/tokens';
+import { RoleApplicationMapper } from '@application/mappers/role.mapper';
 import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 import type { ListRolesParams, FacadeOpts } from './role.types';
-import { RoleApplicationMapper } from '@application/mappers/role.mapper';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Search and filtering facade for roles
@@ -24,7 +24,6 @@ import { RoleApplicationMapper } from '@application/mappers/role.mapper';
 @Injectable({ providedIn: 'root' })
 export class RoleSearchFacade {
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly notifications = inject(NotificationsFacade);
 
   // Dependencies on other role facades
   private readonly roleState = inject(RoleStateFacade);
@@ -36,9 +35,9 @@ export class RoleSearchFacade {
    * Execute operation with standardized error handling
    */
   private async executeOperation<T>(
-    operation: () => Promise<T>,
+    operation: () => Promise<T | Message>,
     opts: FacadeOpts = {}
-  ): Promise<T> {
+  ): Promise<T | Message> {
     try {
       if (!opts.skipLoading) {
         this.roleState.setLoading(true);
@@ -48,12 +47,11 @@ export class RoleSearchFacade {
     } catch (error) {
       const applicationError = this.errorTransformer.transform(error);
       this.roleState.setError(applicationError.message);
-
-      if (!opts.silent) {
-        this.notifications.notificationError(applicationError.message);
-      }
-
-      throw applicationError;
+      return {
+        success: false,
+        error: `Error: ${applicationError.message}`,
+        message: 'Ocurrió un error al buscar roles.',
+      };
     } finally {
       if (!opts.skipLoading) {
         this.roleState.setLoading(false);
@@ -64,13 +62,16 @@ export class RoleSearchFacade {
   /**
    * Search roles with text query and/or active filter
    */
-  async searchRoles(searchParams: ListRolesParams, opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async searchRoles(
+    searchParams: ListRolesParams,
+    opts: FacadeOpts = {}
+  ): Promise<RoleSummary[] | Message> {
     return this.executeOperation(async () => {
-      // Load all roles first
+      // Cargar todos los roles primero
       const roles = await this.listRolesUC.execute();
       const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
 
-      // Apply search and filter logic
+      // Aplicar lógica de búsqueda y filtro
       const filteredRoles = allRoles.filter((role) => {
         const matchesSearch = searchParams.search
           ? role.name.toLowerCase().includes(searchParams.search.toLowerCase()) ||
@@ -84,27 +85,15 @@ export class RoleSearchFacade {
         return matchesSearch && matchesActive;
       });
 
-      // Update state with search results
+      // Actualizar estado con resultados de búsqueda
       this.roleState.setRoles(filteredRoles);
 
-      if (!opts.silent) {
-        const searchTerm = searchParams.search;
-        const activeFilter = searchParams.active;
-        let message = `Found ${filteredRoles.length} role(s)`;
-
-        if (searchTerm && activeFilter !== undefined) {
-          message += ` matching "${searchTerm}" with ${activeFilter ? 'active' : 'inactive'} status`;
-        } else if (searchTerm) {
-          message += ` matching "${searchTerm}"`;
-        } else if (activeFilter !== undefined) {
-          message += ` with ${activeFilter ? 'active' : 'inactive'} status`;
-        }
-
-        if (filteredRoles.length === 0) {
-          this.notifications.warning('No roles found matching your search criteria');
-        } else {
-          this.notifications.success(message);
-        }
+      if (filteredRoles.length === 0) {
+        return {
+          success: false,
+          error: 'No se encontraron roles que coincidan con los criterios de búsqueda.',
+          message: 'No se encontraron roles para los filtros aplicados.',
+        };
       }
 
       return filteredRoles;
@@ -114,42 +103,49 @@ export class RoleSearchFacade {
   /**
    * Quick search by name only
    */
-  async searchByName(name: string, opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async searchByName(name: string, opts: FacadeOpts = {}): Promise<RoleSummary[] | Message> {
     return this.searchRoles({ search: name }, opts);
   }
 
   /**
    * Filter by active status only
    */
-  async filterByActiveStatus(active: boolean, opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async filterByActiveStatus(
+    active: boolean,
+    opts: FacadeOpts = {}
+  ): Promise<RoleSummary[] | Message> {
     return this.searchRoles({ active }, opts);
   }
 
   /**
    * Get only active roles
    */
-  async getActiveRoles(opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async getActiveRoles(opts: FacadeOpts = {}): Promise<RoleSummary[] | Message> {
     return this.filterByActiveStatus(true, opts);
   }
 
   /**
    * Get only inactive roles
    */
-  async getInactiveRoles(opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async getInactiveRoles(opts: FacadeOpts = {}): Promise<RoleSummary[] | Message> {
     return this.filterByActiveStatus(false, opts);
   }
 
   /**
    * Clear all search filters and show all roles
    */
-  async clearSearch(opts: FacadeOpts = {}): Promise<RoleSummary[]> {
+  async clearSearch(opts: FacadeOpts = {}): Promise<RoleSummary[] | Message> {
     return this.executeOperation(async () => {
-      // Load all roles without filters
+      // Cargar todos los roles sin filtros
       const roles = await this.listRolesUC.execute();
       const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
 
-      if (!opts.silent) {
-        this.notifications.success('Search cleared. Showing all roles');
+      if (allRoles.length === 0) {
+        return {
+          success: false,
+          error: 'No hay roles disponibles para mostrar.',
+          message: 'No se encontraron roles para mostrar.',
+        };
       }
 
       return allRoles;
@@ -159,17 +155,21 @@ export class RoleSearchFacade {
   /**
    * Find exact role by name
    */
-  async findRoleByName(name: string, opts: FacadeOpts = {}): Promise<RoleSummary | null> {
+  async findRoleByName(name: string, opts: FacadeOpts = {}): Promise<RoleSummary | Message> {
     return this.executeOperation(async () => {
       const roles = await this.listRolesUC.execute();
       const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
       const role = allRoles.find((r) => r.name.toLowerCase() === name.toLowerCase());
 
-      if (!role && !opts.silent) {
-        this.notifications.warning(`No role found with name "${name}"`);
+      if (!role) {
+        return {
+          success: false,
+          error: `No se encontró un rol con el nombre "${name}".`,
+          message: 'No se encontró el rol solicitado.',
+        };
       }
 
-      return role || null;
+      return role;
     }, opts);
   }
 
@@ -180,7 +180,7 @@ export class RoleSearchFacade {
     partialName: string,
     maxSuggestions = 5,
     opts: FacadeOpts = {}
-  ): Promise<string[]> {
+  ): Promise<string[] | Message> {
     return this.executeOperation(async () => {
       const roles = await this.listRolesUC.execute();
       const allRoles = RoleApplicationMapper.toRoleSummaries(roles);
@@ -188,6 +188,13 @@ export class RoleSearchFacade {
         .filter((role) => role.name.toLowerCase().includes(partialName.toLowerCase()))
         .map((role) => role.name)
         .slice(0, maxSuggestions);
+      if (suggestions.length === 0) {
+        return {
+          success: false,
+          error: 'No se encontraron sugerencias para la búsqueda.',
+          message: 'No hay sugerencias disponibles.',
+        };
+      }
       return suggestions;
     }, opts);
   }
