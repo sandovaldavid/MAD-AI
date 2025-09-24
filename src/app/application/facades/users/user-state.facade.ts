@@ -16,6 +16,7 @@ import { BaseUserFacade } from './base-user.facade';
 
 // Application Layer Imports
 import type { FacadeOpts } from '@application/types/facade-opts';
+import type { Message } from '@application/types/message.type';
 
 /**
  * User State Management Facade
@@ -81,7 +82,7 @@ export class UserStateFacade extends BaseUserFacade {
    * await userStateFacade.activateUser(123, { skipLoading: true });
    * ```
    */
-  async activateUser(userId: number, opts?: FacadeOpts): Promise<void> {
+  async activateUser(userId: number, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -89,30 +90,30 @@ export class UserStateFacade extends BaseUserFacade {
 
     try {
       await this.activateUserUC.execute({ userId });
-
-      // Get the updated user to emit in event (since activate UC returns void)
       const updatedUser = await this.getUserByIdUC.execute({ userId });
-
       if (!updatedUser) {
-        throw new Error(`User with ID ${userId} not found after activation`);
+        return {
+          success: false,
+          message: `Usuario con ID ${userId} no encontrado después de la activación.`,
+        };
       }
-
-      // Update local state
       this._users.update((users) => users.map((u) => (u.id === userId ? updatedUser : u)));
-
-      // Update selected user if it's the one being activated
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(updatedUser);
       }
-
-      // Emit event for cross-facade coordination
-      this.emitEvent({
-        type: 'user-activated',
-        user: updatedUser,
-      });
+      this.emitEvent({ type: 'user-activated', user: updatedUser });
+      return {
+        success: true,
+        message: 'Usuario activado exitosamente.',
+        data: updatedUser,
+      };
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        message: 'Error al activar el usuario.',
+        error: String(error),
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -143,7 +144,7 @@ export class UserStateFacade extends BaseUserFacade {
    * await userStateFacade.deactivateUser(123, { skipLoading: true });
    * ```
    */
-  async deactivateUser(userId: number, opts?: FacadeOpts): Promise<void> {
+  async deactivateUser(userId: number, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -151,30 +152,30 @@ export class UserStateFacade extends BaseUserFacade {
 
     try {
       await this.deactivateUserUC.execute({ userId });
-
-      // Get the updated user to emit in event (since deactivate UC returns void)
       const updatedUser = await this.getUserByIdUC.execute({ userId });
-
       if (!updatedUser) {
-        throw new Error(`User with ID ${userId} not found after deactivation`);
+        return {
+          success: false,
+          message: `Usuario con ID ${userId} no encontrado después de la desactivación.`,
+        };
       }
-
-      // Update local state
       this._users.update((users) => users.map((u) => (u.id === userId ? updatedUser : u)));
-
-      // Update selected user if it's the one being deactivated
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(updatedUser);
       }
-
-      // Emit event for cross-facade coordination
-      this.emitEvent({
-        type: 'user-deactivated',
-        user: updatedUser,
-      });
+      this.emitEvent({ type: 'user-deactivated', user: updatedUser });
+      return {
+        success: true,
+        message: 'Usuario desactivado exitosamente.',
+        data: updatedUser,
+      };
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        message: 'Error al desactivar el usuario.',
+        error: String(error),
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -204,30 +205,23 @@ export class UserStateFacade extends BaseUserFacade {
    * await userStateFacade.toggleUserStatus(123, { skipLoading: true });
    * ```
    */
-  async toggleUserStatus(userId: number, opts?: FacadeOpts): Promise<void> {
-    // First, get the current user to determine their status
+  async toggleUserStatus(userId: number, opts?: FacadeOpts): Promise<Message> {
     const currentUser = this._users().find((u) => u.id === userId);
-
-    if (!currentUser) {
-      // If user is not in local state, fetch from server
-      const user = await this.getUserByIdUC.execute({ userId });
-
+    let user = currentUser;
+    if (!user) {
+      const fetchedUser = await this.getUserByIdUC.execute({ userId });
+      user = fetchedUser === null ? undefined : fetchedUser;
       if (!user) {
-        throw new Error(`User with ID ${userId} not found`);
+        return {
+          success: false,
+          message: `Usuario con ID ${userId} no encontrado.`,
+        };
       }
-
-      if (user.active) {
-        await this.deactivateUser(userId, opts);
-      } else {
-        await this.activateUser(userId, opts);
-      }
+    }
+    if (user.active) {
+      return await this.deactivateUser(userId, opts);
     } else {
-      // Use local state to determine action
-      if (currentUser.active) {
-        await this.deactivateUser(userId, opts);
-      } else {
-        await this.activateUser(userId, opts);
-      }
+      return await this.activateUser(userId, opts);
     }
   }
 
@@ -250,9 +244,28 @@ export class UserStateFacade extends BaseUserFacade {
    * await userStateFacade.batchActivateUsers([123, 456, 789]);
    * ```
    */
-  async batchActivateUsers(userIds: number[], opts?: FacadeOpts): Promise<void> {
-    for (const userId of userIds) {
-      await this.activateUser(userId, { ...opts, skipLoading: true });
+  async batchActivateUsers(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    try {
+      for (const userId of userIds) {
+        const result = await this.activateUser(userId, { ...opts, skipLoading: true });
+        if (!result.success) {
+          return {
+            success: false,
+            message: `Error al activar el usuario con ID ${userId}.`,
+            error: result.error ? String(result.error) : undefined,
+          };
+        }
+      }
+      return {
+        success: true,
+        message: 'Usuarios activados exitosamente.',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error al activar los usuarios.',
+        error: String(error),
+      };
     }
   }
 
@@ -275,9 +288,28 @@ export class UserStateFacade extends BaseUserFacade {
    * await userStateFacade.batchDeactivateUsers([123, 456, 789]);
    * ```
    */
-  async batchDeactivateUsers(userIds: number[], opts?: FacadeOpts): Promise<void> {
-    for (const userId of userIds) {
-      await this.deactivateUser(userId, { ...opts, skipLoading: true });
+  async batchDeactivateUsers(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    try {
+      for (const userId of userIds) {
+        const result = await this.deactivateUser(userId, { ...opts, skipLoading: true });
+        if (!result.success) {
+          return {
+            success: false,
+            message: `Error al desactivar el usuario con ID ${userId}.`,
+            error: result.error ? String(result.error) : undefined,
+          };
+        }
+      }
+      return {
+        success: true,
+        message: 'Usuarios desactivados exitosamente.',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error al desactivar los usuarios.',
+        error: String(error),
+      };
     }
   }
 }
