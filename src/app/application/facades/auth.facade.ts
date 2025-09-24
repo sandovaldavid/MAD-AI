@@ -41,6 +41,7 @@ import { ApplicationErrorTransformer } from '../errors/application-error.transfo
 import { LOGGER_PORT } from '@di/tokens';
 import type { Logger } from '@core/interfaces/logger.interface';
 import type { NavSection } from '@presentation/navigation/types';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Authentication Facade - Clean Orchestrator Following MAD-AI Patterns
@@ -272,7 +273,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async login(request: LoginRequest, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async login(request: LoginRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -291,7 +292,7 @@ export class AuthFacade {
 
       return {
         success: true,
-        message: `Hello ${session.user.firstName}, you've successfully logged in.`
+        message: `Hola ${session.user.firstName}, has iniciado sesión exitosamente.`,
       };
     } catch (error: unknown) {
       this.logger.error('Login failed', {
@@ -309,7 +310,8 @@ export class AuthFacade {
       this._user.set(null);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al iniciar sesión.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -329,7 +331,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async register(request: RegisterRequest, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async register(request: RegisterRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -339,14 +341,15 @@ export class AuthFacade {
       await this.registerUC.execute(request);
       return {
         success: true,
-        message: 'Please check your email to confirm your account.'
+        message: 'Por favor revisa tu correo electrónico para confirmar tu cuenta.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al registrar usuario.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -366,7 +369,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -379,7 +382,7 @@ export class AuthFacade {
       this._authError.set(null);
       return {
         success: true,
-        message: 'You have been safely logged out of your account.'
+        message: 'Has cerrado sesión exitosamente.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
@@ -388,7 +391,8 @@ export class AuthFacade {
       this._user.set(null);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al cerrar sesión.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -566,7 +570,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async confirmEmail(token: string, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async confirmEmail(token: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -577,14 +581,15 @@ export class AuthFacade {
       await this.refreshProfile({ skipLoading: true });
       return {
         success: true,
-        message: 'Your email address has been successfully confirmed.'
+        message: 'Tu correo electrónico ha sido confirmado exitosamente.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al confirmar el correo electrónico.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -604,7 +609,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -614,14 +619,16 @@ export class AuthFacade {
       await this.reqResetUC.execute({ email });
       return {
         success: true,
-        message: 'Please check your email for password reset instructions.'
+        message:
+          'Por favor revisa tu correo electrónico para instrucciones de restablecimiento de contraseña.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al solicitar el restablecimiento de contraseña.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -641,7 +648,10 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async confirmPasswordReset(data: PasswordResetConfirmRequest, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async confirmPasswordReset(
+    data: PasswordResetConfirmRequest,
+    opts?: FacadeOpts
+  ): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -651,14 +661,16 @@ export class AuthFacade {
       await this.confirmResetUC.execute(data);
       return {
         success: true,
-        message: 'Your password has been updated. Please log in with your new password.'
+        message:
+          'Tu contraseña ha sido actualizada. Por favor inicia sesión con tu nueva contraseña.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la contraseña.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -682,7 +694,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async updateProfile(updateData: UpdateUserPatchContract, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async updateProfile(updateData: UpdateUserPatchContract, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -697,14 +709,15 @@ export class AuthFacade {
       this._user.set(updatedUser);
       return {
         success: true,
-        message: 'Your profile information has been successfully updated.'
+        message: 'Tu información de perfil ha sido actualizada exitosamente.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la información de perfil.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -724,7 +737,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async changePassword(passwordData: ChangePasswordContract, opts?: FacadeOpts): Promise<{ success: boolean; message?: string; error?: string }> {
+  async changePassword(passwordData: ChangePasswordContract, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -734,14 +747,15 @@ export class AuthFacade {
       await this.changePasswordUC.execute(passwordData);
       return {
         success: true,
-        message: 'Your password has been successfully updated.'
+        message: 'Tu contraseña ha sido actualizada exitosamente.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la contraseña.',
       };
     } finally {
       if (!opts?.skipLoading) {
@@ -764,7 +778,7 @@ export class AuthFacade {
   async updateNotificationPreferences(
     preferences: UserNotificationPreferences,
     opts?: FacadeOpts
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  ): Promise<Message> {
     console.log('[AuthFacade] updateNotificationPreferences called with:', preferences);
 
     if (!opts?.skipLoading) {
@@ -781,14 +795,15 @@ export class AuthFacade {
       this._user.set(updatedUser);
       return {
         success: true,
-        message: 'Your notification preferences have been successfully updated.'
+        message: 'Tus preferencias de notificación han sido actualizadas exitosamente.',
       };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
       return {
         success: false,
-        error: errorMessage.userMessage
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar las preferencias de notificación.',
       };
     } finally {
       if (!opts?.skipLoading) {
