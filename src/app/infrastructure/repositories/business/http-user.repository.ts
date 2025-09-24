@@ -451,17 +451,17 @@ export class HttpUserRepository implements UserRepository {
   /**
    * Deletes a user account.
    *
-   * @description Removes a user account from the system. This operation
-   * should be used with caution as it may be irreversible depending on
-   * the backend implementation (hard vs soft delete).
+   * @description Removes a user account from the system through deactivation.  
+   * This operation performs a logical deletion by deactivating the user account
+   * using the DEACTIVATE endpoint with DELETE method.
    *
    * @param id - ID of user to delete
    * @returns Promise that resolves when deletion is complete
    *
    * @throws {Error} When user is not found or API request fails
    *
-   * @apiEndpoint DELETE /api/v1/users/{id}/
-   * @apiResponse void (204 No Content)
+   * @apiEndpoint DELETE /api/v1/users/{id}/deactivate/
+   * @apiResponse DeactivateUserResponseDTO with user status
    *
    * @example User Deletion
    * ```typescript
@@ -473,12 +473,14 @@ export class HttpUserRepository implements UserRepository {
    * }
    * ```
    *
-   * @warning This operation may be irreversible. Consider implementing
-   * soft deletion or requiring additional confirmation in the UI.
+   * @note This operation deactivates the user account rather than physically
+   * deleting the record from the database.
    */
   async delete(id: number): Promise<void> {
     try {
-      await firstValueFrom(this.userClient.delete(id));
+      // Use deactivate endpoint with DELETE method for user deletion
+      const result = await firstValueFrom(this.userClient.delete(id));
+      console.log('[HttpUserRepository] User deleted (deactivated):', result);
     } catch (httpError: unknown) {
       throw this.errorTransformer.transformWithDefaults(httpError, 'DELETE_USER', 'DELETE_USER');
     }

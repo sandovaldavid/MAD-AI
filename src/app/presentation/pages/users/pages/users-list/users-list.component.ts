@@ -174,8 +174,8 @@ export class UsersListPage implements OnInit {
     },
     {
       id: 'delete',
-      label: 'Delete',
-      icon: 'trash',
+      label: 'Deactivate',
+      icon: 'user-slash',
       variant: 'danger',
       requiresConfirmation: true,
     },
@@ -672,12 +672,12 @@ export class UsersListPage implements OnInit {
       case 'delete':
         this.showConfirmationModal(
           {
-            title: 'Delete Users',
-            description: `Are you sure you want to permanently delete ${selectedUsers.length} user(s)? This action cannot be undone.`,
-            iconVariant: 'error',
+            title: 'Deactivate Users',
+            description: `Are you sure you want to deactivate ${selectedUsers.length} user(s)? Their accounts will be disabled but data will be preserved.`,
+            iconVariant: 'warning',
             actions: [
               { label: 'Cancel', variant: 'secondary', action: 'cancel' },
-              { label: 'Delete', variant: 'danger', action: 'confirm' },
+              { label: 'Deactivate', variant: 'danger', action: 'confirm' },
             ],
           },
           { action: 'bulk-delete', users: selectedUsers }
@@ -780,7 +780,7 @@ export class UsersListPage implements OnInit {
     this.showConfirmationModal(
       {
         title: 'Delete User',
-        description: `Are you sure you want to delete ${user.displayName}? This action cannot be undone.`,
+        description: `Are you sure you want to delete ${user.displayName}? The user account will be deactivated and can no longer access the system.`,
         iconVariant: 'error',
         actions: [
           { label: 'Cancel', variant: 'secondary', action: 'cancel' },

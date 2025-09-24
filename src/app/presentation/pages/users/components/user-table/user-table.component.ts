@@ -9,7 +9,7 @@
  * @responsibilities
  * - Display users in a tabular format
  * - Handle table interactions (sorting, row selection)
- * - Emit user action events (view, edit, delete, etc.)
+ * - Emit user action events (view, edit, delete/deactivate, etc.)
  * - Provide responsive table design
  * - Support loading and empty states
  * - Handle bulk selection operations
@@ -451,7 +451,7 @@ export class UserTableComponent implements OnInit, OnChanges {
   getActionLabel(action: string): string {
     switch (action) {
       case 'delete':
-        return 'Eliminar';
+        return 'Desactivar'; // Changed: reflects that "delete" actually deactivates the user
       case 'activate':
         return 'Activar';
       case 'deactivate':

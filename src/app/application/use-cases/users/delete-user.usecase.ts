@@ -10,23 +10,26 @@ import type { Logger } from '@core/interfaces/logger.interface';
  * Delete User Use Case
  *
  * @description
- * Application layer orchestrator that handles user deletion with validation,
- * audit logging, and error normalization. This use case follows the orchestration
- * pattern with error normalization to ensure consistent user deletion workflow.
+ * Application layer orchestrator that handles user deletion through deactivation
+ * with validation, audit logging, and error normalization. This use case performs
+ * logical deletion by deactivating the user account rather than physical deletion.
  *
  * @responsibilities
- * - Orchestrate user deletion with validation and side effects
+ * - Orchestrate user deletion (deactivation) with validation and side effects
  * - Validate application-level access rules
- * - Execute user deletion through domain repository
+ * - Execute user deletion through domain repository (logical deletion)
  * - Handle deletion audit logging for compliance purposes
  * - Normalize errors for application layer consumption
  *
  * @architecture
  * This use case acts as an orchestrator that:
  * 1. Validates application rules (user ID, deletion permissions)
- * 2. Delegates user deletion to domain repository
+ * 2. Delegates user deletion to domain repository (uses deactivate endpoint)
  * 3. Handles side effects (audit logging, cleanup notifications)
  * 4. Normalizes errors for consistent error handling
+ *
+ * @note User deletion is implemented as account deactivation to preserve
+ * data integrity and enable potential account recovery.
  *
  * @since 1.0.0
  * @layer Application
@@ -43,6 +46,7 @@ export class DeleteUser {
    *
    * Orchestrates the complete user deletion workflow following Clean Architecture principles.
    * This method coordinates domain operations and side effects while maintaining separation of concerns.
+   * The deletion is implemented as account deactivation to preserve data integrity.
    *
    * @param request User deletion request with ID
    * @returns Promise resolving to deletion result
@@ -50,7 +54,7 @@ export class DeleteUser {
    */
   async execute(request: DeleteUserRequest): Promise<DeleteUserResult> {
     try {
-      // Step 1: Delegate to domain repository
+      // Step 1: Delegate to domain repository (performs logical deletion via deactivation)
       await this.userRepo.delete(request.userId);
 
       // Step 2: Handle side effects
@@ -85,7 +89,7 @@ export class DeleteUser {
     const correlationId = `user-delete-${deletedUserId}-${this.clock.nowEpochSeconds()}`;
 
     // Log user deletion for audit trail
-    this.logger.info('User deleted successfully', {
+    this.logger.info('User deleted successfully (deactivated)', {
       correlationId,
       userId: deletedUserId.toString(),
       operation: 'delete_user',

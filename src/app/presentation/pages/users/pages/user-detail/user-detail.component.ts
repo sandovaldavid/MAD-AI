@@ -573,7 +573,7 @@ export class UserDetailPage implements OnInit {
 
     // This would typically show a confirmation dialog
     const confirmed = confirm(
-      `Are you sure you want to delete ${userData.displayName}? This action cannot be undone.`
+      `Are you sure you want to delete ${userData.displayName}? The user account will be deactivated and can no longer access the system.`
     );
     if (!confirmed) return;
 
@@ -584,7 +584,7 @@ export class UserDetailPage implements OnInit {
 
       // Navigate back to list after successful deletion
       this.router.navigate(['/users'], {
-        state: { message: `User ${userData.displayName} has been deleted successfully.` },
+        state: { message: `User ${userData.displayName} has been deleted (deactivated) successfully.` },
       });
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';

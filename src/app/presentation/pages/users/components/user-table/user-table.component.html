@@ -14,7 +14,7 @@
             size="sm"
             (click)="onBulkAction(action)">
             <ui-icon
-              [name]="action === 'delete' ? 'trash' : action === 'activate' ? 'check-circle' : 'x-circle'"
+              [name]="action === 'delete' ? 'user-slash' : action === 'activate' ? 'check-circle' : 'x-circle'"
               variant="outline"
               size="sm">
             </ui-icon>
@@ -312,8 +312,8 @@
                           size="sm"
                           (click)="onUserAction('delete', user)"
                           class="danger-action"
-                          [attr.aria-label]="'Eliminar ' + user.displayName">
-                          <ui-icon name="trash" variant="outline" size="sm"></ui-icon>
+                          [attr.aria-label]="'Desactivar ' + user.displayName">
+                          <ui-icon name="user-slash" variant="outline" size="sm"></ui-icon>
                         </ui-button>
                       }
                     </div>

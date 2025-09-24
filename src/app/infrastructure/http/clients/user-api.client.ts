@@ -130,13 +130,16 @@ export class UserApiClient {
   }
 
   /**
-   * Elimina un usuario
+   * Elimina un usuario (desactivación permanente)
+   *
+   * @description Realiza una eliminación lógica del usuario mediante desactivación.
+   * Usa el endpoint de deactivate con método DELETE para realizar la operación.
    *
    * @param id - ID del usuario a eliminar
-   * @returns Observable vacío
+   * @returns Observable con respuesta de desactivación
    */
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(API_ENDPOINTS_V1.USERS.DELETE(id));
+  delete(id: number): Observable<DeactivateUserResponseDTO> {
+    return this.http.delete<DeactivateUserResponseDTO>(API_ENDPOINTS_V1.USERS.DEACTIVATE(id));
   }
 
   /**
