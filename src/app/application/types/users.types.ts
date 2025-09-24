@@ -238,6 +238,7 @@ export type UserEvent =
   | { type: 'user-deleted'; userId: number }
   | { type: 'user-activated'; user: User }
   | { type: 'user-deactivated'; user: User }
+  | { type: 'user-password-reset'; userId: number }
   | {
       type: 'bulk-operation-completed';
       operation: string;
