@@ -27,28 +27,13 @@ import type { User } from '@domain/entities/user.entity';
 // Application Layer Imports
 import type {
   CreateUserRequest,
-  CreateUserResult,
   UpdateUserRequest,
-  UpdateUserResult,
-} from '@application/types/users.types';
-import type {
   ListUsersRequest,
-  ListUsersResult,
   UserSearchCriteria,
+  UserLookupCriteria,
 } from '@application/types/users.types';
-import type {
-  BulkCreateUsersResult,
-  BulkUpdateUsersResult,
-  BulkDeleteUsersResult,
-} from '@application/types/users.types';
-import type { UserLookupCriteria } from '@application/types/users.types';
 import type { FacadeOpts } from '@application/types/facade-opts';
-
-// Domain Contracts Imports
-import type {
-  CreateUserContract,
-  UpdateUserPatchContract,
-} from '@domain/repositories/business/user.contract';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Main Users Facade Coordinator
@@ -115,8 +100,20 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the creation result
    */
-  async createUser(request: CreateUserRequest, opts?: FacadeOpts): Promise<CreateUserResult> {
-    return this.crudFacade.createUser(request, opts);
+  async createUser(request: CreateUserRequest, opts?: FacadeOpts): Promise<Message> {
+    const result = await this.crudFacade.createUser(request, opts);
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuario creado exitosamente.',
+        data: result['data'],
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al crear el usuario.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -125,8 +122,20 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the update result
    */
-  async updateUser(request: UpdateUserRequest, opts?: FacadeOpts): Promise<UpdateUserResult> {
-    return this.crudFacade.updateUser(request, opts);
+  async updateUser(request: UpdateUserRequest, opts?: FacadeOpts): Promise<Message> {
+    const result = await this.crudFacade.updateUser(request, opts);
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuario actualizado exitosamente.',
+        data: result['data'],
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al actualizar el usuario.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -135,8 +144,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when deletion is complete
    */
-  async deleteUser(userId: number, opts?: FacadeOpts): Promise<void> {
-    return this.crudFacade.deleteUser(userId, opts);
+  async deleteUser(userId: number, opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.crudFacade.deleteUser(userId, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuario eliminado exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al eliminar el usuario.',
+      error: result['error'],
+    };
   }
 
   // ============================================================================
@@ -149,8 +169,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the user or null if not found
    */
-  async getUserById(userId: number, opts?: FacadeOpts): Promise<User | null> {
-    return this.lookupFacade.getUserById(userId, opts);
+  async getUserById(userId: number, opts?: FacadeOpts): Promise<Message> {
+    const user = await this.lookupFacade.getUserById(userId, opts);
+    if (user) {
+      return {
+        success: true,
+        message: 'Usuario encontrado.',
+        data: user,
+      };
+    }
+    return {
+      success: false,
+      message: 'Usuario no encontrado.',
+    };
   }
 
   /**
@@ -159,8 +190,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the user or null if not found
    */
-  async getUserByEmail(email: string, opts?: FacadeOpts): Promise<User | null> {
-    return this.lookupFacade.getUserByEmail(email, opts);
+  async getUserByEmail(email: string, opts?: FacadeOpts): Promise<Message> {
+    const user = await this.lookupFacade.getUserByEmail(email, opts);
+    if (user) {
+      return {
+        success: true,
+        message: 'Usuario encontrado.',
+        data: user,
+      };
+    }
+    return {
+      success: false,
+      message: 'Usuario no encontrado.',
+    };
   }
 
   /**
@@ -169,8 +211,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the user or null if not found
    */
-  async getUserByUsername(username: string, opts?: FacadeOpts): Promise<User | null> {
-    return this.lookupFacade.getUserByUsername(username, opts);
+  async getUserByUsername(username: string, opts?: FacadeOpts): Promise<Message> {
+    const user = await this.lookupFacade.getUserByUsername(username, opts);
+    if (user) {
+      return {
+        success: true,
+        message: 'Usuario encontrado.',
+        data: user,
+      };
+    }
+    return {
+      success: false,
+      message: 'Usuario no encontrado.',
+    };
   }
 
   /**
@@ -179,8 +232,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the user or null if not found
    */
-  async findUser(criteria: UserLookupCriteria, opts?: FacadeOpts): Promise<User | null> {
-    return this.lookupFacade.findUser(criteria, opts);
+  async findUser(criteria: UserLookupCriteria, opts?: FacadeOpts): Promise<Message> {
+    const user = await this.lookupFacade.findUser(criteria, opts);
+    if (user) {
+      return {
+        success: true,
+        message: 'Usuario encontrado.',
+        data: user,
+      };
+    }
+    return {
+      success: false,
+      message: 'Usuario no encontrado.',
+    };
   }
 
   // ============================================================================
@@ -193,17 +257,22 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the list result
    */
-  async listUsers(request?: ListUsersRequest, opts?: FacadeOpts): Promise<ListUsersResult> {
-    console.log('UsersFacade.listUsers called with:', request);
+  async listUsers(request?: ListUsersRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.listFacade.listUsers(request, opts);
-    console.log('UsersFacade.listUsers received result:', result);
-
-    // Synchronize state with coordinated facade
     this._users.set(result.users);
     this._totalCount.set(result.totalCount);
-    console.log('UsersFacade state synchronized - users count:', result.users.length);
-
-    return result;
+    if (result.users.length > 0) {
+      return {
+        success: true,
+        message: 'Usuarios listados exitosamente.',
+        data: result,
+      };
+    }
+    return {
+      success: false,
+      message: 'No se encontraron usuarios.',
+      data: result,
+    };
   }
 
   /**
@@ -212,14 +281,22 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the search result
    */
-  async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<ListUsersResult> {
+  async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<Message> {
     const result = await this.listFacade.searchUsers(criteria, opts);
-
-    // Synchronize state with coordinated facade
     this._users.set(result.users);
     this._totalCount.set(result.totalCount);
-
-    return result;
+    if (result.users.length > 0) {
+      return {
+        success: true,
+        message: 'Usuarios encontrados.',
+        data: result,
+      };
+    }
+    return {
+      success: false,
+      message: 'No se encontraron usuarios.',
+      data: result,
+    };
   }
 
   // ============================================================================
@@ -232,8 +309,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when activation is complete
    */
-  async activateUser(userId: number, opts?: FacadeOpts): Promise<void> {
-    return this.stateFacade.activateUser(userId, opts);
+  async activateUser(userId: number, opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.stateFacade.activateUser(userId, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuario activado exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al activar el usuario.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -242,8 +330,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when deactivation is complete
    */
-  async deactivateUser(userId: number, opts?: FacadeOpts): Promise<void> {
-    return this.stateFacade.deactivateUser(userId, opts);
+  async deactivateUser(userId: number, opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.stateFacade.deactivateUser(userId, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuario desactivado exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al desactivar el usuario.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -252,8 +351,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when status toggle is complete
    */
-  async toggleUserStatus(userId: number, opts?: FacadeOpts): Promise<void> {
-    return this.stateFacade.toggleUserStatus(userId, opts);
+  async toggleUserStatus(userId: number, opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.stateFacade.toggleUserStatus(userId, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Estado de usuario cambiado exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al cambiar el estado del usuario.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -262,8 +372,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when all activations are complete
    */
-  async activateUsers(userIds: number[], opts?: FacadeOpts): Promise<void> {
-    return this.stateFacade.batchActivateUsers(userIds, opts);
+  async activateUsers(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.stateFacade.batchActivateUsers(userIds, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuarios activados exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al activar los usuarios.',
+      error: result['error'],
+    };
   }
 
   /**
@@ -272,8 +393,19 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when all deactivations are complete
    */
-  async deactivateUsers(userIds: number[], opts?: FacadeOpts): Promise<void> {
-    return this.stateFacade.batchDeactivateUsers(userIds, opts);
+  async deactivateUsers(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    const result = (await this.stateFacade.batchDeactivateUsers(userIds, opts)) as Message;
+    if (result.success) {
+      return {
+        success: true,
+        message: 'Usuarios desactivados exitosamente.',
+      };
+    }
+    return {
+      success: false,
+      message: 'Error al desactivar los usuarios.',
+      error: result['error'],
+    };
   }
 
   // ============================================================================
@@ -283,64 +415,68 @@ export class UsersFacade extends BaseUserFacade {
   /**
    * Select a user for detailed view
    * @param user User entity to select, or null to clear selection
+   * @returns Message indicating selection result
    */
-  selectUser(user: User | null): void {
+  selectUser(user: User | null): Message {
     return this.utilsFacade.selectUser(user);
   }
 
   /**
    * Clear user selection
+   * @returns Message indicating selection cleared
    */
-  clearSelection(): void {
+  clearSelection(): Message {
     return this.utilsFacade.clearSelection();
   }
 
   /**
    * Select user by ID
    * @param userId ID of the user to select
-   * @returns boolean indicating whether the user was found and selected
+   * @returns Message indicating selection result
    */
-  selectUserById(userId: number): boolean {
+  selectUserById(userId: number): Message {
     return this.utilsFacade.selectUserById(userId);
   }
 
   /**
    * Clear all error states
+   * @returns Message indicating error cleared
    */
-  clearError(): void {
+  clearError(): Message {
     return this.utilsFacade.clearError();
   }
 
   /**
    * Check if there is an active error
-   * @returns boolean indicating whether there is an active error
+   * @returns Message indicating error state
    */
-  hasError(): boolean {
+  hasError(): Message {
     return this.utilsFacade.hasError();
   }
 
   /**
    * Reset all facade state to initial values
+   * @returns Message indicating reset result
    */
-  reset(): void {
+  reset(): Message {
     return this.utilsFacade.reset();
   }
 
   /**
    * Refresh the current user list
    * @param opts Optional facade configuration
-   * @returns Promise that resolves when the refresh is complete
+   * @returns Promise<Message> indicating refresh result
    */
-  async refresh(opts?: FacadeOpts): Promise<void> {
+  async refresh(opts?: FacadeOpts): Promise<Message> {
     return this.utilsFacade.refresh(opts);
   }
 
   /**
    * Initialize facade with default data
    * @param opts Optional facade configuration
-   * @returns Promise that resolves when initialization is complete
+   * @returns Promise<Message> indicating initialization result
    */
-  async initialize(opts?: FacadeOpts): Promise<void> {
+  async initialize(opts?: FacadeOpts): Promise<Message> {
     return this.utilsFacade.initialize(opts);
   }
 
@@ -374,9 +510,11 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the created user
    */
-  async createAndSelectUser(request: CreateUserRequest, opts?: FacadeOpts): Promise<User> {
+  async createAndSelectUser(request: CreateUserRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.createUser(request, opts);
-    this.selectUser(result);
+    if (result.success && result['data']) {
+      this.selectUser(result['data']);
+    }
     return result;
   }
 
@@ -389,9 +527,11 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving to the updated user
    */
-  async updateAndSelectUser(request: UpdateUserRequest, opts?: FacadeOpts): Promise<User> {
+  async updateAndSelectUser(request: UpdateUserRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.updateUser(request, opts);
-    this.selectUser(result);
+    if (result.success && result['data']) {
+      this.selectUser(result['data']);
+    }
     return result;
   }
 
@@ -404,13 +544,18 @@ export class UsersFacade extends BaseUserFacade {
    * @param opts Optional facade configuration
    * @returns Promise resolving when deletion is complete
    */
-  async deleteSelectedUser(opts?: FacadeOpts): Promise<void> {
+  async deleteSelectedUser(opts?: FacadeOpts): Promise<Message> {
     const selectedUser = this.selectedUser();
     if (!selectedUser) {
-      throw new Error('No user selected for deletion');
+      return {
+        success: false,
+        message: 'No hay usuario seleccionado para eliminar.',
+      };
     }
-
-    await this.deleteUser(selectedUser.id, opts);
-    this.clearSelection();
+    const result = await this.deleteUser(selectedUser.id, opts);
+    if (result.success) {
+      this.clearSelection();
+    }
+    return result;
   }
 }
