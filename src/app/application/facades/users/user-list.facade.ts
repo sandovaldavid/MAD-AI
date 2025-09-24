@@ -12,6 +12,7 @@
 
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
+import type { Message } from '@application/types/message.type';
 
 // Domain Imports
 import type { UserListFilterContract } from '@domain/repositories/business/user.contract';
@@ -100,7 +101,10 @@ export class UserListFacade extends BaseUserFacade {
    * const result = await userListFacade.listUsers(undefined, { skipLoading: true });
    * ```
    */
-  async listUsers(request?: ListUsersRequest, opts?: FacadeOpts): Promise<ListUsersResult> {
+  async listUsers(
+    request?: ListUsersRequest,
+    opts?: FacadeOpts
+  ): Promise<ListUsersResult | Message> {
     if (!opts?.skipLoading) {
       this.setLoading(true);
     }
@@ -109,22 +113,34 @@ export class UserListFacade extends BaseUserFacade {
     try {
       const result = await this.listUsersUC.execute(request);
 
-      // Update local state
+      // Actualiza el estado local
       this._users.set(result.users);
       this._currentFilter.set(request?.filter || null);
       this._totalCount.set(result.totalCount);
 
-      // Emit list update event
+      // Emitir evento de actualización de lista
       this.emitEvent({
         type: 'bulk-operation-completed',
         operation: 'list-users',
         results: result,
       });
 
+      if (result.users.length === 0) {
+        return {
+          success: false,
+          error: 'No se encontraron usuarios para los filtros aplicados.',
+          message: 'No se encontraron usuarios que coincidan con los criterios de búsqueda.',
+        };
+      }
+
       return result;
     } catch (error: unknown) {
       this.handleError(error);
-      throw error;
+      return {
+        success: false,
+        error: 'Ocurrió un error al listar los usuarios.',
+        message: 'No se pudo obtener la lista de usuarios. Por favor, intenta nuevamente.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this.setLoading(false);
@@ -172,7 +188,10 @@ export class UserListFacade extends BaseUserFacade {
    * });
    * ```
    */
-  async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<ListUsersResult> {
+  async searchUsers(
+    criteria: UserSearchCriteria,
+    opts?: FacadeOpts
+  ): Promise<ListUsersResult | Message> {
     // Convert search criteria to filter format for the list use case
     // This could be enhanced with dedicated search logic in the future
     const filter: UserListFilterContract = {
@@ -214,7 +233,7 @@ export class UserListFacade extends BaseUserFacade {
   async loadUsersWithFilter(
     filter: UserListFilterContract,
     opts?: FacadeOpts
-  ): Promise<ListUsersResult> {
+  ): Promise<ListUsersResult | Message> {
     return this.listUsers({ filter, requesterId: this.getCurrentUserId() }, opts);
   }
 
@@ -235,7 +254,7 @@ export class UserListFacade extends BaseUserFacade {
    * await userListFacade.loadNextPage();
    * ```
    */
-  async loadNextPage(opts?: FacadeOpts): Promise<ListUsersResult> {
+  async loadNextPage(opts?: FacadeOpts): Promise<ListUsersResult | Message> {
     const currentFilter = this._currentFilter();
 
     // Implementation would need to track current page state
@@ -264,7 +283,7 @@ export class UserListFacade extends BaseUserFacade {
    * await userListFacade.clearFilterAndReload();
    * ```
    */
-  async clearFilterAndReload(opts?: FacadeOpts): Promise<ListUsersResult> {
+  async clearFilterAndReload(opts?: FacadeOpts): Promise<ListUsersResult | Message> {
     // Create a request with cleared filter but preserve requester ID
     const clearRequest: ListUsersRequest = {
       filter: undefined,
