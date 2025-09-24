@@ -27,7 +27,7 @@
    ============================================================================ */
 
 .view-toggle {
-  @apply inline-flex items-center gap-1 p-1 bg-secondary-50 dark:bg-secondary-950 border border-secondary-200 dark:border-secondary-800 rounded-lg shadow-sm transition-all duration-200;
+  @apply inline-flex items-center gap-1 p-0.5 bg-secondary-50 dark:bg-secondary-950 border border-secondary-200 dark:border-secondary-800 rounded-lg shadow-sm transition-all duration-200;
 }
 
 .view-toggle.compact {
