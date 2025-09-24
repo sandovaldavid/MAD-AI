@@ -381,10 +381,27 @@ export class HttpUserRepository implements UserRepository {
 
       // Create update request DTO manually
       console.log('[HttpUserRepository] Creating update request DTO...');
+      console.log('[HttpUserRepository] patch received:', JSON.stringify(patch, null, 2));
+
+      // Extract string values properly - handle both strings and potential Value Objects
+      const firstNameValue =
+        this.extractStringValue(patch.firstName) ?? currentUser.firstName.value;
+      const lastNameValue = this.extractStringValue(patch.lastName) ?? currentUser.lastName.value;
+      const emailValue = this.extractStringValue(patch.email) ?? currentUser.email.value;
+
+      console.log(
+        '[HttpUserRepository] Extracted values - firstName:',
+        firstNameValue,
+        'lastName:',
+        lastNameValue,
+        'email:',
+        emailValue
+      );
+
       const requestDto: UpdateUserRequestDTO = {
-        first_name: patch.firstName ?? currentUser.firstName.value,
-        last_name: patch.lastName ?? currentUser.lastName.value,
-        email: patch.email ?? currentUser.email.value,
+        first_name: firstNameValue,
+        last_name: lastNameValue,
+        email: emailValue,
         role_id: patch.roleId ?? currentUser.role.id,
         status: patch.isActive !== undefined ? (patch.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
         email_notifications_enabled:
@@ -416,6 +433,19 @@ export class HttpUserRepository implements UserRepository {
       console.error('[HttpUserRepository] Error in update method:', httpError);
       throw this.errorTransformer.transformWithDefaults(httpError, 'UPDATE_USER', 'UPDATE_USER');
     }
+  }
+
+  /**
+   * Helper method to extract string value from either string or Value Object
+   */
+  private extractStringValue(value: string | undefined | { value: string }): string | undefined {
+    if (typeof value === 'string') {
+      return value;
+    }
+    if (value && typeof value === 'object' && 'value' in value) {
+      return value.value;
+    }
+    return undefined;
   }
 
   /**
