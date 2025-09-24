@@ -8,7 +8,6 @@ import { RoleExportFacade } from './role-export.facade';
 import type { ListRolesParams, CreateRoleData, UpdateRoleData, FacadeOpts } from './role.types';
 import type { RoleExportConfig } from '@application/types/role-export.types';
 import type { Message } from '@application/types/message.type';
-import type { Role } from '@domain/entities/role.entity';
 import type { User } from '@domain/entities/user.entity';
 import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 
@@ -172,8 +171,12 @@ export class RolesFacade {
   }
 
   /** Find role by name */
-  async findRoleByName(name: string, opts?: FacadeOpts): Promise<Role | Message | null> {
-    return this.roleCrud.findRoleByName(name);
+  async findRoleByName(name: string, opts?: FacadeOpts): Promise<Message | null> {
+    const role = await this.roleCrud.findRoleByName(name);
+    if (role) {
+      return { success: true, role };
+    }
+    return null;
   }
 
   // ========================================
