@@ -310,10 +310,7 @@ describe('AuthFacade', () => {
   describe('Authentication Operations', () => {
     describe('login', () => {
       const loginRequest: LoginRequest = {
-        identifier: {
-          type: 'email',
-          value: 'john@example.com',
-        },
+        identifier: 'john@example.com',
         password: 'password123',
       };
 
@@ -995,72 +992,6 @@ describe('AuthFacade', () => {
       });
     });
 
-    describe('clearAuthState', () => {
-      it('should clear both error and loading states', () => {
-        // Arrange
-        (facade as any)._authError.set('Test error');
-        (facade as any)._loading.set(true);
-
-        // Act
-        facade.clearAuthState();
-
-        // Assert
-        expect(facade.error()).toBeNull();
-        expect(facade.loading()).toBe(false);
-      });
-
-      it('should not affect user and session data when clearing auth state', () => {
-        // Arrange
-        (facade as any)._user.set(mockUser);
-        (facade as any)._session.set(mockSession);
-        (facade as any)._authError.set('Test error');
-        (facade as any)._loading.set(true);
-
-        // Act
-        facade.clearAuthState();
-
-        // Assert
-        expect(facade.error()).toBeNull();
-        expect(facade.loading()).toBe(false);
-        expect(facade.user()).toBe(mockUser); // Preserved
-        expect(facade.session()).toBe(mockSession); // Preserved
-      });
-    });
-
-    describe('clearAuthStateCompletely', () => {
-      it('should clear all authentication state', () => {
-        // Arrange
-        (facade as any)._user.set(mockUser);
-        (facade as any)._session.set(mockSession);
-        (facade as any)._authError.set('Test error');
-        (facade as any)._loading.set(true);
-
-        // Act
-        facade.clearAuthStateCompletely();
-
-        // Assert
-        expect(facade.user()).toBeNull();
-        expect(facade.session()).toBeNull();
-        expect(facade.error()).toBeNull();
-        expect(facade.loading()).toBe(false);
-      });
-
-      it('should maintain sessionRestoreAttempted flag', () => {
-        // Arrange
-        (facade as any)._sessionRestoreAttempted.set(true);
-        (facade as any)._user.set(mockUser);
-        (facade as any)._session.set(mockSession);
-
-        // Act
-        facade.clearAuthStateCompletely();
-
-        // Assert
-        expect(facade.sessionRestoreAttempted()).toBe(true); // Preserved
-        expect(facade.user()).toBeNull();
-        expect(facade.session()).toBeNull();
-      });
-    });
-
     describe('reset', () => {
       it('should reset all facade state to initial values', () => {
         // Arrange
@@ -1283,7 +1214,7 @@ describe('AuthFacade', () => {
       const operations = [
         () =>
           facade.login({
-            identifier: { type: 'email', value: 'test@example.com' },
+            identifier: 'test@example.com',
             password: 'pass',
           }),
         () =>
@@ -1352,7 +1283,7 @@ describe('AuthFacade', () => {
 
       // Act
       await facade.login({
-        identifier: { type: 'email', value: 'test@example.com' },
+        identifier: 'test@example.com',
         password: 'pass',
       });
 
@@ -1378,7 +1309,7 @@ describe('AuthFacade', () => {
         {
           operation: () =>
             facade.login({
-              identifier: { type: 'email', value: 'test@example.com' },
+              identifier: 'test@example.com',
               password: 'pass',
             }),
           useCase: mockLoginUC,
@@ -1457,7 +1388,7 @@ describe('AuthFacade', () => {
       // Test login notification
       mockLoginUC.execute.and.returnValue(Promise.resolve(mockSession));
       await facade.login({
-        identifier: { type: 'email', value: 'test@example.com' },
+        identifier: 'test@example.com',
         password: 'pass',
       });
       expect(mockNotifications.success).toHaveBeenCalledWith(
@@ -1536,7 +1467,7 @@ describe('AuthFacade', () => {
 
       // Act - Should not throw even if notification fails, but currently clears auth state
       await expectAsync(
-        facade.login({ identifier: { type: 'email', value: 'test@example.com' }, password: 'pass' })
+        facade.login({ identifier: 'test@example.com', password: 'pass' })
       ).toBeResolved();
 
       // Assert - Current behavior clears session on notification failure
