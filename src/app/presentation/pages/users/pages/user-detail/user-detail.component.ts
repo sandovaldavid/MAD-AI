@@ -419,14 +419,19 @@ export class UserDetailPage implements OnInit {
     this._error.set(null);
 
     try {
-      const user = await this.userLookupFacade.getUserById(userId);
-      this._user.set(user);
-
-      // Load role details if user has a role
-      if (user?.role?.id) {
-        await this.loadUserRole(user.role.id);
+      const result = await this.userLookupFacade.getUserById(userId);
+      // If result is a Message, extract user
+      let user: User | null = null;
+      if (result && typeof result === 'object' && 'success' in result) {
+        user = result['user'] ?? null;
+      } else {
+        user = result as User;
       }
-
+      this._user.set(user);
+      // Load role details if user has a role
+      if (user && user['role'] && user['role']['id']) {
+        await this.loadUserRole(user['role']['id']);
+      }
       // Update page metadata with user info
       this.updatePageMetadata();
     } catch (error: unknown) {
@@ -498,12 +503,14 @@ export class UserDetailPage implements OnInit {
     this._processing.set(true);
 
     try {
-      // This would call the appropriate facade method
-      console.log('Activating user:', userId);
-      // await this.userCrudFacade.activateUser({ userId });
-
-      // Refresh user data to reflect changes
-      await this.refreshUser();
+      const result = await this.userCrudFacade.updateUserStatus(userId, true);
+      if (result.success) {
+        this._error.set(null);
+        await this.refreshUser();
+        this._error.set(result.message || 'Usuario activado exitosamente.');
+      } else {
+        this._error.set(result.error || result.message || 'No se pudo activar el usuario.');
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to activate user';
       this._error.set(errorMessage);
@@ -523,12 +530,14 @@ export class UserDetailPage implements OnInit {
     this._processing.set(true);
 
     try {
-      // This would call the appropriate facade method
-      console.log('Deactivating user:', userId);
-      // await this.userCrudFacade.deactivateUser({ userId });
-
-      // Refresh user data to reflect changes
-      await this.refreshUser();
+      const result = await this.userCrudFacade.updateUserStatus(userId, false);
+      if (result.success) {
+        this._error.set(null);
+        await this.refreshUser();
+        this._error.set(result.message || 'Usuario desactivado exitosamente.');
+      } else {
+        this._error.set(result.error || result.message || 'No se pudo desactivar el usuario.');
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to deactivate user';
       this._error.set(errorMessage);
@@ -548,12 +557,13 @@ export class UserDetailPage implements OnInit {
     this._processing.set(true);
 
     try {
-      // This would call the appropriate facade method
-      console.log('Resetting password for user:', userId);
-      // await this.userCrudFacade.resetPassword({ userId });
-
-      // Show success message (would be handled by notification service)
-      console.log('Password reset email sent');
+      const result = await this.userCrudFacade.sendResetPasswordEmail(userId);
+      if (result.success) {
+        this._error.set(null);
+        this._error.set(result.message || 'Contraseña restablecida y correo enviado.');
+      } else {
+        this._error.set(result.error || result.message || 'No se pudo restablecer la contraseña.');
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
       this._error.set(errorMessage);
@@ -580,12 +590,19 @@ export class UserDetailPage implements OnInit {
     this._processing.set(true);
 
     try {
-      await this.userCrudFacade.deleteUser(userId);
-
-      // Navigate back to list after successful deletion
-      this.router.navigate(['/users'], {
-        state: { message: `User ${userData.displayName} has been deleted (deactivated) successfully.` },
-      });
+      const result = await this.userCrudFacade.deleteUser(userId);
+      if (result.success) {
+        this._error.set(null);
+        this.router.navigate(['/users'], {
+          state: {
+            message:
+              result.message ||
+              `Usuario ${userData.displayName} eliminado (desactivado) exitosamente.`,
+          },
+        });
+      } else {
+        this._error.set(result.error || result.message || 'No se pudo eliminar el usuario.');
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
       this._error.set(errorMessage);

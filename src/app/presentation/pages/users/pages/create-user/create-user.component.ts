@@ -308,20 +308,25 @@ export class CreateUserPage implements OnInit {
         createdBy: 1, // This would come from AuthService
       };
 
-      // Create user through facade
-      const createdUser = await this.userCrudFacade.createUser(createRequest);
-
-      // Handle success
-      this._success.set(true);
-
-      // Navigate to user detail page after a short delay
-      setTimeout(() => {
-        this.router.navigate(['/users/detail', createdUser.id], {
-          state: {
-            message: `User ${formData.firstName} ${formData.lastName} has been created successfully.`,
-          },
-        });
-      }, 2000);
+      // Create user through facade and handle Message result
+      const result = await this.userCrudFacade.createUser(createRequest);
+      if (result.success) {
+        this._success.set(true);
+        // Extract user from Message if present
+        const createdUser = result['user'];
+        // Show Spanish success message
+        const nombreCompleto = `${formData.firstName} ${formData.lastName}`;
+        setTimeout(() => {
+          this.router.navigate(['/users/detail', createdUser?.id ?? ''], {
+            state: {
+              message: result.message || `Usuario ${nombreCompleto} creado exitosamente.`,
+            },
+          });
+        }, 2000);
+      } else {
+        // Show Spanish error message
+        this._error.set(result.error || result.message || 'No se pudo crear el usuario.');
+      }
     } catch (error: unknown) {
       this.handleSubmissionError(error);
     } finally {

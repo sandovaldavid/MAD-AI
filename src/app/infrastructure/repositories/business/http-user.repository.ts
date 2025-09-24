@@ -451,7 +451,7 @@ export class HttpUserRepository implements UserRepository {
   /**
    * Deletes a user account.
    *
-   * @description Removes a user account from the system through deactivation.  
+   * @description Removes a user account from the system through deactivation.
    * This operation performs a logical deletion by deactivating the user account
    * using the DEACTIVATE endpoint with DELETE method.
    *
