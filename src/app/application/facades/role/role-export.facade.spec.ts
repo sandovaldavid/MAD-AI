@@ -395,15 +395,20 @@ describe('RoleExportFacade', () => {
 
       const result = await facade.getExportPreview(roleIds, options);
 
-      expect(result).toHaveSize(2);
-      expect(result[0]).toEqual({
-        id: 1,
-        name: 'Admin Role',
-        accessLevel: 5,
-        status: 'Active',
-        description: 'Administrator role with full access',
-        userCount: 5,
-      });
+      expect(Array.isArray(result)).toBeTrue();
+      expect(result.length).toBe(2);
+      if (Array.isArray(result)) {
+        expect(result[0]).toEqual({
+          id: 1,
+          name: 'Admin Role',
+          accessLevel: 5,
+          status: 'Active',
+          description: 'Administrator role with full access',
+          userCount: 5,
+        });
+      } else {
+        fail('Expected result to be an array');
+      }
     });
 
     it('should get export preview with selective columns', async () => {
@@ -418,15 +423,20 @@ describe('RoleExportFacade', () => {
 
       const result = await facade.getExportPreview(roleIds, options);
 
-      expect(result).toHaveSize(1);
-      expect(result[0]).toEqual({
-        name: 'Admin Role',
-        accessLevel: 5,
-        status: 'Active',
-        userCount: 5,
-      });
-      expect(result[0].id).toBeUndefined();
-      expect(result[0].description).toBeUndefined();
+      expect(Array.isArray(result)).toBeTrue();
+      expect(result.length).toBe(1);
+      if (Array.isArray(result)) {
+        expect(result[0]).toEqual({
+          name: 'Admin Role',
+          accessLevel: 5,
+          status: 'Active',
+          userCount: 5,
+        });
+        expect(result[0].id).toBeUndefined();
+        expect(result[0].description).toBeUndefined();
+      } else {
+        fail('Expected result to be an array');
+      }
     });
 
     it('should return empty array when no roles selected for preview', async () => {
@@ -434,7 +444,11 @@ describe('RoleExportFacade', () => {
 
       const result = await facade.getExportPreview(roleIds, {});
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        success: false,
+        error: 'No se seleccionaron roles para previsualizar.',
+        message: 'Debe seleccionar al menos un rol para previsualizar.',
+      });
     });
 
     it('should return empty array when selected roles do not exist', async () => {
@@ -442,7 +456,11 @@ describe('RoleExportFacade', () => {
 
       const result = await facade.getExportPreview(roleIds, {});
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({
+        success: false,
+        error: 'No se seleccionaron roles para previsualizar.',
+        message: 'Debe seleccionar al menos un rol para previsualizar.',
+      });
     });
   });
 
