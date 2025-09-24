@@ -5,11 +5,11 @@ import {
   UNASSIGN_ROLE_FROM_USER_USECASE_PORT,
 } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
 import { RoleStateFacade } from './role-state.facade';
 import type { User } from '@domain/entities/user.entity';
 import type { FacadeOpts } from '@application/types/facade-opts';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Role assignment facade
@@ -33,14 +33,13 @@ export class RoleAssignmentFacade {
   private readonly assignRoleToUserUC = inject(ASSIGN_ROLE_TO_USER_USECASE_PORT);
   private readonly unassignRoleFromUserUC = inject(UNASSIGN_ROLE_FROM_USER_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);
   private readonly roleState = inject(RoleStateFacade);
 
   /**
    * Loads users assigned to a role
    */
-  async loadRoleUsers(roleId: number, opts?: FacadeOpts): Promise<User[]> {
+  async loadRoleUsers(roleId: number, opts?: FacadeOpts): Promise<User[] | Message> {
     return this.executeOperation(async () => {
       const users = await this.getUsersByRoleUC.execute({ roleId });
       this.roleState.setRoleUsers(users);
@@ -49,9 +48,9 @@ export class RoleAssignmentFacade {
   }
 
   /**
-   * Assigns a role to a user
+   * Asigna un rol a un usuario
    */
-  async assignRoleToUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<void> {
+  async assignRoleToUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
       await this.assignRoleToUserUC.execute({
@@ -60,26 +59,23 @@ export class RoleAssignmentFacade {
         assignedByUserId: currentUserId,
       });
 
-      // Refresh role users if we're viewing this role's users
+      // Actualiza los usuarios del rol si corresponde
       const currentRole = this.roleState.currentRole();
       if (currentRole && currentRole.id === roleId) {
         await this.loadRoleUsers(roleId, { skipLoading: true });
       }
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Role assigned successfully',
-          'The role has been assigned to the user.'
-        );
-      }
+      return {
+        success: true,
+        message: 'El rol ha sido asignado al usuario exitosamente.',
+      };
     }, opts);
   }
 
   /**
-   * Unassigns a role from a user
+   * Desasigna un rol de un usuario
    */
-  async unassignRoleFromUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<void> {
+  async unassignRoleFromUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
       await this.unassignRoleFromUserUC.execute({
@@ -88,30 +84,31 @@ export class RoleAssignmentFacade {
         requesterId: currentUserId,
       });
 
-      // Refresh role users if we're viewing this role's users
+      // Actualiza los usuarios del rol si corresponde
       const currentRole = this.roleState.currentRole();
       if (currentRole && currentRole.id === roleId) {
         await this.loadRoleUsers(roleId, { skipLoading: true });
       }
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Role unassigned successfully',
-          'The role has been removed from the user.'
-        );
-      }
+      return {
+        success: true,
+        message: 'El rol ha sido removido del usuario exitosamente.',
+      };
     }, opts);
   }
 
   /**
-   * Assigns a role to multiple users
+   * Asigna un rol a múltiples usuarios
    */
-  async bulkAssignRoleToUsers(roleId: number, userIds: number[], opts?: FacadeOpts): Promise<void> {
+  async bulkAssignRoleToUsers(
+    roleId: number,
+    userIds: number[],
+    opts?: FacadeOpts
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
 
-      // Execute assignments in parallel
+      // Ejecuta las asignaciones en paralelo
       await Promise.all(
         userIds.map((userId) =>
           this.assignRoleToUserUC.execute({
@@ -122,34 +119,31 @@ export class RoleAssignmentFacade {
         )
       );
 
-      // Refresh role users if we're viewing this role's users
+      // Actualiza los usuarios del rol si corresponde
       const currentRole = this.roleState.currentRole();
       if (currentRole && currentRole.id === roleId) {
         await this.loadRoleUsers(roleId, { skipLoading: true });
       }
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Bulk role assignment completed',
-          `Role has been assigned to ${userIds.length} users successfully.`
-        );
-      }
+      return {
+        success: true,
+        message: `El rol ha sido asignado exitosamente a ${userIds.length} usuarios.`,
+      };
     }, opts);
   }
 
   /**
-   * Unassigns a role from multiple users
+   * Desasigna un rol de múltiples usuarios
    */
   async bulkUnassignRoleFromUsers(
     roleId: number,
     userIds: number[],
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
 
-      // Execute unassignments in parallel
+      // Ejecuta las desasignaciones en paralelo
       await Promise.all(
         userIds.map((userId) =>
           this.unassignRoleFromUserUC.execute({
@@ -160,26 +154,26 @@ export class RoleAssignmentFacade {
         )
       );
 
-      // Refresh role users if we're viewing this role's users
+      // Actualiza los usuarios del rol si corresponde
       const currentRole = this.roleState.currentRole();
       if (currentRole && currentRole.id === roleId) {
         await this.loadRoleUsers(roleId, { skipLoading: true });
       }
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Bulk role unassignment completed',
-          `Role has been removed from ${userIds.length} users successfully.`
-        );
-      }
+      return {
+        success: true,
+        message: `El rol ha sido removido exitosamente de ${userIds.length} usuarios.`,
+      };
     }, opts);
   }
 
   /**
-   * Executes operation with error handling and loading state
+   * Ejecuta una operación con manejo de errores y estado de carga
    */
-  private async executeOperation<T>(operation: () => Promise<T>, opts?: FacadeOpts): Promise<T> {
+  private async executeOperation<T>(
+    operation: () => Promise<T | Message>,
+    opts?: FacadeOpts
+  ): Promise<T | Message> {
     if (!opts?.skipLoading) this.roleState.setLoading(true);
     this.roleState.setError(null);
 
@@ -188,7 +182,11 @@ export class RoleAssignmentFacade {
     } catch (error: unknown) {
       const appError = this.errorTransformer.transform(error);
       this.roleState.setError(appError.message);
-      throw appError;
+      return {
+        success: false,
+        error: `Error: ${appError.message}`,
+        message: 'Ocurrió un error al realizar la operación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.roleState.setLoading(false);
     }
