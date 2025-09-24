@@ -19,11 +19,11 @@
                 <div class="avatar-placeholder">{{ userData.initials }}</div>
               }
             </div>
-            
+
             <div class="user-primary-info">
               <h1 class="user-display-name">{{ userData.displayName }}</h1>
               <p class="user-email">{{ userData.email }}</p>
-              <p class="user-username">@{{ userData.username }}</p>
+              <p class="user-username">{{ '@' }}{{ userData.username }}</p>
             </div>
           </div>
 
@@ -44,7 +44,9 @@
                   size="sm"
                   [class]="roleInfo.iconColor"></ui-icon>
                 <span class="role-name">{{ userData.role }}</span>
-                <span [class]="'access-level-tag ' + roleInfo.badgeClasses">{{ roleInfo.label }}</span>
+                <span [class]="'access-level-tag ' + roleInfo.badgeClasses">{{
+                  roleInfo.label
+                }}</span>
               </div>
             }
 
@@ -122,7 +124,7 @@
               </div>
             </div>
           </section>
-                    <!-- Account Timeline Card -->
+          <!-- Account Timeline Card -->
           <section class="info-card">
             <div class="card-header">
               <h3 class="card-title">
@@ -175,6 +177,5 @@
         </div>
       </div>
     }
-    <!-- End @if block -->
   }
 </div>
