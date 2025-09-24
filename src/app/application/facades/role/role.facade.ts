@@ -6,9 +6,11 @@ import { RoleAssignmentFacade } from './role-assignment.facade';
 import { RoleSearchFacade } from './role-search.facade';
 import { RoleExportFacade } from './role-export.facade';
 import type { ListRolesParams, CreateRoleData, UpdateRoleData, FacadeOpts } from './role.types';
-import type { RoleSummary } from '@/app/application/mappers/role.mapper';
-import type { User } from '@domain/entities/user.entity';
 import type { RoleExportConfig } from '@application/types/role-export.types';
+import type { Message } from '@application/types/message.type';
+import type { Role } from '@domain/entities/role.entity';
+import type { User } from '@domain/entities/user.entity';
+import type { RoleSummary } from '@/app/application/mappers/role.mapper';
 
 /**
  * Main Role Facade - Orchestrator
@@ -127,7 +129,7 @@ export class RolesFacade {
   // ========================================
 
   /** Load all roles with optional parameters */
-  async loadRoles(opts?: FacadeOpts): Promise<void> {
+  async loadRoles(opts?: FacadeOpts): Promise<Message> {
     return this.roleCrud.loadRoles(opts);
   }
 
@@ -136,40 +138,42 @@ export class RolesFacade {
    * @param params Optional filter parameters
    * @param opts Facade options
    */
-  async refresh(params?: ListRolesParams, opts?: FacadeOpts): Promise<void> {
+  async refresh(
+    params?: ListRolesParams,
+    opts?: FacadeOpts
+  ): Promise<Message | RoleSummary[] | Message> {
     if (params) {
-      // If parameters are provided, use search method
-      await this.roleSearch.searchRoles(params, opts);
+      // Si se proporcionan parámetros, usar el método de búsqueda
+      return this.roleSearch.searchRoles(params, opts);
     } else {
-      // If no parameters, load all roles
+      // Si no hay parámetros, cargar todos los roles
       return this.roleCrud.loadRoles(opts);
     }
   }
 
   /** Load a specific role by ID */
-  async loadRole(roleId: number, opts?: FacadeOpts): Promise<void> {
+  async loadRole(roleId: number, opts?: FacadeOpts): Promise<Message> {
     return this.roleCrud.loadRole(roleId, opts);
   }
 
   /** Create a new role */
-  async createRole(roleData: CreateRoleData, opts?: FacadeOpts): Promise<void> {
-    await this.roleCrud.createRole(roleData, opts);
+  async createRole(roleData: CreateRoleData, opts?: FacadeOpts): Promise<Message> {
+    return this.roleCrud.createRole(roleData, opts);
   }
 
   /** Update an existing role */
-  async updateRole(roleId: number, roleData: UpdateRoleData, opts?: FacadeOpts): Promise<void> {
-    await this.roleCrud.updateRole(roleId, roleData, opts);
+  async updateRole(roleId: number, roleData: UpdateRoleData, opts?: FacadeOpts): Promise<Message> {
+    return this.roleCrud.updateRole(roleId, roleData, opts);
   }
 
   /** Delete a role */
-  async deleteRole(roleId: number, opts?: FacadeOpts): Promise<void> {
+  async deleteRole(roleId: number, opts?: FacadeOpts): Promise<Message> {
     return this.roleCrud.deleteRole(roleId, opts);
   }
 
   /** Find role by name */
-  async findRoleByName(name: string, opts?: FacadeOpts): Promise<void> {
-    await this.roleCrud.findRoleByName(name);
-    // Return void to match the facade pattern - users get data through reactive state
+  async findRoleByName(name: string, opts?: FacadeOpts): Promise<Role | Message | null> {
+    return this.roleCrud.findRoleByName(name);
   }
 
   // ========================================
@@ -177,18 +181,18 @@ export class RolesFacade {
   // ========================================
 
   /** Activate a role */
-  async activateRole(roleId: number, opts?: FacadeOpts): Promise<void> {
-    await this.roleActivation.activateRole(roleId, opts);
+  async activateRole(roleId: number, opts?: FacadeOpts): Promise<Message> {
+    return this.roleActivation.activateRole(roleId, opts);
   }
 
   /** Deactivate a role */
-  async deactivateRole(roleId: number, opts?: FacadeOpts): Promise<void> {
-    await this.roleActivation.deactivateRole(roleId, opts);
+  async deactivateRole(roleId: number, opts?: FacadeOpts): Promise<Message> {
+    return this.roleActivation.deactivateRole(roleId, opts);
   }
 
   /** Toggle role activation status */
-  async toggleRoleActivation(roleId: number, opts?: FacadeOpts): Promise<void> {
-    await this.roleActivation.toggleRoleActivation(roleId, opts);
+  async toggleRoleActivation(roleId: number, opts?: FacadeOpts): Promise<Message> {
+    return this.roleActivation.toggleRoleActivation(roleId, opts);
   }
 
   // ========================================
@@ -196,17 +200,17 @@ export class RolesFacade {
   // ========================================
 
   /** Load users assigned to a role */
-  async loadRoleUsers(roleId: number, opts?: FacadeOpts): Promise<User[]> {
+  async loadRoleUsers(roleId: number, opts?: FacadeOpts): Promise<User[] | Message> {
     return this.roleAssignment.loadRoleUsers(roleId, opts);
   }
 
   /** Assign a role to a user */
-  async assignRoleToUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<void> {
+  async assignRoleToUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<Message> {
     return this.roleAssignment.assignRoleToUser(roleId, userId, opts);
   }
 
   /** Unassign a role from a user */
-  async unassignRoleFromUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<void> {
+  async unassignRoleFromUser(roleId: number, userId: number, opts?: FacadeOpts): Promise<Message> {
     return this.roleAssignment.unassignRoleFromUser(roleId, userId, opts);
   }
 
@@ -215,32 +219,35 @@ export class RolesFacade {
   // ========================================
 
   /** Search roles with parameters */
-  async searchRoles(searchParams: ListRolesParams, opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async searchRoles(
+    searchParams: ListRolesParams,
+    opts?: FacadeOpts
+  ): Promise<RoleSummary[] | Message> {
     return this.roleSearch.searchRoles(searchParams, opts);
   }
 
   /** Search roles by name only */
-  async searchByName(name: string, opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async searchByName(name: string, opts?: FacadeOpts): Promise<RoleSummary[] | Message> {
     return this.roleSearch.searchByName(name, opts);
   }
 
   /** Filter roles by active status */
-  async filterByActiveStatus(active: boolean, opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async filterByActiveStatus(active: boolean, opts?: FacadeOpts): Promise<RoleSummary[] | Message> {
     return this.roleSearch.filterByActiveStatus(active, opts);
   }
 
   /** Get only active roles */
-  async getActiveRoles(opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async getActiveRoles(opts?: FacadeOpts): Promise<RoleSummary[] | Message> {
     return this.roleSearch.getActiveRoles(opts);
   }
 
   /** Get only inactive roles */
-  async getInactiveRoles(opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async getInactiveRoles(opts?: FacadeOpts): Promise<RoleSummary[] | Message> {
     return this.roleSearch.getInactiveRoles(opts);
   }
 
   /** Clear search filters */
-  async clearSearch(opts?: FacadeOpts): Promise<RoleSummary[]> {
+  async clearSearch(opts?: FacadeOpts): Promise<RoleSummary[] | Message> {
     return this.roleSearch.clearSearch(opts);
   }
 
@@ -249,7 +256,7 @@ export class RolesFacade {
     partialName: string,
     maxSuggestions?: number,
     opts?: FacadeOpts
-  ): Promise<string[]> {
+  ): Promise<string[] | Message> {
     return this.roleSearch.getSearchSuggestions(partialName, maxSuggestions, opts);
   }
 
@@ -262,7 +269,7 @@ export class RolesFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.roleExport.exportRoles(roleIds, options, opts);
   }
 
@@ -270,12 +277,12 @@ export class RolesFacade {
   async exportAllVisibleRoles(
     options: Partial<RoleExportConfig>,
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.roleExport.exportAllVisibleRoles(options, opts);
   }
 
   /** Export only active roles */
-  async exportActiveRoles(options: Partial<RoleExportConfig>, opts?: FacadeOpts): Promise<void> {
+  async exportActiveRoles(options: Partial<RoleExportConfig>, opts?: FacadeOpts): Promise<Message> {
     return this.roleExport.exportActiveRoles(options, opts);
   }
 
@@ -284,17 +291,17 @@ export class RolesFacade {
     accessLevel: number,
     options: Partial<RoleExportConfig>,
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.roleExport.exportRolesByAccessLevel(accessLevel, options, opts);
   }
 
   /** Quick CSV export */
-  async quickCSVExport(roleIds: number[], opts?: FacadeOpts): Promise<void> {
+  async quickCSVExport(roleIds: number[], opts?: FacadeOpts): Promise<Message> {
     return this.roleExport.quickCSVExport(roleIds, opts);
   }
 
   /** Quick JSON export */
-  async quickJSONExport(roleIds: number[], opts?: FacadeOpts): Promise<void> {
+  async quickJSONExport(roleIds: number[], opts?: FacadeOpts): Promise<Message> {
     return this.roleExport.quickJSONExport(roleIds, opts);
   }
 
@@ -303,7 +310,7 @@ export class RolesFacade {
     roleIds: number[],
     format?: 'csv' | 'json' | 'pdf',
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.roleExport.exportDetailedReport(roleIds, format, opts);
   }
 
@@ -312,7 +319,7 @@ export class RolesFacade {
     roleIds: number[],
     format?: 'csv' | 'json',
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     return this.roleExport.exportSummaryReport(roleIds, format, opts);
   }
 
@@ -321,7 +328,7 @@ export class RolesFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts?: FacadeOpts
-  ): Promise<any[]> {
+  ): Promise<any[] | Message> {
     return this.roleExport.getExportPreview(roleIds, options, opts);
   }
 
