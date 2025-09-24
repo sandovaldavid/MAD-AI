@@ -1,11 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { ACTIVATE_ROLE_USECASE_PORT, DEACTIVATE_ROLE_USECASE_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
 import { RoleStateFacade } from './role-state.facade';
-import { Role } from '@domain/entities/role.entity';
 import { RoleApplicationMapper } from '@/app/application/mappers/role.mapper';
+import type { Message } from '@application/types/message.type';
 import type { FacadeOpts } from '@application/types/facade-opts';
 
 /**
@@ -25,14 +24,13 @@ export class RoleActivationFacade {
   private readonly activateRoleUC = inject(ACTIVATE_ROLE_USECASE_PORT);
   private readonly deactivateRoleUC = inject(DEACTIVATE_ROLE_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);
   private readonly roleState = inject(RoleStateFacade);
 
   /**
-   * Activates a role
+   * Activa un rol
    */
-  async activateRole(id: number, opts?: FacadeOpts): Promise<Role> {
+  async activateRole(id: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
       const role = await this.activateRoleUC.execute({
@@ -40,23 +38,22 @@ export class RoleActivationFacade {
         requesterId: currentUserId,
       });
 
-      // Update state
+      // Actualiza el estado
       const mappedRole = RoleApplicationMapper.toRoleSummary(role);
       this.roleState.updateRole(mappedRole);
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success('Role activated', `Role "${role.name}" is now active.`);
-      }
-
-      return role;
+      return {
+        success: true,
+        role,
+        message: `El rol "${role.name}" ha sido activado exitosamente.`,
+      };
     }, opts);
   }
 
   /**
-   * Deactivates a role
+   * Desactiva un rol
    */
-  async deactivateRole(id: number, opts?: FacadeOpts): Promise<Role> {
+  async deactivateRole(id: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
       const role = await this.deactivateRoleUC.execute({
@@ -64,26 +61,29 @@ export class RoleActivationFacade {
         requesterId: currentUserId,
       });
 
-      // Update state
+      // Actualiza el estado
       const mappedRole = RoleApplicationMapper.toRoleSummary(role);
       this.roleState.updateRole(mappedRole);
 
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success('Role deactivated', `Role "${role.name}" is now inactive.`);
-      }
-
-      return role;
+      return {
+        success: true,
+        role,
+        message: `El rol "${role.name}" ha sido desactivado exitosamente.`,
+      };
     }, opts);
   }
 
   /**
-   * Toggles role activation status
+   * Alterna el estado de activación de un rol
    */
-  async toggleRoleActivation(id: number, opts?: FacadeOpts): Promise<Role> {
+  async toggleRoleActivation(id: number, opts?: FacadeOpts): Promise<Message> {
     const currentRole = this.roleState.roles().find((role) => role.id === id);
     if (!currentRole) {
-      throw new Error(`Role with ID ${id} not found in current state`);
+      return {
+        success: false,
+        error: `No se encontró el rol con ID ${id} en el estado actual.`,
+        message: 'No se pudo alternar el estado del rol.',
+      };
     }
 
     return currentRole.isActive
@@ -92,9 +92,12 @@ export class RoleActivationFacade {
   }
 
   /**
-   * Executes operation with error handling and loading state
+   * Ejecuta una operación con manejo de errores y estado de carga
    */
-  private async executeOperation<T>(operation: () => Promise<T>, opts?: FacadeOpts): Promise<T> {
+  private async executeOperation<T>(
+    operation: () => Promise<T | Message>,
+    opts?: FacadeOpts
+  ): Promise<T | Message> {
     if (!opts?.skipLoading) this.roleState.setLoading(true);
     this.roleState.setError(null);
 
@@ -103,7 +106,11 @@ export class RoleActivationFacade {
     } catch (error: unknown) {
       const appError = this.errorTransformer.transform(error);
       this.roleState.setError(appError.message);
-      throw appError;
+      return {
+        success: false,
+        error: `Error: ${appError.message}`,
+        message: 'Ocurrió un error al realizar la operación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.roleState.setLoading(false);
     }
@@ -115,7 +122,7 @@ export class RoleActivationFacade {
   private getCurrentUserId(): number {
     const currentUser = this.authFacade.user();
     if (!currentUser?.id) {
-      throw new Error('No authenticated user found');
+      throw new Error('No se encontró un usuario autenticado');
     }
     return currentUser.id;
   }
