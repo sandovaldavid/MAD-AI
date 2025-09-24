@@ -9,12 +9,15 @@
 
       <div class="bulk-actions">
         @for (action of tableActions; track action) {
-          <ui-button
-            variant="secondary"
-            size="sm"
-            (click)="onBulkAction(action)">
+          <ui-button variant="secondary" size="sm" (click)="onBulkAction(action)">
             <ui-icon
-              [name]="action === 'delete' ? 'user-slash' : action === 'activate' ? 'check-circle' : 'x-circle'"
+              [name]="
+                action === 'delete'
+                  ? 'user-slash'
+                  : action === 'activate'
+                    ? 'check-circle'
+                    : 'x-circle'
+              "
               variant="outline"
               size="sm">
             </ui-icon>
@@ -41,7 +44,7 @@
                 [indeterminate]="isSomeSelected()"
                 (change)="onSelectAll()"
                 [disabled]="loading"
-                aria-label="Seleccionar todos los usuarios">
+                aria-label="Seleccionar todos los usuarios" />
             </th>
           }
 
@@ -89,11 +92,7 @@
             <div class="column-header">
               <span class="column-title">Rol</span>
               @if (isSortable('role')) {
-                <ui-icon
-                  [name]="getSortIcon('role')"
-                  variant="outline"
-                  size="sm"
-                  class="sort-icon">
+                <ui-icon [name]="getSortIcon('role')" variant="outline" size="sm" class="sort-icon">
                 </ui-icon>
               }
             </div>
@@ -137,7 +136,7 @@
       <tbody class="table-body">
         <!-- Loading State -->
         @if (loading) {
-          @for (i of [1,2,3,4,5]; track i) {
+          @for (i of [1, 2, 3, 4, 5]; track i) {
             <tr class="loading-row">
               @if (enableSelection) {
                 <td class="selection-cell">
@@ -177,168 +176,170 @@
         <!-- User Rows -->
         @else if (hasData()) {
           @for (user of _users(); track trackByUserId($index, user)) {
-              <tr class="user-row" [class.selected]="isUserSelected(user)">
-                <!-- Selection Cell -->
-                @if (enableSelection) {
-                  <td class="selection-cell">
-                    <input
-                      type="checkbox"
-                      class="checkbox-input"
-                      [checked]="isUserSelected(user)"
-                      (change)="onSelectUser(user)"
-                      [attr.aria-label]="'Seleccionar ' + user.displayName">
-                  </td>
-                }
+            <tr class="user-row" [class.selected]="isUserSelected(user)">
+              <!-- Selection Cell -->
+              @if (enableSelection) {
+                <td class="selection-cell">
+                  <input
+                    type="checkbox"
+                    class="checkbox-input"
+                    [checked]="isUserSelected(user)"
+                    (change)="onSelectUser(user)"
+                    [attr.aria-label]="'Seleccionar ' + user.displayName" />
+                </td>
+              }
 
-                <!-- User Cell -->
-                <td class="user-cell">
-                  <div class="user-info">
-                    @if (showAvatars) {
-                      <div class="user-avatar">
-                        @if (user.avatar) {
-                          <img
-                            [src]="user.avatar"
-                            [alt]="user.displayName + ' avatar'"
-                            class="avatar-image">
-                        } @else {
-                          <div class="avatar-initials">
-                            {{ getUserInitials(user) }}
-                          </div>
-                        }
-                      </div>
-                    }
-
-                    <div class="user-details">
-                      <div class="user-name">{{ user.displayName }}</div>
-                      <div class="user-username">@{{ user.username }}</div>
+              <!-- User Cell -->
+              <td class="user-cell">
+                <div class="user-info">
+                  @if (showAvatars) {
+                    <div class="user-avatar">
+                      @if (user.avatar) {
+                        <img
+                          [src]="user.avatar"
+                          [alt]="user.displayName + ' avatar'"
+                          class="avatar-image" />
+                      } @else {
+                        <div class="avatar-initials">
+                          {{ getUserInitials(user) }}
+                        </div>
+                      }
                     </div>
+                  }
+
+                  <div class="user-details">
+                    <div class="user-name">{{ user.displayName }}</div>
+                    <div class="user-username">{{ '@' }}{{ user.username }}</div>
                   </div>
-                </td>
+                </div>
+              </td>
 
-                <!-- Email Cell -->
-                <td class="email-cell">
-                  <div class="email-address">{{ user.email }}</div>
-                </td>
+              <!-- Email Cell -->
+              <td class="email-cell">
+                <div class="email-address">{{ user.email }}</div>
+              </td>
 
-                <!-- Role Cell -->
-                <td class="role-cell">
-                  <span class="role-badge" [class]="getRoleClass(user)">
-                    <ui-icon 
-                      [name]="getRoleIcon(user)" 
-                      variant="outline" 
+              <!-- Role Cell -->
+              <td class="role-cell">
+                <span class="role-badge" [class]="getRoleClass(user)">
+                  <ui-icon
+                    [name]="getRoleIcon(user)"
+                    variant="outline"
+                    size="sm"
+                    [class]="getRoleIconColor(user)">
+                  </ui-icon>
+                  {{ user.role | titlecase }}
+                </span>
+              </td>
+
+              <!-- Status Cell -->
+              <td class="status-cell">
+                <span class="status-badge" [class]="getStatusClass(user.status)">
+                  <ui-icon [name]="user.status.iconName" variant="outline" size="sm"></ui-icon>
+                  {{ user.status.label }}
+                </span>
+              </td>
+
+              <!-- Activity Cell -->
+              <td class="activity-cell">
+                <div class="activity-info">
+                  <div class="activity-date">{{ formatDate(user.lastActivity) }}</div>
+                  @if (user.lastActivityDisplay !== formatDate(user.lastActivity)) {
+                    <div class="activity-details">{{ user.lastActivityDisplay }}</div>
+                  }
+                </div>
+              </td>
+
+              <!-- Actions Cell -->
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  @if (userActions.canView) {
+                    <ui-button
+                      variant="ghost"
                       size="sm"
-                      [class]="getRoleIconColor(user)">
-                    </ui-icon>
-                    {{ user.role | titlecase }}
-                  </span>
-                </td>
+                      (click)="onUserAction('view', user)"
+                      [attr.aria-label]="'Ver ' + user.displayName">
+                      <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
+                    </ui-button>
+                  }
 
-                <!-- Status Cell -->
-                <td class="status-cell">
-                  <span class="status-badge" [class]="getStatusClass(user.status)">
-                    <ui-icon [name]="user.status.iconName" variant="outline" size="sm"></ui-icon>
-                    {{ user.status.label }}
-                  </span>
-                </td>
+                  @if (userActions.canEdit) {
+                    <ui-button
+                      variant="ghost"
+                      size="sm"
+                      (click)="onUserAction('edit', user)"
+                      [attr.aria-label]="'Editar ' + user.displayName">
+                      <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
+                    </ui-button>
+                  }
 
-                <!-- Activity Cell -->
-                <td class="activity-cell">
-                  <div class="activity-info">
-                    <div class="activity-date">{{ formatDate(user.lastActivity) }}</div>
-                    @if (user.lastActivityDisplay !== formatDate(user.lastActivity)) {
-                      <div class="activity-details">{{ user.lastActivityDisplay }}</div>
-                    }
-                  </div>
-                </td>
-
-                <!-- Actions Cell -->
-                <td class="actions-cell">
-                  <div class="action-buttons">
-                    @if (userActions.canView) {
+                  <!-- Action Dropdown Menu (simplified) -->
+                  <div class="action-dropdown">
+                    @if (userActions.canActivate && !user.isActive) {
                       <ui-button
                         variant="ghost"
                         size="sm"
-                        (click)="onUserAction('view', user)"
-                        [attr.aria-label]="'Ver ' + user.displayName">
-                        <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
+                        (click)="onUserAction('activate', user)"
+                        [attr.aria-label]="'Activar ' + user.displayName">
+                        <ui-icon name="check-circle" variant="outline" size="sm"></ui-icon>
                       </ui-button>
                     }
 
-                    @if (userActions.canEdit) {
+                    @if (userActions.canDeactivate && user.isActive) {
                       <ui-button
                         variant="ghost"
                         size="sm"
-                        (click)="onUserAction('edit', user)"
-                        [attr.aria-label]="'Editar ' + user.displayName">
-                        <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
+                        (click)="onUserAction('deactivate', user)"
+                        [attr.aria-label]="'Desactivar ' + user.displayName">
+                        <ui-icon name="x-circle" variant="outline" size="sm"></ui-icon>
                       </ui-button>
                     }
 
-                    <!-- Action Dropdown Menu (simplified) -->
-                    <div class="action-dropdown">
-                      @if (userActions.canActivate && !user.isActive) {
-                        <ui-button
-                          variant="ghost"
-                          size="sm"
-                          (click)="onUserAction('activate', user)"
-                          [attr.aria-label]="'Activar ' + user.displayName">
-                          <ui-icon name="check-circle" variant="outline" size="sm"></ui-icon>
-                        </ui-button>
-                      }
+                    @if (userActions.canResetPassword) {
+                      <ui-button
+                        variant="ghost"
+                        size="sm"
+                        (click)="onUserAction('resetPassword', user)"
+                        [attr.aria-label]="'Restablecer contraseña para ' + user.displayName">
+                        <ui-icon name="key" variant="outline" size="sm"></ui-icon>
+                      </ui-button>
+                    }
 
-                      @if (userActions.canDeactivate && user.isActive) {
-                        <ui-button
-                          variant="ghost"
-                          size="sm"
-                          (click)="onUserAction('deactivate', user)"
-                          [attr.aria-label]="'Desactivar ' + user.displayName">
-                          <ui-icon name="x-circle" variant="outline" size="sm"></ui-icon>
-                        </ui-button>
-                      }
-
-                      @if (userActions.canResetPassword) {
-                        <ui-button
-                          variant="ghost"
-                          size="sm"
-                          (click)="onUserAction('resetPassword', user)"
-                          [attr.aria-label]="'Restablecer contraseña para ' + user.displayName">
-                          <ui-icon name="key" variant="outline" size="sm"></ui-icon>
-                        </ui-button>
-                      }
-
-                      @if (userActions.canDelete) {
-                        <ui-button
-                          variant="ghost"
-                          size="sm"
-                          (click)="onUserAction('delete', user)"
-                          class="danger-action"
-                          [attr.aria-label]="'Desactivar ' + user.displayName">
-                          <ui-icon name="user-slash" variant="outline" size="sm"></ui-icon>
-                        </ui-button>
-                      }
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            }
-          }
-
-          <!-- Empty State -->
-          @else {
-            <tr class="empty-row">
-              <td [attr.colspan]="enableSelection ? 7 : 6" class="empty-cell">
-                <div class="empty-state">
-                  <ui-icon name="user-group" variant="outline" size="xl" class="empty-icon"></ui-icon>
-                  <div class="empty-content">
-                    <h3 class="empty-title">No se encontraron usuarios</h3>
-                    <p class="empty-description">No hay usuarios para mostrar. Intente ajustar sus filtros o crear un nuevo usuario.</p>
+                    @if (userActions.canDelete) {
+                      <ui-button
+                        variant="ghost"
+                        size="sm"
+                        (click)="onUserAction('delete', user)"
+                        class="danger-action"
+                        [attr.aria-label]="'Desactivar ' + user.displayName">
+                        <ui-icon name="user-slash" variant="outline" size="sm"></ui-icon>
+                      </ui-button>
+                    }
                   </div>
                 </div>
               </td>
             </tr>
           }
+        }
+
+        <!-- Empty State -->
+        @else {
+          <tr class="empty-row">
+            <td [attr.colspan]="enableSelection ? 7 : 6" class="empty-cell">
+              <div class="empty-state">
+                <ui-icon name="user-group" variant="outline" size="xl" class="empty-icon"></ui-icon>
+                <div class="empty-content">
+                  <h3 class="empty-title">No se encontraron usuarios</h3>
+                  <p class="empty-description">
+                    No hay usuarios para mostrar. Intente ajustar sus filtros o crear un nuevo
+                    usuario.
+                  </p>
+                </div>
+              </div>
+            </td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
-  <!-- End table wrapper -->
 </div>
