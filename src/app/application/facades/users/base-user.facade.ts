@@ -24,15 +24,15 @@ import {
   LIST_USERS_USECASE_PORT,
   ACTIVATE_USER_USECASE_PORT,
   DEACTIVATE_USER_USECASE_PORT,
+  CHANGE_PASSWORD_USECASE_PORT,
 } from '@di/tokens';
 
 // Domain Imports
 import type { User } from '@domain/entities/user.entity';
-import type { UserListFilterContract } from '@/app/domain/repositories/business/user.contract';
+import type { UserListFilterContract } from '@domain/repositories/business/user.contract';
 
 // Application Layer Imports
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '../notifications.facade';
 import { AuthFacade } from '../auth.facade';
 import type {
   BulkCreateUsersResult,
@@ -75,6 +75,9 @@ export abstract class BaseUserFacade {
   // Dependencies Injection
   // ============================================================================
 
+  /** Use case for changing/resetting user password */
+  protected readonly changePasswordUC = inject(CHANGE_PASSWORD_USECASE_PORT);
+
   /** Use case for creating new users */
   protected readonly createUserUC = inject(CREATE_USER_USECASE_PORT);
 
@@ -104,9 +107,6 @@ export abstract class BaseUserFacade {
 
   /** Service for transforming domain errors to user-friendly messages */
   protected readonly errorTransformer = inject(ApplicationErrorTransformer);
-
-  /** Facade for managing user notifications */
-  protected readonly notifications = inject(NotificationsFacade);
 
   /** Facade for accessing authentication state and current user information */
   protected readonly auth = inject(AuthFacade);
