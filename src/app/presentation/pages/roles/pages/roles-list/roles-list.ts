@@ -10,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RolesFacade } from '@application/facades/role';
+import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleTable } from '../../components/role-table/role-table';
@@ -36,6 +37,8 @@ export class RolesList {
   private facade = inject(RolesFacade);
   private router = inject(Router);
   private breadcrumbService = inject(BreadcrumbService);
+
+  private notifications = inject(NotificationsFacade);
 
   readonly loading = this.facade.loading;
   readonly roles = computed(() => RolePresentationMapper.toRoleModels(this.facade.roles()));
@@ -221,14 +224,38 @@ export class RolesList {
   }
 
   onToggleActive(rid: number, status: boolean) {
-    void this.facade.toggleRoleActivation(rid);
-    console.log('Toggle active for role:', rid);
-    console.log('Status Role:', status);
+    void this.facade
+      .toggleRoleActivation(rid)
+      .then(() => {
+        this.notifications.success(
+          status ? 'Rol activado' : 'Rol desactivado',
+          `El rol con ID ${rid} ha sido ${status ? 'activado' : 'desactivado'} correctamente.`
+        );
+      })
+      .catch((error) => {
+        this.notifications.notificationError(
+          'Error al cambiar estado del rol',
+          typeof error === 'string' ? error : 'No se pudo cambiar el estado del rol.'
+        );
+      });
   }
 
   onDelete(rid: number) {
     console.log('Role Id to Delete: ', rid);
-    void this.facade.deleteRole(rid);
+    void this.facade
+      .deleteRole(rid)
+      .then(() => {
+        this.notifications.success(
+          'Rol eliminado',
+          `El rol con ID ${rid} ha sido eliminado correctamente.`
+        );
+      })
+      .catch((error) => {
+        this.notifications.notificationError(
+          'Error al eliminar rol',
+          typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
+        );
+      });
   }
 
   // New methods for RoleTable integration
@@ -239,13 +266,58 @@ export class RolesList {
   onBulkAction(event: { action: string; roleIds: number[] }) {
     switch (event.action) {
       case 'delete':
-        event.roleIds.forEach((id) => this.facade.deleteRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .deleteRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol eliminado',
+                `El rol con ID ${id} ha sido eliminado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al eliminar rol',
+                typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
+              );
+            });
+        });
         break;
       case 'activate':
-        event.roleIds.forEach((id) => this.facade.activateRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .activateRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol activado',
+                `El rol con ID ${id} ha sido activado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al activar rol',
+                typeof error === 'string' ? error : 'No se pudo activar el rol.'
+              );
+            });
+        });
         break;
       case 'deactivate':
-        event.roleIds.forEach((id) => this.facade.deactivateRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .deactivateRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol desactivado',
+                `El rol con ID ${id} ha sido desactivado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al desactivar rol',
+                typeof error === 'string' ? error : 'No se pudo desactivar el rol.'
+              );
+            });
+        });
         break;
       case 'export':
         // Using proper RoleExportOptions interface
@@ -264,7 +336,14 @@ export class RolesList {
     roleIds: number[];
     includeDescription?: boolean;
     includeUserCount?: boolean;
-  }) {
+  }): Promise<void> {
+    if (!event.roleIds || event.roleIds.length === 0) {
+      await this.notifications.warning(
+        'Exportación sin roles',
+        'No hay roles seleccionados para exportar.'
+      );
+      return;
+    }
     try {
       // Create proper export options using RoleExportOptions interface
       const exportOptions: Partial<RoleExportOptions> = {
@@ -278,6 +357,10 @@ export class RolesList {
       };
 
       await this.facade.exportRoles(event.roleIds, exportOptions);
+      this.notifications.success(
+        'Exportación exitosa',
+        `Se exportaron ${event.roleIds.length} roles en formato ${event.format.toUpperCase()}.`
+      );
     } catch (error) {
       // Always serialize error for SSR/prerendering
       const errorStr =
@@ -285,29 +368,39 @@ export class RolesList {
           ? JSON.stringify(error, Object.getOwnPropertyNames(error))
           : String(error);
       console.error('Export failed:', errorStr);
+      this.notifications.notificationError(
+        'Error en exportación',
+        errorStr || 'No se pudo exportar los roles.'
+      );
     }
   }
 
-  // View mode toggle
-  setViewMode(mode: 'cards' | 'table') {
-    this.viewMode.set(mode);
-  }
-
-  // Advanced filters methods
   toggleAdvancedFilters() {
     this.showAdvancedFilters.update((show) => !show);
   }
 
   updateSearch(value: string) {
     this.search.set(value);
+    if (value) {
+      this.notifications.info('Filtro aplicado', `Filtro de búsqueda: "${value}"`);
+    }
   }
 
   updateActiveFilter(value: boolean | null) {
     this.activeFilter.set(value);
+    if (value !== null) {
+      this.notifications.info(
+        'Filtro aplicado',
+        `Filtro de estado: ${value ? 'Activos' : 'Inactivos'}`
+      );
+    }
   }
 
   updateAccessLevelFilter(value: number | null) {
     this.accessLevelFilter.set(value);
+    if (value !== null) {
+      this.notifications.info('Filtro aplicado', `Filtro de nivel de acceso: Nivel ${value}`);
+    }
   }
 
   updateUserCountRange(min: number | null, max: number | null) {
