@@ -196,8 +196,8 @@ export class NotificationsFacade {
       const notification = Notification.createWithId(
         {
           type: request.type,
-          message: request.message,
-          title: undefined,
+          title: request.message,
+          message: request.description ?? '',
           userId: request.userId?.toString(),
         },
         notificationId
