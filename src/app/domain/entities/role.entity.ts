@@ -18,6 +18,7 @@ export class Role {
   private _isActive: boolean;
   private _description?: string;
   private _userCount?: number;
+  private readonly _createdAt?: Date;
 
   private constructor(
     id: number,
@@ -25,7 +26,8 @@ export class Role {
     accessLevel: number,
     isActive = false,
     description?: string,
-    userCount?: number
+    userCount?: number,
+    createdAt?: Date
   ) {
     this._id = id;
     this._name = name;
@@ -33,6 +35,7 @@ export class Role {
     this._isActive = isActive;
     this._description = description;
     this._userCount = userCount || 0;
+    this._createdAt = createdAt;
   }
 
   /**
@@ -45,6 +48,7 @@ export class Role {
     isActive?: boolean;
     description?: string | null;
     userCount?: number;
+    createdAt?: Date;
   }): Role {
     const errors: FieldError[] = [];
 
@@ -106,7 +110,8 @@ export class Role {
       accessLevel,
       !!props.isActive,
       props.description ?? undefined,
-      props.userCount
+      props.userCount,
+      props.createdAt
     );
   }
 
@@ -133,6 +138,10 @@ export class Role {
 
   get userCount(): number {
     return this._userCount ?? 0;
+  }
+
+  get createdAt(): Date | undefined {
+    return this._createdAt;
   }
 
   // ---------- Business Methods ----------
