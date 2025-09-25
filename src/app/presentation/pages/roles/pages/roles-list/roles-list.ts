@@ -19,21 +19,46 @@ import {
   type PageHeaderConfig,
 } from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
+import {
+  ConfirmationModal,
+  ModalConfig,
+  ModalActionEvent,
+} from '@presentation/shared/components/confirmation-modal/confirmation-modal';
 import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
 import type { RoleExportOptions } from '../../mappers/role-export.mapper';
 
+export type PendingRoleAction = {
+  type: 'delete' | 'activate' | 'deactivate';
+  roleId: number;
+  status?: boolean;
+};
+
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [CommonModule, Icon, RoleCard, RoleTable, PageHeader, ErrorDisplay, RoleSkeleton],
+  imports: [
+    CommonModule,
+    Icon,
+    RoleCard,
+    RoleTable,
+    PageHeader,
+    ErrorDisplay,
+    RoleSkeleton,
+    ConfirmationModal,
+  ],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RolesList {
+  // Confirmation modal state
+  confirmVisible = signal(false);
+  confirmConfig = signal<ModalConfig | null>(null);
+  confirmLoading = signal(false);
+  pendingAction: PendingRoleAction | null = null;
   private facade = inject(RolesFacade);
   private router = inject(Router);
   private breadcrumbService = inject(BreadcrumbService);
@@ -224,38 +249,91 @@ export class RolesList {
   }
 
   onToggleActive(rid: number, status: boolean) {
-    void this.facade
-      .toggleRoleActivation(rid)
-      .then(() => {
-        this.notifications.success(
-          status ? 'Rol activado' : 'Rol desactivado',
-          `El rol con ID ${rid} ha sido ${status ? 'activado' : 'desactivado'} correctamente.`
-        );
-      })
-      .catch((error) => {
-        this.notifications.notificationError(
-          'Error al cambiar estado del rol',
-          typeof error === 'string' ? error : 'No se pudo cambiar el estado del rol.'
-        );
-      });
+    this.pendingAction = { type: status ? 'deactivate' : 'activate', roleId: rid, status };
+    this.confirmConfig.set({
+      title: status ? 'Desactivar Rol' : 'Activar Rol',
+      description: `¿Estás seguro que deseas ${status ? 'desactivar' : 'activar'} el rol con ID ${rid}?`,
+      iconVariant: status ? 'warning' : 'success',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        {
+          label: status ? 'Desactivar' : 'Activar',
+          variant: status ? 'danger' : 'primary',
+          action: 'confirm',
+        },
+      ],
+    });
+    this.confirmVisible.set(true);
   }
 
   onDelete(rid: number) {
-    console.log('Role Id to Delete: ', rid);
-    void this.facade
-      .deleteRole(rid)
-      .then(() => {
-        this.notifications.success(
-          'Rol eliminado',
-          `El rol con ID ${rid} ha sido eliminado correctamente.`
-        );
-      })
-      .catch((error) => {
-        this.notifications.notificationError(
-          'Error al eliminar rol',
-          typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
-        );
-      });
+    this.pendingAction = { type: 'delete', roleId: rid };
+    this.confirmConfig.set({
+      title: 'Eliminar Rol',
+      description: `¿Estás seguro que deseas eliminar el rol con ID ${rid}? Esta acción no se puede deshacer.`,
+      iconVariant: 'error',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        { label: 'Eliminar', variant: 'danger', action: 'confirm' },
+      ],
+    });
+    this.confirmVisible.set(true);
+  }
+  onConfirmModalAction(event: ModalActionEvent) {
+    if (!this.pendingAction) {
+      this.confirmVisible.set(false);
+      return;
+    }
+    if (event.action === 'confirm') {
+      this.confirmLoading.set(true);
+      const { type, roleId, status } = this.pendingAction;
+      if (type === 'delete') {
+        void this.facade
+          .deleteRole(roleId)
+          .then(() => {
+            this.notifications.success(
+              'Rol eliminado',
+              `El rol con ID ${roleId} ha sido eliminado correctamente.`
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              'Error al eliminar rol',
+              typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      } else if (type === 'activate' || type === 'deactivate') {
+        void this.facade
+          .toggleRoleActivation(roleId)
+          .then(() => {
+            this.notifications.success(
+              type === 'activate' ? 'Rol activado' : 'Rol desactivado',
+              `El rol con ID ${roleId} ha sido ${type === 'activate' ? 'activado' : 'desactivado'} correctamente.`
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              type === 'activate' ? 'Error al activar rol' : 'Error al desactivar rol',
+              typeof error === 'string'
+                ? error
+                : `No se pudo ${type === 'activate' ? 'activar' : 'desactivar'} el rol.`
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      }
+    } else {
+      this.confirmVisible.set(false);
+      this.pendingAction = null;
+    }
   }
 
   // New methods for RoleTable integration

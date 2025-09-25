@@ -1,4 +1,10 @@
 <section class="dashboard-container">
+  <!-- Confirmation Modal -->
+  <app-confirmation-modal
+    [visible]="!!confirmVisible() && !!confirmConfig()"
+    [config]="confirmConfig()!"
+    [loading]="confirmLoading()"
+    (actionTriggered)="onConfirmModalAction($event)" />
   <!-- Header Section -->
   <app-page-header [config]="headerConfig()" />
 
