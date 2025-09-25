@@ -93,20 +93,24 @@
   @apply hover:border-info-300 dark:hover:border-info-700;
 }
 
+.stat-icon{
+  @apply text-2xl text-neutral-600 dark:text-white;
+}
+
 .stat-icon-wrapper {
   @apply w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-200;
 }
 
 .stat-icon-users {
-  @apply bg-primary-100 dark:bg-primary-900/30;
+  @apply bg-primary-100 dark:bg-primary-900;
 }
 
 .stat-icon-status {
-  @apply bg-successful-100 dark:bg-successful-900/30;
+  @apply bg-successful-100 dark:bg-successful-800;
 }
 
 .stat-icon-date {
-  @apply bg-info-100 dark:bg-info-900/30;
+  @apply bg-info-100 dark:bg-info-800;
 }
 
 .stat-content {

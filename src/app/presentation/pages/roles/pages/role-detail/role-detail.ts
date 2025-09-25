@@ -47,7 +47,7 @@ export class RoleDetail {
     return {
       title: role ? role.displayName : 'Detalle del Rol',
       description: role
-        ? `${levelInfo.description} - ${role.description || 'Sin descripción'}`
+        ? `${levelInfo.description}`
         : 'Información detallada del rol seleccionado',
       icon: role ? getRoleAccessLevelIcon(role.accessLevel) : 'shield-check',
       showBreadcrumbs: true,
