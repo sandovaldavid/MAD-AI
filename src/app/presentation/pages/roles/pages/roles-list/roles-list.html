@@ -38,111 +38,123 @@
       </div>
     </div>
 
-    <!-- Advanced Filters Panel -->
-    @if (showAdvancedFilters()) {
-      <div
-        class="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Access Level Filter -->
-          <div>
-            <label class="form-label">Nivel de Acceso</label>
-            <select
-              class="form-input w-full"
-              [value]="accessLevelFilter() ?? ''"
-              (change)="
-                updateAccessLevelFilter(
-                  $any($event.target).value ? +$any($event.target).value : null
-                )
-              ">
-              <option value="">Todos los niveles</option>
-              @for (level of getAccessLevelOptions(); track level.value) {
-                <option [value]="level.value">{{ level.label }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- User Count Range -->
-          <div>
-            <label class="form-label">Rango de Usuarios</label>
-            <div class="flex gap-2">
-              <input
-                type="number"
-                class="form-input flex-1"
-                placeholder="Mín"
-                min="0"
-                [value]="userCountRangeFilter().min || ''"
-                (input)="
-                  updateUserCountRange(
-                    $any($event.target).value ? +$any($event.target).value : null,
-                    userCountRangeFilter().max
-                  )
-                " />
-              <input
-                type="number"
-                class="form-input flex-1"
-                placeholder="Máx"
-                min="0"
-                [value]="userCountRangeFilter().max || ''"
-                (input)="
-                  updateUserCountRange(
-                    userCountRangeFilter().min,
+    <!-- Animación de espacio para el panel de filtros avanzados -->
+    <div
+      class="advanced-filters-wrapper"
+      [ngClass]="{
+        'advanced-filters-wrapper--open': advancedFiltersWrapperOpen(),
+        'advanced-filters-wrapper--closed': !advancedFiltersWrapperOpen(),
+      }">
+      @if (showAdvancedFiltersPanel()) {
+        <div
+          class="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg"
+          [ngClass]="{
+            'advanced-filters-enter': advancedFiltersEntering(),
+            'advanced-filters-enter-active': showAdvancedFilters() && !advancedFiltersEntering(),
+            'advanced-filters-leave advanced-filters-leave-active': advancedFiltersLeaving(),
+          }">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Access Level Filter -->
+            <div>
+              <label class="form-label">Nivel de Acceso</label>
+              <select
+                class="form-input w-full"
+                [value]="accessLevelFilter() ?? ''"
+                (change)="
+                  updateAccessLevelFilter(
                     $any($event.target).value ? +$any($event.target).value : null
                   )
-                " />
+                ">
+                <option value="">Todos los niveles</option>
+                @for (level of getAccessLevelOptions(); track level.value) {
+                  <option [value]="level.value">{{ level.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- User Count Range -->
+            <div>
+              <label class="form-label">Rango de Usuarios</label>
+              <div class="flex gap-2">
+                <input
+                  type="number"
+                  class="form-input flex-1"
+                  placeholder="Mín"
+                  min="0"
+                  [value]="userCountRangeFilter().min || ''"
+                  (input)="
+                    updateUserCountRange(
+                      $any($event.target).value ? +$any($event.target).value : null,
+                      userCountRangeFilter().max
+                    )
+                  " />
+                <input
+                  type="number"
+                  class="form-input flex-1"
+                  placeholder="Máx"
+                  min="0"
+                  [value]="userCountRangeFilter().max || ''"
+                  (input)="
+                    updateUserCountRange(
+                      userCountRangeFilter().min,
+                      $any($event.target).value ? +$any($event.target).value : null
+                    )
+                  " />
+              </div>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+              <label class="form-label">Ordenar por</label>
+              <select
+                class="form-input w-full"
+                [value]="sortBy()"
+                (change)="updateSort($any($event.target).value)">
+                @for (option of getSortOptions(); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Sort Direction -->
+            <div>
+              <label class="form-label">Dirección</label>
+              <select
+                class="form-input w-full"
+                [value]="sortDirection()"
+                (change)="updateSort(sortBy(), $any($event.target).value)">
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+              </select>
             </div>
           </div>
 
-          <!-- Sort By -->
-          <div>
-            <label class="form-label">Ordenar por</label>
-            <select
-              class="form-input w-full"
-              [value]="sortBy()"
-              (change)="updateSort($any($event.target).value)">
-              @for (option of getSortOptions(); track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
+          <!-- Filter Actions -->
+          <div
+            class="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <div class="text-sm text-neutral-600 dark:text-neutral-400">
+              @if (filterStats().hasFilters) {
+                Mostrando {{ filterStats().filtered }} de {{ filterStats().total }} roles ({{
+                  filterStats().active
+                }}
+                activos)
+              } @else {
+                {{ filterStats().total }} roles en total ({{ filterStats().active }} activos)
               }
-            </select>
-          </div>
+            </div>
 
-          <!-- Sort Direction -->
-          <div>
-            <label class="form-label">Dirección</label>
-            <select
-              class="form-input w-full"
-              [value]="sortDirection()"
-              (change)="updateSort(sortBy(), $any($event.target).value)">
-              <option value="asc">Ascendente</option>
-              <option value="desc">Descendente</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Filter Actions -->
-        <div
-          class="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <div class="text-sm text-neutral-600 dark:text-neutral-400">
             @if (filterStats().hasFilters) {
-              Mostrando {{ filterStats().filtered }} de {{ filterStats().total }} roles ({{
-                filterStats().active
-              }}
-              activos)
-            } @else {
-              {{ filterStats().total }} roles en total ({{ filterStats().active }} activos)
+              <button
+                class="btn btn--danger px-3 py-1 text-sm text-error-500 dark:text-error-400 hover:text-neutral-50 border border-error-500 dark:border-error-400 rounded-md hover:bg-error-600 dark:hover:bg-error-400 focus-visible:ring-error-500/25 dark:focus-visible:ring-error-400/25 transition-colors flex items-center"
+                (click)="clearAllFilters()">
+                <ui-icon name="x-mark" class="size-4 mr-1" />
+                Limpiar filtros
+              </button>
             }
           </div>
-
-          @if (filterStats().hasFilters) {
-            <button
-              class="btn btn--danger px-3 py-1 text-sm text-error-500 dark:text-error-400 hover:text-neutral-50 border border-error-500 dark:border-error-400 rounded-md hover:bg-error-600 dark:hover:bg-error-400 focus-visible:ring-error-500/25 dark:focus-visible:ring-error-400/25 transition-colors flex items-center"
-              (click)="clearAllFilters()">
-              <ui-icon name="x-mark" class="size-4 mr-1" />
-              Limpiar filtros
-            </button>
-          }
         </div>
-      </div>
-    }
+      }
+    </div>
   </div>
 
   <!-- Main Content -->

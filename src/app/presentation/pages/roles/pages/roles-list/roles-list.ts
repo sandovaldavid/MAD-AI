@@ -84,6 +84,17 @@ export class RolesList {
   sortBy = signal<'name' | 'accessLevel' | 'userCount' | 'isActive'>('name');
   sortDirection = signal<'asc' | 'desc'>('asc');
   showAdvancedFilters = signal(false);
+  // Animación de salida para filtros avanzados
+  advancedFiltersLeaving = signal(false);
+  // Animación de entrada para filtros avanzados
+  advancedFiltersEntering = signal(false);
+  // Animación de wrapper para altura y opacidad
+  advancedFiltersWrapperOpen = signal(false);
+
+  // Método público para mostrar el panel (entrada/salida)
+  showAdvancedFiltersPanel() {
+    return this.showAdvancedFilters() || this.advancedFiltersLeaving();
+  }
 
   constructor() {
     // Load initial data
@@ -134,7 +145,6 @@ export class RolesList {
           (role.description && role.description.toLowerCase().includes(searchTerm))
       );
     }
-
     // Active filter
     const activeFilterValue = this.activeFilter();
     if (activeFilterValue !== null) {
@@ -148,6 +158,7 @@ export class RolesList {
     }
 
     // User count range filter
+    // (Eliminado: getter duplicado showAdvancedFiltersPanel)
     const userCountRange = this.userCountRangeFilter();
     if (userCountRange.min !== null || userCountRange.max !== null) {
       filtered = filtered.filter((role) => {
@@ -455,7 +466,22 @@ export class RolesList {
   }
 
   toggleAdvancedFilters() {
-    this.showAdvancedFilters.update((show) => !show);
+    if (this.showAdvancedFilters()) {
+      // Animación de salida
+      this.advancedFiltersLeaving.set(true);
+      this.showAdvancedFilters.set(false);
+      this.advancedFiltersWrapperOpen.set(false);
+      setTimeout(() => {
+        this.advancedFiltersLeaving.set(false);
+      }, 200); // Duración igual a la transición CSS
+    } else {
+      this.showAdvancedFilters.set(true);
+      this.advancedFiltersEntering.set(true);
+      setTimeout(() => {
+        this.advancedFiltersEntering.set(false);
+        this.advancedFiltersWrapperOpen.set(true);
+      }, 10); // Pequeño delay para disparar la transición
+    }
   }
 
   updateSearch(value: string) {
