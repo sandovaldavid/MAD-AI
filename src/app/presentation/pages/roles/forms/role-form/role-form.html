@@ -26,7 +26,7 @@
         </label>
         <select id="accessLevel" formControlName="accessLevel" class="form-input">
           @for (level of accessLevels; track level.value) {
-            <option [value]="level.value">{{ level.label }} - {{ level.description }}</option>
+            <option [value]="level.value">{{ level.label }}</option>
           }
         </select>
         @if (getFieldError('accessLevel')) {

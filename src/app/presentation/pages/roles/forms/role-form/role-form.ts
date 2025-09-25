@@ -8,6 +8,8 @@ import {
   output,
   effect,
 } from '@angular/core';
+// Access level config for consistent labels/descriptions
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RolesFacade } from '@application/facades/role';
@@ -60,14 +62,14 @@ export class RoleFormComponent {
     isActive: [true],
   });
 
-  // Access levels configuration
-  readonly accessLevels = [
-    { value: 1, label: 'Nivel 1', description: 'Acceso total al sistema' },
-    { value: 2, label: 'Nivel 2', description: 'Gestión administrativa' },
-    { value: 3, label: 'Nivel 3', description: 'Operaciones moderadas' },
-    { value: 4, label: 'Nivel 4', description: 'Operaciones básicas' },
-    { value: 5, label: 'Nivel 5', description: 'Solo consulta' },
-  ];
+  // Access levels configuration (from config)
+  readonly accessLevels = Object.entries(ROLE_ACCESS_LEVEL_CONFIG).map(([key, info]) => ({
+    value: Number(key),
+    label: `Nivel ${key} - ${info.label}`,
+    description: info.description,
+    color: info.color,
+    // Optionally add icon if needed: icon: ROLE_ACCESS_LEVEL_ICONS[Number(key)]
+  }));
 
   // Preview role model computed from form values
   readonly previewRole = computed((): RoleModel => {
