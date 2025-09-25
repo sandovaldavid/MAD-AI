@@ -77,11 +77,11 @@
 
               <!-- Access Level Stat -->
               <div class="stat-card stat-card-access" [ngClass]="getRoleAccessLevelInfo().iconBg">
-                <div class="stat-icon-wrapper">
+                <div class="stat-icon-wrapper" [ngClass]="getRoleAccessLevelInfo().iconBg">
                   <ui-icon
                     [name]="getRoleAccessLevelIcon()"
                     size="lg"
-                    [ngClass]="getRoleAccessLevelInfo().iconColor + ' stat-icon'" />
+                    [ngClass]="getRoleAccessLevelInfo().iconColor" />
                 </div>
                 <div class="stat-content">
                   <div class="stat-value" [ngClass]="getRoleAccessLevelInfo().iconColor">
@@ -112,7 +112,7 @@
                 <div class="stat-content">
                   <div class="stat-value">
                     @if (roleModel()!.createdAt) {
-                      {{ roleModel()!.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                      {{ roleModel()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
                     } @else {
                       <span class="text-neutral-400">Sin fecha</span>
                     }

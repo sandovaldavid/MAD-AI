@@ -26,7 +26,7 @@
 }
 
 .role-icon-container {
-  @apply p-4 rounded-2xl bg-gradient-to-br shadow-lg transition-all duration-300 hover:scale-105;
+  @apply p-4 rounded-2xl;
 }
 
 .role-header-info {
@@ -107,10 +107,6 @@
 
 .stat-icon-date {
   @apply bg-info-100 dark:bg-info-900/30;
-}
-
-.stat-icon {
-  @apply text-neutral-700 dark:text-neutral-300;
 }
 
 .stat-content {
@@ -246,16 +242,6 @@
 /* Access level indicator */
 .access-level-indicator {
   @apply relative overflow-hidden;
-}
-
-.access-level-indicator::before {
-  @apply absolute inset-0 opacity-10 transition-opacity duration-300;
-  content: '';
-  background: currentColor;
-}
-
-.access-level-indicator:hover::before {
-  @apply opacity-20;
 }
 
 /* =============================================================================
