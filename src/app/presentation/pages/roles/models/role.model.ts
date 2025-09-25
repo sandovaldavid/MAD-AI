@@ -6,4 +6,5 @@ export interface RoleModel {
   isActive: boolean;
   description?: string;
   userCount?: number;
+  createdAt?: Date;
 }
