@@ -194,22 +194,10 @@
         <div class="flex items-center justify-between rounded-xl">
           <div class="flex items-center space-x-2">
             <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Vista:</span>
-            <div class="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
-              <button
-                class="toggle-btn"
-                [class.toggle-btn--active]="viewMode() === 'cards'"
-                (click)="viewMode.set('cards')">
-                <ui-icon name="grid" size="sm" />
-                <span class="ml-1">Tarjetas</span>
-              </button>
-              <button
-                class="toggle-btn"
-                [class.toggle-btn--active]="viewMode() === 'table'"
-                (click)="viewMode.set('table')">
-                <ui-icon name="table" size="sm" />
-                <span class="ml-1">Tabla</span>
-              </button>
-            </div>
+            <ui-view-toggle
+              [selectedView]="viewMode()"
+              (viewChange)="viewMode.set($event === 'table' ? 'table' : 'cards')"
+              ariaLabel="Selector de vista" />
           </div>
         </div>
         <!-- Results Summary -->

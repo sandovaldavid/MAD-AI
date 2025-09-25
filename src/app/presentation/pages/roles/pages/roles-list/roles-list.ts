@@ -24,6 +24,7 @@ import {
   ModalConfig,
   ModalActionEvent,
 } from '@presentation/shared/components/confirmation-modal/confirmation-modal';
+import { ViewToggleComponent } from '@presentation/shared/components/view-toggle/view-toggle';
 import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
@@ -48,6 +49,7 @@ export type PendingRoleAction = {
     ErrorDisplay,
     RoleSkeleton,
     ConfirmationModal,
+    ViewToggleComponent,
   ],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.css',
