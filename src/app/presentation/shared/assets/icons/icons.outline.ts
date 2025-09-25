@@ -66,6 +66,7 @@ import {
   folder,
   reload,
   informationCircle,
+  exclamationTriangle,
 } from './outline';
 
 export const ICONS_CORE_OUTLINE = {
@@ -136,4 +137,5 @@ export const ICONS_CORE_OUTLINE = {
   'outline/folder': folder,
   'outline/reload': reload,
   'outline/information-circle': informationCircle,
+  'outline/exclamation-triangle': exclamationTriangle,
 } as const;

@@ -65,3 +65,4 @@ export { default as logout } from './logout.svg?raw';
 export { default as folder } from './folder.svg?raw';
 export { default as reload } from './reload.svg?raw';
 export { default as informationCircle } from './information-circle.svg?raw';
+export { default as exclamationTriangle } from './exclamation-triangle.svg?raw';
