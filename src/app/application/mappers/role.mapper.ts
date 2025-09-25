@@ -28,6 +28,7 @@ export class RoleApplicationMapper {
       isUniquePerTeam: role.isUniqueForTeam(),
       isActive: role.isActive,
       userCount: role.userCount,
+      createdAt: role.createdAt,
     };
   }
 
@@ -67,6 +68,7 @@ export interface RoleSummary {
   readonly isUniquePerTeam: boolean;
   readonly isActive: boolean;
   readonly userCount: number;
+  readonly createdAt?: Date;
 }
 
 export interface RoleDetail extends RoleSummary {
@@ -76,6 +78,7 @@ export interface RoleDetail extends RoleSummary {
     readonly canManageUsers: boolean;
     readonly canAccessAdmin: boolean;
   };
+  readonly createdAt?: Date;
 }
 
 export interface RoleUser {
