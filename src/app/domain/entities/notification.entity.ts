@@ -40,6 +40,7 @@ export interface NewNotification {
   readonly title?: string;
   readonly userId?: string;
   readonly channel?: NotificationChannel;
+  readonly duration?: number; // ms, optional, for auto-dismiss
 }
 
 /**
@@ -55,7 +56,8 @@ export class Notification {
     private _channel: NotificationChannel,
     private readonly _createdAt: Date,
     private _isRead = false,
-    private _readAt?: Date
+    private _readAt?: Date,
+    private _duration?: number // ms, optional
   ) {}
 
   /**
@@ -104,8 +106,15 @@ export class Notification {
       props.title?.trim(),
       props.userId,
       props.channel ?? NotificationChannel.IN_APP,
-      createdAt
+      createdAt,
+      false,
+      undefined,
+      props.duration
     );
+  }
+
+  get duration(): number | undefined {
+    return this._duration;
   }
 
   // Getters esenciales
@@ -263,6 +272,7 @@ export class Notification {
     createdAt: Date;
     isRead: boolean;
     readAt?: Date;
+    duration?: number;
   } {
     return {
       id: this._id,
@@ -274,6 +284,7 @@ export class Notification {
       createdAt: this._createdAt,
       isRead: this._isRead,
       readAt: this._readAt,
+      duration: this._duration,
     };
   }
 
