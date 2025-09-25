@@ -108,7 +108,7 @@
 }
 
 /* Enhanced form controls */
-.form-input:focus {
+.form-input:focus-visible {
   @apply ring-4 ring-primary-500/10;
 }
 
