@@ -33,8 +33,8 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
     label: 'Crítico',
     description: 'Acceso total al sistema',
     iconBg: 'bg-error-100 dark:bg-error-900',
-    iconColor: 'text-error-600 dark:text-error-400',
-    badgeClasses: 'bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-200',
+    iconColor: 'text-error-600 dark:text-error-100',
+    badgeClasses: 'bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-100',
     ringClasses: 'ring-error-500/20 dark:ring-error-400/20',
   },
   2: {
@@ -42,8 +42,8 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
     label: 'Alto',
     description: 'Gestión administrativa',
     iconBg: 'bg-warning-100 dark:bg-warning-900',
-    iconColor: 'text-warning-600 dark:text-warning-400',
-    badgeClasses: 'bg-warning-100 text-warning-800 dark:bg-warning-800 dark:text-warning-200',
+    iconColor: 'text-warning-600 dark:text-warning-100',
+    badgeClasses: 'bg-warning-100 text-warning-800 dark:bg-warning-800 dark:text-warning-100',
     ringClasses: 'ring-warning-500/20 dark:ring-warning-400/20',
   },
   3: {
@@ -51,8 +51,8 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
     label: 'Medio',
     description: 'Operaciones moderadas',
     iconBg: 'bg-info-100 dark:bg-info-900',
-    iconColor: 'text-info-600 dark:text-info-400',
-    badgeClasses: 'bg-info-100 text-info-800 dark:bg-info-800 dark:text-info-200',
+    iconColor: 'text-info-600 dark:text-info-100',
+    badgeClasses: 'bg-info-100 text-info-800 dark:bg-info-800 dark:text-info-100',
     ringClasses: 'ring-info-500/20 dark:ring-info-400/20',
   },
   4: {
@@ -60,9 +60,9 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
     label: 'Bajo',
     description: 'Operaciones básicas',
     iconBg: 'bg-secondary-100 dark:bg-secondary-900',
-    iconColor: 'text-secondary-600 dark:text-secondary-400',
+    iconColor: 'text-secondary-600 dark:text-secondary-100',
     badgeClasses:
-      'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-200',
+      'bg-secondary-100 text-secondary-800 dark:bg-secondary-800 dark:text-secondary-100',
     ringClasses: 'ring-secondary-500/20 dark:ring-secondary-400/20',
   },
   5: {
@@ -70,9 +70,9 @@ export const ROLE_ACCESS_LEVEL_CONFIG: Record<number, RoleAccessLevelInfo> = {
     label: 'Mínimo',
     description: 'Solo consulta',
     iconBg: 'bg-successful-100 dark:bg-successful-900',
-    iconColor: 'text-successful-600 dark:text-successful-400',
+    iconColor: 'text-successful-600 dark:text-successful-100',
     badgeClasses:
-      'bg-successful-100 text-successful-800 dark:bg-successful-800 dark:text-successful-200',
+      'bg-successful-100 text-successful-800 dark:bg-successful-800 dark:text-successful-100',
     ringClasses: 'ring-successful-500/20 dark:ring-successful-400/20',
   },
 };
