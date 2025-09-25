@@ -12,14 +12,14 @@
           class="form-input w-full"
           placeholder="Buscar por nombre..."
           [value]="search()"
-          (input)="updateSearch($any($event.target).value)" />
+          (input)="updateSearch($event.target.value)" />
       </div>
 
       <div class="w-full sm:w-auto">
         <label class="form-label">Estado</label>
         <select
           class="form-input w-full sm:w-48"
-          [value]="activeFilter() === null ? '' : activeFilter()?.toString()"
+          [value]="activeFilter() === null ? '' : activeFilter() ? 'true' : 'false'"
           (change)="
             updateActiveFilter(
               $any($event.target).value === '' ? null : $any($event.target).value === 'true'
@@ -42,7 +42,7 @@
             <label class="form-label">Nivel de Acceso</label>
             <select
               class="form-input w-full"
-              [value]="accessLevelFilter() || ''"
+              [value]="accessLevelFilter() ?? ''"
               (change)="
                 updateAccessLevelFilter(
                   $any($event.target).value ? +$any($event.target).value : null
@@ -128,9 +128,9 @@
 
           @if (filterStats().hasFilters) {
             <button
-              class="px-3 py-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+              class="btn btn--danger px-3 py-1 text-sm text-error-500 dark:text-error-400 hover:text-neutral-50 border border-error-500 dark:border-error-400 rounded-md hover:bg-error-600 dark:hover:bg-error-400 focus-visible:ring-error-500/25 dark:focus-visible:ring-error-400/25 transition-colors flex items-center"
               (click)="clearAllFilters()">
-              <ui-icon name="x-mark" class="h-4 w-4 mr-1" />
+              <ui-icon name="x-mark" class="size-4 mr-1" />
               Limpiar filtros
             </button>
           }
@@ -192,14 +192,14 @@
               <button
                 class="toggle-btn"
                 [class.toggle-btn--active]="viewMode() === 'cards'"
-                (click)="setViewMode('cards')">
+                (click)="viewMode.set('cards')">
                 <ui-icon name="grid" size="sm" />
                 <span class="ml-1">Tarjetas</span>
               </button>
               <button
                 class="toggle-btn"
                 [class.toggle-btn--active]="viewMode() === 'table'"
-                (click)="setViewMode('table')">
+                (click)="viewMode.set('table')">
                 <ui-icon name="table" size="sm" />
                 <span class="ml-1">Tabla</span>
               </button>
