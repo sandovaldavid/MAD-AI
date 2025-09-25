@@ -1,3 +1,4 @@
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,7 +22,6 @@ import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
-import { RoleModel } from '../../models/role.model';
 import type { RoleExportOptions } from '../../mappers/role-export.mapper';
 
 @Component({
@@ -336,15 +336,12 @@ export class RolesList {
     this.sortDirection.set('asc');
   }
 
-  // Get available filter options
+  // Get available filter options using config
   getAccessLevelOptions() {
-    return [
-      { value: 1, label: 'Nivel 1 - System Administrator' },
-      { value: 2, label: 'Nivel 2 - Project Manager' },
-      { value: 3, label: 'Nivel 3 - Senior User' },
-      { value: 4, label: 'Nivel 4 - Standard User' },
-      { value: 5, label: 'Nivel 5 - Basic User' },
-    ];
+    return Object.entries(ROLE_ACCESS_LEVEL_CONFIG).map(([key, info]) => ({
+      value: Number(key),
+      label: `Nivel ${key} - ${info.label}`,
+    }));
   }
 
   getSortOptions() {
