@@ -29,15 +29,21 @@ export class ToastContainer {
 
   items = computed(() => {
     const notifications = this.facade.notifications();
-    // Inicia autocierre para los nuevos toasts de tipo success
     notifications.forEach((notification) => {
-      if (
-        notification.type === this.NotificationType.SUCCESS &&
-        !this.autoCloseTimeouts.has(notification.id)
-      ) {
+      // Use duration property for auto-dismiss
+      const duration =
+        notification.duration ??
+        (notification.type === this.NotificationType.SUCCESS
+          ? 3000
+          : notification.type === this.NotificationType.INFO
+            ? 4000
+            : notification.type === this.NotificationType.WARNING
+              ? 5000
+              : 0); // error: no auto-dismiss
+      if (duration > 0 && !this.autoCloseTimeouts.has(notification.id)) {
         const timeout = setTimeout(() => {
           this.close(notification.id);
-        }, this.AUTO_CLOSE_SUCCESS_MS);
+        }, duration);
         this.autoCloseTimeouts.set(notification.id, timeout);
       }
     });
@@ -93,6 +99,7 @@ export class ToastContainer {
       title: notification.title,
       description: notification.description,
       timestamp: notification.timestamp,
+      duration: notification.duration,
     };
   }
 }
