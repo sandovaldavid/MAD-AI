@@ -264,5 +264,4 @@ export class AccessLevelIndicator {
     const level = this.level();
     return level >= 1 && level <= 5;
   }
-
 }

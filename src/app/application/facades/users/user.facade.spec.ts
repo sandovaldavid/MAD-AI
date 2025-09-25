@@ -200,12 +200,22 @@ describe('UsersFacade', () => {
         };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.createUser.and.returnValue(Promise.resolve({ success: true, data: mockCreateUserResult, message: 'Usuario creado exitosamente.' }));
+        mockCrudFacade.createUser.and.returnValue(
+          Promise.resolve({
+            success: true,
+            data: mockCreateUserResult,
+            message: 'Usuario creado exitosamente.',
+          })
+        );
 
         const result = await facade.createUser(request, opts);
 
-          expect(mockCrudFacade.createUser).toHaveBeenCalledWith(request, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockCreateUserResult });
+        expect(mockCrudFacade.createUser).toHaveBeenCalledWith(request, opts);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockCreateUserResult,
+        });
       });
     });
 
@@ -223,12 +233,22 @@ describe('UsersFacade', () => {
         };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.updateUser.and.returnValue(Promise.resolve({ success: true, data: mockUpdateUserResult, message: 'Usuario actualizado exitosamente.' }));
+        mockCrudFacade.updateUser.and.returnValue(
+          Promise.resolve({
+            success: true,
+            data: mockUpdateUserResult,
+            message: 'Usuario actualizado exitosamente.',
+          })
+        );
 
         const result = await facade.updateUser(request, opts);
 
-          expect(mockCrudFacade.updateUser).toHaveBeenCalledWith(request, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUpdateUserResult });
+        expect(mockCrudFacade.updateUser).toHaveBeenCalledWith(request, opts);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockUpdateUserResult,
+        });
       });
     });
 
@@ -237,11 +257,13 @@ describe('UsersFacade', () => {
         const userId = 1;
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.deleteUser.and.returnValue(Promise.resolve({ success: true, message: 'Usuario eliminado exitosamente.' }));
+        mockCrudFacade.deleteUser.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario eliminado exitosamente.' })
+        );
 
         await facade.deleteUser(userId, opts);
 
-          expect(mockCrudFacade.deleteUser).toHaveBeenCalledWith(userId, opts);
+        expect(mockCrudFacade.deleteUser).toHaveBeenCalledWith(userId, opts);
       });
     });
   });
@@ -252,22 +274,26 @@ describe('UsersFacade', () => {
         const userId = 1;
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockLookupFacade.getUserById.and.returnValue(Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 }));
+        mockLookupFacade.getUserById.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 })
+        );
 
         const result = await facade.getUserById(userId, opts);
 
-          expect(mockLookupFacade.getUserById).toHaveBeenCalledWith(userId, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
+        expect(mockLookupFacade.getUserById).toHaveBeenCalledWith(userId, opts);
+        expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
       });
 
       it('should return null when user not found', async () => {
         const userId = 999;
 
-          mockLookupFacade.getUserById.and.returnValue(Promise.resolve({ success: false, message: 'Usuario no encontrado.' }));
+        mockLookupFacade.getUserById.and.returnValue(
+          Promise.resolve({ success: false, message: 'Usuario no encontrado.' })
+        );
 
         const result = await facade.getUserById(userId);
 
-          expect(result).toEqual({ success: false, message: jasmine.any(String) });
+        expect(result).toEqual({ success: false, message: jasmine.any(String) });
       });
     });
 
@@ -276,12 +302,14 @@ describe('UsersFacade', () => {
         const email = 'test@example.com';
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockLookupFacade.getUserByEmail.and.returnValue(Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 }));
+        mockLookupFacade.getUserByEmail.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 })
+        );
 
         const result = await facade.getUserByEmail(email, opts);
 
-          expect(mockLookupFacade.getUserByEmail).toHaveBeenCalledWith(email, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
+        expect(mockLookupFacade.getUserByEmail).toHaveBeenCalledWith(email, opts);
+        expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
       });
     });
 
@@ -290,12 +318,14 @@ describe('UsersFacade', () => {
         const username = 'testuser';
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockLookupFacade.getUserByUsername.and.returnValue(Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 }));
+        mockLookupFacade.getUserByUsername.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 })
+        );
 
         const result = await facade.getUserByUsername(username, opts);
 
-          expect(mockLookupFacade.getUserByUsername).toHaveBeenCalledWith(username, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
+        expect(mockLookupFacade.getUserByUsername).toHaveBeenCalledWith(username, opts);
+        expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
       });
     });
 
@@ -304,12 +334,14 @@ describe('UsersFacade', () => {
         const criteria: UserLookupCriteria = { id: 1 };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockLookupFacade.findUser.and.returnValue(Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 }));
+        mockLookupFacade.findUser.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario encontrado.', data: mockUser1 })
+        );
 
         const result = await facade.findUser(criteria, opts);
 
-          expect(mockLookupFacade.findUser).toHaveBeenCalledWith(criteria, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
+        expect(mockLookupFacade.findUser).toHaveBeenCalledWith(criteria, opts);
+        expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUser1 });
       });
     });
   });
@@ -323,21 +355,41 @@ describe('UsersFacade', () => {
         };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockListFacade.listUsers.and.returnValue(Promise.resolve({ success: true, message: 'Usuarios listados.', data: mockListUsersResult }));
+        mockListFacade.listUsers.and.returnValue(
+          Promise.resolve({
+            success: true,
+            message: 'Usuarios listados.',
+            data: mockListUsersResult,
+          })
+        );
 
         const result = await facade.listUsers(request, opts);
 
-          expect(mockListFacade.listUsers).toHaveBeenCalledWith(request, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockListUsersResult });
+        expect(mockListFacade.listUsers).toHaveBeenCalledWith(request, opts);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockListUsersResult,
+        });
       });
 
       it('should call without request parameter', async () => {
-          mockListFacade.listUsers.and.returnValue(Promise.resolve({ success: true, message: 'Usuarios listados.', data: mockListUsersResult }));
+        mockListFacade.listUsers.and.returnValue(
+          Promise.resolve({
+            success: true,
+            message: 'Usuarios listados.',
+            data: mockListUsersResult,
+          })
+        );
 
         const result = await facade.listUsers();
 
-          expect(mockListFacade.listUsers).toHaveBeenCalledWith(undefined, undefined);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockListUsersResult });
+        expect(mockListFacade.listUsers).toHaveBeenCalledWith(undefined, undefined);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockListUsersResult,
+        });
       });
     });
 
@@ -346,12 +398,22 @@ describe('UsersFacade', () => {
         const criteria: UserSearchCriteria = { query: 'test' };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockListFacade.searchUsers.and.returnValue(Promise.resolve({ success: true, message: 'Usuarios encontrados.', data: mockListUsersResult }));
+        mockListFacade.searchUsers.and.returnValue(
+          Promise.resolve({
+            success: true,
+            message: 'Usuarios encontrados.',
+            data: mockListUsersResult,
+          })
+        );
 
         const result = await facade.searchUsers(criteria, opts);
 
-          expect(mockListFacade.searchUsers).toHaveBeenCalledWith(criteria, opts);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockListUsersResult });
+        expect(mockListFacade.searchUsers).toHaveBeenCalledWith(criteria, opts);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockListUsersResult,
+        });
       });
     });
   });
@@ -362,11 +424,13 @@ describe('UsersFacade', () => {
         const userId = 1;
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockStateFacade.activateUser.and.returnValue(Promise.resolve({ success: true, message: 'Usuario activado.' }));
+        mockStateFacade.activateUser.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario activado.' })
+        );
 
         await facade.activateUser(userId, opts);
 
-          expect(mockStateFacade.activateUser).toHaveBeenCalledWith(userId, opts);
+        expect(mockStateFacade.activateUser).toHaveBeenCalledWith(userId, opts);
       });
     });
 
@@ -375,11 +439,13 @@ describe('UsersFacade', () => {
         const userId = 1;
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockStateFacade.deactivateUser.and.returnValue(Promise.resolve({ success: true, message: 'Usuario desactivado.' }));
+        mockStateFacade.deactivateUser.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario desactivado.' })
+        );
 
         await facade.deactivateUser(userId, opts);
 
-          expect(mockStateFacade.deactivateUser).toHaveBeenCalledWith(userId, opts);
+        expect(mockStateFacade.deactivateUser).toHaveBeenCalledWith(userId, opts);
       });
     });
 
@@ -388,11 +454,13 @@ describe('UsersFacade', () => {
         const userId = 1;
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockStateFacade.toggleUserStatus.and.returnValue(Promise.resolve({ success: true, message: 'Estado de usuario cambiado.' }));
+        mockStateFacade.toggleUserStatus.and.returnValue(
+          Promise.resolve({ success: true, message: 'Estado de usuario cambiado.' })
+        );
 
         await facade.toggleUserStatus(userId, opts);
 
-          expect(mockStateFacade.toggleUserStatus).toHaveBeenCalledWith(userId, opts);
+        expect(mockStateFacade.toggleUserStatus).toHaveBeenCalledWith(userId, opts);
       });
     });
 
@@ -401,11 +469,13 @@ describe('UsersFacade', () => {
         const userIds = [1, 2, 3];
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockStateFacade.batchActivateUsers.and.returnValue(Promise.resolve({ success: true, message: 'Usuarios activados.' }));
+        mockStateFacade.batchActivateUsers.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuarios activados.' })
+        );
 
         await facade.activateUsers(userIds, opts);
 
-          expect(mockStateFacade.batchActivateUsers).toHaveBeenCalledWith(userIds, opts);
+        expect(mockStateFacade.batchActivateUsers).toHaveBeenCalledWith(userIds, opts);
       });
     });
 
@@ -414,11 +484,13 @@ describe('UsersFacade', () => {
         const userIds = [1, 2, 3];
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockStateFacade.batchDeactivateUsers.and.returnValue(Promise.resolve({ success: true, message: 'Usuarios desactivados.' }));
+        mockStateFacade.batchDeactivateUsers.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuarios desactivados.' })
+        );
 
         await facade.deactivateUsers(userIds, opts);
 
-          expect(mockStateFacade.batchDeactivateUsers).toHaveBeenCalledWith(userIds, opts);
+        expect(mockStateFacade.batchDeactivateUsers).toHaveBeenCalledWith(userIds, opts);
       });
     });
   });
@@ -443,12 +515,15 @@ describe('UsersFacade', () => {
     describe('selectUserById', () => {
       it('should delegate to UserUtilsFacade.selectUserById', () => {
         const userId = 1;
-          mockUtilsFacade.selectUserById.and.returnValue({ success: true, message: 'Usuario seleccionado.' });
+        mockUtilsFacade.selectUserById.and.returnValue({
+          success: true,
+          message: 'Usuario seleccionado.',
+        });
 
         const result = facade.selectUserById(userId);
 
-          expect(mockUtilsFacade.selectUserById).toHaveBeenCalledWith(userId);
-          expect(result).toEqual({ success: true, message: jasmine.any(String) });
+        expect(mockUtilsFacade.selectUserById).toHaveBeenCalledWith(userId);
+        expect(result).toEqual({ success: true, message: jasmine.any(String) });
       });
     });
 
@@ -483,11 +558,13 @@ describe('UsersFacade', () => {
       it('should delegate to UserUtilsFacade.refresh', async () => {
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockUtilsFacade.refresh.and.returnValue(Promise.resolve({ success: true, message: 'Refrescado.' }));
+        mockUtilsFacade.refresh.and.returnValue(
+          Promise.resolve({ success: true, message: 'Refrescado.' })
+        );
 
         await facade.refresh(opts);
 
-          expect(mockUtilsFacade.refresh).toHaveBeenCalledWith(opts);
+        expect(mockUtilsFacade.refresh).toHaveBeenCalledWith(opts);
       });
     });
 
@@ -495,11 +572,13 @@ describe('UsersFacade', () => {
       it('should delegate to UserUtilsFacade.initialize', async () => {
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockUtilsFacade.initialize.and.returnValue(Promise.resolve({ success: true, message: 'Inicializado.' }));
+        mockUtilsFacade.initialize.and.returnValue(
+          Promise.resolve({ success: true, message: 'Inicializado.' })
+        );
 
         await facade.initialize(opts);
 
-          expect(mockUtilsFacade.initialize).toHaveBeenCalledWith(opts);
+        expect(mockUtilsFacade.initialize).toHaveBeenCalledWith(opts);
       });
     });
 
@@ -545,13 +624,23 @@ describe('UsersFacade', () => {
         };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.createUser.and.returnValue(Promise.resolve({ success: true, data: mockCreateUserResult, message: 'Usuario creado exitosamente.' }));
+        mockCrudFacade.createUser.and.returnValue(
+          Promise.resolve({
+            success: true,
+            data: mockCreateUserResult,
+            message: 'Usuario creado exitosamente.',
+          })
+        );
 
         const result = await facade.createAndSelectUser(request, opts);
 
-          expect(mockCrudFacade.createUser).toHaveBeenCalledWith(request, opts);
-          expect(mockUtilsFacade.selectUser).toHaveBeenCalledWith(mockCreateUserResult);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockCreateUserResult });
+        expect(mockCrudFacade.createUser).toHaveBeenCalledWith(request, opts);
+        expect(mockUtilsFacade.selectUser).toHaveBeenCalledWith(mockCreateUserResult);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockCreateUserResult,
+        });
       });
     });
 
@@ -569,13 +658,23 @@ describe('UsersFacade', () => {
         };
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.updateUser.and.returnValue(Promise.resolve({ success: true, data: mockUpdateUserResult, message: 'Usuario actualizado exitosamente.' }));
+        mockCrudFacade.updateUser.and.returnValue(
+          Promise.resolve({
+            success: true,
+            data: mockUpdateUserResult,
+            message: 'Usuario actualizado exitosamente.',
+          })
+        );
 
         const result = await facade.updateAndSelectUser(request, opts);
 
-          expect(mockCrudFacade.updateUser).toHaveBeenCalledWith(request, opts);
-          expect(mockUtilsFacade.selectUser).toHaveBeenCalledWith(mockUpdateUserResult);
-          expect(result).toEqual({ success: true, message: jasmine.any(String), data: mockUpdateUserResult });
+        expect(mockCrudFacade.updateUser).toHaveBeenCalledWith(request, opts);
+        expect(mockUtilsFacade.selectUser).toHaveBeenCalledWith(mockUpdateUserResult);
+        expect(result).toEqual({
+          success: true,
+          message: jasmine.any(String),
+          data: mockUpdateUserResult,
+        });
       });
     });
 
@@ -585,12 +684,14 @@ describe('UsersFacade', () => {
         facade['_selectedUser'].set(mockUser1);
         const opts: FacadeOpts = { skipLoading: true };
 
-          mockCrudFacade.deleteUser.and.returnValue(Promise.resolve({ success: true, message: 'Usuario eliminado exitosamente.' }));
+        mockCrudFacade.deleteUser.and.returnValue(
+          Promise.resolve({ success: true, message: 'Usuario eliminado exitosamente.' })
+        );
 
         await facade.deleteSelectedUser(opts);
 
-          expect(mockCrudFacade.deleteUser).toHaveBeenCalledWith(mockUser1.id, opts);
-          expect(mockUtilsFacade.clearSelection).toHaveBeenCalled();
+        expect(mockCrudFacade.deleteUser).toHaveBeenCalledWith(mockUser1.id, opts);
+        expect(mockUtilsFacade.clearSelection).toHaveBeenCalled();
       });
 
       it('should throw error when no user is selected', async () => {
