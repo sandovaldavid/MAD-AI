@@ -22,7 +22,7 @@ import {
 @Component({
   selector: 'app-role-detail',
   standalone: true,
-  imports: [CommonModule, PageHeader, ErrorDisplay, Button, Icon],
+  imports: [CommonModule, PageHeader, ErrorDisplay, Icon],
   templateUrl: './role-detail.html',
   styleUrl: './role-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
