@@ -192,6 +192,24 @@ export class NotificationsFacade {
         userId: request.userId,
       });
 
+      // Set duration per type: error = persistent, others auto-dismiss
+      let duration: number | undefined;
+      switch (request.type) {
+        case NotificationType.ERROR:
+          duration = undefined; // persistent
+          break;
+        case NotificationType.SUCCESS:
+          duration = 3000;
+          break;
+        case NotificationType.INFO:
+          duration = 4000;
+          break;
+        case NotificationType.WARNING:
+          duration = 5000;
+          break;
+        default:
+          duration = 3500;
+      }
       // Create notification object using the factory method
       const notification = Notification.createWithId(
         {
@@ -199,6 +217,7 @@ export class NotificationsFacade {
           title: request.message,
           message: request.description ?? '',
           userId: request.userId?.toString(),
+          duration,
         },
         notificationId
       );
