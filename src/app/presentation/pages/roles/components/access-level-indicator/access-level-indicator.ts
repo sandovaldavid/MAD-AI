@@ -116,18 +116,6 @@ export class AccessLevelIndicator {
   /** Access level information including colors and labels */
   readonly levelInfo = computed(() => {
     const level = this.level();
-    if (level < 1 || level > 5) {
-      // Fallback for invalid levels
-      return {
-        color: 'neutral' as const,
-        label: 'Unknown',
-        description: 'Invalid access level',
-        iconBg: 'bg-neutral-100 dark:bg-neutral-800',
-        iconColor: 'text-neutral-600 dark:text-neutral-400',
-        badgeClasses: 'bg-neutral-100 text-neutral-800 border-neutral-200',
-        ringClasses: 'ring-neutral-500/20',
-      };
-    }
     return getRoleAccessLevelInfo(level);
   });
 
@@ -139,40 +127,14 @@ export class AccessLevelIndicator {
 
   /** Short label for compact display */
   readonly shortLabel = computed(() => {
-    const level = this.level();
-    switch (level) {
-      case 1:
-        return 'Admin';
-      case 2:
-        return 'Manager';
-      case 3:
-        return 'Senior';
-      case 4:
-        return 'Standard';
-      case 5:
-        return 'Basic';
-      default:
-        return 'Unknown';
-    }
+    const info = this.levelInfo();
+    return info.label;
   });
 
   /** Full label for normal display */
   readonly fullLabel = computed(() => {
-    const level = this.level();
-    switch (level) {
-      case 1:
-        return 'System Administrator';
-      case 2:
-        return 'Project Manager';
-      case 3:
-        return 'Senior User';
-      case 4:
-        return 'Standard User';
-      case 5:
-        return 'Basic User';
-      default:
-        return 'Unknown Level';
-    }
+    const info = this.levelInfo();
+    return info.label;
   });
 
   /** Tooltip text */
@@ -303,45 +265,4 @@ export class AccessLevelIndicator {
     return level >= 1 && level <= 5;
   }
 
-  /**
-   * Get privilege tier for the level
-   */
-  getPrivilegeTier(): 'maximum' | 'high' | 'medium' | 'standard' | 'basic' | 'invalid' {
-    const level = this.level();
-    switch (level) {
-      case 1:
-        return 'maximum';
-      case 2:
-        return 'high';
-      case 3:
-        return 'medium';
-      case 4:
-        return 'standard';
-      case 5:
-        return 'basic';
-      default:
-        return 'invalid';
-    }
-  }
-
-  /**
-   * Get semantic color name for the level
-   */
-  getSemanticColor(): 'primary' | 'secondary' | 'info' | 'warning' | 'neutral' {
-    const level = this.level();
-    switch (level) {
-      case 1:
-        return 'primary';
-      case 2:
-        return 'secondary';
-      case 3:
-        return 'info';
-      case 4:
-        return 'warning';
-      case 5:
-        return 'neutral';
-      default:
-        return 'neutral';
-    }
-  }
 }
