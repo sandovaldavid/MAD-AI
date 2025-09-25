@@ -7,4 +7,5 @@ export interface RoleDTO {
   access_level: number;
   is_active: boolean;
   user_count: number;
+  created_at: string;
 }
