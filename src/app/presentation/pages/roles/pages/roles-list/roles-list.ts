@@ -86,14 +86,13 @@ export class RolesList {
   showAdvancedFilters = signal(false);
 
   constructor() {
-    // Set breadcrumbs for this page
-    this.breadcrumbService.setBreadcrumbs([
-      { label: 'Dashboard', route: '/dashboard' },
-      { label: 'Roles', route: '/roles', isLast: true },
-    ]);
-
     // Load initial data
     effect(() => {
+      // Set breadcrumbs for this page (reactivo)
+      this.breadcrumbService.setBreadcrumbs([
+        { label: 'Dashboard', route: '/dashboard' },
+        { label: 'Roles', route: '/roles', isLast: true },
+      ]);
       this.onRetry();
     });
   }
