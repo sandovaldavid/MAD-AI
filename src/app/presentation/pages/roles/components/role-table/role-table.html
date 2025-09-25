@@ -209,7 +209,7 @@
                 <div class="flex items-center justify-end gap-1">
                   <!-- View Button -->
                   <ui-button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     (clicked)="onViewRole(role.id)"
                     [ariaLabel]="'Ver detalles de ' + role.name"
@@ -218,7 +218,7 @@
 
                   <!-- Edit Button -->
                   <ui-button
-                    variant="ghost"
+                    variant="primary"
                     size="sm"
                     (clicked)="onEditRole(role.id)"
                     [ariaLabel]="'Editar ' + role.name"
@@ -227,7 +227,7 @@
 
                   <!-- Toggle Status Button -->
                   <ui-button
-                    [variant]="role.isActive ? 'ghost' : 'success'"
+                    [variant]="role.isActive ? 'warning' : 'success'"
                     size="sm"
                     (clicked)="onToggleStatus(role)"
                     [ariaLabel]="(role.isActive ? 'Desactivar' : 'Activar') + ' ' + role.name"
