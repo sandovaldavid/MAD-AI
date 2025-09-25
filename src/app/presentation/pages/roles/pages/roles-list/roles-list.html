@@ -183,9 +183,9 @@
       </div>
     } @else {
       <!-- View Toggle and Results Summary -->
-      <div class="mb-6 space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4 items-center">
         <!-- View Mode Toggle -->
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between rounded-xl">
           <div class="flex items-center space-x-2">
             <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Vista:</span>
             <div class="flex items-center bg-neutral-100 dark:bg-neutral-800 rounded-lg p-1">
@@ -205,16 +205,11 @@
               </button>
             </div>
           </div>
-          <button class="btn btn--primary btn--sm" (click)="onCreateRole()">
-            <ui-icon name="shield-plus" size="sm" class="mr-2" />
-            Nuevo Rol
-          </button>
         </div>
-
         <!-- Results Summary -->
         <div
-          class="flex items-center justify-between p-4 bg-neutral-50 dark:bg-neutral-800 rounded-xl">
-          <div class="flex items-center space-x-3">
+          class="flex flex-col md:flex-row md:items-center md:justify-start gap-4 items-center px-4 py-2 h-[40px] bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+          <div class="flex items-center space-x-4">
             <ui-icon name="info" size="sm" class="text-info-600 dark:text-info-400" />
             <span class="text-sm text-neutral-700 dark:text-neutral-300">
               @if (filterStats().hasFilters) {
