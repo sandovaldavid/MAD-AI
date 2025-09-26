@@ -337,48 +337,20 @@
 </div>
 
 <!-- Floating Bulk Actions Toolbar -->
-@if (enableSelection && currentSelection().length > 0) {
-  <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-    <div
-      class="bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-neutral-200 dark:border-neutral-700 px-4 py-3">
-      <div class="flex items-center gap-4">
-        <div class="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-          {{ currentSelection().length }} seleccionados
-        </div>
-
-        <div class="flex items-center gap-2">
-          @for (action of tableActions; track action) {
-            <ui-button
-              variant="secondary"
-              size="sm"
-              (clicked)="onBulkAction(action)"
-              [ariaLabel]="getActionLabel(action)">
-              <ui-icon
-                [name]="
-                  action === 'delete'
-                    ? 'user-slash'
-                    : action === 'activate'
-                      ? 'check-circle'
-                      : action === 'deactivate'
-                        ? 'x-circle'
-                        : 'key'
-                "
-                size="sm"
-                variant="outline">
-              </ui-icon>
-              {{ getActionLabel(action) }}
-            </ui-button>
-          }
-
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (clicked)="clearSelection()"
-            ariaLabel="Limpiar selección"
-            iconLeft="x-mark">
-          </ui-button>
-        </div>
-      </div>
-    </div>
-  </div>
+@if (showFloatingToolbar()) {
+  <ui-bulk-actions-toolbar
+    [selectedCount]="selectedCount()"
+    [quickActions]="quickActions()"
+    [advancedActions]="advancedActions()"
+    [exportFormats]="toolbarExportFormats()"
+    [selectionStats]="toolbarSelectionStats()"
+    [executingAction]="executingBulkAction()"
+    [showExportOptions]="true"
+    [showStatistics]="true"
+    [showAdvancedToggle]="advancedActions().length > 0"
+    (quickActionTriggered)="onToolbarQuickAction($event)"
+    (advancedActionTriggered)="onToolbarAdvancedAction($event)"
+    (exportRequested)="onToolbarExportRequested($event)"
+    (clearSelection)="clearSelection()">
+  </ui-bulk-actions-toolbar>
 }

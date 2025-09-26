@@ -46,6 +46,12 @@ import { CommonModule } from '@angular/common';
 import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { UserStatusBadgeComponent } from '../../components/user-status-badge/user-status-badge';
+import {
+  BulkActionsToolbar,
+  type BulkAction,
+  type ExportFormat,
+  type SelectionStats,
+} from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
 
 // Local Imports
 import { UserDisplayData, SortConfig, UserActionConfig } from '../../types/user-ui.types';
@@ -89,7 +95,7 @@ export interface SortChangeEvent {
 @Component({
   selector: 'app-user-table',
   standalone: true,
-  imports: [CommonModule, Button, Icon, UserStatusBadgeComponent],
+  imports: [CommonModule, Button, Icon, UserStatusBadgeComponent, BulkActionsToolbar],
   templateUrl: './user-table.component.html',
   styleUrl: './user-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -250,6 +256,117 @@ export class UserTableComponent implements OnInit, OnChanges {
   readonly hasSelection = computed(
     () => this.enableSelection && this.currentSelection().length > 0
   );
+
+  // ============================================================================
+  // Bulk Actions Toolbar Configuration
+  // ============================================================================
+
+  /**
+   * Whether to show the floating bulk actions toolbar
+   */
+  readonly showFloatingToolbar = computed(() => this.enableSelection && this.selectedCount() > 0);
+
+  /**
+   * Number of selected items
+   */
+  readonly selectedCount = computed(() => this.currentSelection().length);
+
+  /**
+   * Quick actions for the bulk toolbar
+   */
+  readonly quickActions = computed((): BulkAction[] => {
+    return [
+      {
+        id: 'activate',
+        label: 'Activar',
+        icon: 'check-circle',
+        variant: 'success',
+        description: 'Activar usuarios seleccionados',
+        hotkey: '1',
+      },
+      {
+        id: 'deactivate',
+        label: 'Desactivar',
+        icon: 'x-circle',
+        variant: 'warning',
+        description: 'Desactivar usuarios seleccionados',
+        hotkey: '2',
+      },
+      {
+        id: 'delete',
+        label: 'Eliminar',
+        icon: 'user-slash',
+        variant: 'danger',
+        description: 'Eliminar usuarios seleccionados',
+        requiresConfirmation: true,
+        hotkey: '3',
+      },
+    ];
+  });
+
+  /**
+   * Advanced actions for the bulk toolbar
+   */
+  readonly advancedActions = computed((): BulkAction[] => {
+    return [
+      {
+        id: 'resetPassword',
+        label: 'Restablecer Contraseña',
+        icon: 'key',
+        variant: 'secondary',
+        description: 'Restablecer contraseña de usuarios seleccionados',
+        requiresConfirmation: true,
+      },
+    ];
+  });
+
+  /**
+   * Export formats for the toolbar
+   */
+  readonly toolbarExportFormats = computed((): ExportFormat[] => {
+    return [
+      {
+        id: 'csv',
+        label: 'CSV',
+        icon: 'document-text',
+        extension: '.csv',
+        mimeType: 'text/csv',
+      },
+      {
+        id: 'excel',
+        label: 'Excel',
+        icon: 'document-text',
+        extension: '.xlsx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+      {
+        id: 'pdf',
+        label: 'PDF',
+        icon: 'document',
+        extension: '.pdf',
+        mimeType: 'application/pdf',
+      },
+    ];
+  });
+
+  /**
+   * Selection statistics for the toolbar
+   */
+  readonly toolbarSelectionStats = computed((): SelectionStats => {
+    const selected = this.currentSelection();
+    const activeUsers = selected.filter((user) => user.isActive).length;
+
+    return {
+      total: selected.length,
+      active: activeUsers,
+      totalUsers: selected.length,
+    };
+  });
+
+  /**
+   * Currently executing bulk action ID
+   */
+  readonly executingBulkAction = signal<string | null>(null);
 
   // ============================================================================
   // Table Header Methods
@@ -469,6 +586,55 @@ export class UserTableComponent implements OnInit, OnChanges {
       default:
         return action.charAt(0).toUpperCase() + action.slice(1);
     }
+  }
+
+  // ============================================================================
+  // Bulk Actions Toolbar Event Handlers
+  // ============================================================================
+
+  /**
+   * Handle quick action from toolbar
+   */
+  onToolbarQuickAction(event: { actionId: string; selectedCount: number }): void {
+    this.executingBulkAction.set(event.actionId);
+
+    try {
+      this.onBulkAction(event.actionId);
+    } finally {
+      // Clear executing state after a short delay
+      setTimeout(() => {
+        this.executingBulkAction.set(null);
+      }, 1000);
+    }
+  }
+
+  /**
+   * Handle advanced action from toolbar
+   */
+  onToolbarAdvancedAction(event: { actionId: string; selectedCount: number }): void {
+    this.executingBulkAction.set(event.actionId);
+
+    try {
+      this.onBulkAction(event.actionId);
+    } finally {
+      // Clear executing state after a short delay
+      setTimeout(() => {
+        this.executingBulkAction.set(null);
+      }, 1000);
+    }
+  }
+
+  /**
+   * Handle export request from toolbar
+   */
+  onToolbarExportRequested(event: { format: string; selectedCount: number }): void {
+    const selectedUsers = this.currentSelection();
+
+    // Emit export event through the existing bulk action system
+    this.bulkAction.emit({
+      action: `export-${event.format}`,
+      users: selectedUsers,
+    });
   }
 
   /**
