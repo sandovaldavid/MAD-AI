@@ -81,8 +81,7 @@
 }
 
 .role-card__description-text {
-  @apply text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed 
-    line-clamp-2 italic;
+  @apply text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed break-words whitespace-pre-line line-clamp-2 italic;
 }
 
 .role-card__metrics {

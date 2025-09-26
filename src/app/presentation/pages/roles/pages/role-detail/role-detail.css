@@ -93,7 +93,7 @@
   @apply hover:border-info-300 dark:hover:border-info-700;
 }
 
-.stat-icon{
+.stat-icon {
   @apply text-2xl text-neutral-600 dark:text-white;
 }
 
@@ -163,7 +163,7 @@
 }
 
 .role-description {
-  @apply text-neutral-700 dark:text-neutral-300 leading-relaxed text-base;
+  @apply text-neutral-700 dark:text-neutral-300 leading-relaxed text-base break-words whitespace-pre-line;
 }
 
 .empty-state {
