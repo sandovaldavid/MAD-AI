@@ -1,215 +1,134 @@
 /**
- * Users List Page - Smart Compo
+ * Users List Page Component
  *
  * @description
- * Smart component responsible for managing the users list view, including listing,
- * filtering, searching, pagination, and bulk operations. Acts as the main entry
- * point for user management functionality.
- *
- * @responsibilities
- * - Coordinate user listing through UsersFacade
- * - Manage search and filter state
- * - Handle pagination and sorting
- * - Coordinate bulk operations
- * - Manage UI state (loading, errors, selection)
- * - Provide navigation to detail/edit views
- * - Set page metadata (title, breadcrumbs)
- *
- * @architecture
- * Smart Component following MAD-AI patterns:
- * - Uses facades for business logic orchestration
- * - Manages reactive state with Angular signals
- * - Delegates UI rendering to dumb components
- * - Handles page-level services (title, breadcrumbs)
- * - No direct business logic or validation
+ * Smart component responsible for managing the users list view with filtering,
+ * searching, pagination, and bulk operations. Follows the same patterns as roles-list.
  *
  * @author MAD-AI Development Team
- * @version 1.0.0
+ * @version 2.0.0
  * @since 2024-01-01
  * @layer Presentation
  */
 
 import {
-  Component,
-  computed,
-  signal,
-  OnInit,
-  inject,
   ChangeDetectionStrategy,
+  Component,
+  effect,
+  inject,
+  signal,
+  computed,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
-
-// Presentation Services
-import { BreadcrumbService } from '@presentation/services/breadcrumb.service';
 
 // Application Layer Imports
 import { UsersFacade } from '@application/facades/users/user.facade';
 import { RolesFacade } from '@application/facades/role/role.facade';
+import { NotificationsFacade } from '@application/facades/notifications.facade';
 
 // UI Components
+import { Icon } from '@presentation/shared/ui/icon/icon';
+import { UserTableComponent } from '../../components/user-table/user-table.component';
+import { UserCardComponent } from '../../components/user-card/user-card';
 import {
   PageHeader,
-  PageHeaderConfig,
+  type PageHeaderConfig,
 } from '@presentation/shared/components/page-header/page-header';
-import {
-  UserTableComponent,
-  UserActionEvent,
-  UserSelectionEvent,
-  SortChangeEvent,
-} from '../../components/user-table/user-table.component';
-import { UserFilterComponent, FilterChangeEvent } from '../../components/user-filter/user-filter';
-import {
-  BulkActionsToolbar,
-  BulkAction,
-} from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
-import {
-  UsersGridComponent,
-  UserSelectionChangeEvent as GridSelectionEvent,
-} from '../../components/users-grid/users-grid';
-import { UserCardActionEvent } from '../../components/user-card/user-card';
-import {
-  ViewToggleComponent,
-  ViewMode,
-} from '@presentation/shared/components/view-toggle/view-toggle';
-import {
-  Pagination,
-  PageChangeEvent,
-  PageSizeChangeEvent,
-  PaginationConfig,
-} from '@presentation/shared/ui/pagination/pagination';
+import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import {
   ConfirmationModal,
   ModalConfig,
   ModalActionEvent,
 } from '@presentation/shared/components/confirmation-modal/confirmation-modal';
+import { ViewToggleComponent } from '@presentation/shared/components/view-toggle/view-toggle';
+import { RoleSkeleton } from '../../../roles/skeleton/role-list-skeleton/role-skeleton';
+import { Pagination } from '@presentation/shared/ui/pagination/pagination';
 
-// Types
-import {
-  UserDisplayData,
-  UserSearchCriteria,
-  SortConfig,
-  UserActionConfig,
-  UserStatusDisplay,
-  UserSortField,
-  SortDirection,
-} from '../../types/user-ui.types';
+// Types and Services
+import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
+import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
+import { UserPresentationMapper } from '../../mappers/user-presentation.mapper';
+import type { UserDisplayData } from '../../types/user-ui.types';
+import type {
+  UserActionEvent,
+  UserSelectionEvent,
+  SortChangeEvent,
+} from '../../components/user-table/user-table.component';
+
+export type PendingUserAction = {
+  type: 'delete' | 'activate' | 'deactivate' | 'resetPassword';
+  userId: number;
+  status?: boolean;
+};
 
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  templateUrl: './users-list.component.html',
-  styleUrls: ['./users-list.component.css'],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    PageHeader,
+    Icon,
+    UserCardComponent,
     UserTableComponent,
-    UserFilterComponent,
-    UsersGridComponent,
-    ViewToggleComponent,
-    BulkActionsToolbar,
-    Pagination,
+    PageHeader,
+    ErrorDisplay,
+    RoleSkeleton,
     ConfirmationModal,
+    ViewToggleComponent,
+    Pagination,
   ],
+  templateUrl: './users-list.component.html',
+  styleUrls: ['./users-list.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class UsersListPage implements OnInit {
-  // ============================================================================
-  // Dependencies
-  // ============================================================================
+export class UsersListPage {
+  // Confirmation modal state
+  confirmVisible = signal(false);
+  confirmConfig = signal<ModalConfig | null>(null);
+  confirmLoading = signal(false);
+  pendingAction: PendingUserAction | null = null;
 
-  private readonly usersFacade = inject(UsersFacade);
-  private readonly rolesFacade = inject(RolesFacade);
-  private readonly router = inject(Router);
-  private readonly breadcrumbService = inject(BreadcrumbService);
+  private facade = inject(UsersFacade);
+  private rolesFacade = inject(RolesFacade);
+  private router = inject(Router);
+  private breadcrumbService = inject(BreadcrumbService);
+  private notifications = inject(NotificationsFacade);
 
-  // ============================================================================
-  // Component State
-  // ============================================================================
+  readonly loading = this.facade.loading;
+  readonly users = computed(() =>
+    this.facade.users().map((user) => UserPresentationMapper.toDisplayData(user))
+  );
+  readonly error = this.facade.error;
+  readonly availableRoles = this.rolesFacade.roles;
+  readonly availableRoleNames = computed(() => this.availableRoles().map((role) => role.name));
 
-  /**
-   * Current search and filter criteria
-   */
-  private readonly _searchCriteria = signal<UserSearchCriteria>({
-    searchTerm: '',
-    statusFilter: 'all',
-    roleFilter: '',
-    sortBy: 'name',
-    sortDirection: 'asc',
-  });
+  // Filter state
+  search = signal('');
+  activeFilter = signal<boolean | null>(null);
+  roleFilter = signal<string | null>(null);
+  activityFilter = signal<string>('');
+  viewMode = signal<'cards' | 'table'>('cards');
 
-  /**
-   * Current pagination configuration
-   */
-  private readonly _paginationConfig = signal<PaginationConfig>({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0,
-    pageSize: 10,
-    pageSizeOptions: [5, 10, 25, 50, 100],
-    showPageSizeSelector: true,
-    showPageInfo: true,
-    maxVisiblePages: 7,
-  });
+  // Sorting state
+  sortBy = signal<'displayName' | 'email' | 'role' | 'lastActivity' | 'createdAt'>('displayName');
+  sortDirection = signal<'asc' | 'desc'>('asc');
 
-  /**
-   * Bulk action configuration
-   */
-  private readonly _bulkActions = signal<BulkAction[]>([
-    {
-      id: 'activate',
-      label: 'Activate',
-      icon: 'user-check',
-      variant: 'primary',
-      requiresConfirmation: true,
-    },
-    {
-      id: 'deactivate',
-      label: 'Deactivate',
-      icon: 'user',
-      variant: 'secondary',
-      requiresConfirmation: true,
-    },
-    {
-      id: 'delete',
-      label: 'Deactivate',
-      icon: 'user-slash',
-      variant: 'danger',
-      requiresConfirmation: true,
-    },
-  ]);
+  // Advanced Filters Animation
+  showAdvancedFilters = signal(false);
+  advancedFiltersLeaving = signal(false);
+  advancedFiltersEntering = signal(false);
+  advancedFiltersWrapperOpen = signal(false);
 
-  /**
-   * Confirmation modal state
-   */
-  private readonly _confirmationModal = signal<{
-    visible: boolean;
-    config: ModalConfig;
-    loading: boolean;
-    context?: any;
-  }>({
-    visible: false,
-    loading: false,
-    config: {
-      title: 'Confirm Action',
-      actions: [],
-    },
-  });
+  // Pagination
+  currentPage = signal(1);
+  pageSize = signal(10);
 
-  /**
-   * Current sort configuration for the table
-   */
-  private readonly _sortConfig = signal<SortConfig>({
-    field: 'displayName',
-    direction: 'asc',
-  });
+  // Selection state
+  private _selectedUsers = signal<UserDisplayData[]>([]);
+  readonly selectedUsers = this._selectedUsers.asReadonly();
 
-  /**
-   * User action configuration
-   */
-  private readonly _userActions = signal<UserActionConfig>({
+  // User actions configuration
+  readonly userActions = signal({
     canView: true,
     canEdit: true,
     canDelete: true,
@@ -218,165 +137,63 @@ export class UsersListPage implements OnInit {
     canResetPassword: true,
   });
 
-  /**
-   * Selection state for bulk operations
-   */
-  private readonly _selectedUsers = signal<UserDisplayData[]>([]);
+  // Sort configuration for table
+  readonly sortConfig = computed(() => ({
+    field: this.sortBy(),
+    direction: this.sortDirection(),
+  }));
 
-  /**
-   * View mode state (table or card)
-   */
-  private readonly _viewMode = signal<string>('table');
+  constructor() {
+    // Load initial data
+    effect(() => {
+      // Set breadcrumbs for this page
+      this.breadcrumbService.setBreadcrumbs([
+        { label: 'Dashboard', route: '/dashboard' },
+        { label: 'Usuarios', route: '/users', isLast: true },
+      ]);
+      this.onRetry();
+      this.loadRoles();
+    });
+  }
 
-  /**
-   * Available view modes configuration
-   */
-  private readonly _availableViews = signal<ViewMode[]>([
-    {
-      id: 'table',
-      label: 'Table',
-      icon: 'table-cells',
-      description: 'View users in a structured table format',
-      shortcut: 'T',
-    },
-    {
-      id: 'card',
-      label: 'Cards',
-      icon: 'grid',
-      description: 'View users as individual cards in a grid layout',
-      shortcut: 'C',
-    },
-  ]);
-
-  /**
-   * Page header configuration
-   */
+  // Computed properties for UI components
   readonly headerConfig = computed(
     (): PageHeaderConfig => ({
-      title: 'Gestión de Usuarios',
-      description: 'Gestiona usuarios, roles y permisos en tu organización',
+      title: 'Usuarios',
       icon: 'user-group',
+      description: 'Administra usuarios y sus permisos en el sistema',
       showBreadcrumbs: true,
       actions: [
         {
-          label: 'Actualizar',
-          icon: 'reload',
-          variant: 'secondary' as const,
-          action: () => this.loadUsers(),
-          disabled: false,
-          loading: this.loading(),
+          label: 'Nuevo Usuario',
+          icon: 'user-plus',
+          variant: 'primary',
+          action: () => this.onCreateUser(),
         },
         {
-          label: 'Agregar Usuario',
-          icon: 'user-plus',
-          variant: 'primary' as const,
-          action: () => this.onCreateUser(),
-          disabled: false,
-          loading: false,
+          label: this.showAdvancedFilters() ? 'Ocultar Filtros' : 'Filtros Avanzados',
+          icon: this.showAdvancedFilters() ? 'funnel-slash' : 'funnel',
+          variant: 'ghost',
+          action: () => this.toggleAdvancedFilters(),
         },
       ],
     })
   );
 
-  // ============================================================================
-  // Public State (for template)
-  // ============================================================================
+  // Public method for showing advanced filters panel
+  showAdvancedFiltersPanel() {
+    return this.showAdvancedFilters() || this.advancedFiltersLeaving();
+  }
 
-  readonly facadeUsers = this.usersFacade.users;
-  readonly loading = this.usersFacade.loading;
-  readonly error = this.usersFacade.error;
-  readonly availableRoles = this.rolesFacade.roles;
-  readonly availableRoleNames = computed(() => this.availableRoles().map((role) => role.name));
-  readonly searchCriteria = this._searchCriteria.asReadonly();
-  readonly sortConfig = this._sortConfig.asReadonly();
-  readonly userActions = this._userActions.asReadonly();
-  readonly selectedUsers = this._selectedUsers.asReadonly();
-  readonly paginationConfig = this._paginationConfig.asReadonly();
-  readonly bulkActions = this._bulkActions.asReadonly();
-  readonly confirmationModal = this._confirmationModal.asReadonly();
-  readonly viewMode = this._viewMode.asReadonly();
-  readonly availableViews = this._availableViews.asReadonly();
-
-  // Computed property for card layout
-  readonly isCardView = computed(() => this._viewMode() === 'card');
-  readonly isTableView = computed(() => this._viewMode() === 'table');
-
-  // Computed property for selected user IDs
-  readonly selectedUserIds = computed(() => this.selectedUsers().map((u) => u.id));
-
-  // Transform User entities to UserDisplayData for the UI
-  readonly users = computed(() => {
-    const domainUsers = this.facadeUsers();
-
-    if (domainUsers.length === 0) {
-      return [];
-    }
-
-    try {
-      const mappedUsers = domainUsers.map((user): UserDisplayData => {
-        // Create display name from first and last name
-        const displayName = `${user.firstName.value} ${user.lastName.value}`.trim();
-
-        // Create initials from first letters
-        const initials = displayName
-          .split(' ')
-          .map((name) => name.charAt(0).toUpperCase())
-          .join('')
-          .substring(0, 2);
-
-        // Format dates
-        const createdAt = user.createdAt ? user.createdAt.value : '';
-        const lastActivity = user.lastActivityAt ? user.lastActivityAt.value : undefined;
-        const lastActivityDisplay = lastActivity
-          ? new Date(lastActivity).toLocaleDateString()
-          : undefined;
-
-        // Create status display
-        const status: UserStatusDisplay = {
-          value: user.active ? 'active' : 'inactive',
-          label: user.active ? 'Activo' : 'Inactivo',
-          cssClass: user.active ? 'text-success-600 bg-success-50' : 'text-error-600 bg-error-50',
-          iconName: user.active ? 'check-circle' : 'x-circle',
-          description: user.active ? 'Usuario activo' : 'Usuario inactivo',
-        };
-
-        return {
-          id: user.id,
-          displayName,
-          email: user.email.value,
-          username: user.username.value,
-          role: user.role.name,
-          accessLevel: user.role.accessLevel,
-          status,
-          initials,
-          lastActivity,
-          lastActivityDisplay,
-          createdAt,
-          isActive: user.active,
-          canEdit: user.role.accessLevel <= 2,
-          canDelete: user.role.accessLevel == 1,
-        };
-      });
-
-      return mappedUsers;
-    } catch (error) {
-      console.error('❌ users-list.component: Error mapping users:', error);
-      return [];
-    }
-  });
-
-  // Apply client-side filtering and sorting
+  // Computed filtered users
   readonly filteredUsers = computed(() => {
-    const users = this.users();
-    const criteria = this._searchCriteria();
+    let filtered = this.users();
 
-    let filtered = [...users];
-
-    // Apply search filter
-    if (criteria.searchTerm.trim()) {
-      const searchTerm = criteria.searchTerm.toLowerCase().trim();
+    // Search filter
+    const searchTerm = this.search().toLowerCase();
+    if (searchTerm) {
       filtered = filtered.filter(
-        (user) =>
+        (user: UserDisplayData) =>
           user.displayName.toLowerCase().includes(searchTerm) ||
           user.email.toLowerCase().includes(searchTerm) ||
           user.username.toLowerCase().includes(searchTerm) ||
@@ -384,535 +201,476 @@ export class UsersListPage implements OnInit {
       );
     }
 
-    // Apply status filter
-    if (criteria.statusFilter !== 'all') {
-      filtered = filtered.filter((user) => user.status.value === criteria.statusFilter);
+    // Active filter
+    const activeFilterValue = this.activeFilter();
+    if (activeFilterValue !== null) {
+      filtered = filtered.filter((user: UserDisplayData) => user.isActive === activeFilterValue);
     }
 
-    // Apply role filter
-    if (criteria.roleFilter && criteria.roleFilter !== '') {
+    // Role filter
+    const roleFilterValue = this.roleFilter();
+    if (roleFilterValue) {
       filtered = filtered.filter(
-        (user) => user.role.toLowerCase() === criteria.roleFilter!.toLowerCase()
+        (user: UserDisplayData) => user.role.toLowerCase() === roleFilterValue.toLowerCase()
       );
     }
+
+    // Activity filter
+    const activityFilterValue = this.activityFilter();
+    if (activityFilterValue && activityFilterValue !== '') {
+      const now = new Date();
+      const filterDate = this.getActivityFilterDate(activityFilterValue, now);
+
+      filtered = filtered.filter((user: UserDisplayData) => {
+        if (!user.lastActivity) return false;
+        const userActivity = new Date(user.lastActivity);
+        return userActivity >= filterDate;
+      });
+    }
+
+    // Apply sorting
+    const sortByValue = this.sortBy();
+    const sortDirectionValue = this.sortDirection();
+
+    filtered.sort((a: UserDisplayData, b: UserDisplayData) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortByValue) {
+        case 'displayName':
+          aValue = a.displayName.toLowerCase();
+          bValue = b.displayName.toLowerCase();
+          break;
+        case 'email':
+          aValue = a.email.toLowerCase();
+          bValue = b.email.toLowerCase();
+          break;
+        case 'role':
+          aValue = a.role.toLowerCase();
+          bValue = b.role.toLowerCase();
+          break;
+        case 'lastActivity':
+          aValue = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
+          bValue = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
+          break;
+        case 'createdAt':
+          aValue = new Date(a.createdAt || 0).getTime();
+          bValue = new Date(b.createdAt || 0).getTime();
+          break;
+      }
+
+      if (aValue < bValue) {
+        return sortDirectionValue === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortDirectionValue === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
 
     return filtered;
   });
 
-  readonly sortedUsers = computed(() => {
-    const filtered = this.filteredUsers();
-    const sortConfig = this._sortConfig();
+  // Filter statistics
+  readonly filterStats = computed(() => {
+    const total = this.users().length;
+    const filtered = this.filteredUsers().length;
+    const active = this.filteredUsers().filter((u: UserDisplayData) => u.isActive).length;
+    const hasFilters =
+      this.search() ||
+      this.activeFilter() !== null ||
+      this.roleFilter() !== null ||
+      this.activityFilter() !== '';
 
-    if (!sortConfig.field) {
-      return filtered;
-    }
-
-    return [...filtered].sort((a, b) => {
-      const aValue = this.getSortValue(a, sortConfig.field);
-      const bValue = this.getSortValue(b, sortConfig.field);
-
-      let comparison = 0;
-      if (aValue < bValue) {
-        comparison = -1;
-      } else if (aValue > bValue) {
-        comparison = 1;
-      }
-
-      return sortConfig.direction === 'desc' ? -comparison : comparison;
-    });
+    return { total, filtered, active, hasFilters };
   });
 
-  // Computed pagination properties
-  readonly totalFilteredItems = computed(() => this.sortedUsers().length);
-
+  // Pagination
   readonly totalPages = computed(() => {
-    const totalItems = this.totalFilteredItems();
-    const pageSize = this._paginationConfig().pageSize;
-    return Math.ceil(totalItems / pageSize);
+    return Math.ceil(this.filteredUsers().length / this.pageSize());
   });
 
   readonly paginatedUsers = computed(() => {
-    const users = this.sortedUsers();
-    const config = this._paginationConfig();
-    const startIndex = (config.currentPage - 1) * config.pageSize;
-    const endIndex = startIndex + config.pageSize;
-    return users.slice(startIndex, endIndex);
+    const users = this.filteredUsers();
+    const start = (this.currentPage() - 1) * this.pageSize();
+    const end = start + this.pageSize();
+    return users.slice(start, end);
   });
 
-  // Updated pagination configuration that reflects filtered data
-  readonly dynamicPaginationConfig = computed((): PaginationConfig => {
-    const baseConfig = this._paginationConfig();
-    const totalItems = this.totalFilteredItems();
-    const totalPages = this.totalPages();
+  readonly dynamicPaginationConfig = computed(() => ({
+    currentPage: this.currentPage(),
+    totalPages: this.totalPages(),
+    totalItems: this.filteredUsers().length,
+    pageSize: this.pageSize(),
+    pageSizeOptions: [5, 10, 25, 50, 100],
+    showPageSizeSelector: true,
+    showPageInfo: true,
+    maxVisiblePages: 7,
+  }));
 
-    return {
-      ...baseConfig,
-      totalItems,
-      totalPages,
-    };
-  });
+  readonly errorConfig = computed(
+    (): ErrorDisplayConfig => ({
+      type: 'generic',
+      severity: 'error',
+      title: 'Failed to load users',
+      message: this.facade.error() || 'Unable to fetch users at this time.',
+      actions: [
+        {
+          label: 'Try Again',
+          style: 'primary',
+          action: () => this.onRetry(),
+        },
+      ],
+    })
+  );
 
-  // ============================================================================
-  // Component Lifecycle
-  // ============================================================================
-
-  ngOnInit(): void {
-    // Set up breadcrumbs for the users list page
-    this.breadcrumbService.setBreadcrumbs([
-      { label: 'Dashboard', route: '/dashboard' },
-      { label: 'Gestión de Usuarios', route: '/users', isLast: true },
-    ]);
-
-    // Load users and roles data
-    this.loadUsers();
-    this.loadRoles();
+  // Event Handlers
+  onRetry() {
+    this.facade.listUsers();
   }
 
-  // ============================================================================
-  // User Actions Event Handling
-  // ============================================================================
+  onCreateUser() {
+    this.router.navigate(['/users/new']);
+  }
 
-  /**
-   * Handle user action events from the table component
-   */
-  onUserAction(event: UserActionEvent): void {
+  onViewUser(id: number) {
+    this.router.navigate(['/users', id]);
+  }
+
+  onEditUser(id: number) {
+    this.router.navigate(['/users', id, 'edit']);
+  }
+
+  onToggleActive(userId: number, isActive: boolean) {
+    this.pendingAction = {
+      type: isActive ? 'deactivate' : 'activate',
+      userId,
+      status: !isActive,
+    };
+
+    this.confirmConfig.set({
+      title: isActive ? 'Desactivar Usuario' : 'Activar Usuario',
+      description: `¿Estás seguro que deseas ${isActive ? 'desactivar' : 'activar'} este usuario?`,
+      iconVariant: isActive ? 'warning' : 'success',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        {
+          label: isActive ? 'Desactivar' : 'Activar',
+          variant: isActive ? 'danger' : 'primary',
+          action: 'confirm',
+        },
+      ],
+    });
+    this.confirmVisible.set(true);
+  }
+
+  onDelete(userId: number) {
+    this.pendingAction = { type: 'delete', userId };
+    this.confirmConfig.set({
+      title: 'Eliminar Usuario',
+      description: `¿Estás seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.`,
+      iconVariant: 'error',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        { label: 'Eliminar', variant: 'danger', action: 'confirm' },
+      ],
+    });
+    this.confirmVisible.set(true);
+  }
+
+  onUserAction(
+    event: UserActionEvent | { action: 'view' | 'edit' | 'select'; user: UserDisplayData }
+  ): void {
     const { action, user } = event;
 
     switch (action) {
       case 'view':
-        this.viewUser(user.id);
+        this.onViewUser(user.id);
         break;
       case 'edit':
-        this.editUser(user.id);
+        this.onEditUser(user.id);
+        break;
+      case 'select':
+        // Handle card selection if needed
         break;
       case 'delete':
-        this.deleteUser(user);
+        this.onDelete(user.id);
         break;
       case 'activate':
-        this.activateUser(user);
+        this.onToggleActive(user.id, false);
         break;
       case 'deactivate':
-        this.deactivateUser(user);
+        this.onToggleActive(user.id, true);
         break;
       case 'resetPassword':
-        this.resetUserPassword();
+        this.onResetPassword(user.id);
         break;
     }
   }
 
-  /**
-   * Handle user selection changes for bulk operations (from table)
-   */
   onSelectionChange(event: UserSelectionEvent): void {
     this._selectedUsers.set(event.selectedUsers);
   }
 
-  /**
-   * Handle user selection changes from grid view
-   */
-  onGridSelectionChange(event: GridSelectionEvent): void {
-    const currentSelected = this._selectedUsers();
-    let updatedSelection: UserDisplayData[];
-
-    if (event.selected) {
-      // Add user to selection if not already selected
-      if (!currentSelected.find((user) => user.id === event.user.id)) {
-        updatedSelection = [...currentSelected, event.user];
-      } else {
-        updatedSelection = currentSelected;
-      }
-    } else {
-      // Remove user from selection
-      updatedSelection = currentSelected.filter((user) => user.id !== event.user.id);
-    }
-
-    this._selectedUsers.set(updatedSelection);
-  }
-
-  /**
-   * Handle view mode changes
-   */
-  onViewModeChange(viewMode: string): void {
-    this._viewMode.set(viewMode);
-    // Clear selection when switching views
-    this._selectedUsers.set([]);
-  }
-
-  /**
-   * Handle user card actions from grid view
-   */
-  onCardAction(event: UserCardActionEvent): void {
-    // Filter out 'select' action as it's not supported in UserActionEvent
-    if (event.action === 'select') {
-      // Handle selection separately - toggle user selection
-      const isSelected = this.selectedUsers().some((u) => u.id === event.user.id);
-      this.onGridSelectionChange({
-        user: event.user,
-        selected: !isSelected,
-      });
-      return;
-    }
-
-    // Handle supported actions
-    if (event.action === 'view' || event.action === 'edit') {
-      this.onUserAction({
-        action: event.action,
-        user: event.user,
-      });
-    }
-  }
-
-  /**
-   * Handle card clicks from grid view
-   */
-  onCardClick(user: UserDisplayData): void {
-    this.viewUser(user.id);
-  }
-
-  /**
-   * Handle sort configuration changes
-   */
   onSortChange(event: SortChangeEvent): void {
-    this._sortConfig.set({
-      field: event.field as string,
-      direction: event.direction,
-    });
-
-    // Update search criteria for consistency
-    this._searchCriteria.update((criteria) => ({
-      ...criteria,
-      sortBy: event.field as UserSortField,
-      sortDirection: event.direction,
-    }));
+    this.sortBy.set(event.field as any);
+    this.sortDirection.set(event.direction);
   }
 
-  /**
-   * Handle filter changes
-   */
-  onFilterChange(event: FilterChangeEvent): void {
-    this._searchCriteria.set(event.filters);
-
-    // Update sort config if sort fields are present
-    if (event.filters.sortBy && event.filters.sortDirection) {
-      this._sortConfig.set({
-        field: event.filters.sortBy,
-        direction: event.filters.sortDirection,
-      });
-    }
-
-    // Reset pagination when filters change
-    this._paginationConfig.update((config) => ({
-      ...config,
-      currentPage: 1,
-    }));
+  onPageChange(event: { page: number; pageSize: number }): void {
+    this.currentPage.set(event.page);
+    this.pageSize.set(event.pageSize);
   }
 
-  /**
-   * Handle filters reset
-   */
-  onFiltersReset(): void {
-    this._searchCriteria.set({
-      searchTerm: '',
-      statusFilter: 'all',
-      roleFilter: '',
-      sortBy: 'name',
-      sortDirection: 'asc',
-    });
-
-    this._sortConfig.set({
-      field: 'name',
-      direction: 'asc',
-    });
-
-    this._paginationConfig.update((config) => ({
-      ...config,
-      currentPage: 1,
-    }));
+  onPageSizeChange(event: { pageSize: number }): void {
+    this.pageSize.set(event.pageSize);
+    this.currentPage.set(1);
   }
 
-  /**
-   * Handle bulk actions
-   */
-  onBulkAction(event: { actionId: string; selectedCount: number }): void {
-    const selectedUsers = this._selectedUsers();
+  onBulkAction(
+    event: { action: string; users: UserDisplayData[] } | { action: string; userIds: number[] }
+  ) {
+    // Handle bulk actions similar to roles-list
+    const userIds = 'users' in event ? event.users.map((u) => u.id) : event.userIds;
 
-    if (selectedUsers.length === 0) {
-      return;
-    }
-
-    switch (event.actionId) {
+    switch (event.action) {
       case 'activate':
-        this.showConfirmationModal(
-          {
-            title: 'Activate Users',
-            description: `Are you sure you want to activate ${selectedUsers.length} user(s)?`,
-            iconVariant: 'info',
-            actions: [
-              { label: 'Cancel', variant: 'secondary', action: 'cancel' },
-              { label: 'Activate', variant: 'primary', action: 'confirm' },
-            ],
-          },
-          { action: 'bulk-activate', users: selectedUsers }
-        );
+        userIds.forEach((id) => this.facade.activateUser(id));
         break;
       case 'deactivate':
-        this.showConfirmationModal(
-          {
-            title: 'Deactivate Users',
-            description: `Are you sure you want to deactivate ${selectedUsers.length} user(s)?`,
-            iconVariant: 'warning',
-            actions: [
-              { label: 'Cancel', variant: 'secondary', action: 'cancel' },
-              { label: 'Deactivate', variant: 'danger', action: 'confirm' },
-            ],
-          },
-          { action: 'bulk-deactivate', users: selectedUsers }
-        );
+        userIds.forEach((id) => this.facade.deactivateUser(id));
         break;
       case 'delete':
-        this.showConfirmationModal(
-          {
-            title: 'Deactivate Users',
-            description: `Are you sure you want to deactivate ${selectedUsers.length} user(s)? Their accounts will be disabled but data will be preserved.`,
-            iconVariant: 'warning',
-            actions: [
-              { label: 'Cancel', variant: 'secondary', action: 'cancel' },
-              { label: 'Deactivate', variant: 'danger', action: 'confirm' },
-            ],
-          },
-          { action: 'bulk-delete', users: selectedUsers }
-        );
+        userIds.forEach((id) => this.facade.deleteUser(id));
         break;
     }
-  }
-
-  /**
-   * Clear selection
-   */
-  onClearSelection(): void {
     this._selectedUsers.set([]);
   }
 
-  /**
-   * Handle pagination changes
-   */
-  onPageChange(event: PageChangeEvent): void {
-    const maxPages = this.totalPages();
-    const requestedPage = Math.max(1, Math.min(event.page, maxPages));
-
-    this._paginationConfig.update((config) => ({
-      ...config,
-      currentPage: requestedPage,
-      pageSize: event.pageSize,
-    }));
-  }
-
-  onPageSizeChange(event: PageSizeChangeEvent): void {
-    this._paginationConfig.update((config) => ({
-      ...config,
-      pageSize: event.pageSize,
-      currentPage: 1, // Reset to page 1 when page size changes
-    }));
-  }
-
-  /**
-   * Handle confirmation modal actions
-   */
-  onConfirmationAction(event: ModalActionEvent): void {
-    const modalContext = this._confirmationModal().context;
-
-    if (event.action === 'confirm' && modalContext) {
-      this.executeConfirmedAction(modalContext);
+  onConfirmModalAction(event: ModalActionEvent) {
+    if (!this.pendingAction) {
+      this.confirmVisible.set(false);
+      return;
     }
 
-    // Hide modal
-    this._confirmationModal.update((modal) => ({
-      ...modal,
-      visible: false,
-    }));
+    if (event.action === 'confirm') {
+      this.confirmLoading.set(true);
+      const { type, userId } = this.pendingAction;
+
+      if (type === 'delete') {
+        this.facade
+          .deleteUser(userId)
+          .then(() => {
+            this.notifications.success(
+              'Usuario eliminado',
+              'El usuario ha sido eliminado correctamente.'
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              'Error al eliminar usuario',
+              typeof error === 'string' ? error : 'No se pudo eliminar el usuario.'
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      } else if (type === 'activate') {
+        this.facade
+          .activateUser(userId)
+          .then(() => {
+            this.notifications.success(
+              'Usuario activado',
+              'El usuario ha sido activado correctamente.'
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              'Error al activar usuario',
+              typeof error === 'string' ? error : 'No se pudo activar el usuario.'
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      } else if (type === 'deactivate') {
+        this.facade
+          .deactivateUser(userId)
+          .then(() => {
+            this.notifications.success(
+              'Usuario desactivado',
+              'El usuario ha sido desactivado correctamente.'
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              'Error al desactivar usuario',
+              typeof error === 'string' ? error : 'No se pudo desactivar el usuario.'
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      }
+    } else {
+      this.confirmVisible.set(false);
+      this.pendingAction = null;
+    }
   }
 
-  /**
-   * Handle create user button click
-   */
-  onCreateUser(): void {
-    this.router.navigate(['/users', 'create']);
+  // Filter methods
+  toggleAdvancedFilters() {
+    if (this.showAdvancedFilters()) {
+      // Animation de salida
+      this.advancedFiltersLeaving.set(true);
+      this.showAdvancedFilters.set(false);
+      this.advancedFiltersWrapperOpen.set(false);
+      setTimeout(() => {
+        this.advancedFiltersLeaving.set(false);
+      }, 200);
+    } else {
+      this.showAdvancedFilters.set(true);
+      this.advancedFiltersEntering.set(true);
+      setTimeout(() => {
+        this.advancedFiltersEntering.set(false);
+        this.advancedFiltersWrapperOpen.set(true);
+      }, 10);
+    }
   }
 
-  // ============================================================================
-  // Private Methods
-  // ============================================================================
-
-  /**
-   * Load users with current search criteria (public method for template)
-   */
-  loadUsers(): void {
-    // Use listUsers method from the facade
-    this.usersFacade.listUsers();
+  updateSearch(value: string) {
+    this.search.set(value);
+    this.currentPage.set(1);
+    if (value) {
+      this.notifications.info('Filtro aplicado', `Filtro de búsqueda: "${value}"`);
+    }
   }
 
-  /**
-   * Load available roles for filtering
-   */
-  loadRoles(): void {
-    // Use listRoles method from the facade
+  updateActiveFilter(value: boolean | null) {
+    this.activeFilter.set(value);
+    this.currentPage.set(1);
+    if (value !== null) {
+      this.notifications.info(
+        'Filtro aplicado',
+        `Filtro de estado: ${value ? 'Activos' : 'Inactivos'}`
+      );
+    }
+  }
+
+  updateRoleFilter(value: string | null) {
+    this.roleFilter.set(value);
+    this.currentPage.set(1);
+    if (value) {
+      this.notifications.info('Filtro aplicado', `Filtro de rol: ${value}`);
+    }
+  }
+
+  updateActivityFilter(value: string) {
+    this.activityFilter.set(value);
+    this.currentPage.set(1);
+    if (value) {
+      this.notifications.info(
+        'Filtro aplicado',
+        `Filtro de actividad: ${this.getActivityLabel(value)}`
+      );
+    }
+  }
+
+  updateSort(
+    sortBy: 'displayName' | 'email' | 'role' | 'lastActivity' | 'createdAt',
+    direction?: 'asc' | 'desc'
+  ) {
+    this.sortBy.set(sortBy);
+    if (direction) {
+      this.sortDirection.set(direction);
+    } else {
+      // Toggle direction if same column
+      this.sortDirection.update((current) => (current === 'asc' ? 'desc' : 'asc'));
+    }
+  }
+
+  clearAllFilters() {
+    this.search.set('');
+    this.activeFilter.set(null);
+    this.roleFilter.set(null);
+    this.activityFilter.set('');
+    this.sortBy.set('displayName');
+    this.sortDirection.set('asc');
+    this.currentPage.set(1);
+  }
+
+  // Helper methods
+  getSortOptions() {
+    return [
+      { value: 'displayName', label: 'Nombre' },
+      { value: 'email', label: 'Email' },
+      { value: 'role', label: 'Rol' },
+      { value: 'lastActivity', label: 'Última Actividad' },
+      { value: 'createdAt', label: 'Fecha de Creación' },
+    ];
+  }
+
+  getTableActions() {
+    return ['activate', 'deactivate', 'delete'];
+  }
+
+  private loadRoles(): void {
     this.rolesFacade.loadRoles();
   }
 
-  /**
-   * Navigate to user detail view
-   */
-  private viewUser(userId: number): void {
-    this.router.navigate(['/users', userId]);
-  }
-
-  /**
-   * Navigate to user edit view
-   */
-  private editUser(userId: number): void {
-    this.router.navigate(['/users', 'edit', userId]);
-  }
-
-  /**
-   * Delete user with confirmation
-   */
-  private deleteUser(user: UserDisplayData): void {
-    this.showConfirmationModal(
-      {
-        title: 'Delete User',
-        description: `Are you sure you want to delete ${user.displayName}? The user account will be deactivated and can no longer access the system.`,
-        iconVariant: 'error',
-        actions: [
-          { label: 'Cancel', variant: 'secondary', action: 'cancel' },
-          { label: 'Delete', variant: 'danger', action: 'confirm' },
-        ],
-      },
-      { action: 'delete-user', userId: user.id }
-    );
-  }
-
-  /**
-   * Activate user
-   */
-  private activateUser(user: UserDisplayData): void {
-    this.usersFacade.activateUser(user.id);
-  }
-
-  /**
-   * Deactivate user
-   */
-  private deactivateUser(user: UserDisplayData): void {
-    this.usersFacade.deactivateUser(user.id);
-  }
-
-  /**
-   * Reset user password - not available in current facade
-   */
-  private resetUserPassword(): void {
-    // This method is not available in the current UsersFacade
-    // Showing a message for now
-    alert('La funcionalidad de restablecer contraseña no está disponible actualmente.');
-  }
-
-  /**
-   * Show confirmation modal
-   */
-  private showConfirmationModal(config: Partial<ModalConfig>, context?: any): void {
-    this._confirmationModal.set({
-      visible: true,
-      loading: false,
-      context,
-      config: {
-        ...config,
-        size: config.size || 'md',
-        closable: config.closable ?? true,
-        closeOnBackdrop: config.closeOnBackdrop ?? true,
-        closeOnEscape: config.closeOnEscape ?? true,
-        actions: config.actions || [],
-      } as ModalConfig,
+  private onResetPassword(userId: number): void {
+    this.pendingAction = { type: 'resetPassword', userId };
+    this.confirmConfig.set({
+      title: 'Restablecer Contraseña',
+      description: `¿Estás seguro que deseas restablecer la contraseña de este usuario?`,
+      iconVariant: 'warning',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        { label: 'Restablecer', variant: 'primary', action: 'confirm' },
+      ],
     });
+    this.confirmVisible.set(true);
   }
 
-  /**
-   * Execute confirmed action
-   */
-  private executeConfirmedAction(context: any): void {
-    this._confirmationModal.update((modal) => ({
-      ...modal,
-      loading: true,
-    }));
-
-    try {
-      switch (context.action) {
-        case 'delete-user':
-          this.usersFacade.deleteUser(context.userId);
-          break;
-        case 'bulk-activate':
-          context.users.forEach((user: UserDisplayData) => {
-            this.usersFacade.activateUser(user.id);
-          });
-          this._selectedUsers.set([]);
-          break;
-        case 'bulk-deactivate':
-          context.users.forEach((user: UserDisplayData) => {
-            this.usersFacade.deactivateUser(user.id);
-          });
-          this._selectedUsers.set([]);
-          break;
-        case 'bulk-delete':
-          context.users.forEach((user: UserDisplayData) => {
-            this.usersFacade.deleteUser(user.id);
-          });
-          this._selectedUsers.set([]);
-          break;
-      }
-    } finally {
-      this._confirmationModal.update((modal) => ({
-        ...modal,
-        loading: false,
-      }));
+  private getActivityFilterDate(filter: string, now: Date): Date {
+    switch (filter) {
+      case 'today':
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      case 'week':
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return weekAgo;
+      case 'month':
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(now.getMonth() - 1);
+        return monthAgo;
+      case '3months':
+        const threeMonthsAgo = new Date(now);
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        return threeMonthsAgo;
+      default:
+        return new Date(0);
     }
   }
 
-  /**
-   * Close confirmation modal
-   */
-  private closeModal(): void {
-    this._confirmationModal.set({
-      visible: false,
-      loading: false,
-      context: null,
-      config: {
-        size: 'md',
-        title: '',
-        description: '',
-        closable: true,
-        closeOnBackdrop: true,
-        closeOnEscape: true,
-        actions: [],
-      },
-    });
-  }
-
-  /**
-   * Get sort value for comparison
-   */
-  private getSortValue(user: UserDisplayData, field: string): any {
-    switch (field) {
-      case 'displayName':
-        return user.displayName.toLowerCase();
-      case 'email':
-        return user.email.toLowerCase();
-      case 'username':
-        return user.username.toLowerCase();
-      case 'role':
-        return user.role.toLowerCase();
-      case 'createdAt':
-        return new Date(user.createdAt || 0).getTime();
-      case 'lastActivity':
-        return user.lastActivity ? new Date(user.lastActivity).getTime() : 0;
+  private getActivityLabel(filter: string): string {
+    switch (filter) {
+      case 'today':
+        return 'Hoy';
+      case 'week':
+        return 'Esta semana';
+      case 'month':
+        return 'Este mes';
+      case '3months':
+        return 'Últimos 3 meses';
       default:
-        return '';
+        return 'Cualquier momento';
     }
   }
 }
