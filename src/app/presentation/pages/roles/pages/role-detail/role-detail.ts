@@ -46,9 +46,7 @@ export class RoleDetail {
     const levelInfo = role ? getRoleAccessLevelInfo(role.accessLevel) : getRoleAccessLevelInfo(5);
     return {
       title: role ? role.displayName : 'Detalle del Rol',
-      description: role
-        ? `${levelInfo.description}`
-        : 'Información detallada del rol seleccionado',
+      description: role ? `${levelInfo.description}` : 'Información detallada del rol seleccionado',
       icon: role ? getRoleAccessLevelIcon(role.accessLevel) : 'shield-check',
       showBreadcrumbs: true,
       actions: [
