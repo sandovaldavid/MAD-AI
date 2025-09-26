@@ -1,110 +1,299 @@
-/**
- * Users List Page Styles
- *
- * @description
- * Simplified styles for the Users List Page Smart Component.
- * Uses Tailwind CSS v4.1 with custom color palette.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @layer Presentation
- */
-
 @reference '../../../../../../styles.css';
 
-/* Page Layout */
-.users-list-page {
-  @apply flex flex-col h-full bg-neutral-50 dark:bg-primary-950 p-6 gap-6;
+/* Advanced Filters Animation Container */
+
+.advanced-filters-wrapper {
+  transition:
+    height 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  opacity: 0;
+  height: 0 !important;
 }
 
-/* Page Header */
-.page-header {
-  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
+.advanced-filters-wrapper--open {
+  opacity: 1;
+  height: 220px !important;
+  margin-bottom: 1.5rem;
 }
 
-.header-content {
-  @apply flex items-center justify-between;
+.advanced-filters-wrapper--closed {
+  opacity: 0;
+  height: 0 !important;
+  margin-bottom: 0;
 }
 
-.header-info {
-  @apply flex-1;
+/* Toggle Button Styles */
+.toggle-btn {
+  @apply flex items-center px-3 py-1.5 text-sm font-medium rounded-md
+    transition-all duration-200 text-neutral-600 dark:text-neutral-400
+    hover:text-neutral-900 dark:hover:text-neutral-100;
 }
 
-.page-title {
-  @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2;
-}
-
-.page-description {
-  @apply text-sm text-neutral-600 dark:text-neutral-400;
-}
-
-.header-actions {
-  @apply flex items-center gap-3;
+.toggle-btn--active {
+  @apply bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100
+    shadow-sm ring-1 ring-neutral-200 dark:ring-neutral-600;
 }
 
 /* Button Styles */
 .btn {
   @apply inline-flex items-center justify-center gap-2 rounded-2xl font-medium
-    transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-60 
-    select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    transition disabled:cursor-not-allowed select-none;
   min-height: 2.25rem;
   padding-inline: 0.875rem;
 }
 
+.btn--sm {
+  @apply text-xs min-h-8 px-3;
+}
+
 .btn--primary {
-  @apply text-white bg-primary-500 hover:bg-primary-700 
-    focus-visible:ring-primary-500/25 dark:bg-primary-600 dark:hover:bg-primary-500;
+  @apply text-white bg-primary-500 hover:bg-primary-700;
 }
 
 .btn--secondary {
   @apply text-neutral-900 bg-neutral-200 hover:bg-neutral-300
-    focus-visible:ring-neutral-500/25 dark:text-neutral-100 
+    focus-visible:ring-neutral-500/25 dark:text-neutral-100
     dark:bg-neutral-700 dark:hover:bg-neutral-600;
 }
 
-/* Error Display */
-.error-message {
-  @apply bg-error-50 dark:bg-error-900 border border-error-200 dark:border-error-700 rounded-2xl p-4;
+.btn--danger {
+  @apply text-white bg-error-500 hover:bg-error-700
+    focus-visible:ring-error-500/25 dark:bg-error-600 dark:hover:bg-error-500;
 }
 
-.error-content {
-  @apply text-center;
+/* Form Styles */
+.form-label {
+  @apply block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2;
 }
 
-.error-content h3 {
-  @apply text-lg font-semibold text-error-800 dark:text-error-200 mb-2;
+.form-input {
+  @apply w-full border border-neutral-300 bg-white text-neutral-900 rounded-xl outline-none transition-all duration-150 px-3 py-2 placeholder:text-neutral-500 hover:border-neutral-400 focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-500/25 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder:text-neutral-400 dark:hover:border-neutral-600 dark:focus-visible:border-primary-400 dark:focus-visible:ring-primary-400/25;
 }
 
-.error-content p {
-  @apply text-sm text-error-600 dark:text-error-300 mb-4;
+/* Enhanced Card Hover Effects */
+.bg-white:hover {
+  @apply transform scale-[1.02];
 }
 
-/* Filter Controls */
-.filter-controls {
-  @apply flex items-center justify-between gap-4 mb-8;
+/* Smooth transitions for all interactive elements */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }
 
-app-user-filter {
-  @apply flex-1;
+/* Custom badge animations */
+.px-2.py-1.rounded-full {
+  @apply transition-all duration-200 hover:scale-105;
 }
 
-@media (max-width: 768px) {
-  .filter-controls {
-    @apply flex-col items-stretch gap-3;
+/* Enhanced shadow for elevated cards */
+.shadow-form-elevated {
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.shadow-form-elevated:hover {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .shadow-form-elevated {
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.3),
+      0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .shadow-form-elevated:hover {
+    box-shadow:
+      0 10px 15px -3px rgba(0, 0, 0, 0.4),
+      0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn--ghost {
+    @apply text-neutral-200 border-neutral-700 hover:bg-neutral-800;
+  }
+
+  .btn--secondary {
+    @apply text-neutral-100 bg-secondary-700 hover:bg-secondary-600;
   }
 }
 
-/* Users Content */
-.users-content {
-  @apply flex-1 min-h-0 mb-8;
+/* User card specific enhancements */
+.user-card {
+  @apply transition-all duration-300 hover:shadow-lg;
 }
 
-/* Users Table Container */
+/* Status indicator animations */
+.status-badge {
+  @apply transition-all duration-200 hover:scale-110;
+}
+
+/* Grid responsive enhancements */
+@media (max-width: 768px) {
+  .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3 {
+    gap: 1rem;
+  }
+}
+
+/* Enhanced form controls */
+.form-input:focus-visible {
+  @apply ring-4 ring-primary-500/10;
+}
+
+/* Advanced Filters Animations */
+.advanced-filters-enter {
+  opacity: 0;
+  transform: translateY(-16px);
+}
+
+.advanced-filters-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.advanced-filters-leave {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.advanced-filters-leave-active {
+  opacity: 0;
+  transform: translateY(-16px);
+  transition:
+    opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Improved button spacing in card actions */
+.card-actions {
+  @apply space-x-2;
+}
+
+.card-actions > * {
+  @apply flex-shrink-0;
+}
+
+/* User specific styles */
+.user-avatar {
+  @apply transition-all duration-200 hover:scale-105;
+}
+
+/* Search input enhancements */
+.form-input[type='search']::-webkit-search-cancel-button {
+  @apply appearance-none w-4 h-4 bg-neutral-400 dark:bg-neutral-500 rounded-full cursor-pointer;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 18L18 6M6 6l12 12'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+}
+
+/* Table container enhancements */
 .users-table-container {
-  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden;
+  @apply transition-all duration-200 hover:shadow-md;
 }
 
-/* Users Grid Container */
-.users-grid-container {
-  @apply bg-white dark:bg-primary-900 rounded-2xl border border-neutral-200 dark:border-neutral-700 p-6;
+/* Empty state enhancements */
+.empty-state-icon {
+  @apply transition-all duration-300 hover:scale-110;
+}
+
+/* Pagination container */
+.pagination-container {
+  @apply bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-sm;
+}
+
+/* Loading skeleton animations */
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton {
+    background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+    background-size: 200px 100%;
+  }
+}
+
+/* Filter stats enhancements */
+.filter-stats {
+  @apply bg-info-50 dark:bg-info-900 text-info-700 dark:text-info-300 px-3 py-2 rounded-lg;
+}
+
+/* Bulk actions toolbar */
+.bulk-actions-toolbar {
+  @apply fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50;
+  @apply bg-white dark:bg-neutral-800 shadow-lg rounded-lg border border-neutral-200 dark:border-neutral-700;
+}
+
+/* Custom scrollbar for filter containers */
+.advanced-filters-wrapper::-webkit-scrollbar {
+  @apply w-1;
+}
+
+.advanced-filters-wrapper::-webkit-scrollbar-track {
+  @apply bg-neutral-100 dark:bg-neutral-800;
+}
+
+.advanced-filters-wrapper::-webkit-scrollbar-thumb {
+  @apply bg-neutral-300 dark:bg-neutral-600 rounded-full;
+}
+
+/* Responsive improvements */
+@media (max-width: 640px) {
+  .dashboard-header {
+    @apply px-4;
+  }
+
+  .form-input {
+    @apply text-base; /* Prevent zoom on iOS */
+  }
+}
+
+/* Accessibility improvements */
+.sr-only {
+  @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+}
+
+/* Focus improvements */
+*:focus-visible {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-neutral-900;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .form-input {
+    @apply border-2 border-neutral-900 dark:border-white;
+  }
+
+  .btn {
+    @apply border-2 border-current;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
 }
