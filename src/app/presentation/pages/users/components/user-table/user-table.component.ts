@@ -45,6 +45,7 @@ import { CommonModule } from '@angular/common';
 // Shared UI Components
 import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
+import { UserStatusBadgeComponent } from '../../components/user-status-badge/user-status-badge';
 
 // Local Imports
 import { UserDisplayData, SortConfig, UserActionConfig } from '../../types/user-ui.types';
@@ -88,7 +89,7 @@ export interface SortChangeEvent {
 @Component({
   selector: 'app-user-table',
   standalone: true,
-  imports: [CommonModule, Button, Icon],
+  imports: [CommonModule, Button, Icon, UserStatusBadgeComponent],
   templateUrl: './user-table.component.html',
   styleUrl: './user-table.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -397,11 +398,14 @@ export class UserTableComponent implements OnInit, OnChanges {
     // Fallback to email or username initials
     const fallbackName = user.email || user.username;
     return fallbackName ? fallbackName.charAt(0).toUpperCase() : 'U';
-  } /**
-   * Get user status CSS class
+  }
+
+  /**
+   * Clear selection (needed for floating toolbar)
    */
-  getStatusClass(status: UserDisplayData['status']): string {
-    return `status-${status.cssClass}`;
+  clearSelection(): void {
+    this._internalSelection.set(new Set());
+    this.emitSelectionChange();
   }
 
   /**
