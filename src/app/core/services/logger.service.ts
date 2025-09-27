@@ -64,11 +64,9 @@ export class LoggerService implements Logger {
     }
   }
 
-  private outputLog(level: LogLevel, logEntry: any): void {
-    const formattedMessage = `[${logEntry.timestamp}] ${logEntry.level}: ${logEntry.message}`;
-
-    // Crear objeto de contexto limpio (sin timestamp, level, message)
+  private outputLog(level: LogLevel, logEntry: Record<string, unknown>): void {
     const { timestamp, level: levelName, message, ...context } = logEntry;
+    const formattedMessage = `[${timestamp}] ${levelName}: ${message}`;
     const hasContext = Object.keys(context).length > 0;
 
     if (level >= LogLevel.ERROR) {

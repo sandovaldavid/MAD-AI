@@ -63,7 +63,7 @@ export class DateTimeService {
     return new Date(year, month - 1, day, hours, minutes, seconds);
   }
 
-  parseDate(dateString: string, options?: DateTimeOptions): Date | null {
+  parseDate(dateString: string): Date | null {
     // Handle null, undefined, or empty string inputs
     if (!dateString || dateString.trim() === '') {
       return null;
@@ -93,7 +93,7 @@ export class DateTimeService {
         minute: format.includes('mm') ? '2-digit' : undefined,
         second: format.includes('ss') ? '2-digit' : undefined,
       }).format(date);
-    } catch (error) {
+    } catch {
       // Fallback to basic formatting
       return this.basicFormat(date, format);
     }
@@ -110,7 +110,7 @@ export class DateTimeService {
         minute: '2-digit',
         second: format.includes('ss') ? '2-digit' : undefined,
       }).format(date);
-    } catch (error) {
+    } catch {
       return this.basicTimeFormat(date, format);
     }
   }
@@ -246,7 +246,7 @@ export class DateTimeService {
 
   // ===== TIMEZONE OPERATIONS =====
 
-  convertTimezone(date: Date, fromTimezone: string, toTimezone: string): Date {
+  convertTimezone(date: Date, fromTimezone: string): Date {
     // This is a simplified implementation
     // In a real app, you might use a library like moment-timezone
     try {
@@ -261,7 +261,7 @@ export class DateTimeService {
       }).format(date);
 
       return new Date(fromTime + ' GMT');
-    } catch (error) {
+    } catch {
       console.warn('Timezone conversion failed, returning original date');
       return date;
     }
@@ -273,7 +273,7 @@ export class DateTimeService {
       const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
       const targetDate = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
       return (targetDate.getTime() - utcDate.getTime()) / (1000 * 60);
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -316,7 +316,7 @@ export class DateTimeService {
 
   // ===== VALIDATION =====
 
-  isValidDate(date: any): date is Date {
+  isValidDate(date: unknown): date is Date {
     return date instanceof Date && !isNaN(date.getTime());
   }
 
@@ -344,7 +344,8 @@ export class DateTimeService {
 
   setDefaultBusinessHours(businessHours: BusinessHours): void {
     // In a real app, this might be stored in configuration service
-    (this as any).defaultBusinessHours = businessHours;
+    (this as unknown as { defaultBusinessHours: BusinessHours }).defaultBusinessHours =
+      businessHours;
   }
 
   getDefaultBusinessHours(): BusinessHours {
