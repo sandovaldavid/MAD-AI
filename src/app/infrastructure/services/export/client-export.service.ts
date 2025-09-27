@@ -274,10 +274,10 @@ export class ClientExportService implements ExportRepository {
   }
 
   private buildWorksheetColumnMetadata(
-    rows: Array<Record<string, unknown>>,
+    rows: Record<string, unknown>[],
     headers: string[],
     maxColumnWidth?: number
-  ): Array<{ wch: number }> {
+  ): { wch: number }[] {
     return headers.map((header) => {
       const headerLength = header.length;
       const maxContentLength = rows.reduce((maxLength, row) => {
