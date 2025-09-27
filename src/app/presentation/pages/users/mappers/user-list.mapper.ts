@@ -60,8 +60,8 @@ export class UserListMapper {
    */
   static toListData(
     result: ListUsersResult,
-    currentPage: number = 1,
-    pageSize: number = 20,
+    currentPage = 1,
+    pageSize = 20,
     permissions?: Map<number, UserActionConfig>
   ): UserListData {
     const userViewModels = UserPresentationMapper.toListViewModels(result.users, permissions);
@@ -140,8 +140,8 @@ export class UserListMapper {
    * @returns UserPaginationConfig for pagination components
    */
   static createPaginationConfig(
-    currentPage: number = 1,
-    pageSize: number = 20,
+    currentPage = 1,
+    pageSize = 20,
     customSizes?: number[]
   ): UserPaginationConfig {
     const defaultSizes = [10, 20, 50, 100];

@@ -109,7 +109,7 @@ export class UserPresentationMapper {
    * @param includeStats Whether to include user statistics
    * @returns UserCardData optimized for card rendering
    */
-  static toCardData(user: User, includeStats: boolean = false): UserCardData {
+  static toCardData(user: User, includeStats = false): UserCardData {
     return {
       id: user.id,
       displayName: this.formatDisplayName(user.firstName.toString(), user.lastName.toString()),
@@ -128,7 +128,7 @@ export class UserPresentationMapper {
    * @param includeStats Whether to include user statistics
    * @returns Array of UserCardViewModel instances
    */
-  static toCardViewModels(users: User[], includeStats: boolean = false): UserCardViewModel[] {
+  static toCardViewModels(users: User[], includeStats = false): UserCardViewModel[] {
     return users.map((user) => {
       const cardData = this.toCardData(user, includeStats);
       return new UserCardViewModel(cardData);
