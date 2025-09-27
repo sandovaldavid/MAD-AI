@@ -6,6 +6,7 @@ import type {
   PdfConfig,
   CsvConfig,
   JsonConfig,
+  ExcelConfig,
 } from '@domain/repositories/system/export.repository';
 
 @Injectable({
@@ -18,6 +19,7 @@ export class ClientExportService implements ExportRepository {
   private papa: any;
   private jspdf: any;
   private jspdfAutoTable: any;
+  private xlsx: any;
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -125,6 +127,51 @@ export class ClientExportService implements ExportRepository {
     return Promise.resolve();
   }
 
+  async exportToExcel<T>(data: T[], config: ExcelConfig): Promise<void> {
+    if (!this.isBrowser) {
+      return;
+    }
+
+    const xlsxLib = await this.getXlsxLibrary();
+
+    const headers =
+      config.headers && config.headers.length > 0
+        ? config.headers
+        : this.inferHeadersFromData(data);
+
+    const effectiveHeaders = headers.length > 0 ? headers : ['value'];
+
+    const rows = data.map((item) => this.buildExcelRow(item, effectiveHeaders));
+
+    const worksheet = xlsxLib.utils.json_to_sheet(rows, {
+      header: effectiveHeaders,
+    });
+
+    if (config.autoFitColumns) {
+      worksheet['!cols'] = this.buildWorksheetColumnMetadata(
+        rows,
+        effectiveHeaders,
+        config.maxColumnWidth
+      );
+    }
+
+    const workbook = xlsxLib.utils.book_new();
+    const sheetName = this.sanitizeSheetName(config.sheetName ?? 'Sheet1');
+    xlsxLib.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+    const workbookData: ArrayBuffer = xlsxLib.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+      compression: true,
+    });
+
+    this.downloadFile(
+      workbookData,
+      config.filename.endsWith('.xlsx') ? config.filename : `${config.filename}.xlsx`,
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+  }
+
   private getNestedProperty(obj: unknown, path: string): unknown {
     return path.split('.').reduce((current, key) => {
       return current && typeof current === 'object' && current !== null && key in current
@@ -150,17 +197,122 @@ export class ClientExportService implements ExportRepository {
     return styles;
   }
 
-  downloadFile(content: string, filename: string, mimeType: string): void {
-    if (this.isBrowser) {
-      const blob = new Blob([content], { type: mimeType });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+  downloadFile(
+    content: string | ArrayBuffer | Uint8Array,
+    filename: string,
+    mimeType: string
+  ): void {
+    if (!this.isBrowser) {
+      return;
     }
+
+    let blobPart: BlobPart;
+    if (typeof content === 'string') {
+      blobPart = content;
+    } else if (content instanceof ArrayBuffer) {
+      blobPart = content;
+    } else if (content instanceof Uint8Array) {
+      blobPart = content.slice().buffer;
+    } else {
+      blobPart = String(content);
+    }
+
+    const blob = new Blob([blobPart], { type: mimeType });
+    this.triggerDownload(blob, filename);
+  }
+
+  private async getXlsxLibrary(): Promise<any> {
+    if (!this.xlsx) {
+      const module = await import('xlsx');
+      this.xlsx = (module as any).default ?? module;
+    }
+
+    return this.xlsx;
+  }
+
+  private buildExcelRow<T>(item: T, headers: string[]): Record<string, unknown> {
+    return headers.reduce<Record<string, unknown>>((row, header) => {
+      const value = this.getNestedProperty(item, header);
+      row[header] = this.formatExcelValue(value);
+      return row;
+    }, {});
+  }
+
+  private inferHeadersFromData<T>(data: T[]): string[] {
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const firstRow = data.find((item) => item && typeof item === 'object');
+    if (!firstRow || typeof firstRow !== 'object') {
+      return [];
+    }
+
+    return Object.keys(firstRow as Record<string, unknown>);
+  }
+
+  private formatExcelValue(value: unknown): string | number | boolean | Date | null {
+    if (value === null || value === undefined) {
+      return null;
+    }
+
+    if (value instanceof Date) {
+      return value;
+    }
+
+    const valueType = typeof value;
+    if (valueType === 'number' || valueType === 'boolean' || valueType === 'string') {
+      return value as number | boolean | string;
+    }
+
+    if (valueType === 'object' && 'value' in (value as Record<string, unknown>)) {
+      const nested = (value as Record<string, unknown>)['value'];
+      return this.formatExcelValue(nested);
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private buildWorksheetColumnMetadata(
+    rows: Array<Record<string, unknown>>,
+    headers: string[],
+    maxColumnWidth?: number
+  ): Array<{ wch: number }> {
+    return headers.map((header) => {
+      const headerLength = header.length;
+      const maxContentLength = rows.reduce((maxLength, row) => {
+        const cell = row[header];
+        if (cell === null || cell === undefined) {
+          return maxLength;
+        }
+        const cellString = typeof cell === 'string' ? cell : JSON.stringify(cell);
+        return Math.max(maxLength, cellString.length);
+      }, headerLength);
+
+      const desiredWidth = Math.max(headerLength, maxContentLength) + 2;
+      const constrainedWidth = maxColumnWidth
+        ? Math.min(desiredWidth, maxColumnWidth)
+        : desiredWidth;
+      return { wch: constrainedWidth };
+    });
+  }
+
+  private sanitizeSheetName(sheetName: string): string {
+    const sanitized = sheetName.replace(/[\[\]\*\?/\\:]/g, '').trim();
+    if (!sanitized) {
+      return 'Sheet1';
+    }
+    return sanitized.length > 31 ? sanitized.slice(0, 31) : sanitized;
+  }
+
+  private triggerDownload(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   }
 }
