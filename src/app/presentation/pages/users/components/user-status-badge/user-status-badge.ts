@@ -82,7 +82,7 @@ export class UserStatusBadgeComponent {
   /**
    * Alternative status value (for simple string statuses)
    */
-  @Input() statusValue: string = '';
+  @Input() statusValue = '';
 
   /**
    * Badge size variant
@@ -97,12 +97,12 @@ export class UserStatusBadgeComponent {
   /**
    * Whether to show the status icon
    */
-  @Input() showIcon: boolean = true;
+  @Input() showIcon = true;
 
   /**
    * Whether to show the status label text
    */
-  @Input() showLabel: boolean = true;
+  @Input() showLabel = true;
 
   /**
    * Custom status configurations
@@ -112,12 +112,12 @@ export class UserStatusBadgeComponent {
   /**
    * Whether the badge is clickable
    */
-  @Input() clickable: boolean = false;
+  @Input() clickable = false;
 
   /**
    * Whether to show tooltip on hover
    */
-  @Input() showTooltip: boolean = false;
+  @Input() showTooltip = false;
 
   // ============================================================================
   // Computed Properties

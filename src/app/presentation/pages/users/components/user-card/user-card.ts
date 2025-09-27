@@ -91,32 +91,32 @@ export class UserCardComponent {
   /**
    * Whether the card is selectable
    */
-  @Input() selectable: boolean = false;
+  @Input() selectable = false;
 
   /**
    * Whether the card is selected
    */
-  @Input() selected: boolean = false;
+  @Input() selected = false;
 
   /**
    * Whether to show action buttons
    */
-  @Input() showActions: boolean = true;
+  @Input() showActions = true;
 
   /**
    * Whether to show detailed information
    */
-  @Input() showDetails: boolean = true;
+  @Input() showDetails = true;
 
   /**
    * Loading state for the card
    */
-  @Input() loading: boolean = false;
+  @Input() loading = false;
 
   /**
    * Whether the card is clickable
    */
-  @Input() clickable: boolean = true;
+  @Input() clickable = true;
 
   // ============================================================================
   // Output Events
