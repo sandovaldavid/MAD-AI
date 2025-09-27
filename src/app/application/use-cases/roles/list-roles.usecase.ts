@@ -163,7 +163,7 @@ export class ListRoles {
    * @param request Optional list roles request to validate
    * @throws ApplicationError when basic validation fails
    */
-  private validateApplicationRules(request?: ListRolesRequest): void {
+  private validateApplicationRules(_request?: ListRolesRequest): void {
     // Application layer only validates presence and basic nullability
     // All business rule validation is delegated to domain repository
     // No additional validation needed - filters are optional

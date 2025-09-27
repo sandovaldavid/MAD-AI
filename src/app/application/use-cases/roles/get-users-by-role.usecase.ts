@@ -232,26 +232,26 @@ export class GetUsersByRole {
    */
   private async retrieveUsersByRole(request: GetUsersByRoleRequest): Promise<User[]> {
     // Transform application pagination (page/pageSize) to domain contract (limit/offset)
-    const filter: any = {
+    const filter: Record<string, unknown> = {
       roleId: request.roleId,
     };
 
     if (request.pagination) {
       if (request.pagination.pageSize) {
-        filter.limit = request.pagination.pageSize;
+        filter['limit'] = request.pagination.pageSize;
       }
 
       if (request.pagination.page && request.pagination.pageSize) {
         // Convert page-based to offset-based pagination
-        filter.offset = (request.pagination.page - 1) * request.pagination.pageSize;
+        filter['offset'] = (request.pagination.page - 1) * request.pagination.pageSize;
       }
 
       if (request.pagination.sortBy) {
-        filter.sortBy = request.pagination.sortBy;
+        filter['sortBy'] = request.pagination.sortBy;
       }
 
       if (request.pagination.sortOrder) {
-        filter.sortOrder = request.pagination.sortOrder;
+        filter['sortOrder'] = request.pagination.sortOrder;
       }
     }
 
