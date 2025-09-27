@@ -60,6 +60,7 @@ export class User {
     this._status = options?.status;
     this._isEmailConfirmed = options?.isEmailConfirmed;
     this._notificationPreferences = options?.notificationPreferences;
+    this.synchronizeStatus();
   }
 
   /** Factory method con validación de invariantes */
@@ -240,6 +241,7 @@ export class User {
   }
 
   get userStatus(): UserStatusVO {
+    this.synchronizeStatus();
     return this._status!;
   }
 
@@ -274,6 +276,7 @@ export class User {
    * @description This method changes the user's active status to true,
    * enabling account access and functionality. This is a significant
    * business operation that should trigger downstream processes.
+   * Both _active and _status fields are synchronized.
    *
    * @example
    * ```typescript
@@ -286,7 +289,7 @@ export class User {
    */
   activate(): void {
     if (!this._active) {
-      this._active = true;
+      this.setStatus('active'); // Uses helper to maintain consistency
       // Domain event removed: USER_ACCOUNT_ACTIVATED
     }
   }
@@ -298,6 +301,7 @@ export class User {
    * @description This method changes the user's active status to false,
    * restricting account access. This is a critical business operation
    * that should trigger security and cleanup processes.
+   * Both _active and _status fields are synchronized.
    *
    * @example
    * ```typescript
@@ -310,7 +314,7 @@ export class User {
    */
   deactivate(): void {
     if (this._active) {
-      this._active = false;
+      this.setStatus('inactive'); // Uses helper to maintain consistency
       // Domain event removed: USER_ACCOUNT_DEACTIVATED
     }
   }
@@ -467,6 +471,60 @@ export class User {
    */
   hasVerifiedEmail(): boolean {
     return this._isEmailConfirmed ?? false;
+  }
+
+  /**
+   * Synchronizes the active status with the UserStatusVO.
+   * Ensures both fields represent the same state.
+   *
+   * @description This method ensures consistency between the boolean active field
+   * and the UserStatusVO. It's called internally to maintain data integrity.
+   *
+   * @private
+   * @since 1.0.0
+   * @domain User Management
+   */
+  private synchronizeStatus(): void {
+    if (!this._status) {
+      this._status = this._active ? UserStatusVO.create('active') : UserStatusVO.create('pending');
+      return;
+    }
+
+    // Sync _active with _status when they conflict
+    if (this._status.isActive() && !this._active) {
+      this._active = true;
+    } else if (!this._status.isActive() && this._active && !this._status.requiresVerification()) {
+      this._active = false;
+    }
+  }
+
+  /**
+   * Sets the user status and synchronizes the active field.
+   *
+   * @description This method updates the user status using UserStatusVO
+   * and ensures the active boolean field is synchronized accordingly.
+   *
+   * @param status - The new status to set
+   *
+   * @example
+   * ```typescript
+   * user.setStatus('suspended');
+   * // Both _status and _active are updated consistently
+   * ```
+   *
+   * @since 1.0.0
+   * @domain User Management
+   */
+  setStatus(status: string | UserStatusVO): void {
+    this._status = typeof status === 'string' ? UserStatusVO.create(status) : status;
+
+    // Sync _active field based on status
+    if (this._status.isActive()) {
+      this._active = true;
+    } else if (this._status.isInactive() || this._status.isSuspended()) {
+      this._active = false;
+    }
+    // For PENDING status, keep current _active value
   }
 
   /** Método equals para comparación de entidades */
