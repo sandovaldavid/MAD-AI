@@ -98,6 +98,7 @@ export class UsersMapper {
       lastName: user.lastName.value,
       active: user.active,
       roleName: user.role.name,
+      status: user.userStatus.value,
       createdAt: user.createdAt?.value,
       lastActivityAt: user.lastActivityAt?.value,
     };
