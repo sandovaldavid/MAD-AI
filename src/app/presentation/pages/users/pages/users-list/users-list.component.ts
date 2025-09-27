@@ -95,9 +95,15 @@ export class UsersListPage {
   private notifications = inject(NotificationsFacade);
 
   readonly loading = this.facade.loading;
-  readonly users = computed(() =>
-    this.facade.users().map((user) => UserPresentationMapper.toDisplayData(user))
-  );
+  readonly users = computed(() => {
+    const rawUsers = this.facade.users();
+    console.log('🔍 Raw users from facade:', rawUsers);
+
+    const displayUsers = rawUsers.map((user) => UserPresentationMapper.toDisplayData(user));
+    console.log('📋 Mapped display users:', displayUsers);
+
+    return displayUsers;
+  });
   readonly error = this.facade.error;
   readonly availableRoles = this.rolesFacade.roles;
   readonly availableRoleNames = computed(() => this.availableRoles().map((role) => role.name));
@@ -433,6 +439,12 @@ export class UsersListPage {
     // Handle bulk actions similar to roles-list
     const userIds = 'users' in event ? event.users.map((u) => u.id) : event.userIds;
 
+    // Handle export actions
+    if (event.action.startsWith('export-')) {
+      this.onExportUsers(event.action, userIds);
+      return;
+    }
+
     switch (event.action) {
       case 'activate':
         userIds.forEach((id) => this.facade.activateUser(id));
@@ -672,5 +684,37 @@ export class UsersListPage {
       default:
         return 'Cualquier momento';
     }
+  }
+
+  /**
+   * Handle export actions for selected users
+   */
+  private onExportUsers(action: string, userIds: number[]): void {
+    const format = action.replace('export-', '') as 'pdf' | 'csv' | 'json' | 'excel';
+
+    if (userIds.length === 0) {
+      this.notifications.warning('Sin selección', 'Selecciona al menos un usuario para exportar.');
+      return;
+    }
+
+    // Export selected users with the specified format
+    this.facade
+      .exportUsers(userIds, { format })
+      .then(() => {
+        this.notifications.success(
+          'Exportación exitosa',
+          `Usuarios exportados en formato ${format.toUpperCase()}`
+        );
+
+        // Clear selection after successful export
+        this._selectedUsers.set([]);
+      })
+      .catch((error) => {
+        const errorMessage =
+          error?.message ||
+          (typeof error === 'string' ? error : 'No se pudo exportar los usuarios.');
+
+        this.notifications.notificationError('Error de exportación', errorMessage);
+      });
   }
 }
