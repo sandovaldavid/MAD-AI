@@ -76,6 +76,7 @@ import type { UpdateRoleUseCase } from '@application/use-cases/roles/update-role
 import type { DeleteRoleUseCase } from '@application/use-cases/roles/delete-role.usecase';
 import type { GetRoleByNameUseCase } from '@application/use-cases/roles/get-role-by-name.usecase';
 import type { RoleExportService } from '@application/services/role-export-report.service';
+import type { UserExportService } from '@application/services/user-export-report.service';
 import { UINotificationPosition } from '@presentation/shared/components/toast/enums/ui-notification-position.enum';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
@@ -158,6 +159,11 @@ export const GET_ROLE_BY_NAME_USECASE_PORT = new InjectionToken<GetRoleByNameUse
 );
 export const ROLE_EXPORT_SERVICE_PORT = new InjectionToken<RoleExportService>(
   'ROLE_EXPORT_SERVICE_PORT'
+);
+
+// User Export Service InjectionTokens
+export const USER_EXPORT_SERVICE_PORT = new InjectionToken<UserExportService>(
+  'USER_EXPORT_SERVICE_PORT'
 );
 
 // User Use Case InjectionTokens
