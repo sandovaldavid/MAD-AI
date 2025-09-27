@@ -20,6 +20,7 @@ import { UserLookupFacade } from './user-lookup.facade';
 import { UserListFacade } from './user-list.facade';
 import { UserStateFacade } from './user-state.facade';
 import { UserUtilsFacade } from './user-utils.facade';
+import { UserExportFacade } from './user-export.facade';
 
 // Domain Imports
 import type { User } from '@domain/entities/user.entity';
@@ -32,6 +33,7 @@ import type {
   UserSearchCriteria,
   UserLookupCriteria,
 } from '@application/types/users.types';
+import type { UserExportConfig } from '@application/types/user-export.types';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import type { Message } from '@application/types/message.type';
 
@@ -85,7 +87,8 @@ export class UsersFacade extends BaseUserFacade {
     private readonly lookupFacade: UserLookupFacade,
     private readonly listFacade: UserListFacade,
     private readonly stateFacade: UserStateFacade,
-    private readonly utilsFacade: UserUtilsFacade
+    private readonly utilsFacade: UserUtilsFacade,
+    private readonly exportFacade: UserExportFacade
   ) {
     super();
   }
@@ -557,5 +560,110 @@ export class UsersFacade extends BaseUserFacade {
       this.clearSelection();
     }
     return result;
+  }
+
+  // ============================================================================
+  // Export Operations (Delegated to UserExportFacade)
+  // ============================================================================
+
+  /**
+   * Export users by IDs
+   * @param userIds Array of user IDs to export
+   * @param options Export configuration options
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to export result
+   */
+  async exportUsers(
+    userIds: number[],
+    options: Partial<UserExportConfig> = {},
+    opts?: FacadeOpts
+  ): Promise<Message> {
+    // Pass the current users from main facade state to export facade
+    const currentUsers = this.users();
+    return this.exportFacade.exportUsersWithData(userIds, currentUsers, options, opts);
+  }
+
+  /**
+   * Export all active users
+   * @param options Export configuration options
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to export result
+   */
+  async exportActiveUsers(
+    options: Partial<UserExportConfig> = {},
+    opts?: FacadeOpts
+  ): Promise<Message> {
+    const currentUsers = this.users();
+    const activeUsers = currentUsers.filter((user) => user.active);
+    const userIds = activeUsers.map((user) => user.id);
+    return this.exportFacade.exportUsersWithData(userIds, currentUsers, options, opts);
+  }
+
+  /**
+   * Export all inactive users
+   * @param options Export configuration options
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to export result
+   */
+  async exportInactiveUsers(
+    options: Partial<UserExportConfig> = {},
+    opts?: FacadeOpts
+  ): Promise<Message> {
+    const currentUsers = this.users();
+    const inactiveUsers = currentUsers.filter((user) => !user.active);
+    const userIds = inactiveUsers.map((user) => user.id);
+    return this.exportFacade.exportUsersWithData(userIds, currentUsers, options, opts);
+  }
+
+  /**
+   * Export users by role
+   * @param roleName Name of the role to filter users
+   * @param options Export configuration options
+   * @param opts Optional facade configuration
+   * @returns Promise resolving to export result
+   */
+  async exportUsersByRole(
+    roleName: string,
+    options: Partial<UserExportConfig> = {},
+    opts?: FacadeOpts
+  ): Promise<Message> {
+    const currentUsers = this.users();
+    const roleUsers = currentUsers.filter(
+      (user) => user.role?.name?.toLowerCase() === roleName.toLowerCase()
+    );
+    const userIds = roleUsers.map((user) => user.id);
+    return this.exportFacade.exportUsersWithData(userIds, currentUsers, options, opts);
+  }
+
+  /**
+   * Quick export to CSV format
+   */
+  async exportToCsv(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    return this.exportFacade.exportToCsv(userIds, opts);
+  }
+
+  /**
+   * Quick export to JSON format
+   */
+  async exportToJson(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    return this.exportFacade.exportToJson(userIds, opts);
+  }
+
+  /**
+   * Comprehensive PDF export with all fields
+   */
+  async exportComprehensivePdf(
+    userIds: number[],
+    customTitle?: string,
+    opts?: FacadeOpts
+  ): Promise<Message> {
+    return this.exportFacade.exportComprehensivePdf(userIds, customTitle, opts);
+  }
+
+  /**
+   * Minimal CSV export with essential fields only
+   */
+  async exportMinimalCsv(userIds: number[], opts?: FacadeOpts): Promise<Message> {
+    return this.exportFacade.exportMinimalCsv(userIds, opts);
   }
 }
