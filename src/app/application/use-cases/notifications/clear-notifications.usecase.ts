@@ -4,7 +4,7 @@ import { ApplicationError } from '@application/errors/application-error';
 import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import type { NotificationPort } from '@domain/repositories/business/notification.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { ClearNotificationsRequest } from '@application/types/notifications.types';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Clear Notifications Use Case
@@ -21,7 +21,7 @@ export class ClearNotifications {
   /**
    * Execute notification clearing
    */
-  async execute(request: ClearNotificationsRequest): Promise<void> {
+  async execute(): Promise<Message> {
     try {
       // Step 1: Get current count for logging
       const currentNotifications = this.notificationPort.snapshot();
@@ -32,7 +32,12 @@ export class ClearNotifications {
 
       // Step 3: Log success
       this.logger.info(`All notifications cleared: ${totalCleared} notifications removed`);
-    } catch (error: unknown) {
+
+      return {
+        success: true,
+        message: `Successfully cleared ${totalCleared} notifications`,
+      };
+    } catch {
       throw new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
         'Failed to clear notifications',

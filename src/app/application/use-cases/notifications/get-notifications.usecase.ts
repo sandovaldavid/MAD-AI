@@ -42,7 +42,7 @@ export class GetNotifications {
 
       this.logger.info(`Notifications retrieved: ${notifications.length} total`);
       return result;
-    } catch (error) {
+    } catch {
       throw new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
         'Failed to retrieve notifications',

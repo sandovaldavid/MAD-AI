@@ -28,7 +28,7 @@ export class DismissNotification {
 
       // Step 2: Log success
       this.logger.info(`Notification ${request.notificationId} dismissed successfully`);
-    } catch (error: unknown) {
+    } catch {
       throw new ApplicationError(
         ApplicationErrorCode.INVALID_INPUT,
         'Failed to dismiss notification',
