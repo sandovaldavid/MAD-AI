@@ -66,7 +66,7 @@ export class DeleteUser {
       };
     } catch (error: unknown) {
       // Log error for monitoring and transform to application error
-      const safeUserId = (request as any)?.userId ?? 'unknown';
+      const safeUserId = (request as unknown as { userId?: unknown })?.userId ?? 'unknown';
       this.logger.error('User deletion failed', {
         correlationId: `delete-user-${safeUserId}-${this.clock.nowEpochSeconds()}`,
         userId: safeUserId.toString(),

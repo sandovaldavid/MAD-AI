@@ -72,7 +72,7 @@ export class GetUserById {
       return user;
     } catch (error: unknown) {
       // Step 4: Log error and transform for Application layer consumption
-      const safeUserId = (request as any)?.userId?.toString() ?? 'unknown';
+      const safeUserId = String((request as unknown as { userId?: unknown })?.userId ?? 'unknown');
       this.logger.error('User retrieval failed', {
         correlationId: `get-user-by-id-${safeUserId}-${Date.now()}`,
         userId: safeUserId,

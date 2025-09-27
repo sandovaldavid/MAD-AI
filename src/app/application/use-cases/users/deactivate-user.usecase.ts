@@ -71,7 +71,7 @@ export class DeactivateUser {
       return deactivatedUser;
     } catch (error: unknown) {
       // Log error for monitoring and transform to application error
-      const safeUserId = (request as any)?.userId ?? 'unknown';
+      const safeUserId = request.userId?.toString() ?? 'unknown';
       this.logger.error('User deactivation failed', {
         correlationId: `deactivate-user-${safeUserId}-${this.clock.nowEpochSeconds()}`,
         userId: safeUserId.toString(),
