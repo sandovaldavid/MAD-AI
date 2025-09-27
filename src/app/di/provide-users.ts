@@ -12,6 +12,7 @@ import {
   GET_USER_BY_EMAIL_USECASE_PORT,
   GET_USER_BY_ID_USECASE_PORT,
   GET_USER_BY_USERNAME_USECASE_PORT,
+  USER_EXPORT_SERVICE_PORT,
 } from './tokens';
 
 import { ActivateUser } from '@application/use-cases/users/activate-user.usecase';
@@ -23,6 +24,7 @@ import { ListUsersUseCase } from '@application/use-cases/users/list-users.usecas
 import { GetUserByEmail } from '@application/use-cases/users/get-user-by-email.usecase';
 import { GetUserById } from '@application/use-cases/users/get-user-by-id.usecase';
 import { GetUserByUsernameUseCase } from '@application/use-cases/users/get-user-by-username.usecase';
+import { UserExportService } from '@application/services/user-export-report.service';
 
 /**
  * Users Module Providers
@@ -107,6 +109,10 @@ export function provideUsers() {
     {
       provide: GET_USER_BY_USERNAME_USECASE_PORT,
       useClass: GetUserByUsernameUseCase,
+    },
+    {
+      provide: USER_EXPORT_SERVICE_PORT,
+      useClass: UserExportService,
     },
 
     // User Management Facade
