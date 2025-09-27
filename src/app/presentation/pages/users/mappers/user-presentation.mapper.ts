@@ -66,10 +66,13 @@ export class UserPresentationMapper {
       email: user.email.toString(),
       username: user.username.toString(),
       role: this.formatRole(user.role?.name || 'user'),
-      status: this.mapUserStatus(user.status, user.active),
+      status: this.mapUserStatus(user.userStatus, user.active),
       avatar: this.generateAvatarUrl(user.email.toString()),
       initials: this.generateInitials(user.firstName.toString(), user.lastName.toString()),
       lastActivity: user.lastActivityAt?.toString(),
+      lastActivityDisplay: user.lastActivityAt
+        ? this.formatRelativeDate(new Date(user.lastActivityAt.toString()))
+        : undefined,
       createdAt: user.createdAt ? this.formatDate(new Date(user.createdAt.toString())) : '',
       isActive: user.active,
       canEdit: permissions?.canEdit ?? this.canEditUser(user),
@@ -112,7 +115,7 @@ export class UserPresentationMapper {
       displayName: this.formatDisplayName(user.firstName.toString(), user.lastName.toString()),
       email: user.email.toString(),
       role: this.formatRole(user.role?.name || 'user'),
-      status: this.mapUserStatus(user.status, user.active),
+      status: this.mapUserStatus(user.userStatus, user.active), // Usar userStatus
       avatar: this.generateAvatarUrl(user.email.toString()),
       stats: includeStats ? this.generateUserStats(user) : undefined,
     };
@@ -155,7 +158,7 @@ export class UserPresentationMapper {
       email: user.email.toString(),
       username: user.username.toString(),
       role: this.formatRole(user.role?.name || 'user'),
-      status: this.mapUserStatus(user.status, user.active),
+      status: this.mapUserStatus(user.userStatus, user.active), // Usar userStatus
       avatar: this.generateAvatarUrl(user.email.toString()),
       stats,
       createdAt: user.createdAt ? this.formatDate(new Date(user.createdAt.toString())) : '',
@@ -196,25 +199,25 @@ export class UserPresentationMapper {
     isActive: boolean
   ): UserStatusDisplay {
     const statusMap: Record<string, Omit<UserStatusDisplay, 'value'>> = {
-      ACTIVE: {
+      active: {
         label: 'Active',
         cssClass: 'status-active',
         iconName: 'check-circle',
         description: 'User is active and can access the system',
       },
-      INACTIVE: {
+      inactive: {
         label: 'Inactive',
         cssClass: 'status-inactive',
         iconName: 'x-circle',
         description: 'User is inactive and cannot access the system',
       },
-      PENDING: {
+      pending: {
         label: 'Pending',
         cssClass: 'status-pending',
         iconName: 'clock',
         description: 'User registration is pending approval',
       },
-      SUSPENDED: {
+      suspended: {
         label: 'Suspended',
         cssClass: 'status-suspended',
         iconName: 'alert-circle',
@@ -222,19 +225,21 @@ export class UserPresentationMapper {
       },
     };
 
-    const userStatus = status?.toString() || 'PENDING';
-    const displayStatus = statusMap[userStatus] || statusMap['INACTIVE'];
+    // Get the status value, handling both VO and string cases
+    const userStatus = status?.value || status?.toString() || 'pending';
+    const normalizedStatus = userStatus.toLowerCase();
+    const displayStatus = statusMap[normalizedStatus] || statusMap['inactive'];
 
     // Override based on isActive flag for additional safety
-    if (!isActive && userStatus === 'ACTIVE') {
+    if (!isActive && normalizedStatus === 'active') {
       return {
-        value: 'INACTIVE',
-        ...statusMap['INACTIVE'],
+        value: 'inactive',
+        ...statusMap['inactive'],
       };
     }
 
     return {
-      value: userStatus,
+      value: normalizedStatus,
       ...displayStatus,
     };
   }
