@@ -38,53 +38,29 @@ export const usersRoutes: Routes = [
     path: 'list',
     loadComponent: () =>
       import('./pages/users-list/users-list.component').then((m) => m.UsersListPage),
-    title: 'Users Management',
+    title: 'Gestión de Usuarios',
     canActivate: [roleGuard],
-    data: {
-      requiredRoles: ['admin', 'user_manager'],
-      breadcrumb: 'Users List',
-      pageTitle: 'Users Management',
-      pageDescription: 'Manage users, roles, and permissions',
-    },
   },
   {
     path: 'create',
     loadComponent: () =>
       import('./pages/create-user/create-user.component').then((m) => m.CreateUserPage),
-    title: 'Create User',
+    title: 'Crear Usuario',
     canActivate: [roleGuard],
-    data: {
-      requiredRoles: ['admin', 'user_manager'],
-      breadcrumb: 'Create User',
-      pageTitle: 'Create New User',
-      pageDescription: 'Add a new user to the system',
-    },
   },
   {
     path: 'edit/:id',
     loadComponent: () =>
       import('./pages/edit-user/edit-user.component').then((m) => m.EditUserPage),
-    title: 'Edit User',
+    title: 'Editar Usuario',
     canActivate: [roleGuard],
-    data: {
-      requiredRoles: ['admin', 'user_manager'],
-      breadcrumb: 'Edit User',
-      pageTitle: 'Edit User',
-      pageDescription: 'Modify user information and settings',
-    },
   },
   {
     path: 'detail/:id',
     loadComponent: () =>
       import('./pages/user-detail/user-detail.component').then((m) => m.UserDetailPage),
-    title: 'User Detail',
+    title: 'Detalles del Usuario',
     canActivate: [roleGuard],
-    data: {
-      requiredRoles: ['admin', 'user_manager', 'viewer'],
-      breadcrumb: 'User Detail',
-      pageTitle: 'User Details',
-      pageDescription: 'View detailed user information',
-    },
   },
   {
     path: ':id',
