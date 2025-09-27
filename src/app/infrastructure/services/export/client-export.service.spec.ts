@@ -7,6 +7,7 @@ import type {
   JsonConfig,
   CsvConfig,
   PdfConfig,
+  ExcelConfig,
 } from '@domain/repositories/system/export.repository';
 import { CellHookData } from 'jspdf-autotable';
 
@@ -18,6 +19,9 @@ describe('ClientExportService', () => {
   let mockJsPDF: any;
   let mockAutoTable: any;
   let mockPapa: any;
+  let mockXlsx: any;
+  let mockWorksheet: Record<string, any>;
+  let mockWorkbook: Record<string, any>;
 
   const configureTestBed = (platform: 'browser' | 'server') => {
     TestBed.configureTestingModule({
@@ -46,6 +50,19 @@ describe('ClientExportService', () => {
     (service as any).jspdf = { jsPDF: mockJsPDF };
     (service as any).jspdfAutoTable = { autoTable: mockAutoTable };
     (service as any).papa = mockPapa;
+
+    mockWorksheet = {};
+    mockWorkbook = {};
+    mockXlsx = {
+      utils: {
+        json_to_sheet: jasmine.createSpy('json_to_sheet').and.returnValue(mockWorksheet),
+        book_new: jasmine.createSpy('book_new').and.returnValue(mockWorkbook),
+        book_append_sheet: jasmine.createSpy('book_append_sheet'),
+      },
+      write: jasmine.createSpy('write').and.returnValue(new ArrayBuffer(8)),
+    };
+
+    (service as any).xlsx = mockXlsx;
 
     downloadFileSpy = spyOn(service, 'downloadFile').and.callFake(() => {});
   };
@@ -139,6 +156,74 @@ describe('ClientExportService', () => {
           header: true,
           skipEmptyLines: true,
         });
+      });
+    });
+
+    describe('exportToExcel', () => {
+      it('should create a workbook using provided headers and sheet name', async () => {
+        // Arrange
+        const data = [{ id: 1, displayName: 'John Doe', email: 'john@example.com' }];
+        const config: ExcelConfig = {
+          filename: 'users.xlsx',
+          headers: ['id', 'displayName', 'email'],
+          sheetName: 'Users',
+          autoFitColumns: true,
+        };
+
+        // Act
+        await service.exportToExcel(data, config);
+
+        // Assert
+        expect(mockXlsx.utils.json_to_sheet).toHaveBeenCalledWith(jasmine.any(Array), {
+          header: ['id', 'displayName', 'email'],
+        });
+        expect(mockXlsx.utils.book_new).toHaveBeenCalled();
+        expect(mockXlsx.utils.book_append_sheet).toHaveBeenCalledWith(
+          mockWorkbook,
+          mockWorksheet,
+          'Users'
+        );
+        expect(mockXlsx.write).toHaveBeenCalledWith(mockWorkbook, {
+          bookType: 'xlsx',
+          type: 'array',
+          compression: true,
+        });
+        expect(downloadFileSpy).toHaveBeenCalledWith(
+          jasmine.any(ArrayBuffer),
+          'users.xlsx',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+      });
+
+      it('should infer headers, sanitize sheet name, and auto-fit columns when not provided', async () => {
+        // Arrange
+        const data = [{ displayName: 'Jane Doe', role: 'Admin' }];
+        const config: ExcelConfig = {
+          filename: 'users-report',
+          sheetName: '*/Users?',
+          autoFitColumns: true,
+          maxColumnWidth: 40,
+        };
+
+        // Act
+        await service.exportToExcel(data, config);
+
+        // Assert
+        expect(mockXlsx.utils.json_to_sheet).toHaveBeenCalledWith(jasmine.any(Array), {
+          header: ['displayName', 'role'],
+        });
+        expect(mockXlsx.utils.book_append_sheet).toHaveBeenCalledWith(
+          mockWorkbook,
+          mockWorksheet,
+          'Users'
+        );
+        expect(mockWorksheet['!cols']).toBeDefined();
+        expect(mockWorksheet['!cols'].length).toBe(2);
+        expect(downloadFileSpy).toHaveBeenCalledWith(
+          jasmine.any(ArrayBuffer),
+          'users-report.xlsx',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
       });
     });
 
