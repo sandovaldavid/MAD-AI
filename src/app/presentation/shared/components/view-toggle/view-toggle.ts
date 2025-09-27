@@ -25,11 +25,10 @@
  * @layer Presentation/Shared
  */
 
-import { ChangeDetectionStrategy, Component, input, output, computed, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Shared UI Components
-import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 /**
