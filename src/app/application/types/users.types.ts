@@ -153,6 +153,22 @@ export interface ListUsersResult {
 }
 
 /**
+ * Type guard to check if a value is a ListUsersResult
+ * @param value The value to check
+ * @returns true if value is ListUsersResult, false otherwise
+ */
+export function isListUsersResult(value: unknown): value is ListUsersResult {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'users' in value &&
+    'totalCount' in value &&
+    Array.isArray((value as ListUsersResult).users) &&
+    typeof (value as ListUsersResult).totalCount === 'number'
+  );
+}
+
+/**
  * User detail result - returns domain entity directly or null if not found
  */
 export type GetUserResult = User | null;
