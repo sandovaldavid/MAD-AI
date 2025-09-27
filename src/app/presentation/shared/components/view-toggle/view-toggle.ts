@@ -162,18 +162,20 @@ export class ViewToggleComponent {
 
     switch (event.key) {
       case 'ArrowLeft':
-      case 'ArrowUp':
+      case 'ArrowUp': {
         event.preventDefault();
         const prevIndex = currentIndex > 0 ? currentIndex - 1 : views.length - 1;
         this.selectView(views[prevIndex].id);
         break;
+      }
 
       case 'ArrowRight':
-      case 'ArrowDown':
+      case 'ArrowDown': {
         event.preventDefault();
         const nextIndex = currentIndex < views.length - 1 ? currentIndex + 1 : 0;
         this.selectView(views[nextIndex].id);
         break;
+      }
 
       case 'Home':
         event.preventDefault();
@@ -185,7 +187,7 @@ export class ViewToggleComponent {
         this.selectView(views[views.length - 1].id);
         break;
 
-      default:
+      default: {
         // Check for shortcut keys
         const shortcutView = views.find(
           (view) => view.shortcut && event.key.toLowerCase() === view.shortcut.toLowerCase()
@@ -195,6 +197,7 @@ export class ViewToggleComponent {
           this.selectView(shortcutView.id);
         }
         break;
+      }
     }
   }
 }

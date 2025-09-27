@@ -39,6 +39,7 @@ import {
   ElementRef,
   ViewChild,
   HostListener,
+  OnChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -101,7 +102,7 @@ export const DEFAULT_MODAL_CONFIG: Partial<ModalConfig> = {
   styleUrl: './confirmation-modal.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ConfirmationModal implements OnInit, OnDestroy {
+export class ConfirmationModal implements OnInit, OnDestroy, OnChanges {
   // ============================================================================
   // Template References
   // ============================================================================

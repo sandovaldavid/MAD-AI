@@ -11,6 +11,7 @@
     (click)="selectView('cards')"
     [attr.aria-label]="'Tarjetas: Vista de tarjetas'"
     [attr.aria-pressed]="isActive('cards')"
+    [attr.aria-checked]="isActive('cards')"
     role="radio"
     type="button">
     <ui-icon name="grid" size="sm" />
@@ -22,6 +23,7 @@
     (click)="selectView('table')"
     [attr.aria-label]="'Tabla: Vista de tabla'"
     [attr.aria-pressed]="isActive('table')"
+    [attr.aria-checked]="isActive('table')"
     role="radio"
     type="button">
     <ui-icon name="table" size="sm" />
