@@ -4,5 +4,6 @@ export const profileRoutes: Routes = [
   {
     path: '',
     loadComponent: () => import('./pages/profile/profile').then((m) => m.ProfilePage),
+    title: 'Perfil',
   },
 ];
