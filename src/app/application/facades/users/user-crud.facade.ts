@@ -336,9 +336,6 @@ export class UserCrudFacade extends BaseUserFacade {
     this.setError(null);
 
     try {
-      // Obtener información del usuario antes de eliminar para el evento
-      const userToDelete = this._users().find((u) => u.id === userId);
-
       await this.deleteUserUC.execute({ userId });
 
       // Actualiza el estado local

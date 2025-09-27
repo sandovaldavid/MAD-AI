@@ -378,7 +378,7 @@ export class NotificationsFacade {
       const beforeCount = this._notifications().length;
 
       // Delegate to use case
-      await this.clearUC.execute(request);
+      await this.clearUC.execute();
 
       // Update state - refresh from source to see what's left
       await this.refresh(request.requesterId);
@@ -542,7 +542,7 @@ export class NotificationsFacade {
       },
       opts
     );
-    return result['notification'];
+    return result['notification'] as Notification;
   }
 
   /**
@@ -561,7 +561,7 @@ export class NotificationsFacade {
       },
       opts
     );
-    return result['notification'];
+    return result['notification'] as Notification;
   }
 
   /**
@@ -576,7 +576,7 @@ export class NotificationsFacade {
       },
       opts
     );
-    return result['notification'];
+    return result['notification'] as Notification;
   }
 
   /**
@@ -591,7 +591,7 @@ export class NotificationsFacade {
       },
       opts
     );
-    return result['notification'];
+    return result['notification'] as Notification;
   }
 
   /**

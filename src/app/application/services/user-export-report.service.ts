@@ -221,7 +221,7 @@ export class UserExportService {
     return users.map((user, index) => {
       try {
         return this.transformSingleUser(user, config);
-      } catch (error) {
+      } catch {
         this.logger.error(`Failed to transform user ${index + 1}`, {
           operation: 'transformUsersToExportData',
           userId: user?.id?.toString(),
@@ -276,7 +276,7 @@ export class UserExportService {
    * Safely extract string value from value objects or primitives
    * Formats dates to be user-friendly
    */
-  private extractStringValue(value: any): string | null {
+  private extractStringValue(value: unknown): string | null {
     if (!value) return null;
 
     // Handle string values that might be dates
@@ -351,7 +351,7 @@ export class UserExportService {
       const minutes = date.getMinutes().toString().padStart(2, '0');
 
       return `${day}/${month}/${year} ${hours}:${minutes}`;
-    } catch (error) {
+    } catch {
       // If formatting fails, return the original string
       return dateString;
     }
@@ -417,7 +417,7 @@ export class UserExportService {
   }
 
   private sanitizeSheetName(title: string): string {
-    const sanitized = title.replace(/[\[\]\*\?/\\:]/g, '').trim();
+    const sanitized = title.replace(/[[\]*?/\\:]/g, '').trim();
     if (!sanitized) {
       return 'Sheet1';
     }

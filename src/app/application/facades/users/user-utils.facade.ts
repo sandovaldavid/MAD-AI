@@ -277,7 +277,7 @@ export class UserUtilsFacade extends BaseUserFacade {
    * await userUtilsFacade.refresh({ skipLoading: true });
    * ```
    */
-  async refresh(opts?: FacadeOpts): Promise<Message> {
+  async refresh(): Promise<Message> {
     const currentFilter = this._currentFilter();
     const request: ListUsersRequest | undefined = currentFilter
       ? { filter: currentFilter, requesterId: this.getCurrentUserId() }
@@ -326,9 +326,9 @@ export class UserUtilsFacade extends BaseUserFacade {
    * }
    * ```
    */
-  async initialize(opts?: FacadeOpts): Promise<Message> {
+  async initialize(): Promise<Message> {
     this.reset();
-    return await this.refresh(opts);
+    return await this.refresh();
   }
 
   // ============================================================================

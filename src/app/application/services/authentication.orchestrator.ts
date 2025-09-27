@@ -71,7 +71,7 @@ export class AuthenticationOrchestrator {
           token: tokens.accessToken,
         };
       }),
-      catchError((error) => {
+      catchError(() => {
         throw ApplicationError.serviceUnavailable('TokenStore', 30);
       })
     );
@@ -150,7 +150,7 @@ export class AuthenticationOrchestrator {
       await this.tokenStore.write(tokenSnapshot);
 
       return session;
-    } catch (error) {
+    } catch {
       throw ApplicationError.serviceUnavailable('AuthenticationService', 60);
     }
   }

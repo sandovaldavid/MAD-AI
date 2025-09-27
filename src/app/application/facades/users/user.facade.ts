@@ -11,7 +11,7 @@
  * @since 2024-01-01
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 
 // Specialized Facade Imports
 import { BaseUserFacade } from './base-user.facade';
@@ -33,9 +33,11 @@ import type {
   UserSearchCriteria,
   UserLookupCriteria,
 } from '@application/types/users.types';
+import { isListUsersResult } from '@application/types/users.types';
 import type { UserExportConfig } from '@application/types/user-export.types';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import type { Message } from '@application/types/message.type';
+import { isMessage } from '@application/types/message.type';
 
 /**
  * Main Users Facade Coordinator
@@ -81,15 +83,15 @@ export class UsersFacade extends BaseUserFacade {
   // Specialized Facade Coordination
   // ============================================================================
 
-  constructor(
-    // Inject all specialized facades for delegation
-    private readonly crudFacade: UserCrudFacade,
-    private readonly lookupFacade: UserLookupFacade,
-    private readonly listFacade: UserListFacade,
-    private readonly stateFacade: UserStateFacade,
-    private readonly utilsFacade: UserUtilsFacade,
-    private readonly exportFacade: UserExportFacade
-  ) {
+  // Inject all specialized facades for delegation using inject()
+  private readonly crudFacade = inject(UserCrudFacade);
+  private readonly lookupFacade = inject(UserLookupFacade);
+  private readonly listFacade = inject(UserListFacade);
+  private readonly stateFacade = inject(UserStateFacade);
+  private readonly utilsFacade = inject(UserUtilsFacade);
+  private readonly exportFacade = inject(UserExportFacade);
+
+  constructor() {
     super();
   }
 
@@ -262,8 +264,26 @@ export class UsersFacade extends BaseUserFacade {
    */
   async listUsers(request?: ListUsersRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.listFacade.listUsers(request, opts);
+
+    // Use type guard to determine the result type
+    if (isMessage(result)) {
+      // Result is a Message (error case), return it directly
+      return result;
+    }
+
+    // Validate that it's a proper ListUsersResult
+    if (!isListUsersResult(result)) {
+      return {
+        success: false,
+        message: 'Error inesperado: formato de resultado inválido.',
+        error: 'Invalid result format from UserListFacade.listUsers',
+      };
+    }
+
+    // Result is ListUsersResult, update state and return appropriate Message
     this._users.set(result.users);
     this._totalCount.set(result.totalCount);
+
     if (result.users.length > 0) {
       return {
         success: true,
@@ -286,8 +306,26 @@ export class UsersFacade extends BaseUserFacade {
    */
   async searchUsers(criteria: UserSearchCriteria, opts?: FacadeOpts): Promise<Message> {
     const result = await this.listFacade.searchUsers(criteria, opts);
+
+    // Use type guard to determine the result type
+    if (isMessage(result)) {
+      // Result is a Message (error case), return it directly
+      return result;
+    }
+
+    // Validate that it's a proper ListUsersResult
+    if (!isListUsersResult(result)) {
+      return {
+        success: false,
+        message: 'Error inesperado: formato de resultado inválido.',
+        error: 'Invalid result format from UserListFacade.searchUsers',
+      };
+    }
+
+    // Result is ListUsersResult, update state and return appropriate Message
     this._users.set(result.users);
     this._totalCount.set(result.totalCount);
+
     if (result.users.length > 0) {
       return {
         success: true,
@@ -467,20 +505,18 @@ export class UsersFacade extends BaseUserFacade {
 
   /**
    * Refresh the current user list
-   * @param opts Optional facade configuration
    * @returns Promise<Message> indicating refresh result
    */
-  async refresh(opts?: FacadeOpts): Promise<Message> {
-    return this.utilsFacade.refresh(opts);
+  async refresh(): Promise<Message> {
+    return this.utilsFacade.refresh();
   }
 
   /**
    * Initialize facade with default data
-   * @param opts Optional facade configuration
    * @returns Promise<Message> indicating initialization result
    */
-  async initialize(opts?: FacadeOpts): Promise<Message> {
-    return this.utilsFacade.initialize(opts);
+  async initialize(): Promise<Message> {
+    return this.utilsFacade.initialize();
   }
 
   /**
@@ -516,7 +552,7 @@ export class UsersFacade extends BaseUserFacade {
   async createAndSelectUser(request: CreateUserRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.createUser(request, opts);
     if (result.success && result['data']) {
-      this.selectUser(result['data']);
+      this.selectUser(result['data'] as User);
     }
     return result;
   }
@@ -533,7 +569,7 @@ export class UsersFacade extends BaseUserFacade {
   async updateAndSelectUser(request: UpdateUserRequest, opts?: FacadeOpts): Promise<Message> {
     const result = await this.updateUser(request, opts);
     if (result.success && result['data']) {
-      this.selectUser(result['data']);
+      this.selectUser(result['data'] as User);
     }
     return result;
   }
