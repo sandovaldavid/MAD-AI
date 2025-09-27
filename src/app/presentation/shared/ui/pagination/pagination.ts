@@ -34,7 +34,6 @@ import {
   EventEmitter,
   ChangeDetectionStrategy,
   computed,
-  signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -149,6 +148,17 @@ export class Pagination {
    */
   @Input() loading = false;
 
+  /**
+   * Type of items being paginated (e.g., 'usuarios', 'roles', 'productos')
+   */
+  @Input() itemType = 'elementos';
+
+  /**
+   * Custom suffix text for page size selector
+   * If not provided, will use '{itemType} por página'
+   */
+  @Input() pageSizeSuffix?: string;
+
   // ============================================================================
   // Output Events
   // ============================================================================
@@ -231,6 +241,20 @@ export class Pagination {
   readonly endItem = computed(() => {
     const end = this.currentPage * this.pageSize;
     return Math.min(end, this.totalItems);
+  });
+
+  /**
+   * Get the page size suffix text
+   */
+  readonly pageSizeSuffixText = computed(() => {
+    return this.pageSizeSuffix || `${this.itemType} por página`;
+  });
+
+  /**
+   * Get the page info text for no items
+   */
+  readonly noItemsText = computed(() => {
+    return `No hay ${this.itemType} para mostrar`;
   });
 
   // ============================================================================
@@ -317,6 +341,6 @@ export class Pagination {
    * Get page button ARIA label
    */
   getPageAriaLabel(page: number): string {
-    return this.isCurrentPage(page) ? `Page ${page}, current page` : `Go to page ${page}`;
+    return this.isCurrentPage(page) ? `Página ${page}, página actual` : `Ir a la página ${page}`;
   }
 }

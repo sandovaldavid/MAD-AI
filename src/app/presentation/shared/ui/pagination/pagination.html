@@ -4,11 +4,11 @@
   [class.disabled]="disabled"
   [class.loading]="loading"
   role="navigation"
-  aria-label="Pagination">
+  aria-label="Paginación">
   <!-- Page Size Selector -->
   @if (showPageSizeSelector) {
     <div class="page-size-selector">
-      <label class="page-size-label" for="page-size-select">Show:</label>
+      <label class="page-size-label" for="page-size-select">Mostrar:</label>
       <select
         id="page-size-select"
         class="page-size-select"
@@ -19,7 +19,7 @@
           <option [value]="size">{{ size }}</option>
         }
       </select>
-      <span class="page-size-suffix">per page</span>
+      <span class="page-size-suffix">{{ pageSizeSuffixText() }}</span>
     </div>
   }
 
@@ -32,7 +32,7 @@
         size="sm"
         [disabled]="!canGoPrevious() || disabled || loading"
         (clicked)="onFirstPage()"
-        ariaLabel="Go to first page">
+        ariaLabel="Ir a la primera página">
         <ui-icon name="chevron-double-left" size="sm"></ui-icon>
       </ui-button>
     }
@@ -43,7 +43,7 @@
       size="sm"
       [disabled]="!canGoPrevious() || disabled || loading"
       (clicked)="onPreviousPage()"
-      ariaLabel="Go to previous page">
+      ariaLabel="Ir a la página anterior">
       <ui-icon name="chevron-left" size="sm"></ui-icon>
     </ui-button>
 
@@ -69,7 +69,7 @@
       size="sm"
       [disabled]="!canGoNext() || disabled || loading"
       (clicked)="onNextPage()"
-      ariaLabel="Go to next page">
+      ariaLabel="Ir a la página siguiente">
       <ui-icon name="chevron-right" size="sm"></ui-icon>
     </ui-button>
 
@@ -80,7 +80,7 @@
         size="sm"
         [disabled]="!canGoNext() || disabled || loading"
         (clicked)="onLastPage()"
-        ariaLabel="Go to last page">
+        ariaLabel="Ir a la última página">
         <ui-icon name="chevron-double-right" size="sm"></ui-icon>
       </ui-button>
     }
@@ -91,10 +91,10 @@
     <div class="page-info">
       @if (totalItems > 0) {
         <span class="page-info-text">
-          Showing {{ startItem() }}-{{ endItem() }} of {{ totalItems }} items
+          Mostrando {{ startItem() }}-{{ endItem() }} de {{ totalItems }} {{ itemType }}
         </span>
       } @else {
-        <span class="page-info-text">No items to display</span>
+        <span class="page-info-text">{{ noItemsText() }}</span>
       }
     </div>
   }
