@@ -333,6 +333,13 @@ export class UserTableComponent implements OnInit, OnChanges {
         mimeType: 'text/csv',
       },
       {
+        id: 'json',
+        label: 'JSON',
+        icon: 'code',
+        extension: '.json',
+        mimeType: 'application/json',
+      },
+      {
         id: 'excel',
         label: 'Excel',
         icon: 'document-text',
