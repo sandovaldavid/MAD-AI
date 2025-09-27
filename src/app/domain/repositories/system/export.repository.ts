@@ -27,9 +27,18 @@ export interface JsonConfig {
   prettify?: boolean;
 }
 
+export interface ExcelConfig {
+  filename: string;
+  sheetName?: string;
+  headers?: string[];
+  autoFitColumns?: boolean;
+  maxColumnWidth?: number;
+}
+
 // Puerto principal para exportación
 export interface ExportRepository {
   exportToPdf<T>(data: T[], config: PdfConfig): Promise<void>;
   exportToCsv<T>(data: T[], config: CsvConfig): Promise<void>;
   exportToJson<T>(data: T[], config: JsonConfig): Promise<void>;
+  exportToExcel<T>(data: T[], config: ExcelConfig): Promise<void>;
 }
