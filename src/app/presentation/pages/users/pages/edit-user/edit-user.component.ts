@@ -501,10 +501,10 @@ export class EditUserPage implements OnInit, OnDestroy {
 
     try {
       const result = await this.userLookupFacade.getUserById(userId);
-      // If result is a Message, extract user
+      // If result is a Message, extract user with proper type assertion
       let user: User | null = null;
       if (result && typeof result === 'object' && 'success' in result) {
-        user = result['user'] ?? null;
+        user = (result['user'] as User) ?? null;
       } else {
         user = result as User;
       }
@@ -657,8 +657,8 @@ export class EditUserPage implements OnInit, OnDestroy {
       // Update user through facade and handle Message result
       const result = await this.userCrudFacade.updateUser(updateRequest);
       if (result.success) {
-        // Extract user from Message if present
-        const updatedUser = result['user'];
+        // Extract user from Message if present with proper type assertion
+        const updatedUser = result['user'] as User | null;
         this._user.set(updatedUser);
         this._success.set(true);
         this.userForm.markAsPristine();

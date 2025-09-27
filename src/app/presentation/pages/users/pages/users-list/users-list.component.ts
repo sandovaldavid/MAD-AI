@@ -56,11 +56,11 @@ import type {
   SortChangeEvent,
 } from '../../components/user-table/user-table.component';
 
-export type PendingUserAction = {
+export interface PendingUserAction {
   type: 'delete' | 'activate' | 'deactivate' | 'resetPassword';
   userId: number;
   status?: boolean;
-};
+}
 
 @Component({
   selector: 'app-users-list',

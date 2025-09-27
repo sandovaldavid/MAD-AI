@@ -44,6 +44,9 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 // Application Layer Imports
 import { UserCrudFacade } from '@application/facades/users';
 
+// Domain Layer Imports
+import type { User } from '@domain/entities/user.entity';
+
 // Presentation Layer Imports
 import { TitleService } from '@presentation/services/title.service';
 import { BreadcrumbService } from '@presentation/services/breadcrumb.service';
@@ -312,8 +315,8 @@ export class CreateUserPage implements OnInit {
       const result = await this.userCrudFacade.createUser(createRequest);
       if (result.success) {
         this._success.set(true);
-        // Extract user from Message if present
-        const createdUser = result['user'];
+        // Extract user from Message if present - type assertion for unknown data
+        const createdUser = result['user'] as User | undefined;
         // Show Spanish success message
         const nombreCompleto = `${formData.firstName} ${formData.lastName}`;
         setTimeout(() => {

@@ -420,10 +420,10 @@ export class UserDetailPage implements OnInit {
 
     try {
       const result = await this.userLookupFacade.getUserById(userId);
-      // If result is a Message, extract user
+      // If result is a Message, extract user with proper type assertion
       let user: User | null = null;
       if (result && typeof result === 'object' && 'success' in result) {
-        user = result['user'] ?? null;
+        user = (result['user'] as User) ?? null;
       } else {
         user = result as User;
       }
