@@ -30,8 +30,6 @@ export class RoleExportFacade {
   // Dependencies on other role facades
   private readonly roleState = inject(RoleStateFacade);
 
-  constructor() {}
-
   /**
    * Execute operation with standardized error handling
    */
@@ -252,7 +250,7 @@ export class RoleExportFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts: FacadeOpts = {}
-  ): Promise<any[] | Message> {
+  ): Promise<unknown[] | Message> {
     return this.executeOperation(async () => {
       const selectedRoleSummaries = this.roleState
         .roles()
@@ -277,14 +275,14 @@ export class RoleExportFacade {
       };
 
       const previewData = selectedRoleSummaries.map((role) => {
-        const data: any = {};
+        const data: Record<string, unknown> = {};
 
-        if (exportOptions.includeId) data.id = role.id;
-        data.name = role.name;
-        if (exportOptions.includeAccessLevel) data.accessLevel = role.accessLevel;
-        if (exportOptions.includeStatus) data.status = role.isActive ? 'Activo' : 'Inactivo';
-        if (exportOptions.includeDescription) data.description = role.description || '';
-        if (exportOptions.includeUserCount) data.userCount = role.userCount || 0;
+        if (exportOptions.includeId) data['id'] = role.id;
+        data['name'] = role.name;
+        if (exportOptions.includeAccessLevel) data['accessLevel'] = role.accessLevel;
+        if (exportOptions.includeStatus) data['status'] = role.isActive ? 'Activo' : 'Inactivo';
+        if (exportOptions.includeDescription) data['description'] = role.description || '';
+        if (exportOptions.includeUserCount) data['userCount'] = role.userCount || 0;
 
         return data;
       });

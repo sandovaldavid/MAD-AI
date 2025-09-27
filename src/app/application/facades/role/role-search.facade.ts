@@ -29,8 +29,6 @@ export class RoleSearchFacade {
   private readonly roleState = inject(RoleStateFacade);
   private readonly listRolesUC = inject(LIST_ROLES_USECASE_PORT);
 
-  constructor() {}
-
   /**
    * Execute operation with standardized error handling
    */

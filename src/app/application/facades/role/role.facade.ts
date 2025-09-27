@@ -43,8 +43,6 @@ export class RolesFacade {
   private readonly roleSearch = inject(RoleSearchFacade);
   private readonly roleExport = inject(RoleExportFacade);
 
-  constructor() {}
-
   // ========================================
   // State Management (delegates to RoleStateFacade)
   // ========================================
@@ -171,7 +169,7 @@ export class RolesFacade {
   }
 
   /** Find role by name */
-  async findRoleByName(name: string, opts?: FacadeOpts): Promise<Message | null> {
+  async findRoleByName(name: string): Promise<Message | null> {
     const role = await this.roleCrud.findRoleByName(name);
     if (role) {
       return { success: true, role };
@@ -331,7 +329,7 @@ export class RolesFacade {
     roleIds: number[],
     options: Partial<RoleExportConfig>,
     opts?: FacadeOpts
-  ): Promise<any[] | Message> {
+  ): Promise<unknown[] | Message> {
     return this.roleExport.getExportPreview(roleIds, options, opts);
   }
 
