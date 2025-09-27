@@ -36,6 +36,12 @@ import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Imports
 import type { UserStatusDisplay } from '../../types';
+import {
+  mapStringToUserStatus,
+  getUserStatusInfo,
+  getUserStatusBadgeClasses,
+  getUserStatusIcon,
+} from '../../types/user-colors.type';
 
 /**
  * Status configuration for custom statuses
@@ -122,7 +128,9 @@ export class UserStatusBadgeComponent {
    */
   readonly statusConfig = computed(() => {
     if (this.status) {
-      return this.status;
+      // If status is already a UserStatusDisplay, map to centralized config
+      const statusType = mapStringToUserStatus(this.status.value);
+      return getUserStatusInfo(statusType);
     }
 
     if (this.statusValue) {
@@ -130,17 +138,21 @@ export class UserStatusBadgeComponent {
       const customStatus = this.customStatuses.find((s) => s.value === this.statusValue);
       if (customStatus) {
         return {
-          value: customStatus.value,
+          status: customStatus.value,
+          color: 'neutral',
           label: customStatus.label,
-          cssClass: customStatus.cssClass,
+          description: customStatus.description || '',
           iconName: customStatus.iconName,
+          iconBg: '',
+          iconColor: '',
+          badgeClasses: customStatus.cssClass,
+          ringClasses: '',
         };
       }
-
-      // Use default status mapping
-      return this.getDefaultStatusConfig(this.statusValue);
+      // Use centralized config for known statuses
+      const statusType = mapStringToUserStatus(this.statusValue);
+      return getUserStatusInfo(statusType);
     }
-
     return null;
   });
 
@@ -151,16 +163,28 @@ export class UserStatusBadgeComponent {
     const config = this.statusConfig();
     if (!config) return 'status-badge status-unknown';
 
-    const classes = ['status-badge'];
-
-    classes.push(`size-${this.size}`);
-    classes.push(`variant-${this.variant}`);
-    classes.push(`status-${config.cssClass}`);
-
+    // Use getUserStatusBadgeClasses for known statuses
+    let baseClasses = '';
+    if (config.status) {
+      baseClasses = getUserStatusBadgeClasses(mapStringToUserStatus(config.status));
+    } else if (config.badgeClasses) {
+      baseClasses = config.badgeClasses;
+    }
+    const classes = [baseClasses, `status-badge`, `size-${this.size}`, `variant-${this.variant}`];
     if (this.clickable) classes.push('clickable');
     if (this.showTooltip) classes.push('has-tooltip');
-
     return classes.join(' ');
+  });
+  /**
+   * Icon name for the badge, using centralized helper
+   */
+  readonly iconName = computed(() => {
+    const config = this.statusConfig();
+    if (!config) return 'help-circle';
+    if (config.status) {
+      return getUserStatusIcon(mapStringToUserStatus(config.status));
+    }
+    return config.iconName || 'help-circle';
   });
 
   /**
@@ -182,81 +206,15 @@ export class UserStatusBadgeComponent {
   readonly tooltipText = computed(() => {
     const config = this.statusConfig();
     if (!config || !this.showTooltip) return '';
-
-    // Check if custom status has description
-    if (this.statusValue) {
-      const customStatus = this.customStatuses.find((s) => s.value === this.statusValue);
-      if (customStatus?.description) {
-        return customStatus.description;
-      }
-    }
-
-    return `Status: ${config.label}`;
+    if (config.description) return config.description;
+    return `Estado: ${config.label}`;
   });
 
   // ============================================================================
   // Helper Methods
   // ============================================================================
 
-  /**
-   * Get default status configuration for built-in statuses
-   */
-  private getDefaultStatusConfig(statusValue: string): UserStatusDisplay {
-    const defaultStatuses: Record<string, UserStatusDisplay> = {
-      active: {
-        value: 'active',
-        label: 'Active',
-        cssClass: 'active',
-        iconName: 'check-circle',
-        description: 'User account is active and can access the system',
-      },
-      inactive: {
-        value: 'inactive',
-        label: 'Inactive',
-        cssClass: 'inactive',
-        iconName: 'x-circle',
-        description: 'User account is deactivated and cannot access the system',
-      },
-      pending: {
-        value: 'pending',
-        label: 'Pending',
-        cssClass: 'pending',
-        iconName: 'clock',
-        description: 'User account is pending activation or verification',
-      },
-      suspended: {
-        value: 'suspended',
-        label: 'Suspended',
-        cssClass: 'suspended',
-        iconName: 'alert-circle',
-        description: 'User account has been temporarily suspended',
-      },
-      banned: {
-        value: 'banned',
-        label: 'Banned',
-        cssClass: 'banned',
-        iconName: 'slash',
-        description: 'User account has been permanently banned',
-      },
-      verified: {
-        value: 'verified',
-        label: 'Verified',
-        cssClass: 'verified',
-        iconName: 'shield-check',
-        description: 'User account has been verified and approved',
-      },
-    };
-
-    return (
-      defaultStatuses[statusValue.toLowerCase()] || {
-        value: statusValue,
-        label: statusValue.charAt(0).toUpperCase() + statusValue.slice(1),
-        cssClass: 'unknown',
-        iconName: 'help-circle',
-        description: `User status: ${statusValue}`,
-      }
-    );
-  }
+  // Removed local getDefaultStatusConfig; now uses centralized config
 
   /**
    * Check if status indicates an active/positive state
@@ -264,9 +222,7 @@ export class UserStatusBadgeComponent {
   isPositiveStatus(): boolean {
     const config = this.statusConfig();
     if (!config) return false;
-
-    const positiveStatuses = ['active', 'verified', 'approved', 'confirmed'];
-    return positiveStatuses.includes(config.value.toLowerCase());
+    return config.color === 'successful';
   }
 
   /**
@@ -275,9 +231,7 @@ export class UserStatusBadgeComponent {
   isWarningStatus(): boolean {
     const config = this.statusConfig();
     if (!config) return false;
-
-    const warningStatuses = ['pending', 'review', 'warning'];
-    return warningStatuses.includes(config.value.toLowerCase());
+    return config.color === 'warning';
   }
 
   /**
@@ -286,8 +240,6 @@ export class UserStatusBadgeComponent {
   isNegativeStatus(): boolean {
     const config = this.statusConfig();
     if (!config) return false;
-
-    const negativeStatuses = ['inactive', 'suspended', 'banned', 'rejected', 'error'];
-    return negativeStatuses.includes(config.value.toLowerCase());
+    return config.color === 'error';
   }
 }

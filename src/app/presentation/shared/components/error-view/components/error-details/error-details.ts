@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import type { ErrorDetailsConfig } from '../../../../types/error-display.types';
@@ -19,8 +19,10 @@ export class ErrorDetails {
   readonly isExpanded = this._isExpanded.asReadonly();
 
   constructor() {
-    // Initialize expanded state based on config
-    this._isExpanded.set(this.config().expanded);
+    // Initialize expanded state when config changes
+    effect(() => {
+      this._isExpanded.set(this.config().expanded);
+    });
   }
 
   toggleExpanded(): void {

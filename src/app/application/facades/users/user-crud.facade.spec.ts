@@ -42,6 +42,8 @@ import { USER_REPOSITORY, LOGGER_PORT, CLOCK_PORT } from '@di/tokens';
 import { NotificationsFacade } from '../notifications.facade';
 import { AuthFacade } from '../auth.facade';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
+import type { Message } from '@application/types/message.type';
+import { ApplicationError } from '@application/errors/application-error';
 
 describe('UserCrudFacade', () => {
   let facade: UserCrudFacade;
@@ -210,7 +212,11 @@ describe('UserCrudFacade', () => {
         'Welcome to MAD-AI, John!',
         'Your account has been created successfully'
       );
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        user: mockUser,
+        message: jasmine.any(String),
+      });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -228,7 +234,11 @@ describe('UserCrudFacade', () => {
       // Assert
       expect(mockCreateUserUC.execute).toHaveBeenCalledWith(requestWithoutNotification);
       expect(mockNotifications.success).not.toHaveBeenCalled();
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        user: mockUser,
+        message: jasmine.any(String),
+      });
     });
 
     it('should handle notification failure gracefully', async () => {
@@ -242,7 +252,11 @@ describe('UserCrudFacade', () => {
       // Assert
       expect(mockCreateUserUC.execute).toHaveBeenCalledWith(mockCreateRequest);
       expect(mockNotifications.success).toHaveBeenCalled();
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        user: mockUser,
+        message: jasmine.any(String),
+      });
       expect(facade.loading()).toBe(false);
     });
 
@@ -250,14 +264,17 @@ describe('UserCrudFacade', () => {
       // Arrange
       const error = new Error('Create failed');
       mockCreateUserUC.execute.and.returnValue(Promise.reject(error));
-      mockErrorTransformer.transform.and.returnValue({
-        code: 'USER_CREATE_FAILED',
-        message: 'Create failed',
-        userMessage: 'Failed to create user',
-      } as any);
+      mockErrorTransformer.transform.and.returnValue(
+        ApplicationError.insufficientPermissions('admin', 'user')
+      );
 
       // Act & Assert
-      await expectAsync(facade.createUser(mockCreateRequest)).toBeRejectedWith(error);
+      const result = await facade.createUser(mockCreateRequest);
+      expect(result).toEqual({
+        success: false,
+        error: jasmine.any(String),
+        message: jasmine.any(String),
+      });
       expect(mockCreateUserUC.execute).toHaveBeenCalledWith(mockCreateRequest);
       expect(mockErrorTransformer.transform).toHaveBeenCalledWith(error);
       expect(facade.loading()).toBe(false);
@@ -294,7 +311,11 @@ describe('UserCrudFacade', () => {
         'Your profile has been updated',
         'Updated: firstName, lastName'
       );
-      expect(result).toEqual(mockUpdatedUser);
+      expect(result).toEqual({
+        success: true,
+        user: mockUpdatedUser,
+        message: jasmine.any(String),
+      });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -312,7 +333,11 @@ describe('UserCrudFacade', () => {
       // Assert
       expect(mockUpdateUserUC.execute).toHaveBeenCalledWith(requestWithoutNotification);
       expect(mockNotifications.info).not.toHaveBeenCalled();
-      expect(result).toEqual(mockUpdatedUser);
+      expect(result).toEqual({
+        success: true,
+        user: mockUpdatedUser,
+        message: jasmine.any(String),
+      });
     });
 
     it('should handle update user failure', async () => {

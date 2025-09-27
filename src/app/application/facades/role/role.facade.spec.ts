@@ -200,20 +200,26 @@ describe('RolesFacade (Main Orchestrator)', () => {
     mockRoleState.hasSelectedRole.and.returnValue(false);
     mockRoleState.roleUsers.and.returnValue([]);
 
-    mockRoleCrud.loadRoles.and.returnValue(Promise.resolve());
-    mockRoleCrud.loadRole.and.returnValue(Promise.resolve());
-    mockRoleCrud.createRole.and.returnValue(Promise.resolve(mockRole));
-    mockRoleCrud.updateRole.and.returnValue(Promise.resolve(mockRole));
-    mockRoleCrud.deleteRole.and.returnValue(Promise.resolve());
+    mockRoleCrud.loadRoles.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleCrud.loadRole.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleCrud.createRole.and.returnValue(Promise.resolve({ success: true, role: mockRole }));
+    mockRoleCrud.updateRole.and.returnValue(Promise.resolve({ success: true, role: mockRole }));
+    mockRoleCrud.deleteRole.and.returnValue(Promise.resolve({ success: true }));
     mockRoleCrud.findRoleByName.and.returnValue(Promise.resolve(mockRole));
 
-    mockRoleActivation.activateRole.and.returnValue(Promise.resolve(mockRole));
-    mockRoleActivation.deactivateRole.and.returnValue(Promise.resolve(mockRole));
-    mockRoleActivation.toggleRoleActivation.and.returnValue(Promise.resolve(mockRole));
+    mockRoleActivation.activateRole.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole })
+    );
+    mockRoleActivation.deactivateRole.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole })
+    );
+    mockRoleActivation.toggleRoleActivation.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole })
+    );
 
     mockRoleAssignment.loadRoleUsers.and.returnValue(Promise.resolve(mockUsers));
-    mockRoleAssignment.assignRoleToUser.and.returnValue(Promise.resolve());
-    mockRoleAssignment.unassignRoleFromUser.and.returnValue(Promise.resolve());
+    mockRoleAssignment.assignRoleToUser.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleAssignment.unassignRoleFromUser.and.returnValue(Promise.resolve({ success: true }));
 
     mockRoleSearch.searchRoles.and.returnValue(Promise.resolve(mockRoles));
     mockRoleSearch.searchByName.and.returnValue(Promise.resolve([mockRoles[0]]));
@@ -225,14 +231,14 @@ describe('RolesFacade (Main Orchestrator)', () => {
       Promise.resolve(['Admin Role', 'User Role'])
     );
 
-    mockRoleExport.exportRoles.and.returnValue(Promise.resolve());
-    mockRoleExport.exportAllVisibleRoles.and.returnValue(Promise.resolve());
-    mockRoleExport.exportActiveRoles.and.returnValue(Promise.resolve());
-    mockRoleExport.exportRolesByAccessLevel.and.returnValue(Promise.resolve());
-    mockRoleExport.quickCSVExport.and.returnValue(Promise.resolve());
-    mockRoleExport.quickJSONExport.and.returnValue(Promise.resolve());
-    mockRoleExport.exportDetailedReport.and.returnValue(Promise.resolve());
-    mockRoleExport.exportSummaryReport.and.returnValue(Promise.resolve());
+    mockRoleExport.exportRoles.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.exportAllVisibleRoles.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.exportActiveRoles.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.exportRolesByAccessLevel.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.quickCSVExport.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.quickJSONExport.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.exportDetailedReport.and.returnValue(Promise.resolve({ success: true }));
+    mockRoleExport.exportSummaryReport.and.returnValue(Promise.resolve({ success: true }));
     mockRoleExport.getExportPreview.and.returnValue(Promise.resolve([]));
 
     // Setup TestBed
@@ -396,9 +402,10 @@ describe('RolesFacade (Main Orchestrator)', () => {
       const name = 'Admin Role';
       const opts: FacadeOpts = { silent: true };
 
-      await facade.findRoleByName(name, opts);
+      const result = await facade.findRoleByName(name, opts);
 
       expect(mockRoleCrud.findRoleByName).toHaveBeenCalledWith(name);
+      expect(result).toEqual({ success: true, role: mockRole });
     });
   });
 

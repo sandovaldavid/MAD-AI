@@ -8,11 +8,9 @@ import {
 } from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
-import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
-import { RoleModel } from '../../models/role.model';
 import {
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
@@ -22,7 +20,7 @@ import {
 @Component({
   selector: 'app-role-detail',
   standalone: true,
-  imports: [CommonModule, PageHeader, ErrorDisplay, Button, Icon],
+  imports: [CommonModule, PageHeader, ErrorDisplay, Icon],
   templateUrl: './role-detail.html',
   styleUrl: './role-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,9 +46,7 @@ export class RoleDetail {
     const levelInfo = role ? getRoleAccessLevelInfo(role.accessLevel) : getRoleAccessLevelInfo(5);
     return {
       title: role ? role.displayName : 'Detalle del Rol',
-      description: role
-        ? `${levelInfo.description} - ${role.description || 'Sin descripción'}`
-        : 'Información detallada del rol seleccionado',
+      description: role ? `${levelInfo.description}` : 'Información detallada del rol seleccionado',
       icon: role ? getRoleAccessLevelIcon(role.accessLevel) : 'shield-check',
       showBreadcrumbs: true,
       actions: [

@@ -41,8 +41,8 @@ export class Notify {
       // Step 1: Convert to domain entity (validates automatically)
       const notification: NewNotification = {
         type: request.type,
-        message: request.message,
-        title: request.description,
+        title: request.message,
+        message: request.description || '',
         userId: request.userId?.toString(),
       };
 

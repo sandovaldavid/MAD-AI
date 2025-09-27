@@ -142,7 +142,12 @@ describe('UserLookupFacade', () => {
 
       // Assert
       expect(mockGetUserByIdUC.execute).toHaveBeenCalledWith({ userId: 1 });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -156,7 +161,12 @@ describe('UserLookupFacade', () => {
 
       // Assert
       expect(mockGetUserByIdUC.execute).toHaveBeenCalledWith({ userId: 1 });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
     });
 
@@ -206,7 +216,12 @@ describe('UserLookupFacade', () => {
 
       // Assert
       expect(mockGetUserByEmailUC.execute).toHaveBeenCalledWith({ email: 'john.doe@example.com' });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -220,7 +235,12 @@ describe('UserLookupFacade', () => {
 
       // Assert
       expect(mockGetUserByEmailUC.execute).toHaveBeenCalledWith({ email: 'john.doe@example.com' });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
     });
 
@@ -254,7 +274,12 @@ describe('UserLookupFacade', () => {
         username: 'johndoe',
         requesterId: 1, // Assuming current user ID from auth
       });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
       expect(facade.error()).toBeNull();
     });
@@ -271,7 +296,12 @@ describe('UserLookupFacade', () => {
         username: 'johndoe',
         requesterId: 1,
       });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        success: true,
+        message: 'User found',
+        error: undefined,
+        data: mockUser,
+      });
       expect(facade.loading()).toBe(false);
     });
 

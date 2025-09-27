@@ -19,6 +19,7 @@ export interface ToastViewModel {
   title?: string;
   description?: string;
   timestamp?: Date;
+  duration?: number; // ms, 0 or undefined means no auto-dismiss
 }
 
 @Component({

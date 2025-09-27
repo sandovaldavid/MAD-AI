@@ -19,18 +19,16 @@
     }
     @if (form.pending) {
       <div class="flex items-center gap-2 text-neutral-600 dark:text-neutral-400">
-        <ui-icon
-          name="arrow-clockwise"
-          variant="outline"
-          size="sm"
-          class="animate-spin"></ui-icon>
+        <ui-icon name="arrow-clockwise" variant="outline" size="sm" class="animate-spin"></ui-icon>
         <span class="text-sm">Validando...</span>
       </div>
     }
     @if (form.dirty && !form.pending) {
       <div class="flex items-center gap-2 text-info-600 dark:text-info-400">
         <ui-icon name="info" variant="filled" size="sm"></ui-icon>
-        <span class="text-sm">{{ form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores' }}</span>
+        <span class="text-sm">{{
+          form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores'
+        }}</span>
       </div>
     }
   </div>
@@ -207,7 +205,9 @@
         @if (form.dirty && !form.pending) {
           <div class="flex items-center gap-2 text-info-600 dark:text-info-400">
             <ui-icon name="info" variant="filled" size="sm"></ui-icon>
-            <span class="text-sm">{{ form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores' }}</span>
+            <span class="text-sm">{{
+              form.valid ? 'Listo para guardar' : 'Por favor, corrija los errores'
+            }}</span>
           </div>
         }
       </div>

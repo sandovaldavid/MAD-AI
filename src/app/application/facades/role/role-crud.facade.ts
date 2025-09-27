@@ -8,13 +8,13 @@ import {
   GET_ROLE_BY_NAME_USECASE_PORT,
 } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { AuthFacade } from '@application/facades/auth.facade';
 import { RoleStateFacade } from './role-state.facade';
 import { Role } from '@domain/entities/role.entity';
 import { RoleApplicationMapper } from '@/app/application/mappers/role.mapper';
 import type { CreateRoleData, UpdateRoleData } from './role.types';
 import type { FacadeOpts } from '@application/types/facade-opts';
+import type { Message } from '@application/types/message.type';
 
 /**
  * CRUD operations facade for roles
@@ -38,36 +38,37 @@ export class RoleCrudFacade {
   private readonly deleteRoleUC = inject(DELETE_ROLE_USECASE_PORT);
   private readonly getRoleByNameUC = inject(GET_ROLE_BY_NAME_USECASE_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-  private readonly notifications = inject(NotificationsFacade);
   private readonly authFacade = inject(AuthFacade);
   private readonly roleState = inject(RoleStateFacade);
 
   /**
    * Loads all roles and updates state
    */
-  async loadRoles(opts?: FacadeOpts): Promise<void> {
+  async loadRoles(opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const roles = await this.listRolesUC.execute();
       const mappedRoles = roles.map((role) => RoleApplicationMapper.toRoleSummary(role));
       this.roleState.setRoles(mappedRoles);
+      return { success: true, message: 'Los roles han sido cargados exitosamente.' };
     }, opts);
   }
 
   /**
    * Loads a specific role by ID and sets it as current
    */
-  async loadRole(id: number, opts?: FacadeOpts): Promise<void> {
+  async loadRole(id: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const role = await this.getRoleByIdUC.execute({ id, requesterId: this.getCurrentUserId() });
       const mappedRole = RoleApplicationMapper.toRoleSummary(role);
       this.roleState.setCurrentRole(mappedRole);
+      return { success: true, message: 'El rol ha sido cargado exitosamente.' };
     }, opts);
   }
 
   /**
    * Creates a new role
    */
-  async createRole(roleData: CreateRoleData, opts?: FacadeOpts): Promise<Role> {
+  async createRole(roleData: CreateRoleData, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const role = await this.createRoleUC.execute({
         name: roleData.name,
@@ -77,27 +78,20 @@ export class RoleCrudFacade {
         isUniquePerTeam: roleData.isUniquePerTeam || false,
         requesterId: this.getCurrentUserId(),
       });
-
-      // Add to state
       const mappedRole = RoleApplicationMapper.toRoleSummary(role);
       this.roleState.addRole(mappedRole);
-
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Role created successfully',
-          `Role "${role.name}" has been created.`
-        );
-      }
-
-      return role;
+      return {
+        success: true,
+        role,
+        message: `El rol "${role.name}" ha sido creado exitosamente.`,
+      };
     }, opts);
   }
 
   /**
    * Updates an existing role
    */
-  async updateRole(id: number, roleData: UpdateRoleData, opts?: FacadeOpts): Promise<Role> {
+  async updateRole(id: number, roleData: UpdateRoleData, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const role = await this.updateRoleUC.execute({
         id,
@@ -108,41 +102,31 @@ export class RoleCrudFacade {
         isUniquePerTeam: roleData.isUniquePerTeam,
         isActive: roleData.isActive,
       });
-
-      // Update state
       const mappedRole = RoleApplicationMapper.toRoleSummary(role);
       this.roleState.updateRole(mappedRole);
-
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success(
-          'Role updated successfully',
-          `Role "${role.name}" has been updated.`
-        );
-      }
-
-      return role;
+      return {
+        success: true,
+        role,
+        message: `El rol "${role.name}" ha sido actualizado exitosamente.`,
+      };
     }, opts);
   }
 
   /**
    * Deletes a role
    */
-  async deleteRole(id: number, opts?: FacadeOpts): Promise<void> {
+  async deleteRole(id: number, opts?: FacadeOpts): Promise<Message> {
     return this.executeOperation(async () => {
       const currentUserId = this.getCurrentUserId();
       await this.deleteRoleUC.execute({
         id,
         requesterId: currentUserId,
       });
-
-      // Remove from state
       this.roleState.removeRole(id);
-
-      // Show success notification
-      if (!opts?.silent) {
-        this.notifications.success('Role deleted', 'Role has been deleted successfully.');
-      }
+      return {
+        success: true,
+        message: 'El rol ha sido eliminado exitosamente.',
+      };
     }, opts);
   }
 
@@ -161,7 +145,10 @@ export class RoleCrudFacade {
   /**
    * Executes operation with error handling and loading state
    */
-  private async executeOperation<T>(operation: () => Promise<T>, opts?: FacadeOpts): Promise<T> {
+  private async executeOperation<T>(
+    operation: () => Promise<T | Message>,
+    opts?: FacadeOpts
+  ): Promise<T | Message> {
     if (!opts?.skipLoading) this.roleState.setLoading(true);
     this.roleState.setError(null);
 
@@ -169,8 +156,11 @@ export class RoleCrudFacade {
       return await operation();
     } catch (error: unknown) {
       const appError = this.errorTransformer.transform(error);
-      this.notifications.notificationError(appError.message, 'Error deleting role');
-      throw appError;
+      return {
+        success: false,
+        error: `Error: ${appError.message}`,
+        message: 'Ocurrió un error al realizar la operación.',
+      };
     } finally {
       if (!opts?.skipLoading) this.roleState.setLoading(false);
     }
@@ -182,7 +172,7 @@ export class RoleCrudFacade {
   private getCurrentUserId(): number {
     const currentUser = this.authFacade.user();
     if (!currentUser?.id) {
-      throw new Error('No authenticated user found');
+      throw new Error('No se encontró un usuario autenticado.');
     }
     return currentUser.id;
   }

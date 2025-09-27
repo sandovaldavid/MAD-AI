@@ -66,10 +66,7 @@ describe('LoginUseCase', () => {
 
   describe('execute', () => {
     const loginRequest: LoginRequest = {
-      identifier: {
-        type: 'email',
-        value: 'test@example.com',
-      },
+      identifier: 'test@example.com',
       password: 'password123',
     };
 

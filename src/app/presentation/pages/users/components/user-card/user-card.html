@@ -5,7 +5,6 @@
   [attr.aria-selected]="selectable ? selected : null"
   [attr.role]="selectable ? 'option' : 'button'"
   [attr.tabindex]="clickable ? 0 : -1">
-
   <!-- Loading State -->
   @if (loading) {
     <div class="card-loading">
@@ -36,10 +35,7 @@
         </div>
       }
     </div>
-  }
-
-  <!-- Card Content -->
-  @else {
+  } @else {
     <!-- Selection Indicator -->
     @if (selectable) {
       <div class="selection-indicator">
@@ -49,17 +45,14 @@
           (change)="onToggleSelection()"
           (click)="$event.stopPropagation()"
           class="selection-checkbox"
-          [attr.aria-label]="'Seleccionar ' + user.displayName">
+          [attr.aria-label]="'Seleccionar ' + user.displayName" />
       </div>
     }
 
     <!-- Avatar Section -->
     <div class="avatar-section">
       @if (user.avatar) {
-        <img
-          [src]="user.avatar"
-          [alt]="user.displayName + ' avatar'"
-          class="user-avatar-image">
+        <img [src]="user.avatar" [alt]="user.displayName + ' avatar'" class="user-avatar-image" />
       } @else {
         <div class="user-avatar-initials">
           {{ getUserInitials() }}
@@ -78,7 +71,7 @@
       <div class="user-info">
         <h3 class="user-name">{{ user.displayName }}</h3>
         <p class="user-email">{{ user.email }}</p>
-        <p class="user-username">@{{ user.username }}</p>
+        <p class="user-username">{{ '@' }}{{ user.username }}</p>
       </div>
 
       <!-- Detailed Information -->

@@ -125,11 +125,11 @@
 
 /* Form Controls */
 .form-select {
-  @apply block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
+  @apply block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:border-primary-500 transition-colors;
 }
 
 .form-checkbox {
-  @apply rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500 focus:ring-2 transition-colors;
+  @apply rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus-visible:ring-primary-500 focus-visible:ring-2 transition-colors;
 }
 
 /* Action Buttons */

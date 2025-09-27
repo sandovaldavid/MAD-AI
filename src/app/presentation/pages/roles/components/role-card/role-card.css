@@ -8,7 +8,7 @@
 }
 
 .role-card:hover {
-  @apply transform scale-[1.02] border-primary-300 dark:border-primary-600;
+  @apply transform scale-[1.01] border-primary-300 dark:border-primary-600;
 }
 
 .role-card--loading {
@@ -81,8 +81,7 @@
 }
 
 .role-card__description-text {
-  @apply text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed 
-    line-clamp-2 italic;
+  @apply text-sm text-neutral-700 dark:text-neutral-300 leading-relaxed break-words whitespace-pre-line line-clamp-2 italic;
 }
 
 .role-card__metrics {

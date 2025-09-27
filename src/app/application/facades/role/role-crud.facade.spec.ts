@@ -144,10 +144,18 @@ describe('RoleCrudFacade', () => {
 
     // Setup default mock behaviors
     mockListRolesUC.execute.and.returnValue(Promise.resolve([mockRole]));
-    mockGetRoleByIdUC.execute.and.returnValue(Promise.resolve(mockRole));
-    mockCreateRoleUC.execute.and.returnValue(Promise.resolve(mockRole));
-    mockUpdateRoleUC.execute.and.returnValue(Promise.resolve(mockRole));
-    mockDeleteRoleUC.execute.and.returnValue(Promise.resolve(undefined));
+    mockGetRoleByIdUC.execute.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole, message: 'Role loaded successfully.' })
+    );
+    mockCreateRoleUC.execute.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole, message: 'Role created successfully.' })
+    );
+    mockUpdateRoleUC.execute.and.returnValue(
+      Promise.resolve({ success: true, role: mockRole, message: 'Role updated successfully.' })
+    );
+    mockDeleteRoleUC.execute.and.returnValue(
+      Promise.resolve({ success: true, message: 'Role deleted successfully.' })
+    );
     mockGetRoleByNameUC.execute.and.returnValue(Promise.resolve(mockRole));
     mockAuthFacade.user.and.returnValue({ id: 123 } as unknown as any);
     mockErrorTransformer.transform.and.callFake((error: any) => error);
@@ -261,7 +269,7 @@ describe('RoleCrudFacade', () => {
         'Role created successfully',
         `Role "${mockRole.name}" has been created.`
       );
-      expect(result).toBe(mockRole);
+      expect(result).toEqual(jasmine.objectContaining({ success: true, role: mockRole }));
     });
 
     it('should handle creation errors', async () => {
@@ -381,7 +389,7 @@ describe('RoleCrudFacade', () => {
         'Role updated successfully',
         `Role "${mockRole.name}" has been updated.`
       );
-      expect(result).toBe(mockRole);
+      expect(result).toEqual(jasmine.objectContaining({ success: true, role: mockRole }));
     });
 
     it('should handle partial updates', async () => {

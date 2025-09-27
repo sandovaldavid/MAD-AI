@@ -52,7 +52,7 @@ export interface ViewMode {
 @Component({
   selector: 'ui-view-toggle',
   standalone: true,
-  imports: [CommonModule, Button, Icon],
+  imports: [CommonModule, Icon],
   templateUrl: './view-toggle.html',
   styleUrl: './view-toggle.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -62,26 +62,26 @@ export class ViewToggleComponent {
   // Inputs
   // ============================================================================
 
-  /** Available view modes */
+  /** Available view modes (Spanish, matching roles-list) */
   availableViews = input<ViewMode[]>([
     {
-      id: 'table',
-      label: 'Table',
-      icon: 'table-cells',
-      description: 'View data in a structured table format',
+      id: 'cards',
+      label: 'Tarjetas',
+      icon: 'grid',
+      description: 'Vista de tarjetas',
       shortcut: 'T',
     },
     {
-      id: 'card',
-      label: 'Cards',
-      icon: 'grid',
-      description: 'View data as individual cards in a grid layout',
-      shortcut: 'C',
+      id: 'table',
+      label: 'Tabla',
+      icon: 'table',
+      description: 'Vista de tabla',
+      shortcut: 'B',
     },
   ]);
 
   /** Currently selected view mode */
-  selectedView = input<string>('table');
+  selectedView = input<string>('cards');
 
   /** Whether to use compact layout */
   compact = input<boolean>(false);
@@ -90,7 +90,7 @@ export class ViewToggleComponent {
   showLabel = input<boolean>(false);
 
   /** Custom aria label */
-  ariaLabel = input<string>('View mode selector');
+  ariaLabel = input<string>('Selector de vista');
 
   /** Whether the toggle is disabled */
   disabled = input<boolean>(false);

@@ -19,6 +19,7 @@ import type { User } from '@domain/entities/user.entity';
 
 // Application Layer Imports
 import type { FacadeOpts } from '@application/types/facade-opts';
+import type { Message } from '@application/types/message.type';
 import type { ListUsersRequest } from '@application/types/users.types';
 
 /**
@@ -85,13 +86,17 @@ export class UserUtilsFacade extends BaseUserFacade {
    * // Component can then react to selectedUser() signal changes
    * ```
    */
-  selectUser(user: User | null): void {
+  selectUser(user: User | null): Message {
     this._selectedUser.set(user);
     this.emitEvent({
       type: 'bulk-operation-completed',
       operation: 'user-selection',
       results: { selectedUser: user },
     });
+    return {
+      success: true,
+      message: user ? 'Usuario seleccionado correctamente.' : 'Selección de usuario borrada.',
+    };
   }
 
   /**
@@ -107,8 +112,8 @@ export class UserUtilsFacade extends BaseUserFacade {
    * userUtilsFacade.clearSelection();
    * ```
    */
-  clearSelection(): void {
-    this.selectUser(null);
+  clearSelection(): Message {
+    return this.selectUser(null);
   }
 
   /**
@@ -131,14 +136,20 @@ export class UserUtilsFacade extends BaseUserFacade {
    * }
    * ```
    */
-  selectUserById(userId: number): boolean {
+  selectUserById(userId: number): Message {
     const user = this._users().find((u) => u.id === userId);
     if (user) {
       this.selectUser(user);
-      return true;
+      return {
+        success: true,
+        message: `Usuario con ID ${userId} seleccionado correctamente.`,
+      };
     } else {
       this.clearSelection();
-      return false;
+      return {
+        success: false,
+        message: `Usuario con ID ${userId} no encontrado. Selección borrada.`,
+      };
     }
   }
 
@@ -171,8 +182,12 @@ export class UserUtilsFacade extends BaseUserFacade {
    * await userUtilsFacade.createUser(userData);
    * ```
    */
-  clearError(): void {
+  clearError(): Message {
     this.setError(null);
+    return {
+      success: true,
+      message: 'Error borrado correctamente.',
+    };
   }
 
   /**
@@ -193,8 +208,11 @@ export class UserUtilsFacade extends BaseUserFacade {
    * }
    * ```
    */
-  hasError(): boolean {
-    return this._userError() !== null;
+  hasError(): Message {
+    return {
+      success: this._userError() !== null,
+      message: this._userError() ? 'Hay un error activo.' : 'No hay errores activos.',
+    };
   }
 
   // ============================================================================
@@ -225,7 +243,7 @@ export class UserUtilsFacade extends BaseUserFacade {
    * await userListFacade.loadUsers();
    * ```
    */
-  reset(): void {
+  reset(): Message {
     this._users.set([]);
     this._selectedUser.set(null);
     this.setLoading(false);
@@ -233,6 +251,10 @@ export class UserUtilsFacade extends BaseUserFacade {
     this._currentFilter.set(null);
     this._totalCount.set(0);
     this._lastBulkOperation.set({ type: null, result: null });
+    return {
+      success: true,
+      message: 'Estado del facade reiniciado correctamente.',
+    };
   }
 
   /**
@@ -255,30 +277,35 @@ export class UserUtilsFacade extends BaseUserFacade {
    * await userUtilsFacade.refresh({ skipLoading: true });
    * ```
    */
-  async refresh(opts?: FacadeOpts): Promise<void> {
+  async refresh(opts?: FacadeOpts): Promise<Message> {
     const currentFilter = this._currentFilter();
     const request: ListUsersRequest | undefined = currentFilter
       ? { filter: currentFilter, requesterId: this.getCurrentUserId() }
       : { requesterId: this.getCurrentUserId() };
 
-    await this.listUsersUC
-      .execute(request)
-      .then((result) => {
-        // Update local state with refreshed data
-        this._users.set(result.users);
-        this._totalCount.set(result.totalCount);
-
-        // Emit refresh event
-        this.emitEvent({
-          type: 'bulk-operation-completed',
-          operation: 'refresh-users',
-          results: result,
-        });
-      })
-      .catch((error) => {
-        this.handleError(error);
-        throw error;
+    try {
+      const result = await this.listUsersUC.execute(request);
+      this._users.set(result.users);
+      this._totalCount.set(result.totalCount);
+      this.emitEvent({
+        type: 'bulk-operation-completed',
+        operation: 'refresh-users',
+        results: result,
       });
+      return {
+        success: true,
+        message: 'Lista de usuarios actualizada correctamente.',
+        users: result.users,
+        totalCount: result.totalCount,
+      };
+    } catch (error: unknown) {
+      this.handleError(error);
+      return {
+        success: false,
+        message: 'Error al actualizar la lista de usuarios.',
+        error: String(error),
+      };
+    }
   }
 
   /**
@@ -299,9 +326,9 @@ export class UserUtilsFacade extends BaseUserFacade {
    * }
    * ```
    */
-  async initialize(opts?: FacadeOpts): Promise<void> {
+  async initialize(opts?: FacadeOpts): Promise<Message> {
     this.reset();
-    await this.refresh(opts);
+    return await this.refresh(opts);
   }
 
   // ============================================================================

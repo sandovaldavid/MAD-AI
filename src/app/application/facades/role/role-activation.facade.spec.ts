@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { Message } from '@/app/application/types/message.type';
 import { RoleActivationFacade } from './role-activation.facade';
 import { ActivateRole } from '@application/use-cases/roles/activate-role.usecase';
 import { DeactivateRoleUseCase } from '@application/use-cases/roles/deactivate-role.usecase';
@@ -60,8 +61,12 @@ describe('RoleActivationFacade', () => {
   let facade: RoleActivationFacade;
 
   // Mocks
-  let mockActivateRoleUC: jasmine.SpyObj<ActivateRole>;
-  let mockDeactivateRoleUC: jasmine.SpyObj<DeactivateRoleUseCase>;
+  let mockActivateRoleUC: jasmine.SpyObj<
+    ActivateRole & { execute: jasmine.Spy<(input: any) => Promise<Message>> }
+  >;
+  let mockDeactivateRoleUC: jasmine.SpyObj<
+    DeactivateRoleUseCase & { execute: jasmine.Spy<(input: any) => Promise<Message>> }
+  >;
   let mockErrorTransformer: jasmine.SpyObj<ApplicationErrorTransformer>;
   let mockNotifications: jasmine.SpyObj<NotificationsFacade>;
   let mockAuthFacade: jasmine.SpyObj<AuthFacade>;
@@ -75,8 +80,14 @@ describe('RoleActivationFacade', () => {
 
   beforeEach(() => {
     // Create mocks
-    mockActivateRoleUC = jasmine.createSpyObj('ActivateRole', ['execute']);
-    mockDeactivateRoleUC = jasmine.createSpyObj('DeactivateRoleUseCase', ['execute']);
+    mockActivateRoleUC = jasmine.createSpyObj('ActivateRole', ['execute']) as jasmine.SpyObj<
+      ActivateRole & { execute: jasmine.Spy<(input: any) => Promise<Message>> }
+    >;
+    mockDeactivateRoleUC = jasmine.createSpyObj('DeactivateRoleUseCase', [
+      'execute',
+    ]) as jasmine.SpyObj<
+      DeactivateRoleUseCase & { execute: jasmine.Spy<(input: any) => Promise<Message>> }
+    >;
     mockErrorTransformer = jasmine.createSpyObj('ApplicationErrorTransformer', ['transform']);
     mockNotifications = jasmine.createSpyObj('NotificationsFacade', ['success']);
     mockAuthFacade = jasmine.createSpyObj('AuthFacade', ['user']);
@@ -128,8 +139,12 @@ describe('RoleActivationFacade', () => {
     };
 
     // Setup default mock behaviors
-    mockActivateRoleUC.execute.and.returnValue(Promise.resolve(mockInactiveRole));
-    mockDeactivateRoleUC.execute.and.returnValue(Promise.resolve(mockActiveRole));
+    mockActivateRoleUC.execute.and.returnValue(
+      Promise.resolve({ success: true, message: 'Role activated', role: mockActiveRole })
+    );
+    mockDeactivateRoleUC.execute.and.returnValue(
+      Promise.resolve({ success: true, message: 'Role deactivated', role: mockInactiveRole })
+    );
     mockAuthFacade.user.and.returnValue({ id: 123 } as unknown as any);
     mockErrorTransformer.transform.and.callFake((error: any) => error);
 
@@ -159,7 +174,8 @@ describe('RoleActivationFacade', () => {
   describe('Activate Role', () => {
     it('should activate role successfully with notifications', async () => {
       const roleId = 2;
-      mockActivateRoleUC.execute.and.returnValue(Promise.resolve(mockActiveRole));
+      const message = { success: true, message: 'Role activated', role: mockActiveRole };
+      mockActivateRoleUC.execute.and.returnValue(Promise.resolve(message));
 
       const result = await facade.activateRole(roleId);
 
@@ -173,7 +189,7 @@ describe('RoleActivationFacade', () => {
         'Role activated',
         `Role "${mockActiveRole.name}" is now active.`
       );
-      expect(result).toBe(mockActiveRole);
+      expect(result).toEqual(message);
     });
 
     it('should handle activation errors', async () => {
@@ -196,7 +212,8 @@ describe('RoleActivationFacade', () => {
   describe('Deactivate Role', () => {
     it('should deactivate role successfully with notifications', async () => {
       const roleId = 1;
-      mockDeactivateRoleUC.execute.and.returnValue(Promise.resolve(mockInactiveRole));
+      const message = { success: true, message: 'Role deactivated', role: mockInactiveRole };
+      mockDeactivateRoleUC.execute.and.returnValue(Promise.resolve(message));
 
       const result = await facade.deactivateRole(roleId);
 
@@ -210,7 +227,7 @@ describe('RoleActivationFacade', () => {
         'Role deactivated',
         `Role "${mockInactiveRole.name}" is now inactive.`
       );
-      expect(result).toBe(mockInactiveRole);
+      expect(result).toEqual(message);
     });
 
     it('should handle deactivation errors', async () => {
@@ -315,7 +332,12 @@ describe('RoleActivationFacade', () => {
   describe('Loading State Management', () => {
     it('should manage loading state for activation', async () => {
       mockActivateRoleUC.execute.and.returnValue(
-        new Promise((resolve) => setTimeout(() => resolve(mockActiveRole), 100))
+        new Promise((resolve) =>
+          setTimeout(
+            () => resolve({ success: true, message: 'Role activated', role: mockActiveRole }),
+            100
+          )
+        )
       );
 
       const promise = facade.activateRole(1);
@@ -329,7 +351,12 @@ describe('RoleActivationFacade', () => {
 
     it('should manage loading state for deactivation', async () => {
       mockDeactivateRoleUC.execute.and.returnValue(
-        new Promise((resolve) => setTimeout(() => resolve(mockInactiveRole), 100))
+        new Promise((resolve) =>
+          setTimeout(
+            () => resolve({ success: true, message: 'Role deactivated', role: mockInactiveRole }),
+            100
+          )
+        )
       );
 
       const promise = facade.deactivateRole(1);

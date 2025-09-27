@@ -27,6 +27,7 @@ export class RoleMapper {
       isActive: dto.is_active,
       description: dto.description,
       userCount: dto.user_count,
+      createdAt: typeof dto.created_at === 'string' ? new Date(dto.created_at) : dto.created_at,
     });
   }
 
@@ -41,6 +42,7 @@ export class RoleMapper {
       is_active: entity.isActive,
       description: entity.description,
       user_count: entity.userCount,
+      created_at: entity.createdAt ? entity.createdAt.toISOString() : '',
     };
   }
 }

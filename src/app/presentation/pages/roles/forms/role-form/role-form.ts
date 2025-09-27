@@ -8,9 +8,12 @@ import {
   output,
   effect,
 } from '@angular/core';
+// Access level config for consistent labels/descriptions
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RolesFacade } from '@application/facades/role';
+import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleModel } from '../../models/role.model';
 import { Toggle } from '@presentation/shared/ui/toggle/toggle';
@@ -35,6 +38,7 @@ interface RoleFormData {
 export class RoleFormComponent {
   private fb = inject(FormBuilder);
   private facade = inject(RolesFacade);
+  private notifications = inject(NotificationsFacade);
 
   // Inputs
   mode = input<FormMode>('create');
@@ -60,14 +64,14 @@ export class RoleFormComponent {
     isActive: [true],
   });
 
-  // Access levels configuration
-  readonly accessLevels = [
-    { value: 1, label: 'Nivel 1', description: 'Acceso total al sistema' },
-    { value: 2, label: 'Nivel 2', description: 'Gestión administrativa' },
-    { value: 3, label: 'Nivel 3', description: 'Operaciones moderadas' },
-    { value: 4, label: 'Nivel 4', description: 'Operaciones básicas' },
-    { value: 5, label: 'Nivel 5', description: 'Solo consulta' },
-  ];
+  // Access levels configuration (from config)
+  readonly accessLevels = Object.entries(ROLE_ACCESS_LEVEL_CONFIG).map(([key, info]) => ({
+    value: Number(key),
+    label: `Nivel ${key} - ${info.label}`,
+    description: info.description,
+    color: info.color,
+    // Optionally add icon if needed: icon: ROLE_ACCESS_LEVEL_ICONS[Number(key)]
+  }));
 
   // Preview role model computed from form values
   readonly previewRole = computed((): RoleModel => {
@@ -150,11 +154,27 @@ export class RoleFormComponent {
           isActive: rawFormData.isActive ?? true,
         };
         this.submitted.emit(formData);
+        // Notificación de éxito
+        await this.notifications.success(
+          'Rol creado exitosamente',
+          `El rol "${formData.name}" fue creado correctamente.`
+        );
       } catch (error) {
         console.error('Form submission error:', error);
+        // Notificación de error
+        await this.notifications.notificationError(
+          'Error al crear el rol',
+          error instanceof Error ? error.message : 'Ocurrió un error inesperado.'
+        );
       } finally {
         this.submitting.set(false);
       }
+    } else {
+      // Notificación de warning si el formulario es inválido
+      await this.notifications.warning(
+        'Formulario inválido',
+        'Por favor, completa todos los campos requeridos correctamente.'
+      );
     }
   }
 
@@ -172,6 +192,14 @@ export class RoleFormComponent {
       if (field.errors?.['max']) return `El valor máximo es ${field.errors['max'].max}`;
     }
     return null;
+  }
+
+  // Método para mostrar notificación de información (ayuda contextual)
+  async showInfoNotification() {
+    await this.notifications.info(
+      '¿Cómo crear un rol?',
+      'Completa el formulario y selecciona el nivel de acceso adecuado para el nuevo rol.'
+    );
   }
 
   // Handle toggle status change

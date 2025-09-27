@@ -1,53 +1,234 @@
-<!-- Users List Page Template -->
-<div class="dashboard-container">
-  <!-- Page Header -->
+<section class="dashboard-container">
+  <!-- Confirmation Modal -->
+  <app-confirmation-modal
+    [visible]="!!confirmVisible() && !!confirmConfig()"
+    [config]="confirmConfig()!"
+    [loading]="confirmLoading()"
+    (actionTriggered)="onConfirmModalAction($event)" />
+
+  <!-- Header Section -->
   <app-page-header [config]="headerConfig()" />
 
-  <!-- User Filter and View Controls -->
-  <div class="filter-controls">
-    <app-user-filter
-      [availableRoles]="availableRoleNames()"
-      [loading]="loading()"
-      (filtersChange)="onFilterChange($event)">
-    </app-user-filter>
+  <!-- Search and Filter Section -->
+  <div class="dashboard-header">
+    <!-- Basic Filters -->
+    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <div class="flex-1 min-w-0">
+        <label class="form-label">Buscar usuarios</label>
+        <input
+          class="form-input w-full"
+          placeholder="Buscar por nombre, email, usuario..."
+          [value]="search()"
+          (input)="updateSearch($event.target.value)" />
+      </div>
 
-    <ui-view-toggle
-      [availableViews]="availableViews()"
-      [selectedView]="viewMode()"
-      [compact]="false"
-      [disabled]="loading()"
-      (viewChange)="onViewModeChange($event)">
-    </ui-view-toggle>
-  </div>
-
-  <!-- Bulk Actions Toolbar -->
-  @if (selectedUsers().length > 0) {
-    <ui-bulk-actions-toolbar
-      [selectedCount]="selectedUsers().length"
-      [quickActions]="bulkActions()"
-      [executingAction]="null"
-      [title]="'usuarios seleccionados'"
-      (quickActionTriggered)="onBulkAction($event)"
-      (clearSelection)="onClearSelection()">
-    </ui-bulk-actions-toolbar>
-  }
-
-  <!-- Error Display -->
-  @if (error()) {
-    <div class="error-message">
-      <div class="error-content">
-        <h3>Error al cargar usuarios</h3>
-        <p>{{ error() }}</p>
-        <button type="button" class="btn btn--primary" (click)="loadUsers()">Reintentar</button>
+      <div class="w-full sm:w-auto">
+        <label class="form-label">Estado</label>
+        <select
+          class="form-input w-full sm:w-48"
+          [value]="activeFilter() === null ? '' : activeFilter() ? 'true' : 'false'"
+          (change)="
+            updateActiveFilter(
+              $any($event.target).value === '' ? null : $any($event.target).value === 'true'
+            )
+          ">
+          <option value="">Todos los estados</option>
+          <option value="true">Activos</option>
+          <option value="false">Inactivos</option>
+        </select>
       </div>
     </div>
-  }
 
-  <!-- Users Content - Table or Grid View -->
-  <div class="users-content">
-    @if (isTableView()) {
-      <!-- Table View -->
-      <div class="users-table-container">
+    <!-- Advanced Filters Animation Container -->
+    <div
+      class="advanced-filters-wrapper"
+      [ngClass]="{
+        'advanced-filters-wrapper--open': advancedFiltersWrapperOpen(),
+        'advanced-filters-wrapper--closed': !advancedFiltersWrapperOpen(),
+      }">
+      @if (showAdvancedFiltersPanel()) {
+        <div
+          class="mt-4 p-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg"
+          [ngClass]="{
+            'advanced-filters-enter': advancedFiltersEntering(),
+            'advanced-filters-enter-active': showAdvancedFilters() && !advancedFiltersEntering(),
+            'advanced-filters-leave advanced-filters-leave-active': advancedFiltersLeaving(),
+          }">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Role Filter -->
+            <div>
+              <label class="form-label">Rol</label>
+              <select
+                class="form-input w-full"
+                [value]="roleFilter() ?? ''"
+                (change)="updateRoleFilter($any($event.target).value || null)">
+                <option value="">Todos los roles</option>
+                @for (role of availableRoleNames(); track role) {
+                  <option [value]="role">{{ role | titlecase }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Activity Range -->
+            <div>
+              <label class="form-label">Última Actividad</label>
+              <select
+                class="form-input w-full"
+                [value]="activityFilter()"
+                (change)="updateActivityFilter($any($event.target).value)">
+                <option value="">Cualquier momento</option>
+                <option value="today">Hoy</option>
+                <option value="week">Esta semana</option>
+                <option value="month">Este mes</option>
+                <option value="3months">Últimos 3 meses</option>
+              </select>
+            </div>
+
+            <!-- Sort By -->
+            <div>
+              <label class="form-label">Ordenar por</label>
+              <select
+                class="form-input w-full"
+                [value]="sortBy()"
+                (change)="updateSort($any($event.target).value)">
+                @for (option of getSortOptions(); track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Sort Direction -->
+            <div>
+              <label class="form-label">Dirección</label>
+              <select
+                class="form-input w-full"
+                [value]="sortDirection()"
+                (change)="updateSort(sortBy(), $any($event.target).value)">
+                <option value="asc">Ascendente</option>
+                <option value="desc">Descendente</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filter Actions -->
+          <div
+            class="flex items-center justify-between mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <div class="text-sm text-neutral-600 dark:text-neutral-400">
+              @if (filterStats().hasFilters) {
+                Mostrando {{ filterStats().filtered }} de {{ filterStats().total }} usuarios ({{
+                  filterStats().active
+                }}
+                activos)
+              } @else {
+                {{ filterStats().total }} usuarios en total ({{ filterStats().active }} activos)
+              }
+            </div>
+
+            @if (filterStats().hasFilters) {
+              <button
+                class="btn btn--danger px-3 py-1 text-sm text-error-500 dark:text-error-400 hover:text-neutral-50 border border-error-500 dark:border-error-400 rounded-md hover:bg-error-600 dark:hover:bg-error-400 focus-visible:ring-error-500/25 dark:focus-visible:ring-error-400/25 transition-colors flex items-center"
+                (click)="clearAllFilters()">
+                <ui-icon name="x-mark" class="size-4 mr-1" />
+                Limpiar filtros
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="dashboard-content">
+    @if (loading()) {
+      <!-- Loading State -->
+      <div class="section-dashboard">
+        <app-role-skeleton />
+      </div>
+    } @else if (error()) {
+      <!-- Error State -->
+      <div class="section-dashboard">
+        <app-error-display [config]="errorConfig()" />
+      </div>
+    } @else if (filteredUsers().length === 0) {
+      <!-- Empty State -->
+      <div class="section-dashboard">
+        <div class="text-center py-12">
+          <div
+            class="w-16 h-16 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ui-icon name="user-group" size="lg" class="text-neutral-400" />
+          </div>
+          <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">
+            No se encontraron usuarios
+          </h3>
+          <p class="text-neutral-600 dark:text-neutral-400 mb-6">
+            @if (filterStats().hasFilters) {
+              No hay usuarios que coincidan con los filtros aplicados.
+            } @else {
+              Aún no hay usuarios registrados en el sistema.
+            }
+          </p>
+          @if (filterStats().hasFilters) {
+            <button class="btn btn--secondary mr-2" (click)="clearAllFilters()">
+              <ui-icon name="x-mark" size="sm" class="mr-2" />
+              Limpiar filtros
+            </button>
+          }
+          <button class="btn btn--primary" (click)="onCreateUser()">
+            <ui-icon name="user-plus" size="sm" class="mr-2" />
+            Crear Primer Usuario
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- View Toggle and Results Summary -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-start gap-4 items-center">
+        <!-- View Mode Toggle -->
+        <div class="flex items-center justify-between rounded-xl">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Vista:</span>
+            <ui-view-toggle
+              [selectedView]="viewMode()"
+              (viewChange)="viewMode.set($event === 'table' ? 'table' : 'cards')"
+              ariaLabel="Selector de vista" />
+          </div>
+        </div>
+        <!-- Results Summary -->
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-start gap-4 items-center px-4 py-2 h-[40px] bg-neutral-50 dark:bg-neutral-800 rounded-xl">
+          <div class="flex items-center space-x-4">
+            <ui-icon name="info" size="sm" class="text-info-600 dark:text-info-400" />
+            <span class="text-sm text-neutral-700 dark:text-neutral-300">
+              @if (filterStats().hasFilters) {
+                {{ filterStats().filtered }} de {{ filterStats().total }}
+                {{ filterStats().filtered === 1 ? 'usuario encontrado' : 'usuarios encontrados' }}
+              } @else {
+                {{ filterStats().total }}
+                {{ filterStats().total === 1 ? 'usuario encontrado' : 'usuarios encontrados' }}
+              }
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic View Content -->
+      @if (viewMode() === 'cards') {
+        <!-- Users Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          @for (user of paginatedUsers(); track user.id) {
+            <app-user-card
+              [user]="user"
+              [loading]="loading()"
+              [userActions]="userActions()"
+              [selectable]="false"
+              [showActions]="true"
+              [showDetails]="true"
+              (userAction)="onUserAction($event)"
+              (cardClick)="onViewUser($event.id)" />
+          }
+        </div>
+      } @else {
+        <!-- Users Table -->
         <app-user-table
           [users]="paginatedUsers()"
           [loading]="loading()"
@@ -57,49 +238,28 @@
           [selectedUsers]="selectedUsers()"
           [showAvatars]="true"
           [compact]="false"
+          [tableActions]="getTableActions()"
           (userAction)="onUserAction($event)"
           (selectionChange)="onSelectionChange($event)"
-          (sortChange)="onSortChange($event)">
+          (sortChange)="onSortChange($event)"
+          (bulkAction)="onBulkAction($event)">
         </app-user-table>
-      </div>
-    } @else {
-      <!-- Grid/Card View -->
-      <div class="users-grid-container">
-        <app-users-grid
-          [users]="paginatedUsers()"
-          [userActions]="userActions()"
-          [loading]="loading()"
-          [compact]="false"
-          [enableSelection]="true"
-          [selectedUsers]="selectedUserIds()"
-          [showActions]="true"
-          [showDetails]="true"
-          (userAction)="onCardAction($event)"
-          (cardClick)="onCardClick($event)"
-          (selectionChange)="onGridSelectionChange($event)">
-        </app-users-grid>
-      </div>
+      }
     }
   </div>
 
   <!-- Pagination -->
-  <ui-pagination
-    [currentPage]="dynamicPaginationConfig().currentPage"
-    [totalPages]="dynamicPaginationConfig().totalPages"
-    [totalItems]="dynamicPaginationConfig().totalItems"
-    [pageSize]="dynamicPaginationConfig().pageSize"
-    [pageSizeOptions]="dynamicPaginationConfig().pageSizeOptions"
-    [loading]="loading()"
-    [disabled]="loading()"
-    (pageChange)="onPageChange($event)"
-    (pageSizeChange)="onPageSizeChange($event)">
-  </ui-pagination>
-
-  <!-- Confirmation Modal -->
-  <app-confirmation-modal
-    [visible]="confirmationModal().visible"
-    [config]="confirmationModal().config"
-    [loading]="confirmationModal().loading"
-    (actionTriggered)="onConfirmationAction($event)">
-  </app-confirmation-modal>
-</div>
+  @if (filteredUsers().length > 0) {
+    <ui-pagination
+      [currentPage]="dynamicPaginationConfig().currentPage"
+      [totalPages]="dynamicPaginationConfig().totalPages"
+      [totalItems]="dynamicPaginationConfig().totalItems"
+      [pageSize]="dynamicPaginationConfig().pageSize"
+      [pageSizeOptions]="dynamicPaginationConfig().pageSizeOptions"
+      [loading]="loading()"
+      [disabled]="loading()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)">
+    </ui-pagination>
+  }
+</section>

@@ -32,6 +32,11 @@
       <div class="text-sm leading-snug break-words whitespace-pre-line text-black dark:text-white">
         {{ t.message }}
       </div>
+      @if (t.description) {
+        <div class="text-xs mt-1 text-neutral-700 dark:text-neutral-300">
+          {{ t.description }}
+        </div>
+      }
     </div>
   </div>
 

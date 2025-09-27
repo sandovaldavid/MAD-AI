@@ -1,76 +1,5 @@
 <!-- Role Table Component -->
 <div class="role-table-container">
-  <!-- Header with Filters -->
-  <div
-    class="table-header bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-700 p-4">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-      <!-- Search and Filters -->
-      <div class="flex flex-col sm:flex-row gap-3 flex-1">
-        <!-- Search Input -->
-        <div class="flex-1 min-w-0">
-          <input
-            type="text"
-            class="block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-500 dark:placeholder:text-neutral-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            placeholder="Buscar roles..."
-            [value]="filterConfig().search"
-            (input)="updateSearchFilter($any($event.target).value)" />
-        </div>
-
-        <!-- Access Level Filter -->
-        <div class="w-full sm:w-48">
-          <select
-            class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            [value]="filterConfig().accessLevel || ''"
-            (change)="
-              updateAccessLevelFilter($any($event.target).value ? +$any($event.target).value : null)
-            ">
-            <option value="">Todos los niveles</option>
-            @for (level of getAccessLevels(); track level.value) {
-              <option [value]="level.value">{{ level.label }}</option>
-            }
-          </select>
-        </div>
-
-        <!-- Status Filter -->
-        <div class="w-full sm:w-32">
-          <select
-            class="form-select block w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            [value]="
-              filterConfig().isActive === null ? '' : (filterConfig().isActive ?? false).toString()
-            "
-            (change)="
-              updateStatusFilter(
-                $any($event.target).value === '' ? null : $any($event.target).value === 'true'
-              )
-            ">
-            <option value="">Todos</option>
-            <option value="true">Activos</option>
-            <option value="false">Inactivos</option>
-          </select>
-        </div>
-
-        <!-- Clear Filters Button -->
-        @if (showClearFilters()) {
-          <ui-button variant="ghost" size="sm" (clicked)="clearFilters()" iconLeft="x-mark">
-            Limpiar
-          </ui-button>
-        }
-      </div>
-
-      <!-- Bulk Actions -->
-      @if (showBulkActions()) {
-        <div class="bulk-actions-container">
-          <span class="text-sm text-primary-700 dark:text-primary-300">
-            {{ selectedCount() }} seleccionados
-          </span>
-          <ui-button variant="ghost" size="sm" (clicked)="clearSelection()" iconLeft="x-mark">
-            Limpiar selección
-          </ui-button>
-        </div>
-      }
-    </div>
-  </div>
-
   <!-- Table -->
   <div class="overflow-x-auto">
     <table class="w-full">
@@ -80,10 +9,10 @@
         <tr>
           <!-- Select All Checkbox -->
           @if (showBulkCheckbox()) {
-            <th class="w-12 px-3 py-3 text-left">
+            <th class="p-4 flex justify-center items-center">
               <input
                 type="checkbox"
-                class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
+                class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus-visible:ring-primary-500 size-4"
                 [checked]="allSelected()"
                 [indeterminate]="someSelected()"
                 (change)="toggleAllSelection()" />
@@ -155,7 +84,7 @@
           </th>
 
           <!-- Actions Column -->
-          <th class="w-32 px-3 py-3 text-right">
+          <th class="w-32 px-3 py-3 text-center">
             <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Acciones</span>
           </th>
         </tr>
@@ -223,10 +152,10 @@
             <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
               <!-- Selection Checkbox -->
               @if (showBulkCheckbox()) {
-                <td class="px-3 py-4">
+                <td class="p-4 text-center">
                   <input
                     type="checkbox"
-                    class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus:ring-primary-500"
+                    class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus-visible:ring-primary-500 size-4"
                     [checked]="isRoleSelected(role.id)"
                     (change)="toggleRoleSelection(role.id)" />
                 </td>
@@ -280,7 +209,7 @@
                 <div class="flex items-center justify-end gap-1">
                   <!-- View Button -->
                   <ui-button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     (clicked)="onViewRole(role.id)"
                     [ariaLabel]="'Ver detalles de ' + role.name"
@@ -289,7 +218,7 @@
 
                   <!-- Edit Button -->
                   <ui-button
-                    variant="ghost"
+                    variant="primary"
                     size="sm"
                     (clicked)="onEditRole(role.id)"
                     [ariaLabel]="'Editar ' + role.name"
@@ -298,7 +227,7 @@
 
                   <!-- Toggle Status Button -->
                   <ui-button
-                    [variant]="role.isActive ? 'ghost' : 'success'"
+                    [variant]="role.isActive ? 'warning' : 'success'"
                     size="sm"
                     (clicked)="onToggleStatus(role)"
                     [ariaLabel]="(role.isActive ? 'Desactivar' : 'Activar') + ' ' + role.name"

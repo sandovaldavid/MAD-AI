@@ -134,7 +134,9 @@ describe('RoleSearchFacade', () => {
     ];
 
     // Setup default mock behaviors
-    mockRoleCrud.loadRoles.and.returnValue(Promise.resolve());
+    mockRoleCrud.loadRoles.and.returnValue(
+      Promise.resolve({ success: true, message: 'Roles loaded', error: undefined })
+    );
     mockRoleState.roles.and.returnValue(mockRoles);
 
     // Setup error transformer mock to return ApplicationError instances
@@ -423,7 +425,12 @@ describe('RoleSearchFacade', () => {
   describe('Loading State Management', () => {
     it('should manage loading state during search operations', async () => {
       mockRoleCrud.loadRoles.and.returnValue(
-        new Promise((resolve) => setTimeout(() => resolve(), 100))
+        new Promise((resolve) =>
+          setTimeout(
+            () => resolve({ success: true, message: 'Roles loaded', error: undefined }),
+            100
+          )
+        )
       );
 
       const promise = facade.searchRoles({ search: 'admin' });
@@ -445,7 +452,12 @@ describe('RoleSearchFacade', () => {
 
     it('should manage loading state during clear search', async () => {
       mockRoleCrud.loadRoles.and.returnValue(
-        new Promise((resolve) => setTimeout(() => resolve(), 100))
+        new Promise((resolve) =>
+          setTimeout(
+            () => resolve({ success: true, message: 'Roles loaded', error: undefined }),
+            100
+          )
+        )
       );
 
       const promise = facade.clearSearch();

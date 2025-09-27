@@ -471,7 +471,14 @@ export class EditUserPage implements OnInit, OnDestroy {
     this._roleError.set(null);
 
     try {
-      const roles = await this.rolesFacade.getActiveRoles();
+      const result = await this.rolesFacade.getActiveRoles();
+      // If result is a Message, extract roles
+      let roles: RoleSummary[] = [];
+      if (Array.isArray(result)) {
+        roles = result;
+      } else if (result && Array.isArray(result['roles'])) {
+        roles = result['roles'];
+      }
       this._availableRoles.set(roles);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load roles';
@@ -493,12 +500,19 @@ export class EditUserPage implements OnInit, OnDestroy {
     this._error.set(null);
 
     try {
-      const user = await this.userLookupFacade.getUserById(userId);
+      const result = await this.userLookupFacade.getUserById(userId);
+      // If result is a Message, extract user
+      let user: User | null = null;
+      if (result && typeof result === 'object' && 'success' in result) {
+        user = result['user'] ?? null;
+      } else {
+        user = result as User;
+      }
       this._user.set(user);
-
-      // Populate form with user data
-      this.populateForm(user);
-
+      if (user) {
+        // Populate form with user data
+        this.populateForm(user);
+      }
       // Update page metadata with user info
       this.updatePageMetadata();
     } catch (error: unknown) {
@@ -640,26 +654,27 @@ export class EditUserPage implements OnInit, OnDestroy {
         requesterId: 1, // This would come from AuthService
       };
 
-      // Update user through facade
-      const updatedUser = await this.userCrudFacade.updateUser(updateRequest);
-
-      // Update local user state
-      this._user.set(updatedUser);
-
-      // Handle success
-      this._success.set(true);
-
-      // Mark form as pristine
-      this.userForm.markAsPristine();
-
-      // Navigate back to detail page after a short delay
-      setTimeout(() => {
-        this.router.navigate(['/users/detail', userId], {
-          state: {
-            message: `User ${formData.firstName} ${formData.lastName} has been updated successfully.`,
-          },
-        });
-      }, 2000);
+      // Update user through facade and handle Message result
+      const result = await this.userCrudFacade.updateUser(updateRequest);
+      if (result.success) {
+        // Extract user from Message if present
+        const updatedUser = result['user'];
+        this._user.set(updatedUser);
+        this._success.set(true);
+        this.userForm.markAsPristine();
+        // Show Spanish success message
+        const nombreCompleto = `${formData.firstName} ${formData.lastName}`;
+        setTimeout(() => {
+          this.router.navigate(['/users/detail', userId], {
+            state: {
+              message: result.message || `Usuario ${nombreCompleto} actualizado exitosamente.`,
+            },
+          });
+        }, 2000);
+      } else {
+        // Show Spanish error message
+        this._error.set(result.error || result.message || 'No se pudo actualizar el usuario.');
+      }
     } catch (error: unknown) {
       this.handleSubmissionError(error);
     } finally {

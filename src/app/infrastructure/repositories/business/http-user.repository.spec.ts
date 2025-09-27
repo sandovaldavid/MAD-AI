@@ -531,7 +531,7 @@ describe('HttpUserRepository', () => {
     it('should delete user successfully', async () => {
       // Arrange
       const userId = 1;
-      mockUserClient.delete.and.returnValue(of(undefined));
+      mockUserClient.delete.and.returnValue(of({ message: '' }));
 
       // Act
       await repository.delete(userId);

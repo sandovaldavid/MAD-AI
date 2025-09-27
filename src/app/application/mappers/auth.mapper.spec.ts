@@ -79,10 +79,7 @@ describe('AuthMapper', () => {
     it('should map LoginRequest to CredentialsContract with email identifier', () => {
       // Arrange
       const request: LoginRequest = {
-        identifier: {
-          type: 'email',
-          value: 'test@example.com',
-        },
+        identifier: 'test@example.com',
         password: 'password123',
         rememberMe: true,
         deviceInfo: {
@@ -108,10 +105,7 @@ describe('AuthMapper', () => {
     it('should map LoginRequest to CredentialsContract with username identifier', () => {
       // Arrange
       const request: LoginRequest = {
-        identifier: {
-          type: 'username',
-          value: 'testuser',
-        },
+        identifier: 'testuser',
         password: 'password123',
       };
 
@@ -132,10 +126,7 @@ describe('AuthMapper', () => {
     it('should default rememberMe to false when not provided', () => {
       // Arrange
       const request: LoginRequest = {
-        identifier: {
-          type: 'email',
-          value: 'test@example.com',
-        },
+        identifier: 'test@example.com',
         password: 'password123',
       };
 
@@ -149,10 +140,7 @@ describe('AuthMapper', () => {
     it('should handle request with device info', () => {
       // Arrange
       const request: LoginRequest = {
-        identifier: {
-          type: 'email',
-          value: 'test@example.com',
-        },
+        identifier: 'test@example.com',
         password: 'password123',
         rememberMe: false,
         deviceInfo: {
@@ -333,10 +321,7 @@ describe('AuthMapper', () => {
     it('should maintain data integrity in login mapping', () => {
       // Arrange
       const originalRequest: LoginRequest = {
-        identifier: {
-          type: 'email',
-          value: 'bidirectional@example.com',
-        },
+        identifier: 'bidirectional@example.com',
         password: 'bidirectionalPass123!',
         rememberMe: true,
       };

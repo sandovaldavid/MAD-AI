@@ -5,11 +5,223 @@
   @apply w-8 h-8 border-3 border-primary-200 border-t-primary-600 rounded-full animate-spin;
 }
 
-/* Role header icon container */
-.role-icon-container {
-  @apply p-3 rounded-xl bg-gradient-to-br from-primary-100 to-primary-200 
-    dark:from-primary-900/50 dark:to-primary-800/50 shadow-sm;
+/* =============================================================================
+   ROLE HEADER SECTION
+============================================================================= */
+
+.role-header-section {
+  @apply w-full;
 }
+
+.role-header-card {
+  @apply bg-white dark:bg-neutral-900 rounded-2xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl border border-neutral-200 dark:border-neutral-800;
+}
+
+.role-header-content {
+  @apply flex items-start gap-6 flex-col lg:flex-row;
+}
+
+.role-icon-wrapper {
+  @apply flex-shrink-0 lg:self-start;
+}
+
+.role-icon-container {
+  @apply p-4 rounded-2xl;
+}
+
+.role-header-info {
+  @apply flex-1 min-w-0;
+}
+
+.role-title-section {
+  @apply mb-3;
+}
+
+.role-title {
+  @apply text-4xl font-bold text-neutral-900 dark:text-neutral-100 mb-4 tracking-tight;
+}
+
+.role-badges {
+  @apply flex flex-wrap gap-3 items-center;
+}
+
+.role-level-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 hover:scale-105 shadow-sm;
+}
+
+.role-status-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105;
+}
+
+.status-dot {
+  @apply w-2.5 h-2.5 rounded-full;
+}
+
+.role-subtitle {
+  @apply text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-3xl;
+}
+
+/* =============================================================================
+   STATS GRID SECTION
+============================================================================= */
+
+.role-stats-section {
+  @apply w-full;
+}
+
+.stats-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+.stat-card {
+  @apply bg-white dark:bg-neutral-900 rounded-xl p-6 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border border-neutral-200 dark:border-neutral-800;
+}
+
+.stat-card-users {
+  @apply hover:border-primary-300 dark:hover:border-primary-700;
+}
+
+.stat-card-access {
+  @apply relative overflow-hidden;
+}
+
+.stat-card-status {
+  @apply hover:border-successful-300 dark:hover:border-successful-700;
+}
+
+.stat-card-date {
+  @apply hover:border-info-300 dark:hover:border-info-700;
+}
+
+.stat-icon {
+  @apply text-2xl text-neutral-600 dark:text-white;
+}
+
+.stat-icon-wrapper {
+  @apply w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-200;
+}
+
+.stat-icon-users {
+  @apply bg-primary-100 dark:bg-primary-900;
+}
+
+.stat-icon-status {
+  @apply bg-successful-100 dark:bg-successful-800;
+}
+
+.stat-icon-date {
+  @apply bg-info-100 dark:bg-info-800;
+}
+
+.stat-content {
+  @apply space-y-1;
+}
+
+.stat-value {
+  @apply text-2xl font-bold text-neutral-900 dark:text-neutral-100;
+}
+
+.stat-label {
+  @apply text-sm text-neutral-600 dark:text-neutral-400 font-medium;
+}
+
+/* =============================================================================
+   CONTENT GRID SECTION
+============================================================================= */
+
+.role-content-section {
+  @apply w-full;
+}
+
+.content-grid {
+  @apply grid grid-cols-1 xl:grid-cols-2 gap-8;
+}
+
+.content-card {
+  @apply bg-white dark:bg-neutral-900 rounded-xl shadow-md border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all duration-300 hover:shadow-lg;
+}
+
+.card-header {
+  @apply flex items-center gap-3 p-6 pb-4 border-b border-neutral-200 dark:border-neutral-800;
+}
+
+.card-header-icon {
+  @apply text-primary-600 dark:text-primary-400;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-neutral-900 dark:text-neutral-100;
+}
+
+.card-content {
+  @apply p-6 pt-4;
+}
+
+/* Description Card Specific */
+.description-card {
+  @apply h-fit;
+}
+
+.role-description {
+  @apply text-neutral-700 dark:text-neutral-300 leading-relaxed text-base break-words whitespace-pre-line;
+}
+
+.empty-state {
+  @apply flex items-center gap-3 p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg border-2 border-dashed border-neutral-300 dark:border-neutral-700 mt-4;
+}
+
+.empty-icon {
+  @apply text-neutral-400 dark:text-neutral-500;
+}
+
+.empty-text {
+  @apply text-sm text-neutral-500 dark:text-neutral-400 italic;
+}
+
+/* Permissions Card Specific */
+.permissions-card {
+  @apply h-fit;
+}
+
+.permissions-info-box {
+  @apply p-5 rounded-xl border transition-all duration-300 hover:shadow-md mb-6;
+}
+
+.permissions-header {
+  @apply flex items-center gap-3 mb-3;
+}
+
+.permissions-title {
+  @apply font-semibold text-base;
+}
+
+.permissions-description {
+  @apply text-sm leading-relaxed opacity-90;
+}
+
+.additional-info {
+  @apply space-y-3 pt-4 border-t border-neutral-200 dark:border-neutral-800;
+}
+
+.info-item {
+  @apply flex items-center gap-3;
+}
+
+.info-icon {
+  @apply text-neutral-500 dark:text-neutral-400 flex-shrink-0;
+}
+
+.info-label {
+  @apply text-sm font-medium text-neutral-600 dark:text-neutral-400 min-w-0 flex-shrink-0;
+}
+
+.info-value {
+  @apply text-sm font-semibold text-neutral-900 dark:text-neutral-100;
+}
+
+/* =============================================================================
+   LEGACY STYLES (mantener por compatibilidad)
+============================================================================= */
 
 /* Role level badge animations */
 .role-level-badge {
@@ -36,18 +248,27 @@
   @apply relative overflow-hidden;
 }
 
-.access-level-indicator::before {
-  @apply absolute inset-0 opacity-10 transition-opacity duration-300;
-  content: '';
-  background: currentColor;
-}
+/* =============================================================================
+   RESPONSIVE DESIGN
+============================================================================= */
 
-.access-level-indicator:hover::before {
-  @apply opacity-20;
-}
-
-/* Responsive improvements */
 @media (max-width: 768px) {
+  .role-header-card {
+    @apply p-6;
+  }
+
+  .role-title {
+    @apply text-3xl;
+  }
+
+  .stats-grid {
+    @apply grid-cols-1;
+  }
+
+  .content-grid {
+    @apply grid-cols-1 gap-6;
+  }
+
   .card-responsive {
     @apply mx-4;
   }
@@ -65,8 +286,34 @@
   }
 }
 
-/* Animation classes */
+@media (max-width: 480px) {
+  .role-header-content {
+    @apply gap-4;
+  }
+
+  .role-badges {
+    @apply flex-col items-start;
+  }
+
+  .stat-card {
+    @apply p-4;
+  }
+
+  .card-header,
+  .card-content {
+    @apply p-4;
+  }
+}
+
+/* =============================================================================
+   ANIMATION CLASSES
+============================================================================= */
+
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
@@ -74,10 +321,19 @@
 }
 
 @keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+  animation-fill-mode: forwards;
 }
 
 /* Role-specific hover effects */

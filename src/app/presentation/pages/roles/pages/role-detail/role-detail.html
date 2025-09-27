@@ -4,7 +4,7 @@
 
   <!-- Main Content -->
   <div class="min-h-0 flex-1">
-    <div class="dashboard-container">
+    <div>
       @if (loading()) {
         <!-- Loading State -->
         <div class="container-centered py-16">
@@ -20,151 +20,159 @@
         </div>
       } @else if (roleModel()) {
         <!-- Role Details Content -->
-        <div class="space-y-6">
-          <!-- Role Information Card -->
-          <article class="card-responsive animate-fade-in">
-            <div class="shadow-form-elevated rounded-2xl bg-white dark:bg-neutral-900 p-6">
-              <!-- Role Header -->
-              <div class="flex items-start justify-between mb-6 role-header-mobile">
-                <div class="flex items-center gap-4">
+        <div class="space-y-8 animate-fade-in">
+          <!-- Role Header Section -->
+          <section class="role-header-section">
+            <div class="role-header-card">
+              <div class="role-header-content">
+                <div class="role-icon-wrapper">
                   <div
-                    class="flex-shrink-0 access-level-indicator rounded-xl"
+                    class="role-icon-container access-level-indicator"
                     [ngClass]="getRoleAccessLevelInfo().iconBg">
-                    <div class="p-3 flex items-center justify-center">
-                      <ui-icon
-                        [name]="getRoleAccessLevelIcon()"
-                        size="lg"
-                        [ngClass]="getRoleAccessLevelInfo().iconColor" />
-                    </div>
+                    <ui-icon
+                      [name]="getRoleAccessLevelIcon()"
+                      size="xl"
+                      [ngClass]="getRoleAccessLevelInfo().iconColor" />
                   </div>
-                  <div>
-                    <h1 class="section-title text-2xl">
+                </div>
+
+                <div class="role-header-info">
+                  <div class="role-title-section">
+                    <h1 class="role-title">
                       {{ roleModel()!.displayName }}
                     </h1>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2">
+                    <div class="role-badges">
                       <span
-                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium role-level-badge"
+                        class="role-level-badge"
                         [ngClass]="getRoleAccessLevelInfo().badgeClasses">
-                        Nivel {{ roleModel()!.accessLevel }} -
-                        {{ getRoleAccessLevelInfo().label }}
+                        Nivel {{ roleModel()!.accessLevel }} - {{ getRoleAccessLevelInfo().label }}
                       </span>
-                      <span class="text-neutral-600 dark:text-neutral-400 text-sm">
-                        {{ getRoleAccessLevelInfo().description }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Status Badge -->
-                <div class="flex-shrink-0 role-badge-mobile">
-                  <span
-                    class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium status-badge"
-                    [ngClass]="getStatusInfo().classes">
-                    <div class="w-2 h-2 rounded-full" [ngClass]="getStatusInfo().dotColor"></div>
-                    {{ getStatusInfo().label }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Role Details Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Description -->
-                <div class="space-y-3">
-                  <h3
-                    class="text-sm font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide">
-                    Descripción
-                  </h3>
-                  <p class="text-neutral-900 dark:text-neutral-100 leading-relaxed">
-                    {{ roleModel()!.description || 'Sin descripción disponible' }}
-                  </p>
-                </div>
-
-                <!-- Statistics -->
-                <div class="space-y-3">
-                  <h3
-                    class="text-sm font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide">
-                    Información del Nivel
-                  </h3>
-                  <div class="space-y-3">
-                    <!-- User Count -->
-                    <div
-                      class="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 stat-card role-stat">
-                      <div class="flex items-center gap-2">
-                        <ui-icon
-                          name="user-group"
-                          size="sm"
-                          class="text-neutral-500 dark:text-neutral-400" />
-                        <span class="text-neutral-700 dark:text-neutral-300">
-                          Usuarios asignados
-                        </span>
-                      </div>
-                      <span class="font-semibold text-primary-600 dark:text-primary-400">
-                        {{ roleModel()!.userCount ?? 0 }}
-                      </span>
-                    </div>
-
-                    <!-- Access Level -->
-                    <div
-                      class="flex items-center justify-between p-3 rounded-lg role-stat access-level-indicator"
-                      [ngClass]="getRoleAccessLevelInfo().iconBg">
-                      <div class="flex items-center gap-2">
-                        <ui-icon
-                          [name]="getRoleAccessLevelIcon()"
-                          size="sm"
-                          [ngClass]="getRoleAccessLevelInfo().iconColor" />
-                        <span [ngClass]="getRoleAccessLevelInfo().iconColor">
-                          Nivel de acceso
-                        </span>
-                      </div>
-                      <span class="font-semibold" [ngClass]="getRoleAccessLevelInfo().iconColor">
-                        {{ getRoleAccessLevelInfo().label }}
-                      </span>
-                    </div>
-
-                    <!-- Status -->
-                    <div
-                      class="flex items-center justify-between p-3 rounded-lg bg-neutral-50 dark:bg-neutral-800 stat-card role-stat">
-                      <div class="flex items-center gap-2">
-                        <ui-icon
-                          [name]="getStatusInfo().icon"
-                          size="sm"
-                          class="text-neutral-500 dark:text-neutral-400" />
-                        <span class="text-neutral-700 dark:text-neutral-300">Estado</span>
-                      </div>
-                      <span
-                        class="font-semibold px-2 py-1 rounded text-xs"
-                        [ngClass]="getStatusInfo().classes">
+                      <span class="role-status-badge" [ngClass]="getStatusInfo().classes">
+                        <div class="status-dot" [ngClass]="getStatusInfo().dotColor"></div>
                         {{ getStatusInfo().label }}
                       </span>
                     </div>
                   </div>
+                  <p class="role-subtitle">
+                    {{ getRoleAccessLevelInfo().description }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Quick Stats Grid -->
+          <section class="role-stats-section">
+            <div class="stats-grid">
+              <!-- User Count Stat -->
+              <div class="stat-card stat-card-users">
+                <div class="stat-icon-wrapper stat-icon-users">
+                  <ui-icon name="user-group" size="lg" class="stat-icon" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ roleModel()!.userCount ?? 0 }}</div>
+                  <div class="stat-label">Usuarios Asignados</div>
                 </div>
               </div>
 
-              <!-- Role Permissions Info -->
-              <div
-                class="mt-6 p-4 rounded-lg border transition-all duration-200 hover:shadow-md role-info-box"
-                [ngClass]="
-                  getRoleAccessLevelInfo().iconBg + ' ' + getRoleAccessLevelInfo().ringClasses
-                ">
-                <div class="flex items-start gap-3">
+              <!-- Access Level Stat -->
+              <div class="stat-card stat-card-access" [ngClass]="getRoleAccessLevelInfo().iconBg">
+                <div class="stat-icon-wrapper" [ngClass]="getRoleAccessLevelInfo().iconBg">
                   <ui-icon
-                    name="information-circle"
-                    size="md"
-                    [ngClass]="getRoleAccessLevelInfo().iconColor + ' mt-0.5'" />
-                  <div>
-                    <h4 class="font-medium mb-1" [ngClass]="getRoleAccessLevelInfo().iconColor">
-                      Información sobre
-                      {{ getRoleAccessLevelInfo().label }} acceso
-                    </h4>
+                    [name]="getRoleAccessLevelIcon()"
+                    size="lg"
+                    [ngClass]="getRoleAccessLevelInfo().iconColor" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value" [ngClass]="getRoleAccessLevelInfo().iconColor">
+                    Nivel {{ roleModel()!.accessLevel }}
+                  </div>
+                  <div class="stat-label" [ngClass]="getRoleAccessLevelInfo().iconColor">
+                    {{ getRoleAccessLevelInfo().label }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Status Stat -->
+              <div class="stat-card stat-card-status">
+                <div class="stat-icon-wrapper stat-icon-status">
+                  <ui-icon [name]="getStatusInfo().icon" size="lg" class="stat-icon" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">{{ getStatusInfo().label }}</div>
+                  <div class="stat-label">Estado del Rol</div>
+                </div>
+              </div>
+
+              <!-- Creation Date Stat -->
+              <div class="stat-card stat-card-date">
+                <div class="stat-icon-wrapper stat-icon-date">
+                  <ui-icon name="calendar" size="lg" class="stat-icon" />
+                </div>
+                <div class="stat-content">
+                  <div class="stat-value">
+                    @if (roleModel()!.createdAt) {
+                      {{ roleModel()!.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                    } @else {
+                      <span class="text-neutral-400">Sin fecha</span>
+                    }
+                  </div>
+                  <div class="stat-label">Fecha de Creación</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Main Content Grid -->
+          <section class="role-content-section">
+            <div class="content-grid">
+              <!-- Description Card -->
+              <article class="content-card description-card">
+                <div class="card-header">
+                  <ui-icon name="document-text" size="md" class="card-header-icon" />
+                  <h2 class="card-title">Descripción del Rol</h2>
+                </div>
+                <div class="card-content">
+                  <p class="role-description">
+                    {{ roleModel()!.description || 'Sin descripción disponible para este rol.' }}
+                  </p>
+                  @if (!roleModel()!.description) {
+                    <div class="empty-state">
+                      <ui-icon name="document-plus" size="md" class="empty-icon" />
+                      <span class="empty-text"
+                        >Agrega una descripción para explicar el propósito de este rol.</span
+                      >
+                    </div>
+                  }
+                </div>
+              </article>
+
+              <!-- Permissions Info Card -->
+              <article class="content-card permissions-card">
+                <div class="card-header">
+                  <ui-icon name="shield-check" size="md" class="card-header-icon" />
+                  <h2 class="card-title">Información de Permisos</h2>
+                </div>
+                <div class="card-content">
+                  <div class="permissions-info-box" [ngClass]="getRoleAccessLevelInfo().iconBg">
+                    <div class="permissions-header">
+                      <ui-icon
+                        name="information-circle"
+                        size="md"
+                        [ngClass]="getRoleAccessLevelInfo().iconColor" />
+                      <h3 class="permissions-title" [ngClass]="getRoleAccessLevelInfo().iconColor">
+                        {{ getRoleAccessLevelInfo().label }} Acceso
+                      </h3>
+                    </div>
                     <p
-                      class="text-sm"
-                      [ngClass]="getRoleAccessLevelInfo().iconColor + ' opacity-80'">
+                      class="permissions-description"
+                      [ngClass]="getRoleAccessLevelInfo().iconColor">
                       {{ getRoleAccessLevelInfo().description }}.
                       @if (roleModel()!.accessLevel <= 2) {
                         Los roles con nivel de acceso
-                        {{ getRoleAccessLevelInfo().label.toLowerCase() }} tienen permisos
-                        extendidos para gestionar usuarios y configuraciones críticas del sistema.
+                        {{ getRoleAccessLevelInfo().label.toLowerCase() }}
+                        tienen permisos extendidos para gestionar usuarios y configuraciones
+                        críticas del sistema.
                       } @else if (roleModel()!.accessLevel === 3) {
                         Este nivel permite realizar operaciones moderadas sin acceso a
                         configuraciones críticas.
@@ -174,32 +182,24 @@
                       }
                     </p>
                   </div>
+
+                  <!-- Additional Info -->
+                  <div class="additional-info">
+                    <div class="info-item">
+                      <ui-icon name="key" size="sm" class="info-icon" />
+                      <span class="info-label">Tipo de Acceso:</span>
+                      <span class="info-value">{{ getRoleAccessLevelInfo().label }}</span>
+                    </div>
+                    <div class="info-item">
+                      <ui-icon name="shield" size="sm" class="info-icon" />
+                      <span class="info-label">Nivel de Seguridad:</span>
+                      <span class="info-value">{{ roleModel()!.accessLevel }}/5</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </article>
             </div>
-          </article>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 justify-center animate-slide-up">
-            <ui-button
-              variant="primary"
-              size="md"
-              iconLeft="shield-up"
-              [disabled]="loading()"
-              (clicked)="editRole()"
-              class="role-action-button">
-              Editar Rol
-            </ui-button>
-
-            <ui-button
-              variant="ghost"
-              size="md"
-              iconLeft="arrow-left"
-              (clicked)="goBack()"
-              class="role-action-button">
-              Volver a Roles
-            </ui-button>
-          </div>
+          </section>
         </div>
       }
     </div>

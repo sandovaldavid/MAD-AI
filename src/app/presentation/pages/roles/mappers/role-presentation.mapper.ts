@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RoleApplicationMapper, type RoleSummary } from '@application/mappers/role.mapper';
+import { type RoleSummary } from '@application/mappers/role.mapper';
 import { RoleModel } from '../models/role.model';
 
 /**
@@ -27,6 +27,7 @@ export class RolePresentationMapper {
       isActive: roleSummary.isActive,
       description: roleSummary.description,
       userCount: roleSummary.userCount,
+      createdAt: roleSummary.createdAt,
     };
   }
 

@@ -23,7 +23,6 @@ import type { ConfirmPasswordResetUseCase } from '../use-cases/auth/confirm-pass
 import type { UpdateUserProfileUseCase } from '../use-cases/auth/update-user-profile.usecase';
 import type { ChangePasswordUseCase } from '../use-cases/auth/change-password.usecase';
 import type { UpdateNotificationPreferencesUseCase } from '../use-cases/auth/update-notification-preferences.usecase';
-import { NotificationsFacade } from './notifications.facade';
 import type {
   LoginRequest,
   RegisterRequest,
@@ -42,6 +41,7 @@ import { ApplicationErrorTransformer } from '../errors/application-error.transfo
 import { LOGGER_PORT } from '@di/tokens';
 import type { Logger } from '@core/interfaces/logger.interface';
 import type { NavSection } from '@presentation/navigation/types';
+import type { Message } from '@application/types/message.type';
 
 /**
  * Authentication Facade - Clean Orchestrator Following MAD-AI Patterns
@@ -97,7 +97,6 @@ export class AuthFacade {
   private readonly updateNotificationsUC = inject<UpdateNotificationPreferencesUseCase>(
     UPDATE_NOTIFICATION_PREFERENCES_USECASE_PORT
   );
-  private readonly notifications = inject(NotificationsFacade);
   private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
 
@@ -274,7 +273,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async login(request: LoginRequest, opts?: FacadeOpts): Promise<void> {
+  async login(request: LoginRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -291,35 +290,29 @@ export class AuthFacade {
       this._session.set(session);
       this._user.set(session.user);
 
-      // Send success notification
-      await this.notifications.success(
-        'Welcome back!',
-        `Hello ${session.user.firstName}, you've successfully logged in.`
-      );
+      return {
+        success: true,
+        message: `Hola ${session.user.firstName}, has iniciado sesión exitosamente.`,
+      };
     } catch (error: unknown) {
-      // Log error details for debugging
       this.logger.error('Login failed', {
         operation: 'login',
         userId: this._user()?.id?.toString(),
       });
-
-      // Transform error to user-friendly message
       const errorMessage = this.errorTransformer.transform(error as Error, {
         operation: 'login',
       });
-
       this.logger.debug('Login error transformed', {
         operation: 'login',
       });
-
       this._authError.set(errorMessage.userMessage);
-
-      // Clear session state on login failure to ensure clean state
       this._session.set(null);
       this._user.set(null);
-
-      // Don't re-throw - the error message is already set for the UI
-      // The UI will display the error through the error signal
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al iniciar sesión.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -338,7 +331,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async register(request: RegisterRequest, opts?: FacadeOpts): Promise<void> {
+  async register(request: RegisterRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -346,16 +339,18 @@ export class AuthFacade {
 
     try {
       await this.registerUC.execute(request);
-
-      // Send success notification
-      await this.notifications.success(
-        'Registration successful!',
-        'Please check your email to confirm your account.'
-      );
+      return {
+        success: true,
+        message: 'Por favor revisa tu correo electrónico para confirmar tu cuenta.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al registrar usuario.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -374,7 +369,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<void> {
+  async logout(request?: LogoutRequest, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -382,22 +377,23 @@ export class AuthFacade {
 
     try {
       await this.logoutUC.execute();
-
       this._session.set(null);
       this._user.set(null);
       this._authError.set(null);
-
-      // Send info notification
-      await this.notifications.info(
-        'Logged out successfully',
-        'You have been safely logged out of your account.'
-      );
+      return {
+        success: true,
+        message: 'Has cerrado sesión exitosamente.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      // Don't throw on logout errors - still clear session
       this._session.set(null);
       this._user.set(null);
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al cerrar sesión.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -574,7 +570,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async confirmEmail(token: string, opts?: FacadeOpts): Promise<void> {
+  async confirmEmail(token: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -583,16 +579,18 @@ export class AuthFacade {
     try {
       await this.confirmEmailUC.execute({ token });
       await this.refreshProfile({ skipLoading: true });
-
-      // Send success notification
-      await this.notifications.success(
-        'Email confirmed!',
-        'Your email address has been successfully confirmed.'
-      );
+      return {
+        success: true,
+        message: 'Tu correo electrónico ha sido confirmado exitosamente.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al confirmar el correo electrónico.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -611,7 +609,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<void> {
+  async requestPasswordReset(email: string, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -619,16 +617,19 @@ export class AuthFacade {
 
     try {
       await this.reqResetUC.execute({ email });
-
-      // Send success notification
-      await this.notifications.info(
-        'Password reset requested',
-        'Please check your email for password reset instructions.'
-      );
+      return {
+        success: true,
+        message:
+          'Por favor revisa tu correo electrónico para instrucciones de restablecimiento de contraseña.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al solicitar el restablecimiento de contraseña.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -647,7 +648,10 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async confirmPasswordReset(data: PasswordResetConfirmRequest, opts?: FacadeOpts): Promise<void> {
+  async confirmPasswordReset(
+    data: PasswordResetConfirmRequest,
+    opts?: FacadeOpts
+  ): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -655,16 +659,19 @@ export class AuthFacade {
 
     try {
       await this.confirmResetUC.execute(data);
-
-      // Send success notification
-      await this.notifications.success(
-        'Password reset successful!',
-        'Your password has been updated. Please log in with your new password.'
-      );
+      return {
+        success: true,
+        message:
+          'Tu contraseña ha sido actualizada. Por favor inicia sesión con tu nueva contraseña.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la contraseña.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -687,7 +694,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async updateProfile(updateData: UpdateUserPatchContract, opts?: FacadeOpts): Promise<void> {
+  async updateProfile(updateData: UpdateUserPatchContract, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -698,19 +705,20 @@ export class AuthFacade {
       if (!currentUser) {
         throw new Error('No authenticated user found');
       }
-
       const updatedUser = await this.updateProfileUC.execute(currentUser.id, updateData);
       this._user.set(updatedUser);
-
-      // Send success notification
-      await this.notifications.success(
-        'Profile updated!',
-        'Your profile information has been successfully updated.'
-      );
+      return {
+        success: true,
+        message: 'Tu información de perfil ha sido actualizada exitosamente.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la información de perfil.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -729,7 +737,7 @@ export class AuthFacade {
    * @since 1.0.0
    * @application AuthFacade
    */
-  async changePassword(passwordData: ChangePasswordContract, opts?: FacadeOpts): Promise<void> {
+  async changePassword(passwordData: ChangePasswordContract, opts?: FacadeOpts): Promise<Message> {
     if (!opts?.skipLoading) {
       this._loading.set(true);
     }
@@ -737,16 +745,18 @@ export class AuthFacade {
 
     try {
       await this.changePasswordUC.execute(passwordData);
-
-      // Send success notification
-      await this.notifications.success(
-        'Password changed!',
-        'Your password has been successfully updated.'
-      );
+      return {
+        success: true,
+        message: 'Tu contraseña ha sido actualizada exitosamente.',
+      };
     } catch (error: unknown) {
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar la contraseña.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
@@ -768,7 +778,7 @@ export class AuthFacade {
   async updateNotificationPreferences(
     preferences: UserNotificationPreferences,
     opts?: FacadeOpts
-  ): Promise<void> {
+  ): Promise<Message> {
     console.log('[AuthFacade] updateNotificationPreferences called with:', preferences);
 
     if (!opts?.skipLoading) {
@@ -778,44 +788,26 @@ export class AuthFacade {
 
     try {
       const currentUser = this._user();
-      console.log('[AuthFacade] Current user:', currentUser ? 'Found' : 'Not found');
-
       if (!currentUser) {
-        console.error('[AuthFacade] No authenticated user found');
         throw new Error('No authenticated user found');
       }
-
-      console.log(
-        '[AuthFacade] Calling updateNotificationsUC.execute with userId:',
-        currentUser.id.toString(),
-        'and preferences:',
-        preferences
-      );
       const updatedUser = await this.updateNotificationsUC.execute(currentUser.id, preferences);
-      console.log(
-        '[AuthFacade] updateNotificationsUC.execute completed, updated user:',
-        updatedUser
-      );
-
       this._user.set(updatedUser);
-      console.log('[AuthFacade] User state updated successfully');
-
-      // Send success notification
-      console.log('[AuthFacade] Sending success notification');
-      await this.notifications.success(
-        'Preferences updated!',
-        'Your notification preferences have been successfully updated.'
-      );
-      console.log('[AuthFacade] Success notification sent');
+      return {
+        success: true,
+        message: 'Tus preferencias de notificación han sido actualizadas exitosamente.',
+      };
     } catch (error: unknown) {
-      console.error('[AuthFacade] Error in updateNotificationPreferences:', error);
       const errorMessage = this.errorTransformer.transform(error as Error);
       this._authError.set(errorMessage.userMessage);
-      throw error;
+      return {
+        success: false,
+        error: errorMessage.userMessage,
+        message: 'Error al actualizar las preferencias de notificación.',
+      };
     } finally {
       if (!opts?.skipLoading) {
         this._loading.set(false);
-        console.log('[AuthFacade] Loading state set to false');
       }
     }
   }
@@ -844,29 +836,6 @@ export class AuthFacade {
    */
   clearError(): void {
     this._authError.set(null);
-  }
-
-  /**
-   * Clears authentication error and loading states for UI transitions
-   *
-   * This method is specifically designed for use when entering authentication
-   * pages or forms. It clears both error messages and loading states to ensure
-   * a clean slate for user interaction, while preserving other authentication
-   * state like user session data.
-   *
-   * @returns {void}
-   *
-   * @since 1.0.0
-   * @application AuthFacade
-   * @example
-   * ```typescript
-   * // Clear state when navigating to login page
-   * authFacade.clearAuthState();
-   * ```
-   */
-  clearAuthState(): void {
-    this._authError.set(null);
-    this._loading.set(false);
   }
 
   /**

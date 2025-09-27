@@ -1,3 +1,4 @@
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,6 +10,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RolesFacade } from '@application/facades/role';
+import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { RoleCard } from '../../components/role-card/role-card';
 import { RoleTable } from '../../components/role-table/role-table';
@@ -17,25 +19,53 @@ import {
   type PageHeaderConfig,
 } from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
+import {
+  ConfirmationModal,
+  ModalConfig,
+  ModalActionEvent,
+} from '@presentation/shared/components/confirmation-modal/confirmation-modal';
+import { ViewToggleComponent } from '@presentation/shared/components/view-toggle/view-toggle';
 import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
-import { RoleModel } from '../../models/role.model';
 import type { RoleExportOptions } from '../../mappers/role-export.mapper';
+
+export type PendingRoleAction = {
+  type: 'delete' | 'activate' | 'deactivate';
+  roleId: number;
+  status?: boolean;
+};
 
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [CommonModule, Icon, RoleCard, RoleTable, PageHeader, ErrorDisplay, RoleSkeleton],
+  imports: [
+    CommonModule,
+    Icon,
+    RoleCard,
+    RoleTable,
+    PageHeader,
+    ErrorDisplay,
+    RoleSkeleton,
+    ConfirmationModal,
+    ViewToggleComponent,
+  ],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RolesList {
+  // Confirmation modal state
+  confirmVisible = signal(false);
+  confirmConfig = signal<ModalConfig | null>(null);
+  confirmLoading = signal(false);
+  pendingAction: PendingRoleAction | null = null;
   private facade = inject(RolesFacade);
   private router = inject(Router);
   private breadcrumbService = inject(BreadcrumbService);
+
+  private notifications = inject(NotificationsFacade);
 
   readonly loading = this.facade.loading;
   readonly roles = computed(() => RolePresentationMapper.toRoleModels(this.facade.roles()));
@@ -54,16 +84,26 @@ export class RolesList {
   sortBy = signal<'name' | 'accessLevel' | 'userCount' | 'isActive'>('name');
   sortDirection = signal<'asc' | 'desc'>('asc');
   showAdvancedFilters = signal(false);
+  // Animación de salida para filtros avanzados
+  advancedFiltersLeaving = signal(false);
+  // Animación de entrada para filtros avanzados
+  advancedFiltersEntering = signal(false);
+  // Animación de wrapper para altura y opacidad
+  advancedFiltersWrapperOpen = signal(false);
+
+  // Método público para mostrar el panel (entrada/salida)
+  showAdvancedFiltersPanel() {
+    return this.showAdvancedFilters() || this.advancedFiltersLeaving();
+  }
 
   constructor() {
-    // Set breadcrumbs for this page
-    this.breadcrumbService.setBreadcrumbs([
-      { label: 'Dashboard', route: '/dashboard' },
-      { label: 'Roles', route: '/roles', isLast: true },
-    ]);
-
     // Load initial data
     effect(() => {
+      // Set breadcrumbs for this page (reactivo)
+      this.breadcrumbService.setBreadcrumbs([
+        { label: 'Dashboard', route: '/dashboard' },
+        { label: 'Roles', route: '/roles', isLast: true },
+      ]);
       this.onRetry();
     });
   }
@@ -105,7 +145,6 @@ export class RolesList {
           (role.description && role.description.toLowerCase().includes(searchTerm))
       );
     }
-
     // Active filter
     const activeFilterValue = this.activeFilter();
     if (activeFilterValue !== null) {
@@ -119,6 +158,7 @@ export class RolesList {
     }
 
     // User count range filter
+    // (Eliminado: getter duplicado showAdvancedFiltersPanel)
     const userCountRange = this.userCountRangeFilter();
     if (userCountRange.min !== null || userCountRange.max !== null) {
       filtered = filtered.filter((role) => {
@@ -221,14 +261,91 @@ export class RolesList {
   }
 
   onToggleActive(rid: number, status: boolean) {
-    void this.facade.toggleRoleActivation(rid);
-    console.log('Toggle active for role:', rid);
-    console.log('Status Role:', status);
+    this.pendingAction = { type: status ? 'deactivate' : 'activate', roleId: rid, status };
+    this.confirmConfig.set({
+      title: status ? 'Desactivar Rol' : 'Activar Rol',
+      description: `¿Estás seguro que deseas ${status ? 'desactivar' : 'activar'} el rol con ID ${rid}?`,
+      iconVariant: status ? 'warning' : 'success',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        {
+          label: status ? 'Desactivar' : 'Activar',
+          variant: status ? 'danger' : 'primary',
+          action: 'confirm',
+        },
+      ],
+    });
+    this.confirmVisible.set(true);
   }
 
   onDelete(rid: number) {
-    console.log('Role Id to Delete: ', rid);
-    void this.facade.deleteRole(rid);
+    this.pendingAction = { type: 'delete', roleId: rid };
+    this.confirmConfig.set({
+      title: 'Eliminar Rol',
+      description: `¿Estás seguro que deseas eliminar el rol con ID ${rid}? Esta acción no se puede deshacer.`,
+      iconVariant: 'error',
+      actions: [
+        { label: 'Cancelar', variant: 'secondary', action: 'cancel' },
+        { label: 'Eliminar', variant: 'danger', action: 'confirm' },
+      ],
+    });
+    this.confirmVisible.set(true);
+  }
+  onConfirmModalAction(event: ModalActionEvent) {
+    if (!this.pendingAction) {
+      this.confirmVisible.set(false);
+      return;
+    }
+    if (event.action === 'confirm') {
+      this.confirmLoading.set(true);
+      const { type, roleId, status } = this.pendingAction;
+      if (type === 'delete') {
+        void this.facade
+          .deleteRole(roleId)
+          .then(() => {
+            this.notifications.success(
+              'Rol eliminado',
+              `El rol con ID ${roleId} ha sido eliminado correctamente.`
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              'Error al eliminar rol',
+              typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      } else if (type === 'activate' || type === 'deactivate') {
+        void this.facade
+          .toggleRoleActivation(roleId)
+          .then(() => {
+            this.notifications.success(
+              type === 'activate' ? 'Rol activado' : 'Rol desactivado',
+              `El rol con ID ${roleId} ha sido ${type === 'activate' ? 'activado' : 'desactivado'} correctamente.`
+            );
+          })
+          .catch((error) => {
+            this.notifications.notificationError(
+              type === 'activate' ? 'Error al activar rol' : 'Error al desactivar rol',
+              typeof error === 'string'
+                ? error
+                : `No se pudo ${type === 'activate' ? 'activar' : 'desactivar'} el rol.`
+            );
+          })
+          .finally(() => {
+            this.confirmLoading.set(false);
+            this.confirmVisible.set(false);
+            this.pendingAction = null;
+          });
+      }
+    } else {
+      this.confirmVisible.set(false);
+      this.pendingAction = null;
+    }
   }
 
   // New methods for RoleTable integration
@@ -239,13 +356,58 @@ export class RolesList {
   onBulkAction(event: { action: string; roleIds: number[] }) {
     switch (event.action) {
       case 'delete':
-        event.roleIds.forEach((id) => this.facade.deleteRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .deleteRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol eliminado',
+                `El rol con ID ${id} ha sido eliminado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al eliminar rol',
+                typeof error === 'string' ? error : 'No se pudo eliminar el rol.'
+              );
+            });
+        });
         break;
       case 'activate':
-        event.roleIds.forEach((id) => this.facade.activateRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .activateRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol activado',
+                `El rol con ID ${id} ha sido activado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al activar rol',
+                typeof error === 'string' ? error : 'No se pudo activar el rol.'
+              );
+            });
+        });
         break;
       case 'deactivate':
-        event.roleIds.forEach((id) => this.facade.deactivateRole(id));
+        event.roleIds.forEach((id) => {
+          this.facade
+            .deactivateRole(id)
+            .then(() => {
+              this.notifications.success(
+                'Rol desactivado',
+                `El rol con ID ${id} ha sido desactivado correctamente.`
+              );
+            })
+            .catch((error) => {
+              this.notifications.notificationError(
+                'Error al desactivar rol',
+                typeof error === 'string' ? error : 'No se pudo desactivar el rol.'
+              );
+            });
+        });
         break;
       case 'export':
         // Using proper RoleExportOptions interface
@@ -264,7 +426,14 @@ export class RolesList {
     roleIds: number[];
     includeDescription?: boolean;
     includeUserCount?: boolean;
-  }) {
+  }): Promise<void> {
+    if (!event.roleIds || event.roleIds.length === 0) {
+      await this.notifications.warning(
+        'Exportación sin roles',
+        'No hay roles seleccionados para exportar.'
+      );
+      return;
+    }
     try {
       // Create proper export options using RoleExportOptions interface
       const exportOptions: Partial<RoleExportOptions> = {
@@ -278,6 +447,10 @@ export class RolesList {
       };
 
       await this.facade.exportRoles(event.roleIds, exportOptions);
+      this.notifications.success(
+        'Exportación exitosa',
+        `Se exportaron ${event.roleIds.length} roles en formato ${event.format.toUpperCase()}.`
+      );
     } catch (error) {
       // Always serialize error for SSR/prerendering
       const errorStr =
@@ -285,29 +458,54 @@ export class RolesList {
           ? JSON.stringify(error, Object.getOwnPropertyNames(error))
           : String(error);
       console.error('Export failed:', errorStr);
+      this.notifications.notificationError(
+        'Error en exportación',
+        errorStr || 'No se pudo exportar los roles.'
+      );
     }
   }
 
-  // View mode toggle
-  setViewMode(mode: 'cards' | 'table') {
-    this.viewMode.set(mode);
-  }
-
-  // Advanced filters methods
   toggleAdvancedFilters() {
-    this.showAdvancedFilters.update((show) => !show);
+    if (this.showAdvancedFilters()) {
+      // Animación de salida
+      this.advancedFiltersLeaving.set(true);
+      this.showAdvancedFilters.set(false);
+      this.advancedFiltersWrapperOpen.set(false);
+      setTimeout(() => {
+        this.advancedFiltersLeaving.set(false);
+      }, 200); // Duración igual a la transición CSS
+    } else {
+      this.showAdvancedFilters.set(true);
+      this.advancedFiltersEntering.set(true);
+      setTimeout(() => {
+        this.advancedFiltersEntering.set(false);
+        this.advancedFiltersWrapperOpen.set(true);
+      }, 10); // Pequeño delay para disparar la transición
+    }
   }
 
   updateSearch(value: string) {
     this.search.set(value);
+    if (value) {
+      this.notifications.info('Filtro aplicado', `Filtro de búsqueda: "${value}"`);
+    }
   }
 
   updateActiveFilter(value: boolean | null) {
     this.activeFilter.set(value);
+    if (value !== null) {
+      this.notifications.info(
+        'Filtro aplicado',
+        `Filtro de estado: ${value ? 'Activos' : 'Inactivos'}`
+      );
+    }
   }
 
   updateAccessLevelFilter(value: number | null) {
     this.accessLevelFilter.set(value);
+    if (value !== null) {
+      this.notifications.info('Filtro aplicado', `Filtro de nivel de acceso: Nivel ${value}`);
+    }
   }
 
   updateUserCountRange(min: number | null, max: number | null) {
@@ -336,15 +534,12 @@ export class RolesList {
     this.sortDirection.set('asc');
   }
 
-  // Get available filter options
+  // Get available filter options using config
   getAccessLevelOptions() {
-    return [
-      { value: 1, label: 'Nivel 1 - System Administrator' },
-      { value: 2, label: 'Nivel 2 - Project Manager' },
-      { value: 3, label: 'Nivel 3 - Senior User' },
-      { value: 4, label: 'Nivel 4 - Standard User' },
-      { value: 5, label: 'Nivel 5 - Basic User' },
-    ];
+    return Object.entries(ROLE_ACCESS_LEVEL_CONFIG).map(([key, info]) => ({
+      value: Number(key),
+      label: `Nivel ${key} - ${info.label}`,
+    }));
   }
 
   getSortOptions() {
