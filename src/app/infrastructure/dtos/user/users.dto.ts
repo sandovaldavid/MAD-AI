@@ -12,4 +12,6 @@ export interface UserDTO {
   is_active: boolean;
   role_name: string;
   created_at: string;
+  user_status: string;
+  last_activity_at: string;
 }
