@@ -31,11 +31,11 @@ import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.servic
 import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
 import type { RoleExportOptions } from '../../mappers/role-export.mapper';
 
-export type PendingRoleAction = {
+export interface PendingRoleAction {
   type: 'delete' | 'activate' | 'deactivate';
   roleId: number;
   status?: boolean;
-};
+}
 
 @Component({
   selector: 'app-roles-list',
