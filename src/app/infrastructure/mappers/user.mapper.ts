@@ -112,6 +112,8 @@ export class UserMapper {
       isActive: dto.is_active,
       role: role,
       createdAt: dto.created_at,
+      status: dto.user_status,
+      lastActivityAt: dto.last_activity_at,
       notificationPreferences: {
         email: true,
         system: false,
@@ -133,6 +135,8 @@ export class UserMapper {
       is_active: entity.active,
       role_name: entity.role.name,
       created_at: entity.createdAt?.value ?? new Date().toISOString(),
+      user_status: entity.userStatus.value, // Nuevo campo
+      last_activity_at: entity.lastActivityAt?.value ?? '', // Nuevo campo
     };
   }
 
