@@ -39,7 +39,6 @@ import type {
 export interface CreateUserRequest {
   userData: CreateUserContract;
   createdBy?: number;
-  sendWelcomeNotification?: boolean;
 }
 
 /**
@@ -49,7 +48,6 @@ export interface UpdateUserRequest {
   userId: number;
   updateData: UpdateUserPatchContract;
   requesterId: number;
-  notifyUser?: boolean;
 }
 
 /**

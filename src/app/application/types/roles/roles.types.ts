@@ -7,29 +7,6 @@ import type { CreateRoleContract } from '@domain/repositories/business/role.cont
  * ensuring proper separation of concerns and type safety.
  */
 
-// Bulk Operations Types
-export interface BulkCreateRolesRequest {
-  readonly roles: readonly CreateRoleRequest[];
-  readonly requesterId: number;
-  readonly validateOnly?: boolean;
-  readonly continueOnError?: boolean;
-}
-
-export interface BulkCreateRolesResult {
-  readonly successful: number;
-  readonly failed: number;
-  readonly total: number;
-  readonly executionTime: number;
-  readonly correlationId: string;
-}
-
-export interface BulkDeleteRolesResult {
-  readonly successful: number;
-  readonly failed: number;
-  readonly total: number;
-  readonly executionTime: number;
-  readonly correlationId: string;
-}
 
 // Individual Role Operations Types
 export interface CreateRoleRequest {
@@ -116,20 +93,6 @@ export interface PaginationOptions {
   readonly sortOrder?: 'asc' | 'desc';
 }
 
-// Bulk Operations Types
-export interface BulkDeleteRolesRequest {
-  readonly roleIds: readonly number[];
-  readonly requesterId: number;
-  readonly continueOnError?: boolean;
-}
-
-export interface BulkUpdateRolesRequest {
-  readonly updates: readonly RoleUpdateData[];
-  readonly requesterId: number;
-  readonly continueOnError?: boolean;
-  readonly maxBatchSize?: number;
-}
-
 export interface RoleUpdateData {
   readonly id: number;
   readonly updates: Partial<Omit<CreateRoleContract, 'name'>>;
@@ -141,23 +104,6 @@ export interface RoleUpdateResult {
   readonly success: boolean;
   readonly updatedRole?: unknown; // Will be defined by Domain
   readonly error?: string;
-}
-
-export interface BulkUpdateRolesResult {
-  readonly results: readonly RoleUpdateResult[];
-  readonly summary: {
-    readonly total: number;
-    readonly successful: number;
-    readonly failed: number;
-    readonly skipped: number;
-    readonly versionConflicts: number;
-  };
-  readonly performance: {
-    readonly executionTime: number;
-    readonly averageTime: number;
-    readonly validationErrors: number;
-  };
-  readonly correlationId: string;
 }
 
 // Unassign Role Operations Types

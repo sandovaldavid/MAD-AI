@@ -54,7 +54,7 @@ export interface RoleExportConfig {
   /** Custom title for the export document */
   customTitle?: string;
   /** Export format specification */
-  format?: 'pdf' | 'csv' | 'json';
+  format?: 'pdf' | 'csv' | 'json' | 'xlsx';
 }
 
 /**
@@ -65,6 +65,7 @@ export const EXPORT_FORMATS = {
   pdf: 'pdf',
   csv: 'csv',
   json: 'json',
+  excel: 'xlsx',
 } as const;
 
 /**
