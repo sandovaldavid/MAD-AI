@@ -1,41 +1,43 @@
-<!-- Bulk Actions Floating Toolbar -->
-<div class="bulk-toolbar" [@slideUp]="toolbarState()" [class]="customClass()">
-  <!-- Main Toolbar -->
+<!-- Barra de Herramientas Flotante para Acciones Masivas -->
+<div
+  class="bulk-toolbar"
+  [class.toolbar-visible]="isVisible()"
+  [class.toolbar-hidden]="!isVisible()"
+  [ngClass]="toolbarClasses()"
+  [class]="customClass()"
+  [attr.data-position]="position()">
+  <!-- Barra de Herramientas Principal -->
   <div class="toolbar-main">
-    <!-- Selection Info -->
-    <div class="selection-info">
-      <div class="selection-count">
-        <ui-icon name="check-circle" size="sm" variant="filled" class="text-primary-500"></ui-icon>
-        <span class="font-medium text-primary-700 dark:text-primary-300">
-          {{ selectionSummary() }}
-        </span>
-      </div>
-
-      @if (showStatistics() && selectionStats().total > 0) {
-        <div class="selection-stats">
-          @if (selectionStats().active !== undefined) {
-            <span class="stat-item">
-              <ui-icon name="eye" size="xs" class="text-successful-500"></ui-icon>
-              {{ selectionStats().active }} active
-            </span>
-          }
-          @if (selectionStats().totalUsers !== undefined) {
-            <span class="stat-item">
-              <ui-icon name="user-group" size="xs" class="text-info-500"></ui-icon>
-              {{ selectionStats().totalUsers }} users
-            </span>
-          }
-          @if (selectionStats().avgLevel !== undefined) {
-            <span class="stat-item">
-              <ui-icon name="star" size="xs" class="text-warning-500"></ui-icon>
-              Level {{ selectionStats().avgLevel }}
-            </span>
-          }
+    <!-- Información de Selección -->
+    @if (showSelectionInfo()) {
+      <div class="selection-info">
+        <div class="selection-count">
+          <ui-icon
+            [name]="defaultIcons().selection"
+            size="sm"
+            variant="filled"
+            class="text-primary-500"></ui-icon>
+          <span class="font-medium text-primary-700 dark:text-primary-300">
+            {{ selectionSummary() }}
+          </span>
         </div>
-      }
-    </div>
 
-    <!-- Quick Actions -->
+        @if (showStatistics() && (customStats().length > 0 || selectionStats().total > 0)) {
+          <div class="selection-stats">
+            @for (stat of customStats(); track stat.key) {
+              <span class="stat-item" [class]="'text-' + (stat.color || 'neutral-600')">
+                @if (stat.icon) {
+                  <ui-icon [name]="stat.icon" size="xs"></ui-icon>
+                }
+                {{ stat.value }} {{ stat.label }}
+              </span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Acciones Rápidas -->
     <div class="quick-actions">
       @for (action of availableQuickActions(); track action.id) {
         <ui-button
@@ -44,7 +46,7 @@
           [disabled]="isActionExecuting(action.id)"
           [iconLeft]="action.icon"
           [title]="action.description || action.label"
-          [ariaLabel]="action.label + (action.hotkey ? ' (Press ' + action.hotkey + ')' : '')"
+          [ariaLabel]="action.label + (action.hotkey ? ' (Presiona ' + action.hotkey + ')' : '')"
           (clicked)="onQuickAction(action.id)">
           @if (isActionExecuting(action.id)) {
             <ui-icon name="loader" class="animate-spin" size="md"></ui-icon>
@@ -58,81 +60,83 @@
         </ui-button>
       }
 
-      <!-- Export Quick Action -->
+      <!-- Acción Rápida de Exportación -->
       @if (showExportOptions() && exportFormats().length > 0) {
         <ui-button
           variant="outline-primary"
           size="sm"
           iconLeft="download"
-          title="Export selected items"
+          title="Exportar elementos seleccionados"
           (clicked)="onExport(exportFormats()[0].id)">
-          Export
+          Exportar
         </ui-button>
       }
     </div>
 
-    <!-- Toolbar Controls -->
+    <!-- Controles de Barra de Herramientas -->
     <div class="toolbar-controls">
-      <!-- Advanced Actions Toggle -->
+      <!-- Alternar Acciones Avanzadas -->
       @if (showAdvancedToggle() && hasAdvancedActions()) {
         <ui-button
           variant="ghost"
           size="sm"
-          [iconLeft]="showAdvanced() ? 'chevron-down' : 'chevron-up'"
-          title="Toggle advanced actions (Press E)"
+          [iconLeft]="showAdvanced() ? defaultIcons().toggleCollapse : defaultIcons().toggleExpand"
+          [title]="defaultTexts().toggleTooltip"
           (clicked)="toggleAdvanced()">
-          @if (showAdvanced()) {
-            Less
-          } @else {
-            More
-          }
         </ui-button>
       }
 
-      <!-- Clear Selection -->
+      <!-- Limpiar Selección -->
       <ui-button
         variant="ghost"
         size="sm"
-        iconLeft="x-mark"
-        title="Clear selection (Press Esc or X)"
+        [iconLeft]="defaultIcons().clear"
+        [title]="defaultTexts().clearTooltip"
         class="clear-button"
         (clicked)="onClearSelection()">
       </ui-button>
     </div>
   </div>
 
-  <!-- Advanced Actions Panel -->
+  <!-- Panel de Acciones Avanzadas -->
   @if (showAdvancedToggle() && hasAdvancedActions()) {
     <div
       class="advanced-panel"
-      [class.collapsed]="!showAdvanced()"
-      [class.expanded]="showAdvanced()"
-      [@expandCollapse]="advancedState()">
-      <!-- Advanced Actions Grid -->
+      [class.panel-collapsed]="!showAdvanced()"
+      [class.panel-expanded]="showAdvanced()"
+      [ngClass]="advancedClasses()">
+      <!-- Cuadrícula de Acciones Avanzadas -->
       @if (availableAdvancedActions().length > 0) {
         <div class="advanced-section">
           <h4 class="section-title">
-            <ui-icon name="server" size="sm" class="text-neutral-500"></ui-icon>
-            Advanced Actions
+            <ui-icon
+              [name]="defaultIcons().advancedSection"
+              size="sm"
+              class="text-neutral-500"></ui-icon>
+            {{ defaultTexts().advancedActionsTitle }}
           </h4>
           <div class="advanced-actions-grid">
-            @for (action of advancedActions(); track action.id) {
+            @for (action of availableAdvancedActions(); track action.id) {
               <ui-button
                 variant="ghost"
                 size="sm"
-                class="action-button"
-                [class.action-primary]="action.variant === 'primary'"
-                [class.action-secondary]="action.variant === 'secondary'"
-                [class.action-danger]="action.variant === 'danger'"
+                [disabled]="isActionExecuting(action.id)"
                 [attr.aria-label]="
-                  action.label + (action.hotkey ? ' (Shortcut: ' + action.hotkey + ')' : '')
+                  action.label + (action.hotkey ? ' (Atajo: ' + action.hotkey + ')' : '')
                 "
-                [title]="action.label + (action.hotkey ? ' (' + action.hotkey + ')' : '')"
+                [title]="
+                  action.description ||
+                  action.label + (action.hotkey ? ' (' + action.hotkey + ')' : '')
+                "
                 (clicked)="onAdvancedAction(action.id)">
-                <ui-icon [name]="action.icon" size="sm"></ui-icon>
+                @if (isActionExecuting(action.id)) {
+                  <ui-icon name="loader" class="animate-spin" size="sm"></ui-icon>
+                } @else {
+                  <ui-icon [name]="action.icon" size="sm"></ui-icon>
+                }
                 {{ action.label }}
                 @if (action.hotkey) {
-                  <kbd class="shortcut-badge">{{ action.hotkey }}</kbd>
+                  <span class="shortcut-badge">{{ action.hotkey }}</span>
                 }
               </ui-button>
             }
@@ -140,12 +144,15 @@
         </div>
       }
 
-      <!-- Export Options -->
+      <!-- Opciones de Exportación -->
       @if (showExportOptions() && exportFormats().length > 1) {
         <div class="advanced-section">
           <h4 class="section-title">
-            <ui-icon name="download" size="sm" class="text-neutral-500"></ui-icon>
-            Export Options
+            <ui-icon
+              [name]="defaultIcons().exportSection"
+              size="sm"
+              class="text-neutral-500"></ui-icon>
+            {{ defaultTexts().exportOptionsTitle }}
           </h4>
           <div class="export-options">
             @for (format of exportFormats(); track format.id) {
@@ -154,44 +161,10 @@
                 size="sm"
                 class="export-option"
                 [iconLeft]="format.icon"
-                [title]="'Export as ' + format.label + ' (' + format.extension + ')'"
+                [title]="'Exportar como ' + format.label + ' (' + format.extension + ')'"
                 (clicked)="onExport(format.id)">
                 {{ format.label }}
               </ui-button>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Selection Statistics -->
-      @if (showStatistics() && selectionStats().total > 0) {
-        <div class="advanced-section">
-          <h4 class="section-title">
-            <ui-icon name="chart-pie" size="sm" class="text-neutral-500"></ui-icon>
-            Selection Overview
-          </h4>
-          <div class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-value">{{ selectionStats().total }}</div>
-              <div class="stat-label">Total Selected</div>
-            </div>
-            @if (selectionStats().active !== undefined) {
-              <div class="stat-card">
-                <div class="stat-value text-successful-600">{{ selectionStats().active }}</div>
-                <div class="stat-label">Active Items</div>
-              </div>
-            }
-            @if (selectionStats().totalUsers !== undefined) {
-              <div class="stat-card">
-                <div class="stat-value text-info-600">{{ selectionStats().totalUsers }}</div>
-                <div class="stat-label">Total Users</div>
-              </div>
-            }
-            @if (selectionStats().avgLevel !== undefined) {
-              <div class="stat-card">
-                <div class="stat-value text-warning-600">{{ selectionStats().avgLevel }}</div>
-                <div class="stat-label">Average Level</div>
-              </div>
             }
           </div>
         </div>
@@ -200,11 +173,11 @@
   }
 </div>
 
-<!-- Keyboard Shortcuts Help -->
+<!-- Ayuda de Atajos de Teclado -->
 @if (showShortcutsHint()) {
   <div class="shortcuts-hint show auto-hide">
     <span class="text-xs text-neutral-100 dark:text-neutral-800">
-      Press <kbd>Esc</kbd> to clear, <kbd>E</kbd> to expand
+      {{ defaultTexts().shortcutsHint }}
     </span>
   </div>
 }

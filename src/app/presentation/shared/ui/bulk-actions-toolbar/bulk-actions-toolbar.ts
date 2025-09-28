@@ -12,14 +12,13 @@ import {
   Renderer2,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { trigger, state, style, transition, animate } from '@angular/animations';
 
 // Shared UI Components
 import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 /**
- * Available bulk actions for the toolbar
+ * Acciones masivas disponibles para la barra de herramientas
  */
 export interface BulkAction {
   id: string;
@@ -34,7 +33,7 @@ export interface BulkAction {
 }
 
 /**
- * Export format options
+ * Opciones de formato de exportación
  */
 export interface ExportFormat {
   id: string;
@@ -45,28 +44,63 @@ export interface ExportFormat {
 }
 
 /**
- * Statistics for selected items
+ * Elemento de estadística personalizable
+ */
+export interface StatItem {
+  key: string;
+  value: string | number;
+  label: string;
+  icon?: string;
+  color?: string;
+}
+
+/**
+ * Estadísticas para elementos seleccionados
  */
 export interface SelectionStats {
   total: number;
-  active?: number;
-  totalUsers?: number;
-  avgLevel?: number;
+  items?: StatItem[];
   [key: string]: any;
 }
 
 /**
- * Professional floating bulk actions toolbar component
+ * Configuración de textos personalizables
+ */
+export interface BulkToolbarTexts {
+  selectedItems?: string;
+  advancedActionsTitle?: string;
+  exportOptionsTitle?: string;
+  toggleMore?: string;
+  toggleLess?: string;
+  clearTooltip?: string;
+  toggleTooltip?: string;
+  shortcutsHint?: string;
+}
+
+/**
+ * Configuración de iconos personalizables
+ */
+export interface BulkToolbarIcons {
+  selection?: string;
+  advancedSection?: string;
+  exportSection?: string;
+  toggleExpand?: string;
+  toggleCollapse?: string;
+  clear?: string;
+}
+
+/**
+ * Componente profesional de barra de herramientas flotante para acciones masivas
  *
- * Features:
- * - Animated slide-up from bottom
- * - Quick actions for common operations
- * - Expandable advanced actions panel
- * - Export functionality with multiple formats
- * - Selection statistics display
- * - Keyboard shortcuts support
- * - Responsive design
- * - Professional UI/UX
+ * Características:
+ * - Animación deslizante desde abajo
+ * - Acciones rápidas para operaciones comunes
+ * - Panel expandible de acciones avanzadas
+ * - Funcionalidad de exportación con múltiples formatos
+ * - Visualización de estadísticas de selección
+ * - Soporte para atajos de teclado
+ * - Diseño responsivo
+ * - Interfaz profesional y experiencia de usuario
  */
 @Component({
   selector: 'ui-bulk-actions-toolbar',
@@ -75,140 +109,119 @@ export interface SelectionStats {
   templateUrl: './bulk-actions-toolbar.html',
   styleUrl: './bulk-actions-toolbar.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [
-    trigger('slideUp', [
-      state(
-        'hidden',
-        style({
-          transform: 'translateY(100%)',
-          opacity: 0,
-        })
-      ),
-      state(
-        'visible',
-        style({
-          transform: 'translateY(0)',
-          opacity: 1,
-        })
-      ),
-      transition('hidden => visible', [animate('300ms ease-out')]),
-      transition('visible => hidden', [animate('200ms ease-in')]),
-    ]),
-    trigger('expandCollapse', [
-      state(
-        'collapsed',
-        style({
-          height: '0px',
-          opacity: 0,
-        })
-      ),
-      state(
-        'expanded',
-        style({
-          height: '*',
-          opacity: 1,
-        })
-      ),
-      transition('collapsed => expanded', [animate('250ms ease-out')]),
-      transition('expanded => collapsed', [animate('200ms ease-in')]),
-    ]),
-  ],
 })
 export class BulkActionsToolbar implements OnInit, OnDestroy {
   private elementRef = inject(ElementRef);
   private renderer = inject(Renderer2);
 
   // ============================================================================
-  // Inputs
+  // Entradas
   // ============================================================================
 
-  /** Number of selected items */
+  /** Número de elementos seleccionados */
   selectedCount = input.required<number>();
 
-  /** Quick actions to display in the main toolbar */
+  /** Acciones rápidas a mostrar en la barra principal */
   quickActions = input<BulkAction[]>([]);
 
-  /** Advanced actions available in the expanded panel */
+  /** Acciones avanzadas disponibles en el panel expandible */
   advancedActions = input<BulkAction[]>([]);
 
-  /** Export formats available */
+  /** Formatos de exportación disponibles */
   exportFormats = input<ExportFormat[]>([]);
 
-  /** Statistics for selected items */
+  /** Estadísticas para elementos seleccionados */
   selectionStats = input<SelectionStats>({ total: 0 });
 
-  /** Currently executing action ID */
+  /** ID de acción en ejecución actualmente */
   executingAction = input<string | null>(null);
 
-  /** Custom title for the toolbar */
-  title = input<string>('items selected');
+  /** Título personalizado para la barra de herramientas */
+  title = input<string>('elementos seleccionados');
 
-  /** Enable/disable keyboard shortcuts */
+  /** Habilitar/deshabilitar atajos de teclado */
   enableHotkeys = input<boolean>(true);
 
-  /** Show export options */
+  /** Mostrar opciones de exportación */
   showExportOptions = input<boolean>(true);
 
-  /** Show statistics */
+  /** Mostrar estadísticas */
   showStatistics = input<boolean>(true);
 
-  /** Show advanced actions toggle */
+  /** Mostrar alternar acciones avanzadas */
   showAdvancedToggle = input<boolean>(true);
 
-  /** Custom CSS classes */
+  /** Clases CSS personalizadas */
   customClass = input<string>('');
 
+  /** Textos personalizables */
+  texts = input<BulkToolbarTexts>({});
+
+  /** Iconos personalizables */
+  icons = input<BulkToolbarIcons>({});
+
+  /** Posición de la toolbar */
+  position = input<'bottom' | 'top'>('bottom');
+
+  /** Mostrar información de selección */
+  showSelectionInfo = input<boolean>(true);
+
   // ============================================================================
-  // Outputs
+  // Salidas
   // ============================================================================
 
-  /** Emitted when a quick action is triggered */
+  /** Se emite cuando se activa una acción rápida */
   quickActionTriggered = output<{ actionId: string; selectedCount: number }>();
 
-  /** Emitted when an advanced action is triggered */
+  /** Se emite cuando se activa una acción avanzada */
   advancedActionTriggered = output<{ actionId: string; selectedCount: number }>();
 
-  /** Emitted when export is requested */
+  /** Se emite cuando se solicita exportación */
   exportRequested = output<{ format: string; selectedCount: number }>();
 
-  /** Emitted when selection should be cleared */
+  /** Se emite cuando la selección debe ser limpiada */
   clearSelection = output<void>();
 
-  /** Emitted when advanced panel is toggled */
+  /** Se emite cuando el panel avanzado se alterna */
   advancedToggled = output<boolean>();
 
   // ============================================================================
-  // Internal State
+  // Estado Interno
   // ============================================================================
 
-  private _isVisible = signal<boolean>(false);
   private _showAdvanced = signal<boolean>(false);
   private _showShortcutsHint = signal<boolean>(false);
   private _shortcutsHintTimer: ReturnType<typeof setTimeout> | null = null;
   private _keyboardListeners: (() => void)[] = [];
 
   // ============================================================================
-  // Computed Properties
+  // Propiedades Computadas
   // ============================================================================
 
-  /** Whether the toolbar should be visible */
+  /** Si la barra de herramientas debe ser visible */
   readonly isVisible = computed(() => this.selectedCount() > 0);
 
-  /** Whether advanced panel is shown */
+  /** Si el panel avanzado se muestra */
   readonly showAdvanced = computed(() => this._showAdvanced());
 
-  /** Whether shortcuts hint should be shown */
+  /** Si la pista de atajos debe mostrarse */
   readonly showShortcutsHint = computed(
     () => this.enableHotkeys() && this.isVisible() && this._showShortcutsHint()
   );
 
-  /** Animation state for toolbar */
-  readonly toolbarState = computed(() => (this.isVisible() ? 'visible' : 'hidden'));
+  /** Clases CSS para animación de visibilidad de barra de herramientas */
+  readonly toolbarClasses = computed(() => ({
+    'toolbar-visible': this.isVisible(),
+    'toolbar-hidden': !this.isVisible(),
+  }));
 
-  /** Animation state for advanced panel */
-  readonly advancedState = computed(() => (this.showAdvanced() ? 'expanded' : 'collapsed'));
+  /** Clases CSS para animación del panel avanzado */
+  readonly advancedClasses = computed(() => ({
+    'panel-expanded': this.showAdvanced(),
+    'panel-collapsed': !this.showAdvanced(),
+  }));
 
-  /** Filtered quick actions based on selection count */
+  /** Acciones rápidas filtradas basadas en el conteo de selección */
   readonly availableQuickActions = computed(() => {
     const count = this.selectedCount();
     return this.quickActions().filter(
@@ -218,7 +231,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     );
   });
 
-  /** Filtered advanced actions based on selection count */
+  /** Acciones avanzadas filtradas basadas en el conteo de selección */
   readonly availableAdvancedActions = computed(() => {
     const count = this.selectedCount();
     return this.advancedActions().filter(
@@ -228,18 +241,48 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     );
   });
 
-  /** Whether any advanced actions are available */
+  /** Si hay acciones avanzadas disponibles */
   readonly hasAdvancedActions = computed(() => this.availableAdvancedActions().length > 0);
 
-  /** Selection summary text */
+  /** Texto de resumen de selección */
   readonly selectionSummary = computed(() => {
     const count = this.selectedCount();
-    const title = this.title();
+    const title = this.texts().selectedItems || this.title();
     return `${count} ${title}`;
   });
 
+  /** Configuración de textos con valores por defecto */
+  readonly defaultTexts = computed(() => ({
+    selectedItems: 'elementos seleccionados',
+    advancedActionsTitle: 'Acciones Avanzadas',
+    exportOptionsTitle: 'Opciones de Exportación',
+    toggleMore: 'Más',
+    toggleLess: 'Menos',
+    clearTooltip: 'Limpiar selección (Esc o X)',
+    toggleTooltip: 'Alternar acciones avanzadas (E)',
+    shortcutsHint: 'Presiona Esc para limpiar, E para expandir',
+    ...this.texts(),
+  }));
+
+  /** Configuración de iconos con valores por defecto */
+  readonly defaultIcons = computed(() => ({
+    selection: 'check-circle',
+    advancedSection: 'server',
+    exportSection: 'download',
+    toggleExpand: 'chevron-up',
+    toggleCollapse: 'chevron-down',
+    clear: 'x-mark',
+    ...this.icons(),
+  }));
+
+  /** Estadísticas personalizadas disponibles */
+  readonly customStats = computed(() => {
+    const stats = this.selectionStats();
+    return stats.items || [];
+  });
+
   // ============================================================================
-  // Lifecycle
+  // Ciclo de Vida
   // ============================================================================
 
   ngOnInit() {
@@ -247,7 +290,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     this.positionToolbar();
     this.setupResponsiveLayout();
 
-    // Show shortcuts hint briefly when toolbar first appears
+    // Mostrar pista de atajos brevemente cuando la barra aparece por primera vez
     if (this.isVisible()) {
       setTimeout(() => this.showShortcutsHintBriefly(), 500);
     }
@@ -259,11 +302,11 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   // ============================================================================
-  // Public Methods
+  // Métodos Públicos
   // ============================================================================
 
   /**
-   * Handle quick action click
+   * Manejar clic de acción rápida
    */
   onQuickAction(actionId: string) {
     if (this.executingAction() === actionId) return;
@@ -275,7 +318,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle advanced action click
+   * Manejar clic de acción avanzada
    */
   onAdvancedAction(actionId: string) {
     if (this.executingAction() === actionId) return;
@@ -287,7 +330,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Handle export request
+   * Manejar solicitud de exportación
    */
   onExport(format: string) {
     this.exportRequested.emit({
@@ -297,7 +340,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Toggle advanced actions panel
+   * Alternar panel de acciones avanzadas
    */
   toggleAdvanced() {
     const newState = !this._showAdvanced();
@@ -306,7 +349,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Clear selection
+   * Limpiar selección
    */
   onClearSelection() {
     this.clearSelection.emit();
@@ -314,7 +357,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Get action button variant
+   * Obtener variante del botón de acción
    */
   getActionVariant(
     action: BulkAction
@@ -332,7 +375,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
       return 'ghost';
     }
 
-    // Map BulkAction variants to Button variants
+    // Mapear variantes de BulkAction a variantes de Button
     switch (action.variant) {
       case 'primary':
         return 'primary';
@@ -352,27 +395,27 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Check if action is executing
+   * Verificar si la acción se está ejecutando
    */
   isActionExecuting(actionId: string): boolean {
     return this.executingAction() === actionId;
   }
 
   /**
-   * Show shortcuts hint for a brief period
+   * Mostrar pista de atajos por un período breve
    */
   showShortcutsHintBriefly() {
     if (!this.enableHotkeys()) return;
 
-    // Clear any existing timer
+    // Limpiar cualquier temporizador existente
     if (this._shortcutsHintTimer) {
       clearTimeout(this._shortcutsHintTimer);
     }
 
-    // Show hint
+    // Mostrar pista
     this._showShortcutsHint.set(true);
 
-    // Auto-hide after 4 seconds
+    // Ocultar automáticamente después de 4 segundos
     this._shortcutsHintTimer = setTimeout(() => {
       this._showShortcutsHint.set(false);
       this._shortcutsHintTimer = null;
@@ -380,7 +423,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Hide shortcuts hint immediately
+   * Ocultar pista de atajos inmediatamente
    */
   hideShortcutsHint() {
     if (this._shortcutsHintTimer) {
@@ -391,11 +434,11 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   // ============================================================================
-  // Private Methods
+  // Métodos Privados
   // ============================================================================
 
   /**
-   * Setup keyboard shortcuts
+   * Configurar atajos de teclado
    */
   private setupKeyboardShortcuts() {
     if (!this.enableHotkeys()) return;
@@ -415,7 +458,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
           !event.altKey &&
           !event.metaKey
         ) {
-          // Only trigger if not in an input field
+          // Solo activar si no está en un campo de entrada
           const target = event.target as HTMLElement;
           if (
             target.tagName !== 'INPUT' &&
@@ -430,8 +473,8 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
       this._keyboardListeners.push(listener);
     });
 
-    // Add number key shortcuts for quick actions
-    this.availableQuickActions().forEach((action, index) => {
+    // Agregar atajos de teclas numéricas para acciones rápidas
+    this.availableQuickActions().forEach((action) => {
       if (action.hotkey) {
         const listener = this.renderer.listen('document', 'keydown', (event: KeyboardEvent) => {
           if (
@@ -458,7 +501,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Cleanup keyboard shortcuts
+   * Limpiar atajos de teclado
    */
   private cleanupKeyboardShortcuts() {
     this._keyboardListeners.forEach((cleanup) => cleanup());
@@ -466,7 +509,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   }
 
   /**
-   * Position toolbar at bottom center of screen with responsive width
+   * Posicionar barra de herramientas en el centro inferior de la pantalla con ancho responsivo
    */
   private positionToolbar() {
     const element = this.elementRef.nativeElement;
@@ -476,15 +519,15 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     this.renderer.setStyle(element, 'transform', 'translateX(-50%)');
     this.renderer.setStyle(element, 'z-index', '1000');
 
-    // Remove fixed max-width, let CSS handle responsiveness
-    // The CSS now handles width constraints properly
+    // Remover ancho máximo fijo, dejar que CSS maneje la responsividad
+    // El CSS ahora maneja las restricciones de ancho correctamente
   }
 
   /**
-   * Setup responsive layout adjustments based on content
+   * Configurar ajustes de layout responsivo basados en el contenido
    */
   private setupResponsiveLayout() {
-    // Add data attributes for CSS styling based on action count
+    // Agregar atributos de datos para estilos CSS basados en el conteo de acciones
     const updateAttributes = () => {
       const quickActionsCount = this.availableQuickActions().length;
       const totalActionsCount = quickActionsCount + this.availableAdvancedActions().length;
@@ -493,7 +536,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
       this.renderer.setAttribute(element, 'data-quick-actions', quickActionsCount.toString());
       this.renderer.setAttribute(element, 'data-total-actions', totalActionsCount.toString());
 
-      // Add responsive class based on action count
+      // Agregar clase responsiva basada en el conteo de acciones
       if (quickActionsCount > 4) {
         this.renderer.addClass(element, 'many-actions');
       } else {

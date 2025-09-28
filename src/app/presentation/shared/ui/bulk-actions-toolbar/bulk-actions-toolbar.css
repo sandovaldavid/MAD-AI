@@ -1,5 +1,93 @@
 @reference '../../../../../styles.css';
 
+/* ============================================================================ */
+/* Animaciones CSS Nativas para Bulk Actions Toolbar */
+/* ============================================================================ */
+
+/* Animación de deslizamiento desde abajo */
+@keyframes slideUpFromBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownToBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Animación de expansión/colapso del panel avanzado */
+@keyframes expandPanel {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 500px;
+    opacity: 1;
+  }
+}
+
+@keyframes collapsePanel {
+  from {
+    max-height: 500px;
+    opacity: 1;
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+  }
+}
+
+/* ============================================================================ */
+/* Clases de estado de animación */
+/* ============================================================================ */
+
+/* Estados del toolbar principal */
+.bulk-toolbar.toolbar-visible {
+  animation: slideUpFromBottom 300ms ease-out forwards;
+}
+
+.bulk-toolbar.toolbar-hidden {
+  animation: slideDownToBottom 200ms ease-in forwards;
+  pointer-events: none;
+}
+
+/* Estados del panel avanzado */
+.advanced-panel.panel-expanded {
+  animation: expandPanel 250ms ease-out forwards;
+  overflow: hidden;
+}
+
+.advanced-panel.panel-collapsed {
+  animation: collapsePanel 200ms ease-in forwards;
+  overflow: hidden;
+}
+
+/* Transiciones suaves para estados interactivos */
+.bulk-toolbar {
+  transition: all 200ms ease-in-out;
+}
+
+.advanced-panel {
+  transition: all 200ms ease-in-out;
+}
+
+/* ============================================================================ */
+/* Estilos del Bulk Actions Toolbar */
+/* ============================================================================ */
+
 /* Bulk Actions Toolbar Styles */
 .bulk-toolbar {
   @apply backdrop-blur-lg bg-white/95 dark:bg-neutral-900/95;
@@ -15,6 +103,15 @@
   /* Glass morphism effect */
   backdrop-filter: blur(16px) saturate(1.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Position variants */
+.bulk-toolbar[data-position='top'] {
+  @apply top-5;
+}
+
+.bulk-toolbar[data-position='bottom'] {
+  @apply bottom-5;
 }
 
 /* Main Toolbar Layout */
@@ -201,26 +298,6 @@
   @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2;
 }
 
-.advanced-action-button {
-  @apply justify-start text-left p-3 rounded-xl;
-  @apply hover:bg-white dark:hover:bg-neutral-800;
-  @apply transition-all duration-200;
-  @apply border border-transparent hover:border-neutral-200 dark:hover:border-neutral-700;
-}
-
-.action-content {
-  @apply text-left;
-}
-
-.action-label {
-  @apply font-medium text-neutral-900 dark:text-neutral-100;
-}
-
-.action-description {
-  @apply text-xs text-neutral-500 dark:text-neutral-400 mt-0.5;
-  @apply truncate max-w-48;
-}
-
 /* Export Options */
 .export-options {
   @apply flex flex-wrap gap-2;
@@ -232,25 +309,6 @@
   @apply transition-all duration-200;
 }
 
-/* Statistics Grid */
-.stats-grid {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-3;
-}
-
-.stat-card {
-  @apply text-center p-3 rounded-xl;
-  @apply bg-white dark:bg-neutral-800;
-  @apply border border-neutral-200 dark:border-neutral-700;
-}
-
-.stat-value {
-  @apply text-lg font-bold text-neutral-900 dark:text-neutral-100;
-}
-
-.stat-label {
-  @apply text-xs text-neutral-500 dark:text-neutral-400 mt-1;
-}
-
 /* Hotkey Hints */
 .hotkey-hint {
   @apply ml-auto text-xs;
@@ -258,6 +316,14 @@
   @apply bg-neutral-200 dark:bg-neutral-700;
   @apply text-neutral-600 dark:text-neutral-400;
   @apply opacity-60;
+}
+
+.shortcut-badge {
+  @apply ml-auto text-xs font-mono;
+  @apply px-1.5 py-0.5 rounded;
+  @apply bg-neutral-200 dark:bg-neutral-700;
+  @apply text-neutral-600 dark:text-neutral-400;
+  @apply border border-neutral-300 dark:border-neutral-600;
 }
 
 .shortcuts-hint {
@@ -356,10 +422,6 @@
   .advanced-actions-grid {
     @apply grid-cols-1;
   }
-
-  .stats-grid {
-    @apply grid-cols-2;
-  }
 }
 
 @media (max-width: 640px) {
@@ -441,18 +503,25 @@
   }
 }
 
-/* Reduced Motion Support */
+/* Soporte para Movimiento Reducido */
 @media (prefers-reduced-motion: reduce) {
   .bulk-toolbar,
   .advanced-panel,
-  .advanced-action-button,
   .export-option,
   .clear-button {
     @apply transition-none;
   }
+
+  /* Deshabilitar animaciones cuando el usuario prefiere movimiento reducido */
+  .bulk-toolbar.toolbar-visible,
+  .bulk-toolbar.toolbar-hidden,
+  .advanced-panel.panel-expanded,
+  .advanced-panel.panel-collapsed {
+    animation: none;
+  }
 }
 
-/* Print Styles */
+/* Estilos de Impresión */
 @media print {
   .bulk-toolbar {
     @apply hidden;
