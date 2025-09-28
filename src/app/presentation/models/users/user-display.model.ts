@@ -30,7 +30,7 @@ import type {
   UserStatusDisplay,
   UserStatsData,
   UserActionConfig,
-} from '../../pages/users/types';
+} from './user-ui.types';
 
 /**
  * Complete user information optimized for list display
