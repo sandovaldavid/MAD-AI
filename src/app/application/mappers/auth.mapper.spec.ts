@@ -4,7 +4,7 @@ import type {
   PasswordResetConfirmRequest,
   LoginRequest,
   RegisterRequest,
-} from '../types/auth.types';
+} from '../types/auth/auth.types';
 import type { ResetPasswordContract } from '@domain/repositories/business/auth.contract';
 
 describe('AuthMapper', () => {

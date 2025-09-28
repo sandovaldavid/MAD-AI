@@ -25,7 +25,7 @@
 
 import { Injectable } from '@angular/core';
 import type { User } from '@domain/entities/user.entity';
-import type { UserStatistics } from '../types/users.types';
+import type { UserStatistics } from '../types/users/users.types';
 import { ActivityPeriod } from '@domain/value-objects';
 
 /**

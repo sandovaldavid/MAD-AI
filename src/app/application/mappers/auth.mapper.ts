@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import type { PasswordResetConfirmRequest } from '@application/types/auth.types';
+import type { PasswordResetConfirmRequest } from '@/app/application/types/auth/auth.types';
 import type { ResetPasswordContract } from '@domain/repositories/business/auth.contract';
-import type { LoginRequest } from '@application/types/auth.types';
+import type { LoginRequest } from '@/app/application/types/auth/auth.types';
 import type { CredentialsContract, Identifier } from '@domain/repositories/business/auth.contract';
-import type { RegisterRequest } from '@application/types/auth.types';
+import type { RegisterRequest } from '@/app/application/types/auth/auth.types';
 import type { RegisterUserContract } from '@domain/repositories/business/auth.contract';
 
 /**
