@@ -251,11 +251,14 @@
           [enableBulkActions]="true"
           [enablePagination]="true"
           [pageSize]="10"
+          [sortBy]="sortBy()"
+          [sortDirection]="sortDirection()"
           (viewRole)="onViewRole($event)"
           (editRole)="onEditRole($event)"
           (deleteRole)="onDelete($event)"
           (toggleStatus)="onToggleActive($event.id, $event.isActive)"
-          (bulkAction)="onBulkAction($event)">
+          (bulkAction)="onBulkAction($event)"
+          (sortChange)="onSortChange($event)">
         </app-role-table>
       }
     }

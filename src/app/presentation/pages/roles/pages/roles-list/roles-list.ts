@@ -1,15 +1,8 @@
-import { ROLE_ACCESS_LEVEL_CONFIG } from '../../../../models/roles/accesLevel.models.js';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  inject,
-  signal,
-  computed,
-} from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RolesFacade } from '@application/facades/role';
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../../../models/roles/accesLevel.models.js';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { RoleCard } from '../../components/role-card/role-card';
@@ -54,10 +47,8 @@ export interface PendingRoleAction {
   ],
   templateUrl: './roles-list.html',
   styleUrl: './roles-list.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RolesList {
-  // Confirmation modal state
   confirmVisible = signal(false);
   confirmConfig = signal<ModalConfig | null>(null);
   confirmLoading = signal(false);
@@ -69,7 +60,10 @@ export class RolesList {
   private notifications = inject(NotificationsFacade);
 
   readonly loading = this.facade.loading;
-  readonly roles = computed(() => this.facade.roles());
+  readonly roles = computed(() => {
+    // Main roles list from facade
+    return this.facade.roles();
+  });
   readonly error = this.facade.error;
 
   search = signal('');
@@ -98,9 +92,8 @@ export class RolesList {
   }
 
   constructor() {
-    // Load initial data
+    // Load initial data and set breadcrumbs
     effect(() => {
-      // Set breadcrumbs for this page (reactivo)
       this.breadcrumbService.setBreadcrumbs([
         { label: 'Dashboard', route: '/dashboard' },
         { label: 'Roles', route: '/roles', isLast: true },
@@ -135,32 +128,38 @@ export class RolesList {
 
   // Computed filtered roles
   readonly filteredRoles = computed(() => {
-    let filtered = this.roles();
+    // Read all signals first to ensure proper dependency tracking
+    const rolesData = this.roles();
+    const searchTerm = this.search();
+    const activeFilterValue = this.activeFilter();
+    const accessLevel = this.accessLevelFilter();
+    const userCountRange = this.userCountRangeFilter();
+    const sortByValue = this.sortBy();
+    const sortDirectionValue = this.sortDirection();
+
+    let filtered = rolesData;
 
     // Search filter
-    const searchTerm = this.search().toLowerCase();
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (role: RoleSummary) =>
-          role.name.toLowerCase().includes(searchTerm) ||
-          role.description.toLowerCase().includes(searchTerm)
+          role.name.toLowerCase().includes(searchLower) ||
+          role.description.toLowerCase().includes(searchLower)
       );
     }
+
     // Active filter
-    const activeFilterValue = this.activeFilter();
     if (activeFilterValue !== null) {
       filtered = filtered.filter((role: RoleSummary) => role.isActive === activeFilterValue);
     }
 
     // Access level filter
-    const accessLevel = this.accessLevelFilter();
     if (accessLevel !== null) {
       filtered = filtered.filter((role: RoleSummary) => role.accessLevel === accessLevel);
     }
 
     // User count range filter
-    // (Eliminado: getter duplicado showAdvancedFiltersPanel)
-    const userCountRange = this.userCountRangeFilter();
     if (userCountRange.min !== null || userCountRange.max !== null) {
       filtered = filtered.filter((role: RoleSummary) => {
         const userCount = role.userCount || 0;
@@ -170,11 +169,8 @@ export class RolesList {
       });
     }
 
-    // Apply sorting
-    const sortByValue = this.sortBy();
-    const sortDirectionValue = this.sortDirection();
-
-    filtered.sort((a: RoleSummary, b: RoleSummary) => {
+    // Apply sorting (always return a new array for immutability)
+    const sorted = [...filtered].sort((a: RoleSummary, b: RoleSummary) => {
       let aValue: any;
       let bValue: any;
 
@@ -206,21 +202,24 @@ export class RolesList {
       return 0;
     });
 
-    return filtered;
+    return sorted;
   });
 
   // Transform filtered roles to card view format
   readonly rolesForCardView = computed(() => {
-    return this.filteredRoles().map((role: RoleSummary): RoleCardView => ({
-      id: role.id.toString(),
-      name: role.name,
-      displayName: role.name, // RoleSummary doesn't have displayName
-      description: role.description,
-      accessLevel: role.accessLevel,
-      userCount: role.userCount,
-      permissionCount: 0, // RoleSummary doesn't have this information
-      status: role.isActive ? 'active' : 'inactive' as RoleStatus,
-    }));
+    const filtered = this.filteredRoles();
+    return filtered.map(
+      (role: RoleSummary): RoleCardView => ({
+        id: role.id.toString(),
+        name: role.name,
+        displayName: role.name, // RoleSummary doesn't have displayName
+        description: role.description,
+        accessLevel: role.accessLevel,
+        userCount: role.userCount,
+        permissionCount: 0, // RoleSummary doesn't have this information
+        status: role.isActive ? 'active' : ('inactive' as RoleStatus),
+      })
+    );
   });
 
   // Filter statistics
@@ -368,6 +367,13 @@ export class RolesList {
     this.router.navigate(['/roles', roleId, 'edit']);
   }
 
+  onSortChange(event: {
+    column: 'name' | 'accessLevel' | 'userCount' | 'isActive';
+    direction: 'asc' | 'desc';
+  }) {
+    this.updateSort(event.column, event.direction);
+  }
+
   onBulkAction(event: { action: string; roleIds: number[] }) {
     switch (event.action) {
       case 'delete':
@@ -495,11 +501,17 @@ export class RolesList {
     }
   }
 
+  // Debounced search update to avoid excessive notifications and filtering
+  private searchDebounceTimeout: any = null;
   updateSearch(value: string) {
-    this.search.set(value);
-    if (value) {
-      this.notifications.info('Filtro aplicado', `Filtro de búsqueda: "${value}"`);
+    // Debounce search input (300ms)
+    if (this.searchDebounceTimeout) {
+      clearTimeout(this.searchDebounceTimeout);
     }
+    this.searchDebounceTimeout = setTimeout(() => {
+      this.search.set(value);
+      // Do NOT show notification for search filter to avoid notification spam
+    }, 300);
   }
 
   updateActiveFilter(value: boolean | null) {
