@@ -61,16 +61,6 @@
 
   <!-- Card Actions -->
   <footer class="role-card__actions">
-    <!-- Primary Action - Edit or View based on permissions -->
-    <button
-      type="button"
-      class="role-card__btn role-card__btn--primary"
-      (click)="onViewRole()"
-      [disabled]="loading()">
-      <ui-icon name="pencil" size="md" />
-      <span>Editar rol</span>
-    </button>
-
     <button
       type="button"
       class="role-card__btn role-card__btn--secondary"
@@ -103,14 +93,6 @@
         (click)="onDeleteRole()"
         [disabled]="loading() || role().userCount > 0">
         <ui-icon name="trash" variant="filled" size="md" />
-      </button>
-
-      <button
-        type="button"
-        class="role-card__btn role-card__btn--icon role-card__btn--secondary"
-        [disabled]="loading()"
-        title="Configuraciones avanzadas">
-        <ui-icon name="cog" variant="filled" size="md" />
       </button>
     </div>
   </footer>
