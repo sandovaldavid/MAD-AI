@@ -4,10 +4,10 @@ export interface RoleTableRowView {
   displayName: string;
   description: string;
   userCount: number;
+  accessLevel: number;
   statusBadge: StatusBadgeView;
   createdAt: string;
   updatedAt: string;
-  actions: TableAction[];
 }
 
 export interface RoleCardView {
@@ -42,7 +42,7 @@ export interface RoleDetailView {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
-  accessLevel: number; // 1-5, used for permission validation  
+  accessLevel: number; // 1-5, used for permission validation
   status: RoleStatus;
 }
 
@@ -51,15 +51,6 @@ export interface StatusBadgeView {
   label: string;
   color: string;
   icon: string;
-}
-
-export interface TableAction {
-  label: string;
-  icon: string;
-  color: string;
-  action: 'edit' | 'delete' | 'view';
-  disabled?: boolean;
-  tooltip?: string;
 }
 
 export type RoleStatus = 'active' | 'inactive';
