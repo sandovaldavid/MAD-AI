@@ -61,10 +61,19 @@
 
   <!-- Card Actions -->
   <footer class="role-card__actions">
-    <!-- Primary Action - View Role -->
+    <!-- Primary Action - Edit or View based on permissions -->
     <button
       type="button"
       class="role-card__btn role-card__btn--primary"
+      (click)="onViewRole()"
+      [disabled]="loading()">
+      <ui-icon name="pencil" size="md" />
+      <span>Editar rol</span>
+    </button>
+
+    <button
+      type="button"
+      class="role-card__btn role-card__btn--secondary"
       (click)="onViewRole()"
       [disabled]="loading()"
       title="Ver detalles del rol">
@@ -74,7 +83,7 @@
 
     <!-- Secondary Actions -->
     <div class="role-card__actions-secondary">
-      <!-- Toggle Status -->
+      <!-- Toggle Status - Only show for roles that can be modified -->
       <button
         type="button"
         class="role-card__btn role-card__btn--icon"
@@ -82,17 +91,26 @@
         (click)="onToggleStatus()"
         [disabled]="loading()"
         [title]="getStatusInfo().buttonTooltip">
-        <ui-icon [name]="role().isActive ? 'pause' : 'play'" size="md" variant="filled" />
+        <ui-icon
+          [name]="role().status === 'active' ? 'pause' : 'play'"
+          size="md"
+          variant="filled" />
       </button>
 
-      <!-- Delete Role -->
       <button
         type="button"
         class="role-card__btn role-card__btn--icon role-card__btn--danger"
         (click)="onDeleteRole()"
-        [disabled]="loading()"
-        title="Eliminar rol">
+        [disabled]="loading() || role().userCount > 0">
         <ui-icon name="trash" variant="filled" size="md" />
+      </button>
+
+      <button
+        type="button"
+        class="role-card__btn role-card__btn--icon role-card__btn--secondary"
+        [disabled]="loading()"
+        title="Configuraciones avanzadas">
+        <ui-icon name="cog" variant="filled" size="md" />
       </button>
     </div>
   </footer>

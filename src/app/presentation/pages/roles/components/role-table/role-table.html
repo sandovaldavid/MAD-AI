@@ -37,18 +37,9 @@
 
           <!-- Access Level Column -->
           <th class="px-3 py-3 text-left">
-            <button
-              type="button"
-              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-              (click)="sortBy('accessLevel')">
-              <span>Nivel de Acceso</span>
-              <ui-icon
-                [name]="getSortIcon('accessLevel')"
-                size="sm"
-                [variant]="isSorted('accessLevel') ? 'filled' : 'outline'"
-                [class]="isSorted('accessLevel') ? 'text-primary-500' : 'text-neutral-400'">
-              </ui-icon>
-            </button>
+            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+              >Nivel de Acceso</span
+            >
           </th>
 
           <!-- User Count Column -->
@@ -69,18 +60,7 @@
 
           <!-- Status Column -->
           <th class="px-3 py-3 text-left">
-            <button
-              type="button"
-              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-              (click)="sortBy('isActive')">
-              <span>Estado</span>
-              <ui-icon
-                [name]="getSortIcon('isActive')"
-                size="sm"
-                [variant]="isSorted('isActive') ? 'filled' : 'outline'"
-                [class]="isSorted('isActive') ? 'text-primary-500' : 'text-neutral-400'">
-              </ui-icon>
-            </button>
+            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Estado</span>
           </th>
 
           <!-- Actions Column -->
@@ -156,8 +136,8 @@
                   <input
                     type="checkbox"
                     class="form-checkbox rounded border-neutral-300 dark:border-neutral-600 text-primary-500 focus-visible:ring-primary-500 size-4"
-                    [checked]="isRoleSelected(role.id)"
-                    (change)="toggleRoleSelection(role.id)" />
+                    [checked]="isRoleSelected(parseRoleId(role.id))"
+                    (change)="toggleRoleSelection(parseRoleId(role.id))" />
                 </td>
               }
 
@@ -165,7 +145,7 @@
               <td class="px-3 py-4">
                 <div class="flex flex-col">
                   <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                    {{ role.name }}
+                    {{ role.displayName }}
                   </span>
                   @if (role.description) {
                     <span class="text-xs text-neutral-500 dark:text-neutral-400 truncate max-w-xs">
@@ -178,7 +158,7 @@
               <!-- Access Level -->
               <td class="px-3 py-4">
                 <app-access-level-indicator
-                  [level]="role.accessLevel"
+                  [level]="getRoleAccessLevel(role)"
                   variant="badge"
                   size="sm"
                   [showIcon]="true"
@@ -198,50 +178,34 @@
               <!-- Status -->
               <td class="px-3 py-4">
                 <span
-                  [class]="getStatusBadgeClasses(role.isActive)"
                   class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border">
-                  {{ role.isActive ? 'Activo' : 'Inactivo' }}
+                  <ui-icon [name]="role.statusBadge.icon" size="xs" class="mr-1"> </ui-icon>
+                  {{ role.statusBadge.label }}
                 </span>
               </td>
 
               <!-- Actions -->
               <td class="px-3 py-4">
                 <div class="flex items-center justify-end gap-1">
-                  <!-- View Button -->
-                  <ui-button
-                    variant="secondary"
-                    size="sm"
-                    (clicked)="onViewRole(role.id)"
-                    [ariaLabel]="'Ver detalles de ' + role.name"
-                    iconLeft="eye">
-                  </ui-button>
-
-                  <!-- Edit Button -->
-                  <ui-button
-                    variant="primary"
-                    size="sm"
-                    (clicked)="onEditRole(role.id)"
-                    [ariaLabel]="'Editar ' + role.name"
-                    iconLeft="pencil">
-                  </ui-button>
-
-                  <!-- Toggle Status Button -->
-                  <ui-button
-                    [variant]="role.isActive ? 'warning' : 'success'"
-                    size="sm"
-                    (clicked)="onToggleStatus(role)"
-                    [ariaLabel]="(role.isActive ? 'Desactivar' : 'Activar') + ' ' + role.name"
-                    [iconLeft]="role.isActive ? 'pause' : 'play'">
-                  </ui-button>
-
-                  <!-- Delete Button -->
-                  <ui-button
-                    variant="danger"
-                    size="sm"
-                    (clicked)="onDeleteRole(role.id)"
-                    [ariaLabel]="'Eliminar ' + role.name"
-                    iconLeft="trash">
-                  </ui-button>
+                  @for (action of role.actions; track action.action) {
+                    <ui-button
+                      [variant]="
+                        action.color === 'primary'
+                          ? 'primary'
+                          : action.color === 'danger'
+                            ? 'danger'
+                            : action.color === 'warning'
+                              ? 'warning'
+                              : 'secondary'
+                      "
+                      size="sm"
+                      [disabled]="action.disabled || false"
+                      [ariaLabel]="action.label + ' ' + role.displayName"
+                      [iconLeft]="action.icon"
+                      [title]="action.tooltip"
+                      (clicked)="handleAction(action.action, parseRoleId(role.id))">
+                    </ui-button>
+                  }
                 </div>
               </td>
             </tr>

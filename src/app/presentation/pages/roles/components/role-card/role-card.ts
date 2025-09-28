@@ -2,12 +2,11 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 import { CommonModule } from '@angular/common';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { AccessLevelIndicator } from '../access-level-indicator/access-level-indicator';
-import { RoleModel } from '../../models/role.model';
 import {
-  RoleAccessLevelInfo,
+  RoleCardView,
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
-} from '../../types/role-colors.type';
+} from '../../../../models/roles/index';
 
 @Component({
   selector: 'app-role-card',
@@ -19,7 +18,7 @@ import {
 })
 export class RoleCard {
   // Inputs
-  role = input.required<RoleModel>();
+  role = input.required<RoleCardView>();
   loading = input<boolean>(false);
 
   // Outputs
@@ -29,30 +28,32 @@ export class RoleCard {
 
   // Event handlers
   onViewRole() {
-    this.view.emit(this.role().id);
+    this.view.emit(Number(this.role().id));
   }
 
   onToggleStatus() {
     const role = this.role();
-    this.toggleStatus.emit({ id: role.id, status: role.isActive });
+    this.toggleStatus.emit({ id: Number(role.id), status: role.status === 'active' });
   }
 
   onDeleteRole() {
-    this.delete.emit(this.role().id);
+    this.delete.emit(Number(this.role().id));
   }
 
   // Helper methods for styling
-  getAccessLevelInfo(): RoleAccessLevelInfo {
+  getAccessLevelInfo() {
     return getRoleAccessLevelInfo(this.role().accessLevel);
   }
 
   getStatusInfo() {
-    const isActive = this.role().isActive;
+    const isActive = this.role().status === 'active';
+    const levelInfo = this.getAccessLevelInfo();
+
     return {
       label: isActive ? 'Activo' : 'Inactivo',
       icon: isActive ? 'filled/check-circle' : 'filled/x-circle',
       classes: isActive
-        ? 'bg-successful-100 text-successful-800 dark:bg-successful-800 dark:text-successful-200'
+        ? levelInfo.badgeClasses
         : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300',
       buttonClasses: isActive
         ? 'text-warning-600 hover:text-warning-700 dark:text-warning-400 dark:hover:text-warning-300'

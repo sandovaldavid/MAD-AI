@@ -4,24 +4,14 @@ import { CommonModule } from '@angular/common';
 // Shared Components
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
-// Types - Export all interfaces from role-colors for consistency
 import {
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
   type RoleAccessLevelColor,
   type RoleAccessLevelInfo,
-  ROLE_ACCESS_LEVEL_CONFIG,
-  ROLE_ACCESS_LEVEL_ICONS,
-} from '../../types/role-colors.type';
+} from '../../../../models/roles/accesLevel.models.js';
 
-// Re-export types for component consumers
 export type { RoleAccessLevelColor, RoleAccessLevelInfo };
-export {
-  ROLE_ACCESS_LEVEL_CONFIG,
-  ROLE_ACCESS_LEVEL_ICONS,
-  getRoleAccessLevelInfo,
-  getRoleAccessLevelIcon,
-};
 
 /**
  * AccessLevelIndicator Component
@@ -78,10 +68,6 @@ export {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccessLevelIndicator {
-  // ============================================================================
-  // Inputs
-  // ============================================================================
-
   /** Access level (1-5) to display */
   level = input.required<number>();
 
@@ -108,10 +94,6 @@ export class AccessLevelIndicator {
 
   /** Whether to use compact display */
   compact = input<boolean>(false);
-
-  // ============================================================================
-  // Computed Properties
-  // ============================================================================
 
   /** Access level information including colors and labels */
   readonly levelInfo = computed(() => {
@@ -235,9 +217,6 @@ export class AccessLevelIndicator {
     }
   });
 
-  // ============================================================================
-  // Methods
-  // ============================================================================
 
   /**
    * Get display label based on compact mode and show label setting
