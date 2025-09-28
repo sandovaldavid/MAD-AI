@@ -5,7 +5,6 @@ export type {
   RoleFormView,
   RoleDetailView,
   StatusBadgeView,
-  TableAction,
   RoleStatus,
   RoleSearchView,
   RoleFiltersView,
