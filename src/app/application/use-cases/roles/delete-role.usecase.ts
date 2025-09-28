@@ -3,7 +3,7 @@ import { ROLE_REPOSITORY, LOGGER_PORT, CLOCK_PORT } from '@di/tokens';
 import { ApplicationError } from '@application/errors/application-error';
 import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import type { DeleteRoleRequest } from '@application/types/roles.types';
+import type { DeleteRoleRequest } from '@/app/application/types/roles/roles.types';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';

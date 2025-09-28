@@ -4,7 +4,7 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import { AuthMapper } from '@application/mappers';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { RegisterRequest } from '@application/types/auth.types';
+import type { RegisterRequest } from '@/app/application/types/auth/auth.types';
 
 /**
  * Register User Use Case

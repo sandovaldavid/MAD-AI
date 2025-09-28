@@ -5,7 +5,7 @@ import type { UserRepository } from '@domain/repositories/business/user.reposito
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { UnassignRoleFromUserRequest } from '@application/types/roles.types';
+import type { UnassignRoleFromUserRequest } from '@/app/application/types/roles/roles.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Role } from '@domain/entities/role.entity';
 

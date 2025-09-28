@@ -5,7 +5,7 @@ import { AuthMapper } from '@application/mappers';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { SessionStoreRepository } from '@domain/repositories/session/session-store.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { LoginRequest } from '@application/types/auth.types';
+import type { LoginRequest } from '@/app/application/types/auth/auth.types';
 import type { Session } from '@domain/entities/session.entity';
 
 /**

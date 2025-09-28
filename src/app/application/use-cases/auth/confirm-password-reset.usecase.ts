@@ -4,7 +4,7 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { ResetPasswordContract } from '@domain/repositories/business/auth.contract';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { PasswordResetConfirmRequest } from '@application/types/auth.types';
+import type { PasswordResetConfirmRequest } from '@/app/application/types/auth/auth.types';
 
 /**
  * Orchestrates the password reset confirmation process.

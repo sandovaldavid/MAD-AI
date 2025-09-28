@@ -4,7 +4,7 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { ActivateRoleRequest } from '@application/types/roles.types';
+import type { ActivateRoleRequest } from '@/app/application/types/roles/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
 /**

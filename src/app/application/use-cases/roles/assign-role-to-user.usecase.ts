@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ROLE_REPOSITORY, USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import type { AssignRoleToUserRequest } from '@application/types/roles.types';
+import type { AssignRoleToUserRequest } from '@/app/application/types/roles/roles.types';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';

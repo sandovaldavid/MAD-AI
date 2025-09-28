@@ -6,7 +6,7 @@ import { ApplicationErrorCode } from '@application/errors/error-codes.enum';
 import type { RoleRepository } from '@domain/repositories/business/role.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger, LogContext } from '@core/interfaces/logger.interface';
-import type { GetRoleByNameRequest } from '@application/types/roles.types';
+import type { GetRoleByNameRequest } from '@/app/application/types/roles/roles.types';
 import type { Role } from '@domain/entities/role.entity';
 
 /**

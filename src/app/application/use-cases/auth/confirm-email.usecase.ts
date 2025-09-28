@@ -3,7 +3,7 @@ import { AUTH_REPOSITORY, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { AuthRepository } from '@domain/repositories/business/auth.repository';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { EmailConfirmationRequest } from '@application/types/auth.types';
+import type { EmailConfirmationRequest } from '@/app/application/types/auth/auth.types';
 
 /**
  * Orchestrates the email confirmation process.
