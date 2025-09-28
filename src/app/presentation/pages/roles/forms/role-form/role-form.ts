@@ -8,15 +8,23 @@ import {
   output,
   effect,
 } from '@angular/core';
-// Access level config for consistent labels/descriptions
-import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RolesFacade } from '@application/facades/role';
 import { NotificationsFacade } from '@application/facades/notifications.facade';
 import { RoleCard } from '../../components/role-card/role-card';
-import { RoleModel } from '../../models/role.model';
 import { Toggle } from '@presentation/shared/ui/toggle/toggle';
+
+// Models and types
+import type { RoleFormView, RoleCardView } from '../../../../models/roles/role.models';
+import {
+  ROLE_ACCESS_LEVEL_CONFIG,
+  ROLE_ACCESS_LEVEL_ICONS,
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
+  getAccessLevelDescription,
+  type RoleAccessLevelInfo,
+} from '../../../../models/roles/accesLevel.models';
 
 type FormMode = 'create' | 'edit';
 
@@ -70,22 +78,42 @@ export class RoleFormComponent {
     label: `Nivel ${key} - ${info.label}`,
     description: info.description,
     color: info.color,
-    // Optionally add icon if needed: icon: ROLE_ACCESS_LEVEL_ICONS[Number(key)]
+    icon: ROLE_ACCESS_LEVEL_ICONS[Number(key)],
+    info: info,
   }));
 
   // Preview role model computed from form values
-  readonly previewRole = computed((): RoleModel => {
+  readonly previewRole = computed((): RoleFormView => {
     const name = this.formNameValue() || 'Nuevo Rol';
     const accessLevel = this.accessLevelValue();
+    const levelInfo = getRoleAccessLevelInfo(accessLevel);
+    const icon = getRoleAccessLevelIcon(accessLevel);
 
     return {
-      id: -1, // Temporary ID for preview
+      id: 'preview', // Temporary ID for preview
       name: name,
       displayName: `${name} (L${accessLevel})`,
+      description: this.formDescriptionValue(),
+      color: levelInfo.color,
+      icon: icon,
       accessLevel: accessLevel,
       isActive: this.formIsActiveValue(),
-      description: this.formDescriptionValue() || undefined,
+    };
+  });
+
+  // Preview role as card view for the role-card component
+  readonly previewRoleCard = computed((): RoleCardView => {
+    const formRole = this.previewRole();
+
+    return {
+      id: formRole.id || 'preview',
+      name: formRole.name,
+      displayName: formRole.displayName,
+      description: formRole.description,
+      accessLevel: formRole.accessLevel,
       userCount: 0, // New role starts with 0 users
+      permissionCount: 0, // New role starts with 0 permissions
+      status: formRole.isActive ? 'active' : 'inactive',
     };
   });
 
@@ -200,6 +228,27 @@ export class RoleFormComponent {
       '¿Cómo crear un rol?',
       'Completa el formulario y selecciona el nivel de acceso adecuado para el nuevo rol.'
     );
+  }
+
+  /**
+   * Get access level information for display
+   */
+  getAccessLevelInfo(level: number): RoleAccessLevelInfo {
+    return getRoleAccessLevelInfo(level);
+  }
+
+  /**
+   * Get access level icon
+   */
+  getAccessLevelIcon(level: number): string {
+    return getRoleAccessLevelIcon(level);
+  }
+
+  /**
+   * Get access level description
+   */
+  getAccessLevelDescription(level: number): string {
+    return getAccessLevelDescription(level);
   }
 
   // Handle toggle status change

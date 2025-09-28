@@ -90,11 +90,11 @@
       <!-- Role Card Preview -->
       <div class="max-w-sm">
         <app-role-card
-          [role]="previewRole()"
+          [role]="previewRoleCard()"
           [loading]="false"
           (view)="onPreviewView()"
           (toggleStatus)="onPreviewToggleStatus()"
-          (delete)="onPreviewDelete()">
+          (delete)="onPreviewDelete()">>
         </app-role-card>
       </div>
     </div>
