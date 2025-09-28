@@ -24,7 +24,7 @@
             <button
               type="button"
               class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-              (click)="sortBy('name')">
+              (click)="onSortColumn('name')">
               <span>Nombre</span>
               <ui-icon
                 [name]="getSortIcon('name')"
@@ -37,9 +37,18 @@
 
           <!-- Access Level Column -->
           <th class="px-3 py-3 text-left">
-            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-              >Nivel de Acceso</span
-            >
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="onSortColumn('accessLevel')">
+              <span>Nivel de Acceso</span>
+              <ui-icon
+                [name]="getSortIcon('accessLevel')"
+                size="sm"
+                [variant]="isSorted('accessLevel') ? 'filled' : 'outline'"
+                [class]="isSorted('accessLevel') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
           </th>
 
           <!-- User Count Column -->
@@ -47,7 +56,7 @@
             <button
               type="button"
               class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
-              (click)="sortBy('userCount')">
+              (click)="onSortColumn('userCount')">
               <span>Usuarios</span>
               <ui-icon
                 [name]="getSortIcon('userCount')"
@@ -60,7 +69,18 @@
 
           <!-- Status Column -->
           <th class="px-3 py-3 text-left">
-            <span class="text-sm font-medium text-neutral-700 dark:text-neutral-300">Estado</span>
+            <button
+              type="button"
+              class="flex items-center gap-1 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-100"
+              (click)="onSortColumn('isActive')">
+              <span>Estado</span>
+              <ui-icon
+                [name]="getSortIcon('isActive')"
+                size="sm"
+                [variant]="isSorted('isActive') ? 'filled' : 'outline'"
+                [class]="isSorted('isActive') ? 'text-primary-500' : 'text-neutral-400'">
+              </ui-icon>
+            </button>
           </th>
 
           <!-- Actions Column -->

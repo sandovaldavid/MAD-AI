@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BulkActionsToolbar } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
@@ -14,24 +14,7 @@ import type { RoleSummary } from '@application/mappers/role.mapper';
 import type {
   BulkAction,
   ExportFormat,
-  SelectionStats,
 } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
-
-/**
- * Sort configuration interface
- */
-interface SortConfig {
-  column: 'name' | 'displayName' | 'userCount' | 'createdAt' | 'updatedAt';
-  direction: 'asc' | 'desc';
-}
-
-/**
- * Filter configuration interface
- */
-interface FilterConfig {
-  search: string;
-  status: 'active' | 'inactive' | null;
-}
 
 @Component({
   selector: 'app-role-table',
@@ -39,7 +22,6 @@ interface FilterConfig {
   imports: [CommonModule, FormsModule, BulkActionsToolbar, AccessLevelIndicator, Icon, Button],
   templateUrl: './role-table.html',
   styleUrl: './role-table.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoleTable {
   /** List of roles to display */
@@ -57,6 +39,12 @@ export class RoleTable {
   /** Items per page */
   pageSize = input<number>(10);
 
+  /** Current sort column from parent */
+  sortBy = input<'name' | 'accessLevel' | 'userCount' | 'isActive'>('name');
+
+  /** Current sort direction from parent */
+  sortDirection = input<'asc' | 'desc'>('asc');
+
   /** Emitted when user wants to view role details */
   viewRole = output<number>();
 
@@ -72,29 +60,17 @@ export class RoleTable {
   /** Emitted when bulk action is triggered */
   bulkAction = output<{ action: string; roleIds: number[]; metadata?: any }>();
 
-  /** Current sort configuration */
-  private _sortConfig = signal<SortConfig>({
-    column: 'name',
-    direction: 'asc',
-  });
-
-  /** Current filter configuration */
-  private _filterConfig = signal<FilterConfig>({
-    search: '',
-    status: null,
-  });
+  /** Emitted when user requests sorting change */
+  sortChange = output<{
+    column: 'name' | 'accessLevel' | 'userCount' | 'isActive';
+    direction: 'asc' | 'desc';
+  }>();
 
   /** Selected role IDs for bulk operations */
   private _selectedRoles = signal<Set<number>>(new Set());
 
   /** Current page number */
   private _currentPage = signal<number>(1);
-
-  /** Current sort configuration */
-  readonly sortConfig = computed(() => this._sortConfig());
-
-  /** Current filter configuration */
-  readonly filterConfig = computed(() => this._filterConfig());
 
   /** Selected role IDs */
   readonly selectedRoles = computed(() => this._selectedRoles());
@@ -107,25 +83,18 @@ export class RoleTable {
     return this.roles().map((role) => transformToTableRowView(role));
   });
 
-  /** Filtered and sorted roles */
-  readonly filteredRoles = computed(() => {
-    let filteredRoles = this.applyFilters(this.tableRowViews());
-    filteredRoles = this.applySorting(filteredRoles);
-    return filteredRoles;
-  });
-
   /** Paginated roles for display */
   readonly displayedRoles = computed(() => {
-    const filtered = this.filteredRoles();
-    if (!this.enablePagination()) return filtered;
+    const roles = this.tableRowViews();
+    if (!this.enablePagination()) return roles;
 
     const startIndex = (this.currentPage() - 1) * this.pageSize();
     const endIndex = startIndex + this.pageSize();
-    return filtered.slice(startIndex, endIndex);
+    return roles.slice(startIndex, endIndex);
   });
 
-  /** Total number of filtered roles */
-  readonly totalRoles = computed(() => this.filteredRoles().length);
+  /** Total number of roles */
+  readonly totalRoles = computed(() => this.tableRowViews().length);
 
   /** Total number of pages */
   readonly totalPages = computed(() => {
@@ -150,12 +119,6 @@ export class RoleTable {
   /** Number of selected roles */
   readonly selectedCount = computed(() => this.selectedRoles().size);
 
-  /** Show clear filters button */
-  readonly showClearFilters = computed(() => {
-    const filters = this.filterConfig();
-    return filters.search || filters.status !== null;
-  });
-
   /** Show bulk actions toolbar */
   readonly showBulkActions = computed(() => {
     return this.enableBulkActions() && this.selectedCount() > 0;
@@ -178,7 +141,7 @@ export class RoleTable {
 
   /** Empty search result check */
   readonly isEmptySearchResult = computed(() => {
-    return this.totalRoles() === 0 && this.showClearFilters();
+    return this.totalRoles() === 0;
   });
 
   /** Show floating toolbar */
@@ -241,55 +204,30 @@ export class RoleTable {
   });
 
   /**
-   * Sort roles by the specified column
+   * Handle sort column click - emit sort change to parent
    */
-  sortBy(column: SortConfig['column']) {
-    const current = this._sortConfig();
-    const direction = current.column === column && current.direction === 'asc' ? 'desc' : 'asc';
-    this._sortConfig.set({ column, direction });
+  onSortColumn(column: 'name' | 'accessLevel' | 'userCount' | 'isActive') {
+    const currentSort = this.sortBy();
+    const currentDirection = this.sortDirection();
+    const direction = currentSort === column && currentDirection === 'asc' ? 'desc' : 'asc';
+    this.sortChange.emit({ column, direction });
   }
 
   /**
    * Get sort icon for column
    */
-  getSortIcon(column: SortConfig['column']): string {
-    const current = this._sortConfig();
-    if (current.column !== column) return 'chevron-up-down';
-    return current.direction === 'asc' ? 'chevron-up' : 'chevron-down';
+  getSortIcon(column: 'name' | 'accessLevel' | 'userCount' | 'isActive'): string {
+    const currentSort = this.sortBy();
+    const currentDirection = this.sortDirection();
+    if (currentSort !== column) return 'chevron-up-down';
+    return currentDirection === 'asc' ? 'chevron-up' : 'chevron-down';
   }
 
   /**
    * Check if column is currently sorted
    */
-  isSorted(column: SortConfig['column']): boolean {
-    return this._sortConfig().column === column;
-  }
-
-  /**
-   * Update search filter
-   */
-  updateSearchFilter(search: string) {
-    this._filterConfig.update((config) => ({ ...config, search }));
-    this._currentPage.set(1);
-  }
-
-  /**
-   * Update status filter
-   */
-  updateStatusFilter(status: 'active' | 'inactive' | null) {
-    this._filterConfig.update((config) => ({ ...config, status }));
-    this._currentPage.set(1);
-  }
-
-  /**
-   * Clear all filters
-   */
-  clearFilters() {
-    this._filterConfig.set({
-      search: '',
-      status: null,
-    });
-    this._currentPage.set(1);
+  isSorted(column: 'name' | 'accessLevel' | 'userCount' | 'isActive'): boolean {
+    return this.sortBy() === column;
   }
 
   /**
@@ -492,80 +430,5 @@ export class RoleTable {
         metadata: { format: format.id },
       });
     }
-  }
-
-  /**
-   * Apply filters to roles list
-   */
-  private applyFilters(roles: RoleTableRowView[]): RoleTableRowView[] {
-    const filters = this.filterConfig();
-
-    return roles.filter((role) => {
-      // Search filter
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesSearch =
-          role.name.toLowerCase().includes(searchLower) ||
-          role.description.toLowerCase().includes(searchLower) ||
-          role.displayName.toLowerCase().includes(searchLower);
-
-        if (!matchesSearch) return false;
-      }
-
-      // Status filter
-      if (filters.status !== null) {
-        const roleStatus = role.statusBadge.label === 'Activo' ? 'active' : 'inactive';
-        if (roleStatus !== filters.status) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }
-
-  /**
-   * Apply sorting to roles list
-   */
-  private applySorting(roles: RoleTableRowView[]): RoleTableRowView[] {
-    const sort = this.sortConfig();
-
-    return [...roles].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sort.column) {
-        case 'name':
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-          break;
-        case 'displayName':
-          aValue = a.displayName.toLowerCase();
-          bValue = b.displayName.toLowerCase();
-          break;
-        case 'userCount':
-          aValue = a.userCount || 0;
-          bValue = b.userCount || 0;
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-          break;
-        case 'updatedAt':
-          aValue = new Date(a.updatedAt).getTime();
-          bValue = new Date(b.updatedAt).getTime();
-          break;
-        default:
-          return 0;
-      }
-
-      if (aValue < bValue) {
-        return sort.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sort.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
   }
 }
