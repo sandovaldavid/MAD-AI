@@ -34,7 +34,7 @@ import type {
   UserSelectionState,
   UserBulkAction,
   UserActionConfig,
-} from '../types';
+} from '../../../models/users';
 import { UserPresentationMapper } from './user-presentation.mapper';
 import { UserListViewModel } from '../../../models/users/user-display.model';
 

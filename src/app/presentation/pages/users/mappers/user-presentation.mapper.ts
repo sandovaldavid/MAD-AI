@@ -34,7 +34,7 @@ import type {
   UserStatusDisplay,
   UserStatsData,
   UserActionConfig,
-} from '../types';
+} from '../../../models/users';
 import {
   UserListViewModel,
   UserCardViewModel,

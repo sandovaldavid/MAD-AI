@@ -49,7 +49,7 @@ import { Pagination } from '@presentation/shared/ui/pagination/pagination';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { UserPresentationMapper } from '../../mappers/user-presentation.mapper';
-import type { UserDisplayData } from '../../types/user-ui.types';
+import type { UserDisplayData } from '../../../../models/users/user-ui.types';
 import type {
   UserActionEvent,
   UserSelectionEvent,

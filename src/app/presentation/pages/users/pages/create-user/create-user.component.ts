@@ -58,7 +58,7 @@ import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Input } from '@presentation/shared/ui/input/input';
 
 // Local Imports
-import type { UserFormData, UserFormErrors } from '../../types';
+import type { UserFormData, UserFormErrors } from '../../../../models/users';
 
 /**
  * Create User Page Component

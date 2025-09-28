@@ -62,7 +62,7 @@ import {
 } from '@presentation/shared/components/page-header/page-header';
 
 // Local Imports
-import type { UserActionConfig } from '../../types';
+import type { UserActionConfig } from '../../../../models/users';
 import { UserPresentationMapper } from '../../mappers';
 
 // Role Access Level Imports

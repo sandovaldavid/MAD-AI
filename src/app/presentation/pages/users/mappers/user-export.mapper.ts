@@ -10,7 +10,7 @@
  * @consumers Export-related components and services
  */
 
-import { UserDisplayData } from '../types/user-ui.types';
+import { UserDisplayData } from '../../../models/users/user-ui.types';
 
 /**
  * Export format options for user data

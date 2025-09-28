@@ -70,7 +70,7 @@ import {
 } from '@presentation/shared/components/page-header/page-header';
 
 // Local Imports
-import type { UserFormData, UserFormErrors } from '../../types';
+import type { UserFormData, UserFormErrors } from '../../../../models/users';
 
 // Role Access Level Imports
 import {
