@@ -26,7 +26,7 @@
  */
 
 import type { User } from '@domain/entities/user.entity';
-import type { ListUsersResult } from '@application/types/users.types';
+import type { ListUsersResult } from '@/app/application/types/users/users.types';
 import type {
   UserListData,
   UserPaginationConfig,
@@ -36,7 +36,7 @@ import type {
   UserActionConfig,
 } from '../types';
 import { UserPresentationMapper } from './user-presentation.mapper';
-import { UserListViewModel } from '../models/user-display.model';
+import { UserListViewModel } from '../../../models/users/user-display.model';
 
 /**
  * User List Mapper

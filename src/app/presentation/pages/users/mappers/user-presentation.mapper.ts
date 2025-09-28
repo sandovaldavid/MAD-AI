@@ -39,7 +39,7 @@ import {
   UserListViewModel,
   UserCardViewModel,
   UserDetailViewModel,
-} from '../models/user-display.model';
+} from '../../../models/users/user-display.model';
 
 /**
  * Main User Presentation Mapper
