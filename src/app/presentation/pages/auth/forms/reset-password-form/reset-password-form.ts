@@ -7,7 +7,7 @@ import { Input } from '@presentation/shared/ui/input/input';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
-import type { PasswordResetConfirmRequest } from '@application/types/auth.types';
+import type { PasswordResetConfirmRequest } from '@/app/application/types/auth/auth.types';
 
 // Custom validator for password confirmation
 function passwordMatchValidator(control: AbstractControl) {

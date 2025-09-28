@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 
 import { AuthFacade } from '@application/facades/auth.facade';
 import { RolesFacade } from '@application/facades/role';
-import type { RegisterRequest } from '@application/types/auth.types';
+import type { RegisterRequest } from '@/app/application/types/auth/auth.types';
 
 import { Button } from '@presentation/shared/ui/button/button';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
