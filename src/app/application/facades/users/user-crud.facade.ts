@@ -1,22 +1,10 @@
-/**
- * @fileoverview User CRUD Operations Facade
- *
- * This file contains the UserCrudFacade class, which handles Create, Read, Update,
- * and Delete operations for users. It extends the BaseUserFacade to leverage shared
- * state and dependencies while focusing solely on basic CRUD functionality.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- */
-
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 import type { Message } from '@application/types/message.type';
 
 // Application Layer Imports
 import type { FacadeOpts } from '@application/types/facade-opts';
-import type { CreateUserRequest, UpdateUserRequest } from '@application/types/users.types';
+import type { CreateUserRequest, UpdateUserRequest } from '@application/types/users/users.types';
 
 /**
  * User CRUD Operations Facade
@@ -33,7 +21,6 @@ import type { CreateUserRequest, UpdateUserRequest } from '@application/types/us
  * - Process user deletion with cleanup
  * - Coordinate with notifications facade for user feedback
  * - Maintain state consistency after CRUD operations
- * - Emit appropriate events for cross-facade coordination
  *
  * @architecture
  * - Extends BaseUserFacade for shared state and dependencies
@@ -45,7 +32,6 @@ import type { CreateUserRequest, UpdateUserRequest } from '@application/types/us
  * @patterns
  * - Facade Pattern: Simplifies CRUD operations interface
  * - Command Pattern: Each operation delegates to specific use case
- * - Observer Pattern: Emits events for state changes
  * - Template Method: Uses base class methods for common operations
  *
  * @author MAD-AI Development Team
@@ -78,12 +64,6 @@ export class UserCrudFacade extends BaseUserFacade {
         currentPassword: 'admin-reset', // Not used, placeholder
         newPassword: 'Temporal123!', // Should be generated securely
         newPasswordConfirm: 'Temporal123!',
-      });
-
-      // Emit event for coordination
-      this.emitEvent({
-        type: 'user-password-reset',
-        userId,
       });
 
       return {
@@ -134,12 +114,6 @@ export class UserCrudFacade extends BaseUserFacade {
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(user);
       }
-
-      // Emitir evento para coordinación entre facades
-      this.emitEvent({
-        type: active ? 'user-activated' : 'user-deactivated',
-        user,
-      });
 
       return {
         success: true,
@@ -201,12 +175,6 @@ export class UserCrudFacade extends BaseUserFacade {
       // Actualiza el estado local
       this._users.update((users) => [...users, user]);
       this._totalCount.update((count) => count + 1);
-
-      // Emitir evento para coordinación entre facades
-      this.emitEvent({
-        type: 'user-created',
-        user,
-      });
 
       return {
         success: true,
@@ -280,13 +248,6 @@ export class UserCrudFacade extends BaseUserFacade {
       // Campos actualizados
       const updatedFields = Object.keys(request.updateData);
 
-      // Emitir evento para coordinación entre facades
-      this.emitEvent({
-        type: 'user-updated',
-        user,
-        updatedFields,
-      });
-
       return {
         success: true,
         user,
@@ -346,12 +307,6 @@ export class UserCrudFacade extends BaseUserFacade {
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(null);
       }
-
-      // Emitir evento para coordinación entre facades
-      this.emitEvent({
-        type: 'user-deleted',
-        userId,
-      });
 
       return {
         success: true,

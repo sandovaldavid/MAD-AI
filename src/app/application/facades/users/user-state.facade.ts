@@ -1,16 +1,3 @@
-/**
- * @fileoverview User State Management Facade
- *
- * This file contains the UserStateFacade class, which handles user state
- * management operations like activation and deactivation. It extends the
- * BaseUserFacade to leverage shared state and dependencies while focusing
- * solely on user state transitions.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- */
-
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 
@@ -31,7 +18,6 @@ import type { Message } from '@application/types/message.type';
  * - Handle user account activation with state synchronization
  * - Process user account deactivation with proper cleanup
  * - Coordinate state changes with local facade state
- * - Emit events for cross-facade coordination
  * - Manage loading states during state transitions
  * - Handle error scenarios for state management operations
  *
@@ -46,7 +32,6 @@ import type { Message } from '@application/types/message.type';
  * - Facade Pattern: Simplifies state management interface
  * - Command Pattern: Each operation delegates to specific use case
  * - State Pattern: Manages user state transitions
- * - Observer Pattern: Emits events for state changes
  * - Template Method: Uses base class methods for common operations
  *
  * @author MAD-AI Development Team
@@ -64,7 +49,6 @@ export class UserStateFacade extends BaseUserFacade {
    * Activate a user account
    *
    * Enables a previously deactivated user account, allowing them to access the system
-   * again. This operation updates the user's status and emits events for cross-facade
    * coordination. The method handles state synchronization between local facade state
    * and the updated user entity, ensuring consistency across the application.
    *
@@ -101,7 +85,6 @@ export class UserStateFacade extends BaseUserFacade {
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(updatedUser);
       }
-      this.emitEvent({ type: 'user-activated', user: updatedUser });
       return {
         success: true,
         message: 'Usuario activado exitosamente.',
@@ -163,7 +146,6 @@ export class UserStateFacade extends BaseUserFacade {
       if (this._selectedUser()?.id === userId) {
         this._selectedUser.set(updatedUser);
       }
-      this.emitEvent({ type: 'user-deactivated', user: updatedUser });
       return {
         success: true,
         message: 'Usuario desactivado exitosamente.',

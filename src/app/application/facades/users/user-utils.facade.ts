@@ -18,9 +18,8 @@ import { BaseUserFacade } from './base-user.facade';
 import type { User } from '@domain/entities/user.entity';
 
 // Application Layer Imports
-import type { FacadeOpts } from '@application/types/facade-opts';
 import type { Message } from '@application/types/message.type';
-import type { ListUsersRequest } from '@application/types/users.types';
+import type { ListUsersRequest } from '@/app/application/types/users/users.types';
 
 /**
  * User Utilities Facade
@@ -36,7 +35,6 @@ import type { ListUsersRequest } from '@application/types/users.types';
  * - Handle error state management and cleanup
  * - Provide facade state reset and initialization
  * - Coordinate data refresh operations
- * - Emit utility events for cross-facade coordination
  * - Provide convenience methods for common state operations
  *
  * @architecture
@@ -49,7 +47,6 @@ import type { ListUsersRequest } from '@application/types/users.types';
  * @patterns
  * - Facade Pattern: Simplifies utility operations interface
  * - Command Pattern: Each operation performs specific utility function
- * - Observer Pattern: Emits events for utility state changes
  * - Template Method: Uses base class methods for common operations
  * - Helper Pattern: Provides convenience methods for common tasks
  *
@@ -69,7 +66,6 @@ export class UserUtilsFacade extends BaseUserFacade {
    *
    * Sets the currently selected user for detailed operations such as editing,
    * viewing profile details, or performing user-specific actions. This method
-   * updates the selectedUser state and emits an event for cross-facade coordination,
    * allowing other components to react to user selection changes.
    *
    * @param user User entity to select, or null to clear selection
@@ -88,11 +84,6 @@ export class UserUtilsFacade extends BaseUserFacade {
    */
   selectUser(user: User | null): Message {
     this._selectedUser.set(user);
-    this.emitEvent({
-      type: 'bulk-operation-completed',
-      operation: 'user-selection',
-      results: { selectedUser: user },
-    });
     return {
       success: true,
       message: user ? 'Usuario seleccionado correctamente.' : 'Selección de usuario borrada.',
@@ -287,11 +278,6 @@ export class UserUtilsFacade extends BaseUserFacade {
       const result = await this.listUsersUC.execute(request);
       this._users.set(result.users);
       this._totalCount.set(result.totalCount);
-      this.emitEvent({
-        type: 'bulk-operation-completed',
-        operation: 'refresh-users',
-        results: result,
-      });
       return {
         success: true,
         message: 'Lista de usuarios actualizada correctamente.',

@@ -1,22 +1,10 @@
-/**
- * @fileoverview User Lookup Operations Facade
- *
- * This file contains the UserLookupFacade class, which handles various user
- * lookup and search operations. It extends the BaseUserFacade to leverage shared
- * state and dependencies while focusing solely on user discovery functionality.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- */
-
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 
 // Application Layer Imports
 import type { FacadeOpts } from '@application/types/facade-opts';
 import type { Message } from '@application/types/message.type';
-import type { UserLookupCriteria } from '@application/types/users.types';
+import type { UserLookupCriteria } from '@/app/application/types/users/users.types';
 
 /**
  * User Lookup Operations Facade

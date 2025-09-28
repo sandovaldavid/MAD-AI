@@ -1,15 +1,3 @@
-/**
- * @fileoverview User Listing Operations Facade
- *
- * This file contains the UserListFacade class, which handles user listing,
- * filtering, and search operations. It extends the BaseUserFacade to leverage
- * shared state and dependencies while focusing solely on list management functionality.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- */
-
 import { Injectable } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 import type { Message } from '@application/types/message.type';
@@ -23,7 +11,7 @@ import type {
   ListUsersRequest,
   ListUsersResult,
   UserSearchCriteria,
-} from '@application/types/users.types';
+} from '@application/types/users/users.types';
 
 /**
  * User Listing Operations Facade
@@ -38,7 +26,6 @@ import type {
  * - Process advanced user search with multiple criteria
  * - Manage filter state and list synchronization
  * - Coordinate list updates with local state management
- * - Emit events for list operations and filter changes
  * - Provide convenient methods for common listing scenarios
  *
  * @architecture
@@ -51,7 +38,6 @@ import type {
  * @patterns
  * - Facade Pattern: Simplifies user listing interface
  * - Command Pattern: Each operation delegates to specific use case
- * - Observer Pattern: Emits events for list state changes
  * - Template Method: Uses base class methods for common operations
  * - Strategy Pattern: Different listing strategies based on criteria
  *
@@ -62,17 +48,12 @@ import type {
  */
 @Injectable({ providedIn: 'root' })
 export class UserListFacade extends BaseUserFacade {
-  // ============================================================================
-  // User Listing and Filtering Operations
-  // ============================================================================
-
   /**
    * List users with optional filtering
    *
    * Retrieves a paginated list of users with optional filtering criteria.
    * This method supports various filter options including search terms,
    * status filters, role filters, and pagination parameters. The results
-   * update the local state and emit events for cross-facade coordination.
    *
    * @param request Optional list request with filter criteria and pagination
    * @param opts Optional facade configuration (skipLoading, etc.)
@@ -117,13 +98,6 @@ export class UserListFacade extends BaseUserFacade {
       this._users.set(result.users);
       this._currentFilter.set(request?.filter || null);
       this._totalCount.set(result.totalCount);
-
-      // Emitir evento de actualización de lista
-      this.emitEvent({
-        type: 'bulk-operation-completed',
-        operation: 'list-users',
-        results: result,
-      });
 
       if (result.users.length === 0) {
         return {

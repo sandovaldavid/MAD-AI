@@ -32,9 +32,9 @@ import type {
   ListUsersRequest,
   UserSearchCriteria,
   UserLookupCriteria,
-} from '@application/types/users.types';
-import { isListUsersResult } from '@application/types/users.types';
-import type { UserExportConfig } from '@application/types/user-export.types';
+} from '@/app/application/types/users/users.types';
+import { isListUsersResult } from '@/app/application/types/users/users.types';
+import type { UserExportConfig } from '@/app/application/types/users/user-export.types';
 import type { FacadeOpts } from '@application/types/facade-opts';
 import type { Message } from '@application/types/message.type';
 import { isMessage } from '@application/types/message.type';
@@ -79,10 +79,6 @@ import { isMessage } from '@application/types/message.type';
  */
 @Injectable({ providedIn: 'root' })
 export class UsersFacade extends BaseUserFacade {
-  // ============================================================================
-  // Specialized Facade Coordination
-  // ============================================================================
-
   // Inject all specialized facades for delegation using inject()
   private readonly crudFacade = inject(UserCrudFacade);
   private readonly lookupFacade = inject(UserLookupFacade);
@@ -94,10 +90,6 @@ export class UsersFacade extends BaseUserFacade {
   constructor() {
     super();
   }
-
-  // ============================================================================
-  // CRUD Operations (Delegated to UserCrudFacade)
-  // ============================================================================
 
   /**
    * Create a new user
@@ -163,10 +155,6 @@ export class UsersFacade extends BaseUserFacade {
       error: result['error'],
     };
   }
-
-  // ============================================================================
-  // Lookup Operations (Delegated to UserLookupFacade)
-  // ============================================================================
 
   /**
    * Get user by ID
@@ -252,10 +240,6 @@ export class UsersFacade extends BaseUserFacade {
     };
   }
 
-  // ============================================================================
-  // List Operations (Delegated to UserListFacade)
-  // ============================================================================
-
   /**
    * List users with optional filtering
    * @param request Optional request with filtering criteria
@@ -339,10 +323,6 @@ export class UsersFacade extends BaseUserFacade {
       data: result,
     };
   }
-
-  // ============================================================================
-  // State Operations (Delegated to UserStateFacade)
-  // ============================================================================
 
   /**
    * Activate a user account
@@ -449,10 +429,6 @@ export class UsersFacade extends BaseUserFacade {
     };
   }
 
-  // ============================================================================
-  // Utility Operations (Delegated to UserUtilsFacade)
-  // ============================================================================
-
   /**
    * Select a user for detailed view
    * @param user User entity to select, or null to clear selection
@@ -535,10 +511,6 @@ export class UsersFacade extends BaseUserFacade {
     return this.utilsFacade.isLoading();
   }
 
-  // ============================================================================
-  // Enhanced Operations (Combination Methods)
-  // ============================================================================
-
   /**
    * Create user and select for editing
    *
@@ -597,10 +569,6 @@ export class UsersFacade extends BaseUserFacade {
     }
     return result;
   }
-
-  // ============================================================================
-  // Export Operations (Delegated to UserExportFacade)
-  // ============================================================================
 
   /**
    * Export users by IDs

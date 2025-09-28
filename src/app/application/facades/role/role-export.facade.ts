@@ -3,7 +3,7 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import { RoleStateFacade } from './role-state.facade';
 import { ROLE_EXPORT_SERVICE_PORT } from '@di/tokens';
 import { Role } from '@domain/entities/role.entity';
-import type { RoleExportConfig } from '@application/types/role-export.types';
+import type { RoleExportConfig } from '@/app/application/types/roles/role-export.types';
 import type { FacadeOpts } from './role.types';
 import type { Message } from '@application/types/message.type';
 

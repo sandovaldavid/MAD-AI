@@ -28,7 +28,7 @@ import type {
   RegisterRequest,
   LogoutRequest,
   PasswordResetConfirmRequest,
-} from '@application/types/auth.types';
+} from '@/app/application/types/auth/auth.types';
 import type {
   UpdateUserPatchContract,
   ChangePasswordContract,
@@ -74,9 +74,6 @@ import type { Message } from '@application/types/message.type';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
-  // ============================================================================
-  // Dependencies
-  // ============================================================================
 
   private readonly loginUC = inject<LoginUseCase>(LOGIN_USECASE_PORT);
   private readonly logoutUC = inject<LogoutUseCase>(LOGOUT_USECASE_PORT);
@@ -99,10 +96,6 @@ export class AuthFacade {
   );
   private readonly logger = inject<Logger>(LOGGER_PORT);
   private readonly errorTransformer = inject(ApplicationErrorTransformer);
-
-  // ============================================================================
-  // Private State Signals
-  // ============================================================================
 
   /**
    * Loading state signal for async operations
@@ -144,10 +137,6 @@ export class AuthFacade {
    * @default false
    */
   private readonly _sessionRestoreAttempted = signal(false);
-
-  // ============================================================================
-  // Public Computed Properties (Reactive State)
-  // ============================================================================
 
   /**
    * Loading state for async operations
@@ -219,10 +208,6 @@ export class AuthFacade {
     return user ? user.role.canAccessAdmin() : false;
   });
 
-  // ============================================================================
-  // Initialization and State Management Operations
-  // ============================================================================
-
   /**
    * Initialize authentication state from storage
    * Uses the existing refreshProfile use case following Clean Architecture
@@ -257,10 +242,6 @@ export class AuthFacade {
       this.clearAuthStateCompletely();
     }
   }
-
-  // ============================================================================
-  // Authentication Operations
-  // ============================================================================
 
   /**
    * Executes user login through robust use case
@@ -811,10 +792,6 @@ export class AuthFacade {
       }
     }
   }
-
-  // ============================================================================
-  // State Management Operations
-  // ============================================================================
 
   /**
    * Clears the current authentication error state

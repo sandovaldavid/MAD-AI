@@ -1,15 +1,3 @@
-/**
- * @fileoverview Base User Facade - Shared State and Dependencies
- *
- * This file contains the base class for all user facade components, providing
- * shared state management, common dependencies, and reactive state primitives
- * that are used across all user facade operations.
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- */
-
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
@@ -40,7 +28,7 @@ import type {
   BulkDeleteUsersResult,
   UserEvent,
   UserStatistics,
-} from '@application/types/users.types';
+} from '@/app/application/types/users/users.types';
 
 /**
  * Base User Facade
@@ -55,7 +43,6 @@ import type {
  * - Manage shared reactive state for user data
  * - Provide common use case dependencies
  * - Handle error transformation and notifications
- * - Emit events for cross-facade communication
  * - Provide computed properties for common derived state
  *
  * @architecture
@@ -71,10 +58,6 @@ import type {
  */
 @Injectable({ providedIn: 'root' })
 export abstract class BaseUserFacade {
-  // ============================================================================
-  // Dependencies Injection
-  // ============================================================================
-
   /** Use case for changing/resetting user password */
   protected readonly changePasswordUC = inject(CHANGE_PASSWORD_USECASE_PORT);
 
@@ -111,10 +94,6 @@ export abstract class BaseUserFacade {
   /** Facade for accessing authentication state and current user information */
   protected readonly auth = inject(AuthFacade);
 
-  // ============================================================================
-  // Protected State Signals
-  // ============================================================================
-
   /** Internal signal storing the current list of users */
   protected readonly _users = signal<User[]>([]);
 
@@ -138,10 +117,6 @@ export abstract class BaseUserFacade {
     type: 'create' | 'update' | 'delete' | null;
     result: BulkCreateUsersResult | BulkUpdateUsersResult | BulkDeleteUsersResult | null;
   }>({ type: null, result: null });
-
-  // ============================================================================
-  // Public Computed Properties (Reactive State)
-  // ============================================================================
 
   /**
    * Current list of users (reactive)
@@ -230,41 +205,6 @@ export abstract class BaseUserFacade {
     };
   });
 
-  // ============================================================================
-  // Events Stream for Cross-Facade Communication
-  // ============================================================================
-
-  /**
-   * Internal subject for emitting user-related events
-   * @protected
-   */
-  protected readonly _eventsSubject = new Subject<UserEvent | null>();
-
-  /**
-   * Observable stream of user events for cross-facade coordination
-   *
-   * This stream emits events when user operations occur, allowing other facades
-   * and components to react to user state changes. Events include user creation,
-   * updates, deletion, activation/deactivation, and bulk operations.
-   *
-   * @example
-   * ```typescript
-   * // Subscribe to user events
-   * usersFacade.events$.subscribe(event => {
-   *   if (event?.type === 'user-created') {
-   *     console.log('New user created:', event.user);
-   *   }
-   * });
-   * ```
-   *
-   * @returns {Observable<UserEvent | null>} Stream of user events
-   */
-  readonly events$: Observable<UserEvent | null> = this._eventsSubject.asObservable();
-
-  // ============================================================================
-  // Protected Utility Methods
-  // ============================================================================
-
   /**
    * Set loading state
    * @protected
@@ -281,15 +221,6 @@ export abstract class BaseUserFacade {
    */
   protected setError(error: string | null): void {
     this._userError.set(error);
-  }
-
-  /**
-   * Emit user event
-   * @protected
-   * @param event - Event to emit
-   */
-  protected emitEvent(event: UserEvent | null): void {
-    this._eventsSubject.next(event);
   }
 
   /**

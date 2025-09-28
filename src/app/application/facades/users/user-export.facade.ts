@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BaseUserFacade } from './base-user.facade';
 import { USER_EXPORT_SERVICE_PORT, LOGGER_PORT } from '@di/tokens';
 import type { User } from '@domain/entities/user.entity';
-import type { UserExportConfig } from '@application/types/user-export.types';
+import type { UserExportConfig } from '@/app/application/types/users/user-export.types';
 import type { Message } from '@application/types/message.type';
 import type { FacadeOpts } from '@application/types/facade-opts';
 
