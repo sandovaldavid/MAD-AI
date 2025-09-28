@@ -404,8 +404,7 @@ export class RoleTable {
    * Get role access level for the indicator
    */
   getRoleAccessLevel(role: RoleTableRowView): number {
-    // Since RoleTableRowView doesn't have accessLevel, use a default
-    return 3; // Standard access level
+    return role.accessLevel;
   }
 
   /**
