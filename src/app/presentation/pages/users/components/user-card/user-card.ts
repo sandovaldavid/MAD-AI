@@ -36,7 +36,7 @@ import { Button } from '@presentation/shared/ui/button/button';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Imports
-import type { UserDisplayData, UserActionConfig } from '../../types';
+import type { UserDisplayData, UserActionConfig } from '../../../../models/users/user-ui.types';
 
 /**
  * User card action event data

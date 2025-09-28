@@ -35,13 +35,13 @@ import { CommonModule } from '@angular/common';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Imports
-import type { UserStatusDisplay } from '../../types';
+import type { UserStatusDisplay } from '../../../../models/users';
 import {
   mapStringToUserStatus,
   getUserStatusInfo,
   getUserStatusBadgeClasses,
   getUserStatusIcon,
-} from '../../types/user-colors.type';
+} from '../../../../models/users/user-colors.type';
 
 /**
  * Status configuration for custom statuses

@@ -36,7 +36,7 @@ import { UserCardComponent, type UserCardActionEvent } from '../user-card/user-c
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Types
-import type { UserDisplayData, UserActionConfig } from '../../types';
+import type { UserDisplayData, UserActionConfig } from '../../../../models/users';
 
 /**
  * Selection change event

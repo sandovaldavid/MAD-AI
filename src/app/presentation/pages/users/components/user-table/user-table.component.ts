@@ -57,7 +57,7 @@ import {
 } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
 
 // Local Imports
-import { UserDisplayData, SortConfig, UserActionConfig } from '../../types/user-ui.types';
+import { UserDisplayData, SortConfig, UserActionConfig } from '../../../../models/users/user-ui.types';
 import {
   RoleAccessLevelInfo,
   getRoleAccessLevelInfo,

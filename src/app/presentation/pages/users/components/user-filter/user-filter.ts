@@ -18,7 +18,7 @@ import { Icon } from '@presentation/shared/ui/icon/icon';
 import { FormField } from '@presentation/shared/ui/form-field/form-field';
 import { Input as UiInput } from '@presentation/shared/ui/input/input';
 
-import type { UserSearchCriteria } from '../../types';
+import type { UserSearchCriteria } from '../../../../models/users';
 
 export interface FilterChangeEvent {
   readonly filters: UserSearchCriteria;
