@@ -178,7 +178,12 @@
               <!-- Status -->
               <td class="px-3 py-4">
                 <span
-                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border">
+                  class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                  [ngClass]="
+                    role.statusBadge.label === 'Activo'
+                      ? 'bg-successful-100 text-successful-800 dark:bg-successful-800 dark:text-successful-100'
+                      : 'bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-100'
+                  ">
                   <ui-icon [name]="role.statusBadge.icon" size="xs" class="mr-1"> </ui-icon>
                   {{ role.statusBadge.label }}
                 </span>
@@ -187,25 +192,38 @@
               <!-- Actions -->
               <td class="px-3 py-4">
                 <div class="flex items-center justify-end gap-1">
-                  @for (action of role.actions; track action.action) {
-                    <ui-button
-                      [variant]="
-                        action.color === 'primary'
-                          ? 'primary'
-                          : action.color === 'danger'
-                            ? 'danger'
-                            : action.color === 'warning'
-                              ? 'warning'
-                              : 'secondary'
-                      "
-                      size="sm"
-                      [disabled]="action.disabled || false"
-                      [ariaLabel]="action.label + ' ' + role.displayName"
-                      [iconLeft]="action.icon"
-                      [title]="action.tooltip"
-                      (clicked)="handleAction(action.action, parseRoleId(role.id))">
-                    </ui-button>
-                  }
+                  <!-- View Details Button -->
+                  <ui-button
+                    variant="secondary"
+                    size="sm"
+                    [ariaLabel]="'Ver detalles de ' + role.displayName"
+                    iconLeft="eye"
+                    title="Ver detalles"
+                    (clicked)="onViewRole(parseRoleId(role.id))">
+                  </ui-button>
+
+                  <!-- Edit Button -->
+                  <ui-button
+                    variant="warning"
+                    size="sm"
+                    [ariaLabel]="'Editar ' + role.displayName"
+                    iconLeft="pencil"
+                    title="Editar rol"
+                    (clicked)="onEditRole(parseRoleId(role.id))">
+                  </ui-button>
+
+                  <!-- Toggle Status Button -->
+                  <ui-button
+                    [variant]="role.statusBadge.label === 'Activo' ? 'danger' : 'primary'"
+                    size="sm"
+                    [ariaLabel]="
+                      (role.statusBadge.label === 'Activo' ? 'Desactivar ' : 'Activar ') +
+                      role.displayName
+                    "
+                    [iconLeft]="role.statusBadge.label === 'Activo' ? 'pause' : 'play'"
+                    [title]="role.statusBadge.label === 'Activo' ? 'Desactivar rol' : 'Activar rol'"
+                    (clicked)="onToggleStatus(role)">
+                  </ui-button>
                 </div>
               </td>
             </tr>
