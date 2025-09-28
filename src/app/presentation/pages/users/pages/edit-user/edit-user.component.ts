@@ -76,7 +76,7 @@ import type { UserFormData, UserFormErrors } from '../../types';
 import {
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
-} from '@presentation/pages/roles/types/role-colors.type';
+} from '@/app/presentation/models/roles/accesLevel.models';
 
 /**
  * Edit User Page Component

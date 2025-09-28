@@ -69,7 +69,7 @@ import { UserPresentationMapper } from '../../mappers';
 import {
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
-} from '@presentation/pages/roles/types/role-colors.type';
+} from '@/app/presentation/models/roles/accesLevel.models';
 
 /**
  * User Detail Page Component
