@@ -53,8 +53,8 @@ export class RoleCard {
       label: isActive ? 'Activo' : 'Inactivo',
       icon: isActive ? 'filled/check-circle' : 'filled/x-circle',
       classes: isActive
-        ? levelInfo.badgeClasses
-        : 'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300',
+        ? 'bg-successful-100 text-successful-800 dark:bg-successful-800 dark:text-successful-100'
+        : 'bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-100',
       buttonClasses: isActive
         ? 'text-warning-600 hover:text-warning-700 dark:text-warning-400 dark:hover:text-warning-300'
         : 'text-successful-600 hover:text-successful-700 dark:text-successful-400 dark:hover:text-successful-300',
