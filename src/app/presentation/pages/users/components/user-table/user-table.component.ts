@@ -62,7 +62,7 @@ import {
   RoleAccessLevelInfo,
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
-} from '../../../roles/types/role-colors.type';
+} from '../../../../models/roles/accesLevel.models';
 
 /**
  * User action event data
