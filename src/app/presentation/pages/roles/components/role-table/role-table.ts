@@ -10,20 +10,43 @@ import type { RoleTableRowView } from '../../../../models/roles';
 import { transformToTableRowView } from '../../../../mappers/roles/role.mapper';
 import type { RoleSummary } from '@application/mappers/role.mapper';
 
-// Import types from BulkActionsToolbar
-import type {
-  BulkAction,
-  ExportFormat,
-} from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
+import { Pagination } from '@presentation/shared/ui/pagination/pagination';
 
 @Component({
   selector: 'app-role-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, BulkActionsToolbar, AccessLevelIndicator, Icon, Button],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BulkActionsToolbar,
+    AccessLevelIndicator,
+    Icon,
+    Button,
+    Pagination,
+  ],
   templateUrl: './role-table.html',
   styleUrl: './role-table.css',
 })
 export class RoleTable {
+  /** Emitted when the page changes (for parent to update current page) */
+  pageChange = output<{ page: number; pageSize: number }>();
+
+  /** Emitted when the page size changes (for parent to update pageSize and reset page) */
+  pageSizeChange = output<{ pageSize: number; page: number }>();
+
+  /**
+   * Handle page change event from ui-pagination
+   */
+  onPaginationPageChange(event: { page: number; pageSize: number }): void {
+    this.pageChange.emit(event);
+  }
+
+  /**
+   * Handle page size change event from ui-pagination
+   */
+  onPaginationPageSizeChange(event: { pageSize: number; page: number }): void {
+    this.pageSizeChange.emit(event);
+  }
   /** List of roles to display */
   roles = input<RoleSummary[]>([]);
 
@@ -38,6 +61,9 @@ export class RoleTable {
 
   /** Items per page */
   pageSize = input<number>(10);
+
+  /** Current page number (managed by parent) */
+  currentPage = input<number>(1);
 
   /** Current sort column from parent */
   sortBy = input<'name' | 'accessLevel' | 'userCount' | 'isActive'>('name');
@@ -69,14 +95,8 @@ export class RoleTable {
   /** Selected role IDs for bulk operations */
   private _selectedRoles = signal<Set<number>>(new Set());
 
-  /** Current page number */
-  private _currentPage = signal<number>(1);
-
   /** Selected role IDs */
   readonly selectedRoles = computed(() => this._selectedRoles());
-
-  /** Current page */
-  readonly currentPage = computed(() => this._currentPage());
 
   /** Transform roles to table row views */
   readonly tableRowViews = computed(() => {
@@ -149,58 +169,41 @@ export class RoleTable {
     return this.enableBulkActions() && this.selectedCount() > 0;
   });
 
-  /** Pagination info */
-  readonly paginationInfo = computed(() => {
-    const start = (this.currentPage() - 1) * this.pageSize() + 1;
-    const end = Math.min(this.currentPage() * this.pageSize(), this.totalRoles());
-    const total = this.totalRoles();
-    return { start, end, total };
-  });
-
-  /** Previous page disabled */
-  readonly isPreviousDisabled = computed(() => {
-    return this.currentPage() === 1;
-  });
-
-  /** Next page disabled */
-  readonly isNextDisabled = computed(() => {
-    return this.currentPage() === this.totalPages();
-  });
-
-  /** Page numbers array */
-  readonly pageNumbers = computed(() => {
-    return Array.from({ length: this.totalPages() }, (_, i) => i + 1);
-  });
-
-  /** Quick actions (placeholder) */
-  readonly quickActions = computed(() => {
-    return [];
-  });
-
-  /** Advanced actions (placeholder) */
-  readonly advancedActions = computed(() => {
-    return [];
-  });
-
-  /** Export formats (placeholder) */
+  /** Export formats for export toolbar */
   readonly toolbarExportFormats = computed(() => {
-    return [];
-  });
-
-  /** Selection stats (placeholder) */
-  readonly toolbarSelectionStats = computed(() => {
-    return {
-      total: this.selectedCount(),
-      active: 0,
-      inactive: 0,
-      totalUsers: 0,
-      avgLevel: 0,
-    };
-  });
-
-  /** Executing bulk action (placeholder) */
-  readonly executingBulkAction = computed(() => {
-    return null;
+    // Provide available export formats for the toolbar
+    // These should match the ExportFormat interface expected by the toolbar
+    // id, label, icon, extension, mimeType
+    return [
+      {
+        id: 'pdf',
+        label: 'PDF',
+        icon: 'document',
+        extension: 'pdf',
+        mimeType: 'application/pdf',
+      },
+      {
+        id: 'json',
+        label: 'JSON',
+        icon: 'braces',
+        extension: 'json',
+        mimeType: 'application/json',
+      },
+      {
+        id: 'csv',
+        label: 'CSV',
+        icon: 'table',
+        extension: 'csv',
+        mimeType: 'text/csv',
+      },
+      {
+        id: 'xlsx',
+        label: 'Excel',
+        icon: 'document',
+        extension: 'xlsx',
+        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    ];
   });
 
   /**
@@ -282,15 +285,6 @@ export class RoleTable {
   }
 
   /**
-   * Go to specific page
-   */
-  goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages()) {
-      this._currentPage.set(page);
-    }
-  }
-
-  /**
    * Handle view role action
    */
   onViewRole(roleId: number) {
@@ -346,58 +340,6 @@ export class RoleTable {
   }
 
   /**
-   * Handle action from action menu
-   */
-  handleAction(actionId: string, roleId: number): void {
-    switch (actionId) {
-      case 'view':
-        this.onViewRole(roleId);
-        break;
-      case 'edit':
-        this.onEditRole(roleId);
-        break;
-      case 'delete':
-        this.onDeleteRole(roleId);
-        break;
-    }
-  }
-
-  /**
-   * Go to previous page
-   */
-  previousPage() {
-    const currentPage = this.currentPage();
-    if (currentPage > 1) {
-      this._currentPage.set(currentPage - 1);
-    }
-  }
-
-  /**
-   * Go to next page
-   */
-  nextPage() {
-    const currentPage = this.currentPage();
-    const totalPages = this.totalPages();
-    if (currentPage < totalPages) {
-      this._currentPage.set(currentPage + 1);
-    }
-  }
-
-  /**
-   * Handle toolbar quick action
-   */
-  onToolbarQuickAction(event: { actionId: string; selectedCount: number }) {
-    this.onBulkAction(event.actionId);
-  }
-
-  /**
-   * Handle toolbar advanced action
-   */
-  onToolbarAdvancedAction(event: { actionId: string; selectedCount: number }) {
-    this.onBulkAction(event.actionId);
-  }
-
-  /**
    * Handle toolbar export request
    */
   onToolbarExportRequested(event: { format: string; selectedCount: number }) {
@@ -407,27 +349,6 @@ export class RoleTable {
         action: 'export',
         roleIds: selectedIds,
         metadata: { format: event.format },
-      });
-    }
-  }
-
-  /**
-   * Handle bulk action execution from toolbar
-   */
-  onToolbarBulkAction(action: BulkAction) {
-    this.onBulkAction(action.id);
-  }
-
-  /**
-   * Handle export action from toolbar
-   */
-  onToolbarExport(format: ExportFormat) {
-    const selectedIds = Array.from(this.selectedRoles());
-    if (selectedIds.length > 0) {
-      this.bulkAction.emit({
-        action: 'export',
-        roleIds: selectedIds,
-        metadata: { format: format.id },
       });
     }
   }

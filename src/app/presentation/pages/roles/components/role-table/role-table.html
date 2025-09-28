@@ -255,67 +255,32 @@
 
   <!-- Pagination -->
   @if (showPagination()) {
-    <div
-      class="table-footer bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-700 px-4 py-3">
-      <div class="flex items-center justify-between">
-        <div class="text-sm text-neutral-700 dark:text-neutral-300">
-          Mostrando {{ paginationInfo().start }} - {{ paginationInfo().end }} de
-          {{ paginationInfo().total }} resultados
-        </div>
-
-        <div class="flex items-center gap-2">
-          <!-- Previous Button -->
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (clicked)="previousPage()"
-            [disabled]="isPreviousDisabled()"
-            iconLeft="chevron-left">
-            Anterior
-          </ui-button>
-
-          <!-- Page Numbers -->
-          <div class="flex items-center gap-1">
-            @for (pageNum of pageNumbers(); track pageNum) {
-              <ui-button
-                [variant]="pageNum === currentPage() ? 'primary' : 'ghost'"
-                size="sm"
-                (clicked)="goToPage(pageNum)"
-                [disabled]="pageNum === currentPage()">
-                {{ pageNum }}
-              </ui-button>
-            }
-          </div>
-
-          <!-- Next Button -->
-          <ui-button
-            variant="ghost"
-            size="sm"
-            (clicked)="nextPage()"
-            [disabled]="isNextDisabled()"
-            iconRight="chevron-right">
-            Siguiente
-          </ui-button>
-        </div>
-      </div>
-    </div>
+    <ui-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      [totalItems]="totalRoles()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 25, 50, 100]"
+      [showPageSizeSelector]="true"
+      [showPageInfo]="true"
+      [itemType]="'roles'"
+      [loading]="loading()"
+      (pageChange)="onPaginationPageChange($event)"
+      (pageSizeChange)="onPaginationPageSizeChange($event)">
+    </ui-pagination>
   }
 </div>
 
-<!-- Floating Bulk Actions Toolbar -->
+<!-- Floating Export Toolbar Only (no bulk actions) -->
 @if (showFloatingToolbar()) {
   <ui-bulk-actions-toolbar
     [selectedCount]="selectedCount()"
-    [quickActions]="quickActions()"
-    [advancedActions]="advancedActions()"
     [exportFormats]="toolbarExportFormats()"
-    [selectionStats]="toolbarSelectionStats()"
-    [executingAction]="executingBulkAction()"
     [showExportOptions]="true"
-    [showStatistics]="true"
-    [showAdvancedToggle]="advancedActions().length > 0"
-    (quickActionTriggered)="onToolbarQuickAction($event)"
-    (advancedActionTriggered)="onToolbarAdvancedAction($event)"
+    [showStatistics]="false"
+    [showAdvancedToggle]="false"
+    [quickActions]="[]"
+    [advancedActions]="[]"
     (exportRequested)="onToolbarExportRequested($event)"
     (clearSelection)="clearSelection()">
   </ui-bulk-actions-toolbar>
