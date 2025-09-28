@@ -8,7 +8,7 @@ import type {
   JsonConfig,
   ExcelConfig,
 } from '@domain/repositories/system/export.repository';
-import type { UserExportData, UserExportConfig } from '@application/types/user-export.types';
+import type { UserExportData, UserExportConfig } from '@application/types/users/user-export.types';
 import type { User } from '@domain/entities/user.entity';
 import type { Logger } from '@core/interfaces/logger.interface';
 

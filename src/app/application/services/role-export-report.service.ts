@@ -9,7 +9,7 @@ import { EXPORT_PORT, LOGGER_PORT } from '@di/tokens';
 import type { Role } from '@domain/entities/role.entity';
 import type { Logger } from '@core/interfaces/logger.interface';
 import { ApplicationError } from '@application/errors/application-error';
-import type { RoleExportData, RoleExportConfig } from '@application/types/role-export.types';
+import type { RoleExportData, RoleExportConfig } from '@application/types/roles/role-export.types';
 
 /**
  * Application Layer Service for Role Export Operations
