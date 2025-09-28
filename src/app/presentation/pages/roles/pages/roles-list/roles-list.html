@@ -234,7 +234,7 @@
       @if (viewMode() === 'cards') {
         <!-- Roles Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          @for (role of filteredRoles(); track role.id) {
+          @for (role of rolesForCardView(); track role.id) {
             <app-role-card
               [role]="role"
               [loading]="loading()"
@@ -255,8 +255,7 @@
           (editRole)="onEditRole($event)"
           (deleteRole)="onDelete($event)"
           (toggleStatus)="onToggleActive($event.id, $event.isActive)"
-          (bulkAction)="onBulkAction($event)"
-          (exportRoles)="onExportRoles($event)">
+          (bulkAction)="onBulkAction($event)">
         </app-role-table>
       }
     }

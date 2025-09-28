@@ -17,17 +17,17 @@ import { RoleFormComponent } from '../../forms/role-form/role-form';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
-import type { RoleModel } from '../../models/role.model';
-import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
+import {
+  mapRoleFormDataToUpdateRequest,
+  isValidRoleFormDataForUpdate,
+} from '../../mappers/role-update.mapper';
+import { type RoleFormData } from '../../mappers/role-create.mapper';
+import type { RoleFormView } from '../../../../models/roles/role.models';
 
 /**
  * Type for role update form data
- * Includes only the fields that can be updated from the UI
  */
-type RoleUpdateData = Pick<RoleModel, 'name' | 'accessLevel' | 'description' | 'isActive'> & {
-  canLeadProjects?: boolean;
-  isUniquePerTeam?: boolean;
-};
+type RoleUpdateData = RoleFormData;
 
 @Component({
   selector: 'app-update-role',
@@ -53,7 +53,19 @@ export class UpdateRole {
 
   readonly roleModel = computed(() => {
     const role = this.currentRole();
-    return role ? RolePresentationMapper.toRoleModel(role) : null;
+    if (!role) return null;
+    
+    // Transform facade role (RoleSummary) to RoleFormView for the form
+    return {
+      id: role.id.toString(),
+      name: role.name,
+      displayName: role.name, // RoleSummary doesn't have displayName, use name
+      description: role.description,
+      color: '#6366f1', // Default color, not available in RoleSummary
+      icon: 'shield', // Default icon, not available in RoleSummary
+      accessLevel: role.accessLevel,
+      isActive: role.isActive,
+    } as RoleFormView;
   });
 
   readonly headerConfig = computed(
@@ -118,7 +130,23 @@ export class UpdateRole {
     if (!roleId) return;
 
     try {
-      await this.facade.updateRole(roleId, roleData);
+      // Validate the data using mapper validation
+      if (!isValidRoleFormDataForUpdate(roleData)) {
+        console.error('Invalid role data for update:', roleData);
+        return;
+      }
+
+      // Convert RoleFormData to UpdateRoleRequest for the Application layer
+      const updateRequest = mapRoleFormDataToUpdateRequest(roleId, roleData);
+
+      // Use facade to update - note: facade expects UpdateRoleData, not UpdateRoleRequest
+      await this.facade.updateRole(roleId, {
+        name: roleData.name,
+        accessLevel: roleData.accessLevel,
+        description: roleData.description,
+        isActive: roleData.isActive,
+      });
+      
       this.router.navigate(['/roles', roleId]);
     } catch (error) {
       console.error('Error updating role:', error);

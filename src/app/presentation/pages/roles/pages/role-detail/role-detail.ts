@@ -10,12 +10,11 @@ import { ErrorDisplay } from '@presentation/shared/components/error-view/error-d
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { Icon } from '@presentation/shared/ui/icon/icon';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
-import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
 import {
   getRoleAccessLevelInfo,
   getRoleAccessLevelIcon,
   type RoleAccessLevelInfo,
-} from '../../types/role-colors.type';
+} from '../../../../models/roles/accesLevel.models';
 
 @Component({
   selector: 'app-role-detail',
@@ -38,7 +37,21 @@ export class RoleDetail {
   // Transform RoleSummary to RoleModel for UI
   roleModel = computed(() => {
     const roleSummary = this.role();
-    return roleSummary ? RolePresentationMapper.toRoleModel(roleSummary) : null;
+    if (!roleSummary) return null;
+
+    // Transform RoleSummary to a UI-friendly model
+    return {
+      id: roleSummary.id.toString(),
+      name: roleSummary.name,
+      displayName: roleSummary.name, // RoleSummary doesn't have displayName
+      description: roleSummary.description,
+      accessLevel: roleSummary.accessLevel,
+      isActive: roleSummary.isActive,
+      userCount: roleSummary.userCount,
+      canLeadProjects: roleSummary.canLeadProjects,
+      isUniquePerTeam: roleSummary.isUniquePerTeam,
+      createdAt: roleSummary.createdAt,
+    };
   });
 
   readonly pageHeaderConfig = computed<PageHeaderConfig>(() => {

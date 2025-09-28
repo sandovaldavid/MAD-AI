@@ -8,11 +8,11 @@ import {
 } from '@presentation/shared/components/page-header/page-header';
 import { RoleFormComponent } from '../../forms/role-form/role-form';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
-import { RoleModel } from '../../models/role.model';
 import {
-  mapRoleModelToCreateInput,
+  mapRoleFormDataToCreateRoleData,
   isValidRoleForCreation,
-} from '../../mappers/role-create.mapper';
+  type RoleFormData,
+} from '../../mappers';
 
 @Component({
   selector: 'app-create-role',
@@ -46,7 +46,7 @@ export class CreateRole {
     ]);
   }
 
-  async onRoleCreated(roleData: Partial<RoleModel>) {
+  async onRoleCreated(roleData: RoleFormData) {
     try {
       // Validate input before processing
       if (!isValidRoleForCreation(roleData)) {
@@ -54,10 +54,10 @@ export class CreateRole {
         return;
       }
 
-      // Use mapper to convert typed model to facade input
-      const createInput = mapRoleModelToCreateInput(roleData);
+      // Use mapper to convert form data to Application layer facade data
+      const createData = mapRoleFormDataToCreateRoleData(roleData);
 
-      await this.facade.createRole(createInput);
+      await this.facade.createRole(createData);
 
       // Navigate back to roles list after successful creation
       this.router.navigate(['/roles']);

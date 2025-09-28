@@ -1,4 +1,4 @@
-import { ROLE_ACCESS_LEVEL_CONFIG } from '../../types/role-colors.type';
+import { ROLE_ACCESS_LEVEL_CONFIG } from '../../../../models/roles/accesLevel.models.js';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,6 +19,7 @@ import {
   type PageHeaderConfig,
 } from '@presentation/shared/components/page-header/page-header';
 import { ErrorDisplay } from '@presentation/shared/components/error-view/error-display/error-display';
+import { type RoleCardView, type RoleStatus } from '../../../../models/roles/role.models';
 import {
   ConfirmationModal,
   ModalConfig,
@@ -28,8 +29,8 @@ import { ViewToggleComponent } from '@presentation/shared/components/view-toggle
 import { RoleSkeleton } from '../../skeleton/role-list-skeleton/role-skeleton';
 import type { ErrorDisplayConfig } from '@presentation/shared/types/error-display.types';
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
-import { RolePresentationMapper } from '../../mappers/role-presentation.mapper';
-import type { RoleExportOptions } from '../../mappers/role-export.mapper';
+import type { RoleSummary } from '@/app/application/mappers/role.mapper';
+import type { RoleExportConfig } from '@/app/application/types/roles/role-export.types';
 
 export interface PendingRoleAction {
   type: 'delete' | 'activate' | 'deactivate';
@@ -68,7 +69,7 @@ export class RolesList {
   private notifications = inject(NotificationsFacade);
 
   readonly loading = this.facade.loading;
-  readonly roles = computed(() => RolePresentationMapper.toRoleModels(this.facade.roles()));
+  readonly roles = computed(() => this.facade.roles());
   readonly error = this.facade.error;
 
   search = signal('');
@@ -140,28 +141,28 @@ export class RolesList {
     const searchTerm = this.search().toLowerCase();
     if (searchTerm) {
       filtered = filtered.filter(
-        (role) =>
+        (role: RoleSummary) =>
           role.name.toLowerCase().includes(searchTerm) ||
-          (role.description && role.description.toLowerCase().includes(searchTerm))
+          role.description.toLowerCase().includes(searchTerm)
       );
     }
     // Active filter
     const activeFilterValue = this.activeFilter();
     if (activeFilterValue !== null) {
-      filtered = filtered.filter((role) => role.isActive === activeFilterValue);
+      filtered = filtered.filter((role: RoleSummary) => role.isActive === activeFilterValue);
     }
 
     // Access level filter
     const accessLevel = this.accessLevelFilter();
     if (accessLevel !== null) {
-      filtered = filtered.filter((role) => role.accessLevel === accessLevel);
+      filtered = filtered.filter((role: RoleSummary) => role.accessLevel === accessLevel);
     }
 
     // User count range filter
     // (Eliminado: getter duplicado showAdvancedFiltersPanel)
     const userCountRange = this.userCountRangeFilter();
     if (userCountRange.min !== null || userCountRange.max !== null) {
-      filtered = filtered.filter((role) => {
+      filtered = filtered.filter((role: RoleSummary) => {
         const userCount = role.userCount || 0;
         const meetsMin = userCountRange.min === null || userCount >= userCountRange.min;
         const meetsMax = userCountRange.max === null || userCount <= userCountRange.max;
@@ -173,7 +174,7 @@ export class RolesList {
     const sortByValue = this.sortBy();
     const sortDirectionValue = this.sortDirection();
 
-    filtered.sort((a, b) => {
+    filtered.sort((a: RoleSummary, b: RoleSummary) => {
       let aValue: any;
       let bValue: any;
 
@@ -208,11 +209,25 @@ export class RolesList {
     return filtered;
   });
 
+  // Transform filtered roles to card view format
+  readonly rolesForCardView = computed(() => {
+    return this.filteredRoles().map((role: RoleSummary): RoleCardView => ({
+      id: role.id.toString(),
+      name: role.name,
+      displayName: role.name, // RoleSummary doesn't have displayName
+      description: role.description,
+      accessLevel: role.accessLevel,
+      userCount: role.userCount,
+      permissionCount: 0, // RoleSummary doesn't have this information
+      status: role.isActive ? 'active' : 'inactive' as RoleStatus,
+    }));
+  });
+
   // Filter statistics
   readonly filterStats = computed(() => {
     const total = this.roles().length;
     const filtered = this.filteredRoles().length;
-    const active = this.filteredRoles().filter((r) => r.isActive).length;
+    const active = this.filteredRoles().filter((r: RoleSummary) => r.isActive).length;
     const hasFilters =
       this.search() ||
       this.activeFilter() !== null ||
@@ -435,15 +450,11 @@ export class RolesList {
       return;
     }
     try {
-      // Create proper export options using RoleExportOptions interface
-      const exportOptions: Partial<RoleExportOptions> = {
-        format: event.format.toLowerCase() as 'pdf' | 'csv' | 'json',
+      // Create proper export options using RoleExportConfig interface
+      const exportOptions: Partial<RoleExportConfig> = {
+        format: event.format.toLowerCase() as 'pdf' | 'csv' | 'json' | 'xlsx',
         includeDescription: event.includeDescription ?? true,
         includeUserCount: event.includeUserCount ?? true,
-        includeId: true,
-        includeAccessLevel: true,
-        includeStatus: true,
-        customTitle: `Roles Export - ${new Date().toLocaleDateString()}`,
       };
 
       await this.facade.exportRoles(event.roleIds, exportOptions);
