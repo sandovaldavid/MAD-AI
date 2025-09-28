@@ -20,7 +20,7 @@
 
 /* Hover Effects */
 .user-table-container tbody tr:hover {
-  @apply bg-neutral-50 dark:bg-neutral-800/50;
+  @apply bg-neutral-50 dark:bg-neutral-800;
 }
 
 /* Loading Animation */
@@ -105,11 +105,11 @@
 }
 
 .action-button.danger {
-  @apply text-error-500 hover:text-error-700 hover:bg-error-50 dark:text-error-400 dark:hover:text-error-300 dark:hover:bg-error-900/20;
+  @apply text-error-500 hover:text-error-700 hover:bg-error-50 dark:text-error-400 dark:hover:text-error-300 dark:hover:bg-error-900;
 }
 
 .action-button.success {
-  @apply text-successful-500 hover:text-successful-700 hover:bg-successful-50 dark:text-successful-400 dark:hover:text-successful-300 dark:hover:bg-successful-900/20;
+  @apply text-successful-500 hover:text-successful-700 hover:bg-successful-50 dark:text-successful-400 dark:hover:text-successful-300 dark:hover:bg-successful-900;
 }
 
 /* Pagination */
@@ -177,4 +177,30 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* User Table Specific Bulk Toolbar Styling */
+.user-table-toolbar {
+  /* Enhanced glass morphism for user management */
+  @apply backdrop-blur-xl bg-white dark:bg-neutral-900;
+  @apply border-primary-200 dark:border-primary-700;
+  @apply shadow-xl shadow-primary-500 dark:shadow-primary-500;
+}
+
+.user-table-toolbar .shortcut-badge {
+  @apply bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300;
+  @apply border-primary-300 dark:border-primary-700;
+}
+
+/* User specific action button styling in toolbar */
+.user-table-toolbar .btn--success {
+  @apply bg-successful-500 hover:bg-successful-600 text-white;
+}
+
+.user-table-toolbar .btn--warning {
+  @apply bg-warning-500 hover:bg-warning-600 text-white;
+}
+
+.user-table-toolbar .btn--danger {
+  @apply bg-error-500 hover:bg-error-600 text-white;
 }

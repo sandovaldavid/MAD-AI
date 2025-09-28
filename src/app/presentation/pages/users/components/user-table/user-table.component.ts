@@ -51,6 +51,9 @@ import {
   type BulkAction,
   type ExportFormat,
   type SelectionStats,
+  type StatItem,
+  type BulkToolbarTexts,
+  type BulkToolbarIcons,
 } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
 
 // Local Imports
@@ -310,12 +313,11 @@ export class UserTableComponent implements OnInit, OnChanges {
   readonly advancedActions = computed((): BulkAction[] => {
     return [
       {
-        id: 'resetPassword',
-        label: 'Restablecer Contraseña',
-        icon: 'key',
-        variant: 'secondary',
-        description: 'Restablecer contraseña de usuarios seleccionados',
-        requiresConfirmation: true,
+        id: 'assign-role',
+        label: 'Asignar Rol',
+        icon: 'user-group',
+        variant: 'primary',
+        description: 'Asignar roles a usuarios seleccionados',
       },
     ];
   });
@@ -362,11 +364,28 @@ export class UserTableComponent implements OnInit, OnChanges {
   readonly toolbarSelectionStats = computed((): SelectionStats => {
     const selected = this.currentSelection();
     const activeUsers = selected.filter((user) => user.isActive).length;
+    const inactiveUsers = selected.length - activeUsers;
+
+    const items: StatItem[] = [
+      {
+        key: 'active',
+        value: activeUsers,
+        label: 'activos',
+        icon: 'check-circle',
+        color: 'successful-600',
+      },
+      {
+        key: 'inactive',
+        value: inactiveUsers,
+        label: 'inactivos',
+        icon: 'x-circle',
+        color: 'warning-600',
+      },
+    ];
 
     return {
       total: selected.length,
-      active: activeUsers,
-      totalUsers: selected.length,
+      items,
     };
   });
 
@@ -374,6 +393,22 @@ export class UserTableComponent implements OnInit, OnChanges {
    * Currently executing bulk action ID
    */
   readonly executingBulkAction = signal<string | null>(null);
+
+  /**
+   * Textos personalizados para el toolbar de usuarios
+   */
+  readonly toolbarTexts = computed((): BulkToolbarTexts => {
+    return {
+      selectedItems: 'usuarios seleccionados',
+      advancedActionsTitle: 'Gestión de Usuarios',
+      exportOptionsTitle: 'Exportar Datos de Usuarios',
+      toggleMore: 'Más',
+      toggleLess: 'Menos',
+      clearTooltip: 'Limpiar selección de usuarios',
+      toggleTooltip: 'Ver más opciones de gestión',
+      shortcutsHint: 'Presiona 1-3 para acciones rápidas, Esc para limpiar',
+    };
+  });
 
   // ============================================================================
   // Table Header Methods
