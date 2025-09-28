@@ -10,7 +10,12 @@
  */
 
 // User mappers
-export { UserPresentationMapper } from './user-presentation.mapper';
+export { UserPresentationMapper } from './users/user.mapper';
 
 // Role mappers
-export { RolePresentationMapper } from './role-presentation.mapper';
+export {
+  transformToTableRowView,
+  transformToCardView,
+  transformToFormView,
+  transformToDetailView
+} from './roles/role.mapper';
