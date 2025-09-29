@@ -114,8 +114,8 @@ export class UserPresentationMapper {
   toListData(
     users: User[],
     totalCount: number,
-    currentPage: number = 1,
-    pageSize: number = 10
+    currentPage = 1,
+    pageSize = 10
   ): UserListData {
     return {
       users: users.map((user) => this.toDisplayData(user)),
