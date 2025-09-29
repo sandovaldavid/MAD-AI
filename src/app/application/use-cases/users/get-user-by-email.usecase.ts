@@ -2,7 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { USER_REPOSITORY, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { GetUserByEmailRequest, GetUserResult } from '@/app/application/types/users/users.types';
+import type {
+  GetUserByEmailRequest,
+  GetUserResult,
+} from '@/app/application/types/users/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { User } from '@domain/entities/user.entity';
 

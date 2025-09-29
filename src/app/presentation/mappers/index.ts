@@ -17,5 +17,5 @@ export {
   transformToTableRowView,
   transformToCardView,
   transformToFormView,
-  transformToDetailView
+  transformToDetailView,
 } from './roles/role.mapper';

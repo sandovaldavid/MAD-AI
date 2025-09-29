@@ -7,7 +7,6 @@ import type { CreateRoleContract } from '@domain/repositories/business/role.cont
  * ensuring proper separation of concerns and type safety.
  */
 
-
 // Individual Role Operations Types
 export interface CreateRoleRequest {
   readonly name: string;

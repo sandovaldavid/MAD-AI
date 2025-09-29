@@ -131,14 +131,14 @@ export class UsersListPage {
   currentPage = signal(1);
   pageSize = signal(10);
 
-    // Selection state
+  // Selection state
   private _selectedUsers = signal<UserDisplayData[]>([]);
   readonly selectedUsers = this._selectedUsers.asReadonly();
 
   // Computed table users (converted from domain entities)
   readonly tableUsers = computed(() => {
     const rawUsers = this.facade.users();
-    return UserPresentationMapper.toListViewModels(rawUsers).map(vm => vm as UserDisplayData);
+    return UserPresentationMapper.toListViewModels(rawUsers).map((vm) => vm as UserDisplayData);
   });
 
   // User actions configuration
@@ -289,7 +289,9 @@ export class UsersListPage {
   readonly filterStats = computed(() => {
     const total = this.users().length;
     const filtered = this.filteredUsers().length;
-    const active = this.filteredUsers().filter((u: UserCardViewModel) => u.status.value === 'active').length;
+    const active = this.filteredUsers().filter(
+      (u: UserCardViewModel) => u.status.value === 'active'
+    ).length;
     const hasFilters =
       this.search() ||
       this.activeFilter() !== null ||
@@ -440,7 +442,10 @@ export class UsersListPage {
   }
 
   onBulkAction(
-    event: { action: string; users: UserCardViewModel[] } | { action: string; userIds: number[] } | { action: string; users: UserDisplayData[] }
+    event:
+      | { action: string; users: UserCardViewModel[] }
+      | { action: string; userIds: number[] }
+      | { action: string; users: UserDisplayData[] }
   ) {
     // Handle bulk actions similar to roles-list
     const userIds = 'users' in event ? event.users.map((u) => u.id) : event.userIds;

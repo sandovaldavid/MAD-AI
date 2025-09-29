@@ -1,6 +1,6 @@
 /**
  * @fileoverview Presentation Models Index
- * 
+ *
  * Exports all presentation layer models and types used for UI components.
  */
 

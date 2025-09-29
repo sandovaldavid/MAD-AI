@@ -1,9 +1,9 @@
-import type { 
-  ActivateRoleRequest, 
-  DeactivateRoleRequest, 
+import type {
+  ActivateRoleRequest,
+  DeactivateRoleRequest,
   DeleteRoleRequest,
   AssignRoleToUserRequest,
-  UnassignRoleFromUserRequest 
+  UnassignRoleFromUserRequest,
 } from '@application/types/roles/roles.types';
 
 /**
@@ -19,7 +19,7 @@ export function createActivateRoleRequest(
 ): ActivateRoleRequest {
   return {
     id: parseInt(roleId, 10),
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -32,20 +32,17 @@ export function createDeactivateRoleRequest(
 ): DeactivateRoleRequest {
   return {
     id: parseInt(roleId, 10),
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
 /**
  * Creates a delete role request
  */
-export function createDeleteRoleRequest(
-  roleId: string,
-  requesterId?: number
-): DeleteRoleRequest {
+export function createDeleteRoleRequest(roleId: string, requesterId?: number): DeleteRoleRequest {
   return {
     id: parseInt(roleId, 10),
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -60,7 +57,8 @@ export function createAssignRoleToUserRequest(
   return {
     userId: typeof userId === 'string' ? parseInt(userId, 10) : userId,
     roleId: typeof roleId === 'string' ? parseInt(roleId, 10) : roleId,
-    assignedByUserId: typeof assignedByUserId === 'string' ? parseInt(assignedByUserId, 10) : assignedByUserId
+    assignedByUserId:
+      typeof assignedByUserId === 'string' ? parseInt(assignedByUserId, 10) : assignedByUserId,
   };
 }
 
@@ -75,7 +73,7 @@ export function createUnassignRoleFromUserRequest(
   return {
     userId: typeof userId === 'string' ? parseInt(userId, 10) : userId,
     roleId: typeof roleId === 'string' ? parseInt(roleId, 10) : roleId,
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -86,21 +84,21 @@ export function createBatchActivateRolesRequests(
   roleIds: string[],
   requesterId?: number
 ): ActivateRoleRequest[] {
-  return roleIds.map(roleId => createActivateRoleRequest(roleId, requesterId));
+  return roleIds.map((roleId) => createActivateRoleRequest(roleId, requesterId));
 }
 
 export function createBatchDeactivateRolesRequests(
   roleIds: string[],
   requesterId?: number
 ): DeactivateRoleRequest[] {
-  return roleIds.map(roleId => createDeactivateRoleRequest(roleId, requesterId));
+  return roleIds.map((roleId) => createDeactivateRoleRequest(roleId, requesterId));
 }
 
 export function createBatchDeleteRolesRequests(
   roleIds: string[],
   requesterId?: number
 ): DeleteRoleRequest[] {
-  return roleIds.map(roleId => createDeleteRoleRequest(roleId, requesterId));
+  return roleIds.map((roleId) => createDeleteRoleRequest(roleId, requesterId));
 }
 
 /**
@@ -117,5 +115,5 @@ export function isValidUserId(userId: string | number): boolean {
 }
 
 export function areValidRoleIds(roleIds: string[]): boolean {
-  return roleIds.length > 0 && roleIds.every(id => isValidRoleId(id));
+  return roleIds.length > 0 && roleIds.every((id) => isValidRoleId(id));
 }

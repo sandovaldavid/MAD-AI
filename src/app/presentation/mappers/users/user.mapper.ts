@@ -111,12 +111,7 @@ export class UserPresentationMapper {
   /**
    * Maps array of Domain User entities to list data with pagination
    */
-  toListData(
-    users: User[],
-    totalCount: number,
-    currentPage = 1,
-    pageSize = 10
-  ): UserListData {
+  toListData(users: User[], totalCount: number, currentPage = 1, pageSize = 10): UserListData {
     return {
       users: users.map((user) => this.toDisplayData(user)),
       totalCount,

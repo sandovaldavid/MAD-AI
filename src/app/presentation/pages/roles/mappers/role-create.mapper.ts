@@ -1,7 +1,7 @@
 /**
  * @fileoverview Role Create Mapper
- * 
- * Mapper functions to convert between Presentation layer role models 
+ *
+ * Mapper functions to convert between Presentation layer role models
  * and Application layer role creation requests.
  */
 
@@ -103,12 +103,15 @@ export function mapRoleFormViewToCreateRequest(
 /**
  * Validates if role data is valid for creation
  */
-export function isValidRoleForCreation(roleData: Partial<RoleModel>): roleData is Pick<RoleModel, 'name'> & Partial<RoleModel> {
+export function isValidRoleForCreation(
+  roleData: Partial<RoleModel>
+): roleData is Pick<RoleModel, 'name'> & Partial<RoleModel> {
   return Boolean(
     roleData &&
-    roleData.name &&
-    roleData.name.trim().length >= 3 &&
-    (roleData.accessLevel === undefined || (roleData.accessLevel >= 1 && roleData.accessLevel <= 5))
+      roleData.name &&
+      roleData.name.trim().length >= 3 &&
+      (roleData.accessLevel === undefined ||
+        (roleData.accessLevel >= 1 && roleData.accessLevel <= 5))
   );
 }
 
@@ -118,9 +121,9 @@ export function isValidRoleForCreation(roleData: Partial<RoleModel>): roleData i
 export function isValidRoleFormData(formData: RoleFormData): boolean {
   return Boolean(
     formData &&
-    formData.name &&
-    formData.name.trim().length >= 3 &&
-    formData.accessLevel >= 1 &&
-    formData.accessLevel <= 5
+      formData.name &&
+      formData.name.trim().length >= 3 &&
+      formData.accessLevel >= 1 &&
+      formData.accessLevel <= 5
   );
 }

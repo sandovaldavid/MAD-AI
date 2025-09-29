@@ -5,7 +5,10 @@ import type {
   RoleFormView,
   RoleDetailView,
 } from '../../models/roles/role.models';
-import { getRoleAccessLevelInfo, getRoleAccessLevelIcon } from '../../models/roles/accesLevel.models';
+import {
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
+} from '../../models/roles/accesLevel.models';
 
 /**
  * Transformadores simples: datos del facade → interfaces de presentation

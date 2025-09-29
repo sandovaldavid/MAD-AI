@@ -54,7 +54,7 @@ export class UpdateRole {
   readonly roleModel = computed(() => {
     const role = this.currentRole();
     if (!role) return null;
-    
+
     // Transform facade role (RoleSummary) to RoleFormView for the form
     return {
       id: role.id.toString(),
@@ -146,7 +146,7 @@ export class UpdateRole {
         description: roleData.description,
         isActive: roleData.isActive,
       });
-      
+
       this.router.navigate(['/roles', roleId]);
     } catch (error) {
       console.error('Error updating role:', error);

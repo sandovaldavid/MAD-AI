@@ -248,8 +248,8 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   readonly hasAdvancedActions = computed(() => this.availableAdvancedActions().length > 0);
 
   /** Si el panel expandible debe mostrarse (acciones avanzadas o múltiples formatos de exportación) */
-  readonly shouldShowExpandablePanel = computed(() =>
-    this.hasAdvancedActions() || (this.showExportOptions() && this.exportFormats().length > 1)
+  readonly shouldShowExpandablePanel = computed(
+    () => this.hasAdvancedActions() || (this.showExportOptions() && this.exportFormats().length > 1)
   );
 
   /** Texto de resumen de selección */

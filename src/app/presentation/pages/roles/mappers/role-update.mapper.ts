@@ -10,7 +10,7 @@ import type { RoleFormData } from './role-create.mapper';
  * Maps role form data to UpdateRoleRequest for the Application layer
  */
 export function mapRoleFormDataToUpdateRequest(
-  roleId: number, 
+  roleId: number,
   formData: RoleFormData,
   requesterId?: number
 ): UpdateRoleRequest {
@@ -19,7 +19,7 @@ export function mapRoleFormDataToUpdateRequest(
     name: formData.name,
     accessLevel: formData.accessLevel,
     description: formData.description,
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -27,7 +27,7 @@ export function mapRoleFormDataToUpdateRequest(
  * Maps role form data to UpdateRoleRequest for the Application layer
  */
 export function mapRoleFormViewToUpdateRequest(
-  roleId: number, 
+  roleId: number,
   formView: RoleFormView,
   requesterId?: number
 ): UpdateRoleRequest {
@@ -36,7 +36,7 @@ export function mapRoleFormViewToUpdateRequest(
     name: formView.name,
     accessLevel: formView.accessLevel,
     description: formView.description,
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -52,7 +52,7 @@ export function mapRoleDetailViewToUpdateRequest(
     name: roleDetailView.name,
     accessLevel: roleDetailView.accessLevel,
     description: roleDetailView.description,
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -69,7 +69,7 @@ export function mapPartialRoleToUpdateRequest(
     name: updates.name,
     accessLevel: updates.accessLevel,
     description: updates.description,
-    requesterId: requesterId
+    requesterId: requesterId,
   };
 }
 
@@ -77,18 +77,22 @@ export function mapPartialRoleToUpdateRequest(
  * Validates if a role form data is valid for updating
  */
 export function isValidRoleFormDataForUpdate(formData: RoleFormData): boolean {
-  return !!(formData.name && 
-           formData.name.trim().length > 0 &&
-           formData.accessLevel >= 0 &&
-           formData.accessLevel <= 5);
+  return !!(
+    formData.name &&
+    formData.name.trim().length > 0 &&
+    formData.accessLevel >= 0 &&
+    formData.accessLevel <= 5
+  );
 }
 
 /**
  * Validates if an update request has valid data
  */
 export function isValidUpdateRequest(request: UpdateRoleRequest): boolean {
-  return !!(request.id &&
-           request.id > 0 &&
-           (!request.name || request.name.trim().length > 0) &&
-           (!request.accessLevel || (request.accessLevel >= 0 && request.accessLevel <= 5)));
+  return !!(
+    request.id &&
+    request.id > 0 &&
+    (!request.name || request.name.trim().length > 0) &&
+    (!request.accessLevel || (request.accessLevel >= 0 && request.accessLevel <= 5))
+  );
 }

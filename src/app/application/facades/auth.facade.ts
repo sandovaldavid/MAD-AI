@@ -74,7 +74,6 @@ import type { Message } from '@application/types/message.type';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
-
   private readonly loginUC = inject<LoginUseCase>(LOGIN_USECASE_PORT);
   private readonly logoutUC = inject<LogoutUseCase>(LOGOUT_USECASE_PORT);
   private readonly getProfileUC = inject<GetProfileUseCase>(GET_PROFILE_USECASE_PORT);

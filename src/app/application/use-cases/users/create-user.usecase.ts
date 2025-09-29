@@ -4,7 +4,10 @@ import { ApplicationErrorTransformer } from '@application/errors/application-err
 import { ValidationError } from '@domain/errors/validation-error.entity';
 import { ValidationErrorCode } from '@domain/errors/validation-error-code.enum';
 import type { Logger } from '@core/interfaces/logger.interface';
-import type { CreateUserRequest, CreateUserResult } from '@/app/application/types/users/users.types';
+import type {
+  CreateUserRequest,
+  CreateUserResult,
+} from '@/app/application/types/users/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { User } from '@domain/entities/user.entity';
 import type { CreateUserContract } from '@domain/repositories/business/user.contract';

@@ -1,7 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { USER_REPOSITORY, CLOCK_PORT, LOGGER_PORT } from '@di/tokens';
 import { ApplicationErrorTransformer } from '@application/errors/application-error.transformer';
-import type { DeleteUserRequest, DeleteUserResult } from '@/app/application/types/users/users.types';
+import type {
+  DeleteUserRequest,
+  DeleteUserResult,
+} from '@/app/application/types/users/users.types';
 import type { UserRepository } from '@domain/repositories/business/user.repository';
 import type { ClockPort } from '@domain/repositories/system/clock.repository';
 import type { Logger } from '@core/interfaces/logger.interface';

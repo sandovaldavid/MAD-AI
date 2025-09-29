@@ -43,11 +43,7 @@ export type {
 // Display Models (ViewModels)
 // ============================================================================
 
-export {
-  UserListViewModel,
-  UserCardViewModel,
-  UserDetailViewModel,
-} from './user-display.model';
+export { UserListViewModel, UserCardViewModel, UserDetailViewModel } from './user-display.model';
 
 // ============================================================================
 // Color and Status Types

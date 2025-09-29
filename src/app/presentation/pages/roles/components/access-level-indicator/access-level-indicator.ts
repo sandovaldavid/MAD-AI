@@ -217,7 +217,6 @@ export class AccessLevelIndicator {
     }
   });
 
-
   /**
    * Get display label based on compact mode and show label setting
    */

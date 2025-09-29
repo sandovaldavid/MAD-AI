@@ -148,13 +148,13 @@ export class UserCardComponent {
   getRoleAccessLevel(): { level: number; info: any; icon: string } {
     // Map role names to access levels (this could be enhanced with a proper mapping)
     const roleToLevel: Record<string, number> = {
-      'admin': 1,      // Critical access
-      'superadmin': 1, // Critical access
-      'manager': 2,    // High access
-      'moderator': 3,  // Medium access
-      'user': 4,       // Low access
-      'viewer': 5,     // Minimal access
-      'guest': 5,     // Minimal access
+      admin: 1, // Critical access
+      superadmin: 1, // Critical access
+      manager: 2, // High access
+      moderator: 3, // Medium access
+      user: 4, // Low access
+      viewer: 5, // Minimal access
+      guest: 5, // Minimal access
     };
 
     const level = roleToLevel[this.user.role.toLowerCase()] || 5;
