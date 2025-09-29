@@ -374,7 +374,7 @@ export class RolesList {
     this.updateSort(event.column, event.direction);
   }
 
-  onBulkAction(event: { action: string; roleIds: number[] }) {
+  onBulkAction(event: { action: string; roleIds: number[]; metadata?: { format?: string } }) {
     switch (event.action) {
       case 'delete':
         event.roleIds.forEach((id) => {
@@ -433,7 +433,7 @@ export class RolesList {
       case 'export':
         // Using proper RoleExportOptions interface
         this.onExportRoles({
-          format: 'json',
+          format: event.metadata?.format || 'json', // Use format from event metadata
           roleIds: event.roleIds,
           includeDescription: true,
           includeUserCount: true,
