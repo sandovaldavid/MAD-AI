@@ -140,16 +140,13 @@ export class UserPresentationMapper {
   // ============================================================================
 
   /**
-   * Transform domain User entity to UserDetailViewModel for detail display
+   * Transform domain User entity to UserDetailViewModel for detail page display
    *
    * @param user Domain User entity from facade
-   * @param permissions User-specific permissions and actions
-   * @returns UserDetailViewModel optimized for detail rendering
+   * @param actions Available user actions
+   * @returns UserDetailViewModel optimized for detail page rendering
    */
-  static toDetailViewModel(user: User, permissions?: UserActionConfig): UserDetailViewModel {
-    const actions = permissions ?? this.computeUserActions(user);
-    const stats = this.generateUserStats(user);
-
+  static toDetailViewModel(user: User, actions: UserActionConfig): UserDetailViewModel {
     return new UserDetailViewModel({
       id: user.id,
       displayName: this.formatDisplayName(user.firstName.toString(), user.lastName.toString()),
@@ -158,14 +155,48 @@ export class UserPresentationMapper {
       email: user.email.toString(),
       username: user.username.toString(),
       role: this.formatRole(user.role?.name || 'user'),
-      status: this.mapUserStatus(user.userStatus, user.active), // Usar userStatus
+      status: this.mapUserStatus(user.userStatus, user.active),
       avatar: this.generateAvatarUrl(user.email.toString()),
-      stats,
+      stats: this.generateUserStats(user),
       createdAt: user.createdAt ? this.formatDate(new Date(user.createdAt.toString())) : '',
       updatedAt: user.updatedAt ? this.formatDate(new Date(user.updatedAt.toString())) : '',
       lastActivity: user.lastActivityAt?.toString(),
       isActive: user.active,
-      actions,
+      actions: actions,
+    });
+  }
+
+  /**
+   * Transform UserCardViewModel array to UserDisplayData array for table display
+   *
+   * @param cardViewModels Array of UserCardViewModel instances
+   * @param permissions Optional permissions mapping
+   * @returns Array of UserDisplayData optimized for table rendering
+   */
+  static toDisplayDataFromCards(
+    cardViewModels: UserCardViewModel[],
+    permissions?: Map<number, UserActionConfig>
+  ): UserDisplayData[] {
+    return cardViewModels.map((cardModel) => {
+      const userPermissions = permissions?.get(cardModel.id);
+      return {
+        id: cardModel.id,
+        displayName: cardModel.displayName,
+        email: cardModel.email,
+        username: '', // Card model doesn't have username, use empty string
+        role: cardModel.role,
+        status: cardModel.status,
+        avatar: cardModel.avatar,
+        initials: cardModel.initials,
+        lastActivity: cardModel.stats?.lastLoginDate,
+        lastActivityDisplay: cardModel.stats?.lastLoginDate
+          ? this.formatRelativeDate(new Date(cardModel.stats.lastLoginDate))
+          : undefined,
+        createdAt: '', // Card model doesn't have createdAt, use empty string
+        isActive: cardModel.status.value === 'active',
+        canEdit: userPermissions?.canEdit ?? true, // Default to true for cards
+        canDelete: userPermissions?.canDelete ?? false, // Default to false for cards
+      };
     });
   }
 
