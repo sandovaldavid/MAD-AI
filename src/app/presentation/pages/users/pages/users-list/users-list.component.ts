@@ -135,27 +135,10 @@ export class UsersListPage {
   private _selectedUsers = signal<UserDisplayData[]>([]);
   readonly selectedUsers = this._selectedUsers.asReadonly();
 
-  // Computed table users (converted from card view models)
+  // Computed table users (converted from domain entities)
   readonly tableUsers = computed(() => {
-    const cardUsers = this.paginatedUsers();
-    return cardUsers.map((user) => ({
-      id: user.id,
-      displayName: user.displayName,
-      email: user.email,
-      username: '', // Card model doesn't have username
-      role: user.role,
-      status: user.status,
-      avatar: user.avatar,
-      initials: user.initials,
-      lastActivity: user.stats?.lastLoginDate,
-      lastActivityDisplay: user.stats?.lastLoginDate
-        ? this.formatRelativeDate(new Date(user.stats.lastLoginDate))
-        : undefined,
-      createdAt: '', // Card model doesn't have createdAt
-      isActive: user.status.value === 'active',
-      canEdit: true, // Default permissions for table view
-      canDelete: false,
-    } as UserDisplayData));
+    const rawUsers = this.facade.users();
+    return UserPresentationMapper.toListViewModels(rawUsers).map(vm => vm as UserDisplayData);
   });
 
   // User actions configuration
