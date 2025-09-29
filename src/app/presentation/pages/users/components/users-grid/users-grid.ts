@@ -36,13 +36,14 @@ import { UserCardComponent, type UserCardActionEvent } from '../user-card/user-c
 import { Icon } from '@presentation/shared/ui/icon/icon';
 
 // Local Types
-import type { UserDisplayData, UserActionConfig } from '../../../../models/users';
+import type { UserCardViewModel } from '../../../../models/users/user-display.model';
+import { UserActionConfig } from '@/app/presentation/models/users';
 
 /**
  * Selection change event
  */
 export interface UserSelectionChangeEvent {
-  readonly user: UserDisplayData;
+  readonly user: UserCardViewModel;
   readonly selected: boolean;
 }
 
@@ -56,103 +57,13 @@ export interface UserSelectionChangeEvent {
   selector: 'app-users-grid',
   standalone: true,
   imports: [CommonModule, UserCardComponent, Icon],
-  template: `
-    <div
-      class="users-grid-container"
-      [class.loading]="loading()"
-      [attr.aria-label]="'Users grid with ' + users().length + ' users'"
-      role="grid">
-      <!-- Loading State -->
-      @if (loading() && users().length === 0) {
-        <div class="grid-loading" role="status" aria-label="Loading users">
-          <div class="loading-message">
-            <ui-icon
-              name="arrow-clockwise"
-              variant="outline"
-              size="lg"
-              class="loading-spinner"
-              aria-hidden="true"></ui-icon>
-            <span class="loading-text">Loading users...</span>
-          </div>
-        </div>
-      }
-
-      <!-- Empty State -->
-      @else if (!loading() && users().length === 0) {
-        <div class="grid-empty" role="status" aria-label="No users found">
-          <div class="empty-content">
-            <ui-icon
-              name="user-group"
-              variant="outline"
-              size="xl"
-              class="empty-icon"
-              aria-hidden="true"></ui-icon>
-            <h3 class="empty-title">No users found</h3>
-            <p class="empty-description">
-              There are no users to display. Try adjusting your filters or create a new user.
-            </p>
-          </div>
-        </div>
-      }
-
-      <!-- Users Grid -->
-      @else {
-        <div
-          class="users-grid"
-          [class.compact]="compact()"
-          role="grid"
-          [attr.aria-rowcount]="gridRows()"
-          [attr.aria-colcount]="gridCols()">
-          @for (user of users(); track user.id; let index = $index) {
-            <div
-              role="gridcell"
-              [attr.aria-rowindex]="getRowIndex(index)"
-              [attr.aria-colindex]="getColIndex(index)">
-              <app-user-card
-                [user]="user"
-                [userActions]="userActions()"
-                [size]="compact() ? 'compact' : 'normal'"
-                [selectable]="enableSelection()"
-                [selected]="isUserSelected(user.id)"
-                [showActions]="showActions()"
-                [showDetails]="showDetails()"
-                [loading]="loading()"
-                [clickable]="true"
-                (userAction)="onUserAction($event)"
-                (cardClick)="onCardClick($event)"
-                (selectionChange)="onSelectionChange($event)">
-              </app-user-card>
-            </div>
-          }
-        </div>
-      }
-
-      <!-- Loading Overlay for existing content -->
-      @if (loading() && users().length > 0) {
-        <div class="loading-overlay" role="status" aria-label="Updating users">
-          <div class="overlay-content">
-            <ui-icon
-              name="arrow-clockwise"
-              variant="outline"
-              size="md"
-              class="loading-spinner"
-              aria-hidden="true"></ui-icon>
-            <span class="sr-only">Updating users...</span>
-          </div>
-        </div>
-      }
-    </div>
-  `,
+  templateUrl: './users-grid.html',
   styleUrl: './users-grid.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UsersGridComponent {
-  // ============================================================================
-  // Inputs
-  // ============================================================================
-
   /** Users to display */
-  users = input.required<UserDisplayData[]>();
+  users = input.required<UserCardViewModel[]>();
 
   /** Available actions for users */
   userActions = input<UserActionConfig>({
@@ -182,22 +93,14 @@ export class UsersGridComponent {
   /** Show detailed information on cards */
   showDetails = input<boolean>(true);
 
-  // ============================================================================
-  // Outputs
-  // ============================================================================
-
   /** Emitted when a user action is triggered */
   userAction = output<UserCardActionEvent>();
 
   /** Emitted when a card is clicked */
-  cardClick = output<UserDisplayData>();
+  cardClick = output<UserCardViewModel>();
 
   /** Emitted when user selection changes */
   selectionChange = output<UserSelectionChangeEvent>();
-
-  // ============================================================================
-  // Computed Properties
-  // ============================================================================
 
   /** Calculate grid columns based on viewport and card size */
   readonly gridCols = computed(() => {
@@ -212,10 +115,6 @@ export class UsersGridComponent {
     return Math.ceil(userCount / cols);
   });
 
-  // ============================================================================
-  // Event Handlers
-  // ============================================================================
-
   /**
    * Handle user action from card
    */
@@ -226,23 +125,19 @@ export class UsersGridComponent {
   /**
    * Handle card click
    */
-  onCardClick(user: UserDisplayData): void {
+  onCardClick(user: UserCardViewModel): void {
     this.cardClick.emit(user);
   }
 
   /**
    * Handle selection change
    */
-  onSelectionChange(event: { user: UserDisplayData; selected: boolean }): void {
+  onSelectionChange(event: { user: UserCardViewModel; selected: boolean }): void {
     this.selectionChange.emit({
       user: event.user,
       selected: event.selected,
     });
   }
-
-  // ============================================================================
-  // Utility Methods
-  // ============================================================================
 
   /**
    * Check if user is selected
