@@ -57,10 +57,10 @@ import {
 } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
 
 // Local Imports
-import {
+import type {
   UserDisplayData,
-  SortConfig,
   UserActionConfig,
+  SortConfig,
 } from '../../../../models/users/user-ui.types';
 import {
   RoleAccessLevelInfo,
@@ -377,7 +377,7 @@ export class UserTableComponent implements OnInit, OnChanges {
    * Check if column is sortable
    */
   isSortable(field: keyof UserDisplayData): boolean {
-    return ['displayName', 'email', 'role', 'createdAt', 'lastActivity'].includes(field as string);
+    return ['displayName', 'email', 'role'].includes(field as string);
   }
 
   /**
