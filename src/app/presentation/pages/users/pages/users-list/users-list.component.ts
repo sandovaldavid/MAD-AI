@@ -101,7 +101,7 @@ export class UsersListPage {
     const rawUsers = this.facade.users();
     console.log('🔍 Raw users from facade:', rawUsers);
 
-    const cardUsers = UserPresentationMapper.toCardViewModels(rawUsers);
+    const cardUsers = UserPresentationMapper.toCardViewModels(rawUsers, true);
     console.log('📋 Mapped card users:', cardUsers);
 
     return cardUsers;
