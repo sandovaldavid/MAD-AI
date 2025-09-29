@@ -102,8 +102,8 @@ export function createGetUsersByRoleRequest(
  * Creates pagination options from UI parameters
  */
 export function createPaginationOptions(
-  page: number = 1,
-  pageSize: number = 10,
+  page = 1,
+  pageSize = 10,
   sortBy?: string,
   sortOrder: 'asc' | 'desc' = 'asc'
 ): PaginationOptions {
