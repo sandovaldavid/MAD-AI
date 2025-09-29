@@ -60,7 +60,7 @@ export interface StatItem {
 export interface SelectionStats {
   total: number;
   items?: StatItem[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -144,6 +144,9 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
 
   /** Mostrar opciones de exportación */
   showExportOptions = input<boolean>(true);
+
+  /** Mostrar opción rápida de exportación en la barra principal */
+  showQuickExport = input<boolean>(false);
 
   /** Mostrar estadísticas */
   showStatistics = input<boolean>(true);
@@ -244,6 +247,11 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
   /** Si hay acciones avanzadas disponibles */
   readonly hasAdvancedActions = computed(() => this.availableAdvancedActions().length > 0);
 
+  /** Si el panel expandible debe mostrarse (acciones avanzadas o múltiples formatos de exportación) */
+  readonly shouldShowExpandablePanel = computed(() =>
+    this.hasAdvancedActions() || (this.showExportOptions() && this.exportFormats().length > 1)
+  );
+
   /** Texto de resumen de selección */
   readonly selectionSummary = computed(() => {
     const count = this.selectedCount();
@@ -259,7 +267,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     toggleMore: 'Más',
     toggleLess: 'Menos',
     clearTooltip: 'Limpiar selección (Esc o X)',
-    toggleTooltip: 'Alternar acciones avanzadas (E)',
+    toggleTooltip: 'Alternar panel expandible (E)',
     shortcutsHint: 'Presiona Esc para limpiar, E para expandir',
     ...this.texts(),
   }));
@@ -419,7 +427,7 @@ export class BulkActionsToolbar implements OnInit, OnDestroy {
     this._shortcutsHintTimer = setTimeout(() => {
       this._showShortcutsHint.set(false);
       this._shortcutsHintTimer = null;
-    }, 4000) as any;
+    }, 4000);
   }
 
   /**

@@ -61,7 +61,7 @@
       }
 
       <!-- Acción Rápida de Exportación -->
-      @if (showExportOptions() && exportFormats().length > 0) {
+      @if (showQuickExport() && showExportOptions() && exportFormats().length > 0) {
         <ui-button
           variant="outline-primary"
           size="sm"
@@ -76,7 +76,7 @@
     <!-- Controles de Barra de Herramientas -->
     <div class="toolbar-controls">
       <!-- Alternar Acciones Avanzadas -->
-      @if (showAdvancedToggle() && hasAdvancedActions()) {
+      @if (showAdvancedToggle() && shouldShowExpandablePanel()) {
         <ui-button
           variant="ghost"
           size="sm"
@@ -99,7 +99,7 @@
   </div>
 
   <!-- Panel de Acciones Avanzadas -->
-  @if (showAdvancedToggle() && hasAdvancedActions()) {
+  @if (showAdvancedToggle() && shouldShowExpandablePanel()) {
     <div
       class="advanced-panel"
       [class.panel-collapsed]="!showAdvanced()"
