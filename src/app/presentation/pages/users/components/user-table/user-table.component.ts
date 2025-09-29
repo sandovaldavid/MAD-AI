@@ -197,20 +197,12 @@ export class UserTableComponent implements OnInit, OnChanges {
    */
   @Output() bulkAction = new EventEmitter<{ action: string; users: UserDisplayData[] }>();
 
-  // ============================================================================
-  // Component State
-  // ============================================================================
-
   /**
    * Internal selected users state
    */
   private readonly _internalSelection = signal<Set<number>>(new Set());
 
   // Role colors are handled by the role access level system
-
-  // ============================================================================
-  // Computed Properties
-  // ============================================================================
 
   /**
    * Check if all users are selected
@@ -518,44 +510,6 @@ export class UserTableComponent implements OnInit, OnChanges {
   getRoleIcon(user: UserDisplayData): string {
     const level = user.accessLevel || 5;
     return getRoleAccessLevelIcon(level);
-  }
-
-  /**
-   * Get role icon background classes based on the user's access level
-   */
-  getRoleIconBg(user: UserDisplayData): string {
-    const roleInfo = this.getRoleInfo(user);
-    return roleInfo.iconBg;
-  }
-
-  /**
-   * Get role icon color classes based on the user's access level
-   */
-  getRoleIconColor(user: UserDisplayData): string {
-    const roleInfo = this.getRoleInfo(user);
-    return roleInfo.iconColor;
-  }
-
-  /**
-   * Get action label for display
-   */
-  getActionLabel(action: string): string {
-    switch (action) {
-      case 'delete':
-        return 'Desactivar'; // Changed: reflects that "delete" actually deactivates the user
-      case 'activate':
-        return 'Activar';
-      case 'deactivate':
-        return 'Desactivar';
-      case 'resetPassword':
-        return 'Restablecer Contraseña';
-      case 'edit':
-        return 'Editar';
-      case 'view':
-        return 'Ver';
-      default:
-        return action.charAt(0).toUpperCase() + action.slice(1);
-    }
   }
 
   /**
