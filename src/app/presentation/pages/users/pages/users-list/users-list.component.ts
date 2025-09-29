@@ -50,11 +50,13 @@ import type { ErrorDisplayConfig } from '@presentation/shared/types/error-displa
 import { BreadcrumbService } from '@/app/presentation/services/breadcrumb.service';
 import { UserPresentationMapper } from '../../mappers/user-presentation.mapper';
 import type { UserDisplayData } from '../../../../models/users/user-ui.types';
+import type { UserCardViewModel } from '../../../../models/users/user-display.model';
 import type {
   UserActionEvent,
   UserSelectionEvent,
   SortChangeEvent,
 } from '../../components/user-table/user-table.component';
+import type { UserCardActionEvent } from '../../components/user-card/user-card';
 
 export interface PendingUserAction {
   type: 'delete' | 'activate' | 'deactivate' | 'resetPassword';
@@ -99,10 +101,10 @@ export class UsersListPage {
     const rawUsers = this.facade.users();
     console.log('🔍 Raw users from facade:', rawUsers);
 
-    const displayUsers = rawUsers.map((user) => UserPresentationMapper.toDisplayData(user));
-    console.log('📋 Mapped display users:', displayUsers);
+    const cardUsers = UserPresentationMapper.toCardViewModels(rawUsers);
+    console.log('📋 Mapped card users:', cardUsers);
 
-    return displayUsers;
+    return cardUsers;
   });
   readonly error = this.facade.error;
   readonly availableRoles = this.rolesFacade.roles;
@@ -129,9 +131,32 @@ export class UsersListPage {
   currentPage = signal(1);
   pageSize = signal(10);
 
-  // Selection state
+    // Selection state
   private _selectedUsers = signal<UserDisplayData[]>([]);
   readonly selectedUsers = this._selectedUsers.asReadonly();
+
+  // Computed table users (converted from card view models)
+  readonly tableUsers = computed(() => {
+    const cardUsers = this.paginatedUsers();
+    return cardUsers.map((user) => ({
+      id: user.id,
+      displayName: user.displayName,
+      email: user.email,
+      username: '', // Card model doesn't have username
+      role: user.role,
+      status: user.status,
+      avatar: user.avatar,
+      initials: user.initials,
+      lastActivity: user.stats?.lastLoginDate,
+      lastActivityDisplay: user.stats?.lastLoginDate
+        ? this.formatRelativeDate(new Date(user.stats.lastLoginDate))
+        : undefined,
+      createdAt: '', // Card model doesn't have createdAt
+      isActive: user.status.value === 'active',
+      canEdit: true, // Default permissions for table view
+      canDelete: false,
+    } as UserDisplayData));
+  });
 
   // User actions configuration
   readonly userActions = signal({
@@ -199,10 +224,9 @@ export class UsersListPage {
     const searchTerm = this.search().toLowerCase();
     if (searchTerm) {
       filtered = filtered.filter(
-        (user: UserDisplayData) =>
+        (user: UserCardViewModel) =>
           user.displayName.toLowerCase().includes(searchTerm) ||
           user.email.toLowerCase().includes(searchTerm) ||
-          user.username.toLowerCase().includes(searchTerm) ||
           user.role.toLowerCase().includes(searchTerm)
       );
     }
@@ -210,26 +234,30 @@ export class UsersListPage {
     // Active filter
     const activeFilterValue = this.activeFilter();
     if (activeFilterValue !== null) {
-      filtered = filtered.filter((user: UserDisplayData) => user.isActive === activeFilterValue);
+      filtered = filtered.filter((user: UserCardViewModel) => {
+        const isActive = user.status.value === 'active';
+        return isActive === activeFilterValue;
+      });
     }
 
     // Role filter
     const roleFilterValue = this.roleFilter();
     if (roleFilterValue) {
       filtered = filtered.filter(
-        (user: UserDisplayData) => user.role.toLowerCase() === roleFilterValue.toLowerCase()
+        (user: UserCardViewModel) => user.role.toLowerCase() === roleFilterValue.toLowerCase()
       );
     }
 
-    // Activity filter
+    // Activity filter - UserCardViewModel doesn't have lastActivity, using stats if available
     const activityFilterValue = this.activityFilter();
-    if (activityFilterValue && activityFilterValue !== '') {
+    if (activityFilterValue && activityFilterValue !== '' && activityFilterValue !== 'all') {
       const now = new Date();
       const filterDate = this.getActivityFilterDate(activityFilterValue, now);
 
-      filtered = filtered.filter((user: UserDisplayData) => {
-        if (!user.lastActivity) return false;
-        const userActivity = new Date(user.lastActivity);
+      filtered = filtered.filter((user: UserCardViewModel) => {
+        // Use stats.lastLoginDate if available, otherwise include all users
+        if (!user.stats?.lastLoginDate) return true; // Include users without activity data
+        const userActivity = new Date(user.stats.lastLoginDate);
         return userActivity >= filterDate;
       });
     }
@@ -238,7 +266,7 @@ export class UsersListPage {
     const sortByValue = this.sortBy();
     const sortDirectionValue = this.sortDirection();
 
-    filtered.sort((a: UserDisplayData, b: UserDisplayData) => {
+    filtered.sort((a: UserCardViewModel, b: UserCardViewModel) => {
       let aValue: any;
       let bValue: any;
 
@@ -255,14 +283,11 @@ export class UsersListPage {
           aValue = a.role.toLowerCase();
           bValue = b.role.toLowerCase();
           break;
-        case 'lastActivity':
-          aValue = a.lastActivity ? new Date(a.lastActivity).getTime() : 0;
-          bValue = b.lastActivity ? new Date(b.lastActivity).getTime() : 0;
-          break;
-        case 'createdAt':
-          aValue = new Date(a.createdAt || 0).getTime();
-          bValue = new Date(b.createdAt || 0).getTime();
-          break;
+        // Note: UserCardViewModel doesn't have lastActivity or createdAt
+        // These sort options should be disabled in the UI for card view
+        default:
+          aValue = a.displayName.toLowerCase();
+          bValue = b.displayName.toLowerCase();
       }
 
       if (aValue < bValue) {
@@ -281,7 +306,7 @@ export class UsersListPage {
   readonly filterStats = computed(() => {
     const total = this.users().length;
     const filtered = this.filteredUsers().length;
-    const active = this.filteredUsers().filter((u: UserDisplayData) => u.isActive).length;
+    const active = this.filteredUsers().filter((u: UserCardViewModel) => u.status.value === 'active').length;
     const hasFilters =
       this.search() ||
       this.activeFilter() !== null ||
@@ -384,9 +409,7 @@ export class UsersListPage {
     this.confirmVisible.set(true);
   }
 
-  onUserAction(
-    event: UserActionEvent | { action: 'view' | 'edit' | 'select'; user: UserDisplayData }
-  ): void {
+  onUserAction(event: UserActionEvent | UserCardActionEvent): void {
     const { action, user } = event;
 
     switch (action) {
@@ -403,10 +426,10 @@ export class UsersListPage {
         this.onDelete(user.id);
         break;
       case 'activate':
-        this.onToggleActive(user.id, false);
+        this.onToggleActive(user.id, 'status' in user ? user.status.value === 'active' : false);
         break;
       case 'deactivate':
-        this.onToggleActive(user.id, true);
+        this.onToggleActive(user.id, 'status' in user ? user.status.value === 'active' : false);
         break;
       case 'resetPassword':
         this.onResetPassword(user.id);
@@ -434,7 +457,7 @@ export class UsersListPage {
   }
 
   onBulkAction(
-    event: { action: string; users: UserDisplayData[] } | { action: string; userIds: number[] }
+    event: { action: string; users: UserCardViewModel[] } | { action: string; userIds: number[] } | { action: string; users: UserDisplayData[] }
   ) {
     // Handle bulk actions similar to roles-list
     const userIds = 'users' in event ? event.users.map((u) => u.id) : event.userIds;
@@ -598,7 +621,7 @@ export class UsersListPage {
     sortBy: 'displayName' | 'email' | 'role' | 'lastActivity' | 'createdAt',
     direction?: 'asc' | 'desc'
   ) {
-    this.sortBy.set(sortBy);
+    this.sortBy.set(sortBy as 'displayName' | 'email' | 'role');
     if (direction) {
       this.sortDirection.set(direction);
     } else {
@@ -623,8 +646,7 @@ export class UsersListPage {
       { value: 'displayName', label: 'Nombre' },
       { value: 'email', label: 'Email' },
       { value: 'role', label: 'Rol' },
-      { value: 'lastActivity', label: 'Última Actividad' },
-      { value: 'createdAt', label: 'Fecha de Creación' },
+      // Note: UserCardViewModel doesn't support sorting by lastActivity or createdAt
     ];
   }
 
@@ -716,5 +738,24 @@ export class UsersListPage {
 
         this.notifications.notificationError('Error de exportación', errorMessage);
       });
+  }
+
+  /**
+   * Format date for relative display (e.g., "Hace 2 días")
+   */
+  private formatRelativeDate(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} día${diffDays === 1 ? '' : 's'}`;
+    if (diffDays < 30)
+      return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) === 1 ? '' : 's'}`;
+    if (diffDays < 365)
+      return `Hace ${Math.floor(diffDays / 30)} mes${Math.floor(diffDays / 30) === 1 ? '' : 'es'}`;
+
+    return date.toLocaleDateString();
   }
 }
