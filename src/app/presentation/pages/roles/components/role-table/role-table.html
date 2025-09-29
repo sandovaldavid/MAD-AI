@@ -278,9 +278,7 @@
     [exportFormats]="toolbarExportFormats()"
     [showExportOptions]="true"
     [showStatistics]="false"
-    [showAdvancedToggle]="false"
-    [quickActions]="[]"
-    [advancedActions]="[]"
+    [showAdvancedToggle]="showToolbarAdvancedToggle()"
     (exportRequested)="onToolbarExportRequested($event)"
     (clearSelection)="clearSelection()">
   </ui-bulk-actions-toolbar>

@@ -84,7 +84,7 @@ export class RoleTable {
   toggleStatus = output<{ id: number; isActive: boolean }>();
 
   /** Emitted when bulk action is triggered */
-  bulkAction = output<{ action: string; roleIds: number[]; metadata?: any }>();
+  bulkAction = output<{ action: string; roleIds: number[]; metadata?: { format?: string } }>();
 
   /** Emitted when user requests sorting change */
   sortChange = output<{
@@ -167,6 +167,11 @@ export class RoleTable {
   /** Show floating toolbar */
   readonly showFloatingToolbar = computed(() => {
     return this.enableBulkActions() && this.selectedCount() > 0;
+  });
+
+  /** Show advanced toggle for export options */
+  readonly showToolbarAdvancedToggle = computed(() => {
+    return this.toolbarExportFormats().length > 1;
   });
 
   /** Export formats for export toolbar */
