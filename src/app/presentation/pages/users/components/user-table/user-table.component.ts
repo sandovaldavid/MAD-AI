@@ -57,7 +57,11 @@ import {
 } from '@presentation/shared/ui/bulk-actions-toolbar/bulk-actions-toolbar';
 
 // Local Imports
-import { UserDisplayData, SortConfig, UserActionConfig } from '../../../../models/users/user-ui.types';
+import {
+  UserDisplayData,
+  SortConfig,
+  UserActionConfig,
+} from '../../../../models/users/user-ui.types';
 import {
   RoleAccessLevelInfo,
   getRoleAccessLevelInfo,
@@ -104,10 +108,6 @@ export interface SortChangeEvent {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserTableComponent implements OnInit, OnChanges {
-  // ============================================================================
-  // Input Properties
-  // ============================================================================
-
   /**
    * List of users to display
    */
@@ -176,10 +176,6 @@ export class UserTableComponent implements OnInit, OnChanges {
    * Table actions (for bulk operations)
    */
   @Input() tableActions: string[] = [];
-
-  // ============================================================================
-  // Output Events
-  // ============================================================================
 
   /**
    * Emitted when a user action is triggered
@@ -260,10 +256,6 @@ export class UserTableComponent implements OnInit, OnChanges {
     () => this.enableSelection && this.currentSelection().length > 0
   );
 
-  // ============================================================================
-  // Bulk Actions Toolbar Configuration
-  // ============================================================================
-
   /**
    * Whether to show the floating bulk actions toolbar
    */
@@ -273,54 +265,6 @@ export class UserTableComponent implements OnInit, OnChanges {
    * Number of selected items
    */
   readonly selectedCount = computed(() => this.currentSelection().length);
-
-  /**
-   * Quick actions for the bulk toolbar
-   */
-  readonly quickActions = computed((): BulkAction[] => {
-    return [
-      {
-        id: 'activate',
-        label: 'Activar',
-        icon: 'check-circle',
-        variant: 'success',
-        description: 'Activar usuarios seleccionados',
-        hotkey: '1',
-      },
-      {
-        id: 'deactivate',
-        label: 'Desactivar',
-        icon: 'x-circle',
-        variant: 'warning',
-        description: 'Desactivar usuarios seleccionados',
-        hotkey: '2',
-      },
-      {
-        id: 'delete',
-        label: 'Eliminar',
-        icon: 'user-slash',
-        variant: 'danger',
-        description: 'Eliminar usuarios seleccionados',
-        requiresConfirmation: true,
-        hotkey: '3',
-      },
-    ];
-  });
-
-  /**
-   * Advanced actions for the bulk toolbar
-   */
-  readonly advancedActions = computed((): BulkAction[] => {
-    return [
-      {
-        id: 'assign-role',
-        label: 'Asignar Rol',
-        icon: 'user-group',
-        variant: 'primary',
-        description: 'Asignar roles a usuarios seleccionados',
-      },
-    ];
-  });
 
   /**
    * Export formats for the toolbar
@@ -410,10 +354,6 @@ export class UserTableComponent implements OnInit, OnChanges {
     };
   });
 
-  // ============================================================================
-  // Table Header Methods
-  // ============================================================================
-
   /**
    * Handle column sort
    */
@@ -447,10 +387,6 @@ export class UserTableComponent implements OnInit, OnChanges {
   isSortable(field: keyof UserDisplayData): boolean {
     return ['displayName', 'email', 'role', 'createdAt', 'lastActivity'].includes(field as string);
   }
-
-  // ============================================================================
-  // Selection Methods
-  // ============================================================================
 
   /**
    * Handle select all checkbox
@@ -510,10 +446,6 @@ export class UserTableComponent implements OnInit, OnChanges {
     });
   }
 
-  // ============================================================================
-  // User Action Methods
-  // ============================================================================
-
   /**
    * Handle user action
    */
@@ -530,10 +462,6 @@ export class UserTableComponent implements OnInit, OnChanges {
       this.bulkAction.emit({ action, users: selectedUsers });
     }
   }
-
-  // ============================================================================
-  // Utility Methods
-  // ============================================================================
 
   /**
    * Get user initials for avatar
@@ -629,10 +557,6 @@ export class UserTableComponent implements OnInit, OnChanges {
         return action.charAt(0).toUpperCase() + action.slice(1);
     }
   }
-
-  // ============================================================================
-  // Bulk Actions Toolbar Event Handlers
-  // ============================================================================
 
   /**
    * Handle quick action from toolbar
