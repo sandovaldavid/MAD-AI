@@ -1,49 +1,25 @@
-/**
- * User Card Component - Dumb Component
- *
- * @description
- * Pure presentation component that displays user information in a card format.
- * Receives all data through inputs and communicates user interactions through
- * output events. Provides a compact, visually appealing user overview.
- *
- * @responsibilities
- * - Display user information in card format
- * - Show user avatar, name, email, role, and status
- * - Handle card interactions (click, hover)
- * - Emit user action events
- * - Support different card sizes and layouts
- * - Provide loading and skeleton states
- *
- * @architecture
- * Dumb Component following MAD-AI patterns:
- * - No dependency injection or business logic
- * - All data received through @Input properties
- * - All interactions communicated through @Output events
- * - Pure presentation logic only
- * - No direct service calls or state management
- *
- * @author MAD-AI Development Team
- * @version 1.0.0
- * @since 2024-01-01
- * @layer Presentation
- */
-
-import { ChangeDetectionStrategy, Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // Shared UI Components
-import { Button } from '@presentation/shared/ui/button/button';
-import { Icon } from '@presentation/shared/ui/icon/icon';
+import { Icon } from '../../../../shared/ui/icon/icon';
 
 // Local Imports
-import type { UserDisplayData, UserActionConfig } from '../../../../models/users/user-ui.types';
+import { UserCardData, UserActionConfig } from '../../../../models/users/user-ui.types';
+import { UserCardViewModel } from '../../../../models/users/user-display.model';
+import { USER_STATUS_CONFIG, getUserStatusInfo } from '../../../../models/users/user-colors.type';
+import {
+  ROLE_ACCESS_LEVEL_CONFIG,
+  getRoleAccessLevelInfo,
+  getRoleAccessLevelIcon,
+} from '../../../../models/roles/accesLevel.models';
 
 /**
  * User card action event data
  */
 export interface UserCardActionEvent {
-  readonly action: 'view' | 'edit' | 'select';
-  readonly user: UserDisplayData;
+  readonly action: 'view' | 'edit' | 'select' | 'activate' | 'deactivate';
+  readonly user: UserCardData;
 }
 
 /**
@@ -56,20 +32,16 @@ export interface UserCardActionEvent {
 @Component({
   selector: 'app-user-card',
   standalone: true,
-  imports: [CommonModule, Button, Icon],
+  imports: [CommonModule, Icon],
   templateUrl: './user-card.html',
   styleUrl: './user-card.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserCardComponent {
-  // ============================================================================
-  // Input Properties
-  // ============================================================================
-
   /**
    * User data to display
    */
-  @Input({ required: true }) user!: UserDisplayData;
+  @Input({ required: true }) user!: UserCardViewModel;
 
   /**
    * Available actions for this user
@@ -118,10 +90,6 @@ export class UserCardComponent {
    */
   @Input() clickable = true;
 
-  // ============================================================================
-  // Output Events
-  // ============================================================================
-
   /**
    * Emitted when a user action is triggered
    */
@@ -130,16 +98,12 @@ export class UserCardComponent {
   /**
    * Emitted when the card is clicked
    */
-  @Output() cardClick = new EventEmitter<UserDisplayData>();
+  @Output() cardClick = new EventEmitter<UserCardViewModel>();
 
   /**
    * Emitted when the card selection changes
    */
-  @Output() selectionChange = new EventEmitter<{ user: UserDisplayData; selected: boolean }>();
-
-  // ============================================================================
-  // Event Handlers
-  // ============================================================================
+  @Output() selectionChange = new EventEmitter<{ user: UserCardViewModel; selected: boolean }>();
 
   /**
    * Handle card click
@@ -148,7 +112,7 @@ export class UserCardComponent {
     if (!this.clickable || this.loading) return;
 
     if (this.selectable) {
-      this.onToggleSelection();
+      this.userAction.emit({ action: 'select', user: this.user });
     } else {
       this.cardClick.emit(this.user);
       this.userAction.emit({ action: 'view', user: this.user });
@@ -164,21 +128,6 @@ export class UserCardComponent {
   }
 
   /**
-   * Handle selection toggle
-   */
-  onToggleSelection(): void {
-    if (!this.selectable) return;
-
-    const newSelected = !this.selected;
-    this.selectionChange.emit({ user: this.user, selected: newSelected });
-    this.userAction.emit({ action: 'select', user: this.user });
-  }
-
-  // ============================================================================
-  // Utility Methods
-  // ============================================================================
-
-  /**
    * Get user initials for avatar
    */
   getUserInitials(): string {
@@ -186,43 +135,71 @@ export class UserCardComponent {
   }
 
   /**
-   * Get user status CSS class
+   * Get user status CSS class using USER_STATUS_CONFIG
    */
   getStatusClass(): string {
-    return `status-${this.user.status.cssClass}`;
+    const statusInfo = getUserStatusInfo(this.user.status.value as any);
+    return statusInfo.badgeClasses;
   }
 
   /**
-   * Get role display color
+   * Get role access level information
+   */
+  getRoleAccessLevel(): { level: number; info: any; icon: string } {
+    // Map role names to access levels (this could be enhanced with a proper mapping)
+    const roleToLevel: Record<string, number> = {
+      'admin': 1,      // Critical access
+      'superadmin': 1, // Critical access
+      'manager': 2,    // High access
+      'moderator': 3,  // Medium access
+      'user': 4,       // Low access
+      'viewer': 5,     // Minimal access
+      'guest': 5,     // Minimal access
+    };
+
+    const level = roleToLevel[this.user.role.toLowerCase()] || 5;
+    const info = getRoleAccessLevelInfo(level);
+    const icon = getRoleAccessLevelIcon(level);
+
+    return { level, info, icon };
+  }
+
+  /**
+   * Get role icon using ROLE_ACCESS_LEVEL_CONFIG
+   */
+  getRoleIcon(): string {
+    return this.getRoleAccessLevel().icon;
+  }
+
+  /**
+   * Get role display color using ROLE_ACCESS_LEVEL_CONFIG
    */
   getRoleClass(): string {
-    const roleClasses: Record<string, string> = {
-      admin: 'role-admin',
-      manager: 'role-manager',
-      user: 'role-user',
-      viewer: 'role-viewer',
-    };
-    return roleClasses[this.user.role.toLowerCase()] || 'role-default';
+    return this.getRoleAccessLevel().info.badgeClasses;
   }
-
-  /**
-   * Format last activity for display
-   */
   getLastActivityDisplay(): string {
-    if (!this.user.lastActivity) return 'Nunca';
+    // Use stats from UserCardViewModel for better activity information
+    if (this.user.stats) {
+      const { totalLogins, lastLoginDate } = this.user.stats;
 
-    const date = new Date(this.user.lastActivity);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (lastLoginDate) {
+        // Format relative time for last login
+        const lastLogin = new Date(lastLoginDate);
+        const now = new Date();
+        const diffMs = now.getTime() - lastLogin.getTime();
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
-    if (diffDays < 7) return `Hace ${diffDays} día${diffDays === 1 ? '' : 's'}`;
-    if (diffDays < 30)
-      return `Hace ${Math.floor(diffDays / 7)} semana${Math.floor(diffDays / 7) === 1 ? '' : 's'}`;
+        if (diffDays === 0) return `Último login: Hoy (${totalLogins} total)`;
+        if (diffDays === 1) return `Último login: Ayer (${totalLogins} total)`;
+        if (diffDays < 7) return `Hace ${diffDays} días (${totalLogins} total)`;
+        if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas (${totalLogins} total)`;
+        return `Hace ${Math.floor(diffDays / 30)} meses (${totalLogins} total)`;
+      }
 
-    return date.toLocaleDateString();
+      return `${totalLogins} logins totales`;
+    }
+
+    return 'Sin actividad reciente';
   }
 
   /**

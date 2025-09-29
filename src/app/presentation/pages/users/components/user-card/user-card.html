@@ -1,143 +1,108 @@
-<!-- User Card Component Template -->
-<div
-  [class]="getCardClasses()"
-  (click)="onCardClick()"
-  [attr.aria-selected]="selectable ? selected : null"
-  [attr.role]="selectable ? 'option' : 'button'"
-  [attr.tabindex]="clickable ? 0 : -1">
-  <!-- Loading State -->
-  @if (loading) {
-    <div class="card-loading">
-      <!-- Avatar Skeleton -->
-      <div class="avatar-section">
-        <div class="skeleton skeleton-avatar"></div>
-      </div>
-
-      <!-- Content Skeleton -->
-      <div class="content-section">
-        <div class="user-info-skeleton">
-          <div class="skeleton skeleton-name"></div>
-          <div class="skeleton skeleton-email"></div>
-        </div>
-
-        @if (showDetails) {
-          <div class="details-skeleton">
-            <div class="skeleton skeleton-role"></div>
-            <div class="skeleton skeleton-status"></div>
-          </div>
-        }
-      </div>
-
-      <!-- Actions Skeleton -->
-      @if (showActions) {
-        <div class="actions-section">
-          <div class="skeleton skeleton-actions"></div>
-        </div>
-      }
-    </div>
-  } @else {
-    <!-- Selection Indicator -->
-    @if (selectable) {
-      <div class="selection-indicator">
-        <input
-          type="checkbox"
-          [checked]="selected"
-          (change)="onToggleSelection()"
-          (click)="$event.stopPropagation()"
-          class="selection-checkbox"
-          [attr.aria-label]="'Seleccionar ' + user.displayName" />
-      </div>
-    }
-
-    <!-- Avatar Section -->
-    <div class="avatar-section">
+<!-- User Card Container -->
+<article class="user-card" [class.user-card--loading]="loading">
+  <!-- Card Header -->
+  <header class="user-card__header">
+    <!-- Avatar and Status Indicator -->
+    <div class="user-card__avatar-container">
       @if (user.avatar) {
-        <img [src]="user.avatar" [alt]="user.displayName + ' avatar'" class="user-avatar-image" />
+        <img [src]="user.avatar" [alt]="user.displayName + ' avatar'" class="user-card__avatar" />
       } @else {
-        <div class="user-avatar-initials">
+        <div class="user-card__avatar-initials">
           {{ getUserInitials() }}
         </div>
       }
 
       <!-- Status Indicator -->
-      <div class="status-indicator" [class]="getStatusClass()">
+      <div class="user-card__status-indicator" [class]="getStatusClass()">
         <ui-icon [name]="user.status.iconName" variant="filled" size="xs"></ui-icon>
       </div>
     </div>
 
-    <!-- Content Section -->
-    <div class="content-section">
-      <!-- User Basic Info -->
-      <div class="user-info">
-        <h3 class="user-name">{{ user.displayName }}</h3>
-        <p class="user-email">{{ user.email }}</p>
-        <p class="user-username">{{ '@' }}{{ user.username }}</p>
+    <!-- Role Badge with Access Level -->
+    <div class="user-card__role-section">
+      <div class="user-card__role-badge" [class]="getRoleClass()">
+        <ui-icon [name]="getRoleIcon()" size="xs" class="user-card__role-icon" />
+        <span class="user-card__role-text">{{ user.roleDisplay }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Card Content -->
+  <div class="user-card__content">
+    <!-- User Info -->
+    <div class="user-card__info">
+      <h3 class="user-card__name" [title]="user.displayName">
+        {{ user.displayName }}
+      </h3>
+      <p class="user-card__email">{{ user.email }}</p>
+    </div>
+
+    <!-- User Metrics -->
+    <div class="user-card__metrics">
+      <div class="user-card__metric">
+        <ui-icon name="clock" size="sm" class="user-card__metric-icon" />
+        <span class="user-card__metric-text">{{ getLastActivityDisplay() }}</span>
       </div>
 
-      <!-- Detailed Information -->
-      @if (showDetails) {
-        <div class="user-details">
-          <!-- Role Badge -->
-          <div class="detail-item">
-            <span class="role-badge" [class]="getRoleClass()">
-              <ui-icon name="shield" variant="outline" size="xs"></ui-icon>
-              {{ user.role | titlecase }}
-            </span>
-          </div>
-
-          <!-- Status Badge -->
-          <div class="detail-item">
-            <span class="status-badge" [class]="getStatusClass()">
-              <ui-icon [name]="user.status.iconName" variant="outline" size="xs"></ui-icon>
-              {{ user.status.label }}
-            </span>
-          </div>
-
-          <!-- Last Activity -->
-          @if (user.lastActivity) {
-            <div class="detail-item">
-              <span class="activity-info">
-                <ui-icon name="clock" variant="outline" size="xs"></ui-icon>
-                {{ getLastActivityDisplay() }}
-              </span>
-            </div>
-          }
+      @if (user.stats?.totalLogins) {
+        <div class="user-card__metric">
+          <ui-icon name="login" size="sm" class="user-card__metric-icon" />
+          <span class="user-card__metric-text">{{ user.stats!.totalLogins }} logins</span>
         </div>
       }
     </div>
+  </div>
 
-    <!-- Actions Section -->
-    @if (showActions && (userActions.canView || userActions.canEdit)) {
-      <div class="actions-section">
-        <div class="action-buttons">
-          @if (userActions.canView) {
-            <ui-button
-              variant="ghost"
-              size="sm"
-              (click)="onUserAction('view', $event)"
-              [attr.aria-label]="'Ver ' + user.displayName">
-              <ui-icon name="eye" variant="outline" size="sm"></ui-icon>
-            </ui-button>
-          }
+  <!-- Card Actions -->
+  <footer class="user-card__actions">
+    <button
+      type="button"
+      class="user-card__btn user-card__btn--primary"
+      (click)="onUserAction('view', $event)"
+      [disabled]="loading"
+      title="Ver detalles del usuario">
+      <ui-icon name="eye" size="sm" />
+      <span>Ver detalles</span>
+    </button>
 
-          @if (userActions.canEdit) {
-            <ui-button
-              variant="ghost"
-              size="sm"
-              (click)="onUserAction('edit', $event)"
-              [attr.aria-label]="'Editar ' + user.displayName">
-              <ui-icon name="pencil" variant="outline" size="sm"></ui-icon>
-            </ui-button>
-          }
-        </div>
-      </div>
-    }
+    <!-- Secondary Actions -->
+    <div class="user-card__actions-secondary">
+      @if (userActions.canEdit) {
+        <button
+          type="button"
+          class="user-card__btn user-card__btn--icon"
+          (click)="onUserAction('edit', $event)"
+          [disabled]="loading"
+          title="Editar usuario">
+          <ui-icon name="pencil" variant="filled" size="sm" />
+        </button>
+      }
 
-    <!-- Hover Overlay -->
-    <div class="hover-overlay">
-      <div class="overlay-content">
-        <ui-icon name="arrow-right" variant="outline" size="md"></ui-icon>
+      @if (userActions.canActivate || userActions.canDeactivate) {
+        <button
+          type="button"
+          class="user-card__btn user-card__btn--icon"
+          [ngClass]="
+            user.status.value === 'active' ? 'user-card__btn--warning' : 'user-card__btn--success'
+          "
+          (click)="onUserAction(user.status.value === 'active' ? 'deactivate' : 'activate', $event)"
+          [disabled]="loading"
+          [title]="user.status.value === 'active' ? 'Desactivar usuario' : 'Activar usuario'">
+          <ui-icon
+            [name]="user.status.value === 'active' ? 'pause' : 'play'"
+            variant="filled"
+            size="sm" />
+        </button>
+      }
+    </div>
+  </footer>
+
+  <!-- Loading Overlay -->
+  @if (loading) {
+    <div class="user-card__loading-overlay">
+      <div class="user-card__loading-spinner">
+        <div class="loading-spinner"></div>
       </div>
     </div>
   }
-</div>
+</article>
