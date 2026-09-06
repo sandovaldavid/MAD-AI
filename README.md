@@ -1,365 +1,242 @@
-# MAD-AI
+# MAD-AI — Frontend Client
 
-> Modern Angular application built with Clean Architecture principles, Domain-Driven Design, and comprehensive testing strategies.
-
-[![Angular](https://img.shields.io/badge/Angular-20.1.6-red?logo=angular)](https://angular.io/)
+[![Angular](https://img.shields.io/badge/Angular-20.1.6-red?logo=angular)](https://angular.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4.1.11-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
-[![Jest](https://img.shields.io/badge/Jest-Testing-C21325?logo=jest)](https://jestjs.io/)
-[![Cypress](https://img.shields.io/badge/Cypress-E2E%20Testing-17202C?logo=cypress)](https://www.cypress.io/)
-[![Clean Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-brightgreen)](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.1.11-38B2AC?logo=tailwindcss)](https://tailwindcss.com/)
+[![Testing](https://img.shields.io/badge/Testing-Karma_%26_Jasmine-purple)](https://karma-runner.github.io/)
+[![Architecture](https://img.shields.io/badge/Architecture-Clean_Architecture-brightgreen)](docs/info/diagramas-layers.md)
 
-## 🚀 Project Overview
+Cliente web SPA con renderizado del lado del servidor (SSR) construido en **Angular 20**, diseñado para la gestión de usuarios, roles y flujos completos de autenticación con control de acceso basado en roles (RBAC). El proyecto implementa una arquitectura desacoplada en 5 capas con principios de Clean Architecture y Domain-Driven Design (DDD), gestionando el estado de interfaz mediante **Angular Signals**.
 
-MAD-AI is a modern Angular application implementing Clean Architecture and Domain-Driven Design principles. The project demonstrates enterprise-grade software development practices with a strict 5-layer architecture, comprehensive testing strategies, and maintainable code patterns.
+---
 
-### Key Features
+## 🎯 Propósito del Frontend
 
-- **🏗️ Clean Architecture Implementation**: 5-layer architecture with strict dependency rules
-- **🧠 Domain-Driven Design**: Pure business logic isolated from technical concerns
-- **🎨 Modern UI/UX**: Angular with Tailwind CSS v4.1 and dark mode support
-- **🧪 Comprehensive Testing**: 100% coverage for domain layer, 95% for application layer
-- **📊 Data Visualization**: Integrated with ECharts for rich data presentation
-- **📄 Report Generation**: PDF export capabilities with jsPDF
-- **🔄 Reactive State Management**: Observable-based state management through Facades
-- **♿ Accessibility First**: WCAG 2.1 AA compliant with proper contrast and focus management
+El frontend de MAD-AI proporciona un panel administrativo y de usuario para:
 
-## 🛠️ Technology Stack
+1. **Gestión integral del ciclo de autenticación:** Login, registro de cuentas, confirmación de correo electrónico, solicitud de restablecimiento de contraseña, confirmación de token de restablecimiento y cambio de contraseña activa.
+2. **Administración de usuarios:** Exploración tabular reactiva de usuarios con filtros combinados (texto, estado, rol, rangos temporales), ordenamiento por columnas, paginación, selección múltiple, barra de acciones en lote y exportación de datos a formatos CSV y PDF.
+3. **Gestión de roles y permisos:** Creación, edición, detalle y asignación/desasignación de roles a usuarios con validación de privilegios administrativos (`role.canAccessAdmin()`).
+4. **Dashboard y perfil:** Panel inicial tras inicio de sesión con resumen de sesión activa, saludo contextual y navegación rápida.
 
-### Core Technologies
+---
 
-- **Frontend Framework**: Angular 20.1.6 with Server-Side Rendering (SSR)
-- **Programming Language**: TypeScript 5.8.2
-- **Styling**: Tailwind CSS 4.1.11 with custom design system
-- **State Management**: RxJS 7.8.0 with reactive patterns
-- **Build System**: Angular CLI with custom webpack configuration
+## 🔒 Alcance y Límites del Repositorio
 
-### Development & Testing
+- **Código en este repositorio:** Corresponde **únicamente al cliente frontend** en Angular.
+- **Backend:** Los servicios de persistencia, autenticación y API REST (`Backend-MAD-AI API`) pertenecen a un backend externo independiente (desarrollado en Django REST Framework).
+- **Contrato de integración:** El frontend consume la API REST bajo el prefijo `/api/v1`. La especificación OpenAPI/Swagger de referencia provista por el backend se encuentra documentada en [docs/api/swagger.json](docs/api/swagger.json) y [docs/api/users.api.md](docs/api/users.api.md).
+- **Capturas de pantalla:** Este repositorio no almacena capturas de interfaz estáticas para evitar desincronización con el código activo.
 
-- **Testing Framework**: Jest/Jasmine with Karma
-- **Code Quality**: ESLint, Prettier, and Angular ESLint
-- **Documentation**: Comprehensive architectural guides and coding standards
-- **Version Control**: Git with conventional commit messages
+---
 
-### Libraries & Utilities
+## 📊 Estado Real de las Capacidades
 
-- **Charts & Visualization**: ECharts via ngx-echarts
-- **PDF Generation**: jsPDF with autotable support
-- **CSV Processing**: PapaParse for data import/export
-- **HTTP Client**: Angular HttpClient with custom interceptors
+| Módulo / Característica             | Estado en Código         | Evidencia en Fuente                                                                                                                                   |
+| ----------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Autenticación y Sesión**          | Implementado y funcional | Casos de uso en `src/app/application/use-cases/auth/`, fachada `AuthFacade`, guardias `authGuard`, `noAuthGuard` e interceptor `authInterceptor`.     |
+| **Confirmación de Email**           | Implementado y funcional | Vista `VerifyEmail`, caso de uso `ConfirmEmailUseCase` y guardia de ruta `emailConfirmedOnly`.                                                        |
+| **Listado de Usuarios**             | Implementado y funcional | Componente `UsersListPage` con filtros avanzados, búsqueda reactiva, ordenamiento, selección múltiple y paginación.                                   |
+| **Acciones en Lote (Users)**        | Implementado y funcional | Componente `BulkActionsToolbar` con activación, desactivación, eliminación y exportación de seleccionados.                                            |
+| **Exportación CSV / PDF**           | Implementado y funcional | Servicios `ClientExportService` y `ClientExportOptimizedService` con carga dinámica lazy de `papaparse` y `jspdf`.                                    |
+| **Gestión de Roles (RBAC)**         | Implementado y funcional | Vistas `RolesList`, `CreateRole`, `RoleDetail`, `UpdateRole`, fachada modular `RolesFacade` y guardia `roleGuard`.                                    |
+| **Dashboard**                       | Funcional (Base)         | Vista `Dashboard` con presentación de usuario y rol; acciones secundarias de navegación (perfil, ajustes, ayuda) definidas como placeholders locales. |
+| **Visualización Gráfica (ECharts)** | No implementada en UI    | Las dependencias `echarts` y `ngx-echarts` figuran en `package.json`, pero no cuentan con integraciones activas en `src/`.                            |
 
-## 🏗️ Architecture Overview
+---
 
-MAD-AI follows Clean Architecture principles with a strict 5-layer structure:
+## 🏗️ Arquitectura en Código
 
+El proyecto estructura su código en 5 capas con reglas de dependencia estrictas hacia el interior:
+
+```text
+Presentation Layer    ──►  Angular Components, Dumb UI Kit, Guards, Layouts
+      │ (depende de)
+Application Layer     ──►  Use Cases, Fachadas Reactivas (Signals), Mappers
+      │ (depende de)
+Domain Layer          ──►  Entidades, Value Objects, Errores de Negocio, Contratos
+      ▲ (implementado por)
+Infrastructure Layer  ──►  HTTP Clients, Repositorios, Stores (Local Storage), DTOs
+      │ (usa)
+Core Layer            ──►  Utilidades agnósticas (DateTimeService, LoggerService)
 ```
-🎨 Presentation Layer    ←  Angular Components, UI Services
-     ↓ depends on
-🚀 Application Layer     ←  Use Cases, Facades, State Management
-     ↓ depends on
-🧠 Domain Layer          ←  Entities, Value Objects, Business Rules
-     ↑ implemented by
-🔌 Infrastructure Layer  ←  API Clients, Repositories, External Services
-     ↓ uses
-🛠️ Core Layer            ←  Framework-agnostic Utilities (Logger, DateTime)
-```
 
-### Layer Responsibilities
+### 1. Dominio (`src/app/domain/`)
 
-| Layer              | Responsibility          | Key Components                                 |
-| ------------------ | ----------------------- | ---------------------------------------------- |
-| **Presentation**   | UI/UX, user interaction | Components, Pages, Layouts, UI Services        |
-| **Application**    | Use case orchestration  | Use Cases, Facades, State Management           |
-| **Domain**         | Pure business logic     | Entities, Value Objects, Repository Interfaces |
-| **Infrastructure** | External integrations   | API Clients, Mappers, DTOs                     |
-| **Core**           | Technical utilities     | Logger, DateTime, Validation Services          |
+- **Entidades:** Modelos ricos con identidad y métodos que protegen invariantes de negocio: [`User`](src/app/domain/entities/user.entity.ts), [`Role`](src/app/domain/entities/role.entity.ts), [`Session`](src/app/domain/entities/session.entity.ts), [`Notification`](src/app/domain/entities/notification.entity.ts).
+- **Value Objects:** Tipos inmutables con auto-validación estricta: `Email`, `Username`, `Firstname`, `Lastname`, `IsoDatetime`, `LocalTokens`, `UserStatus`, `UserNotificationPreferences`, `ExportFormat`, `ActivityPeriod`.
+- **Contratos:** Interfaces que definen los puertos de persistencia y servicios (`auth.contract.ts`, `user.contract.ts`, `role.contract.ts`, `token-store.contract.ts`, etc.).
+- **Regla:** Cero dependencias de Angular o librerías externas de infraestructura.
 
-### Dependency Rules
+### 2. Aplicación (`src/app/application/`)
 
-- **Domain Layer**: Zero dependencies on other layers (pure business logic)
-- **Core Layer**: Framework-agnostic utilities with no application dependencies
-- **Application Layer**: Depends only on Domain and Core layers
-- **Infrastructure Layer**: Implements Domain contracts, uses Core utilities
-- **Presentation Layer**: Depends only on Application layer (through Facades)
+- **Casos de Uso:** Cada operación de negocio está encapsulada en una clase con método ejecutor (ej: `LoginUseCase`, `ListUsersUseCase`, `CreateUserUseCase`, `ActivateRoleUseCase`, `AssignRoleToUserUseCase`).
+- **Fachadas Reactivas:** Orquestan casos de uso y exponen estado reactivo a la UI mediante **Angular Signals**:
+  - [`AuthFacade`](src/app/application/facades/auth.facade.ts): Estado de sesión, usuario autenticado, roles computados y control de carga.
+  - [`UsersFacade`](src/app/application/facades/users/): Fachada compuesta (`UserCrudFacade`, `UserListFacade`, `UserStateFacade`, `UserLookupFacade`).
+  - [`RolesFacade`](src/app/application/facades/role/): Gestión reactiva de roles y asignaciones.
+  - [`NotificationsFacade`](src/app/application/facades/notifications.facade.ts): Notificaciones y mensajes toast.
+- **Mapeadores:** Transformación entre entidades de dominio y tipos de aplicación.
 
-## 📁 Project Structure
+### 3. Infraestructura (`src/app/infrastructure/`)
 
-```
+- **HTTP:** Clientes tipados basados en `HttpClient` (`AuthApiClient`, `UserApiClient`, `RoleApiClient`).
+- **Interceptor:** [`authInterceptor`](src/app/infrastructure/http/interceptors/auth.interceptor.ts) que inyecta automáticamente el token `Bearer` cuando no ha expirado, maneja respuestas `401` limpiando la sesión local y transforma errores vía `HttpErrorTransformer`.
+- **Repositorios:** Implementaciones concretas de los contratos de dominio (`HttpAuthRepository`, `HttpUserRepository`, `HttpRoleRepository`).
+- **Almacenamiento Local:** Adaptadores para persistencia en navegador (`LocalStorageTokenStoreService`, `LocalStorageSessionStoreService`).
+- **Exportación:** Servicios desacoplados para generación de reportes con importación dinámica diferida de `jspdf` y `papaparse`.
+
+### 4. Presentación (`src/app/presentation/`)
+
+- **Componentes Standalone:** Arquitectura sin NgModules en Angular 20, con detección de cambios `OnPush`.
+- **Smart Components (Páginas):** Gestionan navegación e interactúan exclusivamente con las Fachadas de la capa de aplicación.
+- **Dumb Components (UI Kit Reutilizable):** Componentes visuales desacoplados en `src/app/presentation/shared/ui/` (`Button`, `Input`, `FormField`, `Icon`, `Toggle`, `Pagination`, `BulkActionsToolbar`, `ConfirmationModal`, `ToastContainer`).
+- **Guardias Funcionales:**
+  - [`authGuard`](src/app/presentation/services/guards/auth.guard.ts): Protege rutas autenticadas.
+  - [`noAuthGuard`](src/app/presentation/services/guards/auth.guard.ts): Evita acceso a login/registro si ya hay sesión activa.
+  - [`emailConfirmedOnly`](src/app/presentation/services/guards/email-confirmed.guard.ts): Restringe acceso si el correo no ha sido verificado.
+  - [`roleGuard`](src/app/presentation/services/guards/role.guard.ts): Control de acceso por rol requerido o privilegios de administración.
+
+### 5. Inyección de Dependencias (`src/app/di/`)
+
+- Módulos de proveedores (`provideAuth()`, `provideUsers()`, `provideRoles()`, `provideExportServices()`, `provideLogger()`) configurados en `app.config.ts` mediante tokens tipados (`tokens.ts`), garantizando inversión de control.
+
+---
+
+## 🛠️ Stack Tecnológico
+
+| Componente                | Tecnología                                         | Versión                                    |
+| ------------------------- | -------------------------------------------------- | ------------------------------------------ |
+| **Framework**             | Angular                                            | `20.1.6`                                   |
+| **Server-Side Rendering** | Angular SSR + Express                              | `@angular/ssr` `20.0.2`, `express` `5.1.0` |
+| **Compilador / Build**    | Angular CLI / Application Builder (Vite + esbuild) | `@angular/build` `20.0.2`                  |
+| **Lenguaje**              | TypeScript                                         | `5.8.2`                                    |
+| **Estilos**               | Tailwind CSS (v4 PostCSS)                          | `4.1.11`                                   |
+| **Gestión de Estado**     | Angular Signals + RxJS                             | Signals nativos, `rxjs` `7.8.0`            |
+| **Testing**               | Karma + Jasmine                                    | `karma` `6.4.0`, `jasmine-core` `5.7.0`    |
+| **Exportación**           | jsPDF + PapaParse                                  | `jspdf` `3.0.1`, `papaparse` `5.5.3`       |
+
+---
+
+## 📁 Estructura del Proyecto
+
+```text
 src/
 ├── app/
-│   ├── application/          # Use Cases, Facades, Application Services
-│   │   ├── facades/         # State management and UI interaction
-│   │   ├── use-cases/       # Business use case orchestration
-│   │   ├── services/        # Application-specific services
-│   │   └── mappers/         # Domain to Application transformations
-│   ├── domain/              # Pure business logic (framework-independent)
-│   │   ├── entities/        # Business entities with identity
-│   │   ├── value-objects/   # Immutable domain attributes
-│   │   ├── repositories/    # Persistence contracts (interfaces)
-│   │   ├── enums/          # Business classifications
-│   │   └── errors/         # Domain-specific exceptions
-│   ├── infrastructure/      # External integrations and concrete implementations
-│   │   ├── http/           # API clients and HTTP interceptors
-│   │   ├── repositories/   # Repository implementations
-│   │   ├── dtos/           # Data Transfer Objects
-│   │   ├── mappers/        # DTO ↔ Domain transformations
-│   │   └── services/       # Technical service implementations
-│   ├── presentation/        # UI components and user interaction
-│   │   ├── pages/          # Smart Components (route components)
-│   │   ├── shared/         # Reusable UI components
-│   │   ├── layouts/        # Page layouts and shell components
-│   │   └── services/       # UI-specific services
-│   ├── core/               # Framework-agnostic utilities
-│   │   ├── services/       # Technical utilities (Logger, DateTime)
-│   │   └── interfaces/     # Core service contracts
-│   └── di/                 # Dependency injection configuration
-└── styles/                 # Global styles and design system
-    ├── colors.css          # Custom color palette
-    ├── components.css      # Reusable component styles
-    └── globals.css         # Global CSS utilities
+│   ├── application/              # Casos de uso, fachadas reactivas, mappers, tipos
+│   │   ├── facades/             # AuthFacade, UsersFacade, RolesFacade, NotificationsFacade
+│   │   ├── use-cases/           # Casos de uso por contexto (auth, users, roles, notifications)
+│   │   ├── mappers/             # Transformaciones Dominio ↔ Aplicación
+│   │   └── errors/              # Transformación unificada de errores
+│   ├── domain/                  # Lógica pura e independiente de frameworks
+│   │   ├── entities/            # User, Role, Session, Notification
+│   │   ├── value-objects/       # Email, Username, IsoDatetime, LocalTokens, etc.
+│   │   ├── repositories/        # Contratos de persistencia (business, session, system)
+│   │   └── errors/              # Errores de reglas de negocio y validación
+│   ├── infrastructure/          # Adaptadores y tecnologías externas
+│   │   ├── http/                # Clientes API tipados e interceptor de autenticación
+│   │   ├── repositories/        # Implementaciones concretas HTTP de contratos
+│   │   ├── services/            # Storage local, exportación (PDF/CSV), notificaciones
+│   │   ├── dtos/                # DTOs de entrada/salida de la API
+│   │   └── mappers/             # Mappers DTO ↔ Dominio
+│   ├── presentation/            # Interfaz de usuario Angular
+│   │   ├── pages/               # Páginas/Rutas (auth, dashboard, users, roles, profile)
+│   │   ├── shared/ui/           # UI Kit base (button, input, toggle, pagination, modal)
+│   │   ├── shell/               # Layouts principales, sidebar, header
+│   │   └── services/guards/     # authGuard, noAuthGuard, roleGuard, emailConfirmedOnly
+│   ├── core/                    # Servicios transversales técnicos (DateTime, Logger)
+│   └── di/                      # Tokens y proveedores de inyección de dependencias
+├── env/                         # Configuración de entornos (environment.ts / environment.prod.ts)
+└── styles/                      # Sistema de diseño, paleta semántica (colors.css)
 ```
-
-## 🚦 Getting Started
-
-### Prerequisites
-
-- **Node.js**: 18.x or higher
-- **npm**: 9.x or higher
-- **Git**: Latest version
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone https://github.com/sandovaldavid/MAD-AI.git
-   cd MAD-AI
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-
-   ```bash
-   npm start
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:4200`
-
-### Development Scripts
-
-| Command             | Description                                 |
-| ------------------- | ------------------------------------------- |
-| `npm start`         | Start development server with hot reload    |
-| `npm run build`     | Build the application for production        |
-| `npm test`          | Run unit tests with Jest                    |
-| `npm run test:ci`   | Run tests in CI mode (headless)             |
-| `npm run lint`      | Run ESLint for code quality                 |
-| `npm run format`    | Format code with Prettier                   |
-| `npm run quality`   | Run all quality checks (lint, format, test) |
-| `npm run serve:ssr` | Serve the SSR-enabled application           |
-
-### Testing Commands
-
-```bash
-# Run all tests
-npm test
-
-# Run domain layer tests only
-npm run test:domain
-
-# Run infrastructure tests only
-npm run test:infrastructure
-
-# Run tests in CI mode
-npm run test:ci
-
-# Run tests with Docker
-npm run docker:test
-```
-
-## 🧪 Testing Strategy
-
-MAD-AI implements a comprehensive testing pyramid with specific coverage requirements:
-
-### Testing Layers
-
-| Layer                   | Coverage       | Tools                          | Speed      | Focus          |
-| ----------------------- | -------------- | ------------------------------ | ---------- | -------------- |
-| **E2E Tests**           | Critical paths | Cypress                        | Slow       | User workflows |
-| **Component Tests**     | 85%            | Jest + TestBed                 | Fast       | UI behavior    |
-| **Integration Tests**   | 80%            | Jest + HttpClientTestingModule | Medium     | API contracts  |
-| **Orchestration Tests** | 95%            | Jest + Mocks                   | Very fast  | Use case logic |
-| **Unit Tests**          | 100%           | Jest                           | Ultra-fast | Business logic |
-
-### Testing Philosophy
-
-- **Test Behavior, Not Implementation**: Focus on what the code does, not how it does it
-- **Fast Feedback Loop**: Prioritize fast, isolated tests at the pyramid base
-- **No External Dependencies**: Use mocking for all external systems
-- **Layer-Appropriate Testing**: Each layer has specific testing strategies
-
-## 🎨 Development Workflow
-
-### Feature Development Process
-
-When implementing new features, follow this mandatory 5-step workflow:
-
-#### 1. Domain Contract Definition
-
-- Define business entities and their methods in `/domain/entities`
-- Create value objects for validation in `/domain/value-objects`
-- Define repository interfaces if persistence is needed
-- ⚠️ **Never implement business logic outside Domain entities**
-
-#### 2. Infrastructure Implementation
-
-- Implement repository interfaces using concrete technologies
-- Create DTOs matching external API contracts
-- Add API clients for external service communication
-- Create mappers for DTO ↔ Domain transformations
-
-#### 3. Application Orchestration
-
-- Create use cases that orchestrate Domain entities
-- Update facades for state management and UI interaction
-- ⚠️ **Never implement business rules in Application layer**
-
-#### 4. Presentation Implementation
-
-- Create/update Smart Components (pages) that inject Facades
-- Create/update Dumb Components using only @Input/@Output
-- Follow Smart/Dumb component pattern religiously
-- ⚠️ **Never inject Domain/Infrastructure services in Presentation**
-
-#### 5. Testing Implementation
-
-- Unit tests for Domain (100% coverage required)
-- Orchestration tests for Application (95% coverage)
-- Component tests for Presentation (85% coverage)
-- Integration tests for Infrastructure (80% coverage)
-
-### Code Quality Standards
-
-- **Clean Code Principles**: Single responsibility, meaningful names, small functions
-- **SOLID Principles**: Applied at component and service levels
-- **DRY Principle**: Eliminate code duplication through proper abstractions
-- **TypeScript Best Practices**: Strong typing, interface segregation
-- **Angular Conventions**: OnPush change detection, reactive patterns
-
-## 🎨 Styling Guidelines
-
-### Design System
-
-- **Color Palette**: Custom color system defined in `src/styles/colors.css`
-- **Component Library**: Atomic design with reusable UI components
-- **Dark Mode**: Full dark mode support with automatic theme switching
-- **Accessibility**: WCAG 2.1 AA compliance with proper contrast ratios
-- **Typography**: Consistent type scale and spacing system
-
-### Tailwind CSS Implementation
-
-- **Semantic Classes**: Use `@apply` directive for reusable component styles
-- **Custom Color Palette**: Never use default Tailwind colors
-- **Responsive Design**: Mobile-first approach with breakpoint consistency
-- **Performance**: Purged CSS for optimal bundle size
-
-## 🤝 Contributing
-
-We welcome contributions! Please follow these guidelines:
-
-### Development Standards
-
-1. **Architecture Compliance**: Follow Clean Architecture principles strictly
-2. **Code Quality**: All code must pass linting and formatting checks
-3. **Testing Requirements**: Maintain coverage requirements for each layer
-4. **Documentation**: Update documentation for architectural changes
-
-### Pull Request Process
-
-1. **Branch Naming**: Use conventional branch names (`feature/`, `bugfix/`, `hotfix/`)
-2. **Commit Messages**: Follow conventional commit format
-3. **Quality Checks**: Ensure all quality gates pass
-4. **Code Review**: Undergo architectural review for layer compliance
-5. **Testing**: Verify all tests pass and coverage requirements are met
-
-### Code Review Checklist
-
-- [ ] **No Architecture Violations**: Verify proper layer dependencies
-- [ ] **Clean Code**: Meaningful names and single responsibility
-- [ ] **Tests Implemented**: Appropriate tests for each layer
-- [ ] **Reactive Patterns**: Proper state management through Facades
-- [ ] **Error Handling**: Domain-specific error handling
-
-### Getting Help
-
-- **Architecture Questions**: Refer to [instruction files](.github/instructions/) for layer-specific guidance
-- **Code Examples**: Check existing code for implementation patterns
-- **Issue Reporting**: Use GitHub issues with proper labels and descriptions
-
-## 📚 Documentation
-
-### Architecture Documentation
-
-- **[Domain Layer Guide](.github/instructions/domain.instructions.md)**: Entities, value objects, and business logic
-- **[Application Layer Guide](.github/instructions/application.instructions.md)**: Use cases and facades
-- **[Infrastructure Layer Guide](.github/instructions/infrastructure.instructions.md)**: External integrations
-- **[Presentation Layer Guide](.github/instructions/presentation.instructions.md)**: Angular components and UI
-- **[Testing Strategy Guide](.github/instructions/test.instructions.md)**: Comprehensive testing approach
-- **[Style Guide](.github/instructions/style-guide.instructions.md)**: Tailwind CSS and design system
-
-### Development Resources
-
-- **[Master Copilot Instructions](.github/copilot-instructions.md)**: Complete development workflow
-- **[API Documentation](docs/api/)**: Backend API specifications
-- **[Implementation Guides](docs/info/)**: Detailed implementation guidance
-
-## 🔧 Configuration
-
-### Environment Setup
-
-The application supports multiple environments with different configurations:
-
-- **Development**: Hot reload, detailed error messages, development tools
-- **Production**: Optimized builds, error tracking, performance monitoring
-- **Testing**: Mocked services, controlled data, isolated test environment
-
-### Docker Support
-
-```bash
-# Build and run unit tests
-npm run docker:test:unit
-
-# Build and run e2e tests
-npm run docker:test:e2e
-
-# Run all tests in Docker
-npm run docker:test
-```
-
-## 📝 License
-
-This project is part of an academic thesis and is intended for educational and research purposes. Please refer to the institution's guidelines for usage and distribution.
 
 ---
 
-## 🏆 Architecture Excellence
+## 🚀 Puesta en Marcha
 
-This project demonstrates enterprise-grade Angular development with:
+### Requisitos previos
 
-- ✅ **Clean Architecture**: Strict layer separation with zero business logic leakage
-- ✅ **Domain-Driven Design**: Rich domain models with encapsulated business logic
-- ✅ **Comprehensive Testing**: Full testing pyramid with appropriate coverage
-- ✅ **Code Quality**: Automated linting, formatting, and quality gates
-- ✅ **Accessibility**: WCAG 2.1 AA compliant with inclusive design
-- ✅ **Performance**: Optimized builds with SSR and lazy loading
-- ✅ **Maintainability**: Clear architectural boundaries and documentation
+- **Node.js:** Versión 20 o superior (compatible con Node 20 LTS y 24).
+- **Gestor de paquetes:** `pnpm` (el repositorio incluye `pnpm-lock.yaml`) o `npm`.
+
+### Configuración del Entorno
+
+El cliente apunta por defecto al backend local en `http://localhost:8004/api/v1`. Para ajustar la dirección de la API, edite `src/env/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  API_URL: 'http://localhost:8004/api/v1',
+};
+```
+
+### Instalación y Ejecución
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/sandovaldavid/MAD-AI.git
+cd MAD-AI
+
+# 2. Instalar dependencias (con pnpm o npm)
+pnpm install
+
+# 3. Iniciar servidor de desarrollo (puerto 4200 por defecto)
+pnpm start
+```
+
+Navegue en su navegador a `http://localhost:4200`.
 
 ---
 
-**Built with ❤️ by [sandovaldavid](https://github.com/sandovaldavid) using Clean Architecture principles**
+## 📜 Comandos Disponibles
+
+| Comando                        | Descripción                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| `pnpm start`                   | Inicia el servidor de desarrollo local con recarga en caliente (`ng serve`).            |
+| `pnpm run build`               | Compila la aplicación para producción con soporte SSR (`ng build`).                     |
+| `pnpm run watch`               | Compila en modo desarrollo con observación de cambios.                                  |
+| `pnpm run serve:ssr`           | Ejecuta el servidor Node Express con los bundles SSR generados.                         |
+| `pnpm test`                    | Ejecuta las pruebas unitarias e integración en modo interactivo con Karma.              |
+| `pnpm run test:ci`             | Ejecuta la suite de pruebas unitarias una sola vez en modo headless (`ChromeHeadless`). |
+| `pnpm run test:domain`         | Ejecuta únicamente las pruebas unitarias de la capa de dominio.                         |
+| `pnpm run test:application`    | Ejecuta únicamente las pruebas de casos de uso y fachadas.                              |
+| `pnpm run test:infrastructure` | Ejecuta las pruebas de clientes HTTP y repositorios.                                    |
+| `pnpm run test:core`           | Ejecuta las pruebas de los servicios transversales de core.                             |
+| `pnpm run format:check`        | Verifica el formateo de código con Prettier sin aplicar cambios.                        |
+| `pnpm run format`              | Aplica correcciones de formato con Prettier en `src/`.                                  |
+| `pnpm run icons:lint`          | Valida el uso correcto de iconos SVG en el proyecto.                                    |
+| `pnpm run quality`             | Ejecuta la batería de calidad (formato, iconos y pruebas en CI).                        |
+
+---
+
+## 🧪 Estrategia de Pruebas
+
+El repositorio implementa pruebas automatizadas organizadas por capa arquitectónica, utilizando **Karma y Jasmine** como framework oficial de ejecución:
+
+- **Pruebas de Dominio:** Pruebas unitarias puras sin dependencias de frameworks ni mocks sobre entidades (`User`, `Role`, `Session`, `Notification`) y Value Objects.
+- **Pruebas de Aplicación:** Pruebas de orquestación sobre casos de uso y fachadas utilizando espías y mocks de puertos/contratos.
+- **Pruebas de Infraestructura:** Pruebas de clientes API y repositorios simulando llamadas HTTP mediante `HttpClientTestingModule` y validación de mappers DTO.
+- **Pruebas de Presentación:** Pruebas de componentes y guardias funcionales con `TestBed` de Angular.
+- **Pruebas E2E (Contenedor):** La configuración E2E está desacoplada en `Dockerfile.cypress` para ejecutarse en contenedores aislados mediante `npm run docker:test:e2e`.
+
+---
+
+## 📚 Documentación Interna de Referencia
+
+Para profundizar en las decisiones de diseño y convenciones del proyecto, consulte los documentos en `docs/`:
+
+- **[Diagramas y Flujo por Capas](docs/info/diagramas-layers.md)**
+- **[Guía de Capa de Dominio](docs/info/guide-domain.md)**
+- **[Guía de Capa de Aplicación](docs/info/guide-application.md)**
+- **[Guía de Capa de Infraestructura](docs/info/guide-infrastructure.md)**
+- **[Guía de Capa de Presentación](docs/info/guide-presentation.md)**
+- **[Guía de Estilos y Diseño](docs/info/guide-styles.md)**
+- **[Guía de Implementación de Pruebas](docs/info/guide-test-implementation.md)**
+- **[Especificación Swagger de API Backend](docs/api/swagger.json)**
+- **[Contrato de Endpoints de Usuarios](docs/api/users.api.md)**
+
+---
+
+## 📄 Licencia y Autoría
+
+Desarrollado por [David Sandoval](https://github.com/sandovaldavid). Proyecto de código abierto disponible como referencia arquitectónica y portafolio técnico.
